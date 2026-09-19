@@ -196,15 +196,48 @@ html[lang="km"],
   text-rendering: optimizeLegibility;
 }
 
-/* Neutralize negative tracking (tracking-tight / tracking-tighter) for CJK */
+/* Specific Script Stacks for Superior International Legibility */
+html[lang="th"] {
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi', 'Tahoma', ui-sans-serif, system-ui, sans-serif !important;
+  line-height: 1.85 !important;
+}
+
+html[lang="lo"] {
+  font-family: 'Noto Sans Lao', 'Saysettha OT', 'DokChampa', ui-sans-serif, system-ui, sans-serif !important;
+  line-height: 1.85 !important;
+}
+
+html[lang="km"] {
+  font-family: 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS', ui-sans-serif, system-ui, sans-serif !important;
+  line-height: 1.85 !important;
+}
+
+html[lang="zh"] {
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+html[lang="ja"] {
+  font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', 'Meiryo', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+html[lang="ru"] {
+  font-family: 'SVN-Gilroy', 'Roboto', 'Noto Sans', 'Segoe UI', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: 0.01em;
+}
+
+/* Neutralize negative tracking (tracking-tight / tracking-tighter) for CJK & Southeast Asian scripts */
 html[lang="ko"] [class*="tracking-tight"],
 html[lang="zh"] [class*="tracking-tight"],
 html[lang="ja"] [class*="tracking-tight"],
 html[lang="th"] [class*="tracking-tight"],
+html[lang="lo"] [class*="tracking-tight"],
+html[lang="km"] [class*="tracking-tight"],
 html[lang="ko"] [class*="tracking-tighter"],
 html[lang="zh"] [class*="tracking-tighter"],
 html[lang="ja"] [class*="tracking-tighter"],
 html[lang="th"] [class*="tracking-tighter"],
+html[lang="lo"] [class*="tracking-tighter"],
+html[lang="km"] [class*="tracking-tighter"],
 .cjk-text[class*="tracking-tight"],
 .cjk-text [class*="tracking-tight"],
 .cjk-text[class*="tracking-tighter"],

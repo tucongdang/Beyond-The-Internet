@@ -7,6 +7,7 @@ import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getApp, getApps } from 'firebase/app';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { soundFx } from '../services/audioEffects';
+import { aiExplanationService } from '../services/aiExplanationService';
 import { SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { t } from '../utils/i18n';
 import { generate12DigitUID, getUserDisplayUid } from '../utils/uidUtils';
@@ -21,7 +22,8 @@ import {
   setHapticPreference,
   subscribeHapticPreference
 } from '../utils/hapticUtils';
-import { X, User, Globe, BarChart2, Edit3, Save, Activity, Camera, Smartphone, Vibrate, Check, Sliders, Sparkles, Contrast } from 'lucide-react';
+import { X, User, Globe, BarChart2, Edit3, Save, Activity, Camera, Smartphone, Vibrate, Check, Sliders, Sparkles, Contrast, Volume2, Volume1, VolumeX, Play, Square, Music, RotateCcw, Mic, MessageSquare } from 'lucide-react';
+import { ambientNoiseService } from '../services/ambientNoiseService';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -63,6 +65,143 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       return false;
     }
   });
+
+  // Audio settings state
+  const [sfxEnabled, setSfxEnabled] = useState<boolean>(() => soundFx.isEnabled());
+  const [sfxVolume, setSfxVolume] = useState<number>(() => soundFx.getVolume());
+  const [ttsVolume, setTtsVolume] = useState<number>(() => aiExplanationService.getTtsVolume());
+  const [ttsPitch, setTtsPitch] = useState<number>(() => aiExplanationService.getTtsPitch());
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>(() => aiExplanationService.getSelectedVoiceURI());
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [autoSpeakAnswer, setAutoSpeakAnswer] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_auto_speak_answer');
+      if (saved !== null) return saved === 'true';
+    }
+    return true;
+  });
+  const [isTestingTts, setIsTestingTts] = useState<boolean>(false);
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState<boolean>(() => ambientNoiseService.isSubtitlesEnabled());
+  const [ambientListenerEnabled, setAmbientListenerEnabled] = useState<boolean>(() => ambientNoiseService.isListenerEnabled());
+
+  useEffect(() => {
+    const updateVoices = () => {
+      setAvailableVoices(aiExplanationService.getAvailableVoices());
+    };
+    updateVoices();
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+    }
+
+    const unsubSfx = soundFx.subscribeVolume((vol) => setSfxVolume(vol));
+    const unsubTts = aiExplanationService.subscribeTtsVolume((vol) => setTtsVolume(vol));
+    const unsubPitch = aiExplanationService.subscribeTtsPitch((pitch) => setTtsPitch(pitch));
+    const unsubVoice = aiExplanationService.subscribeSelectedVoice((uri) => setSelectedVoiceURI(uri));
+    const unsubSubs = ambientNoiseService.subscribeSubtitles((enabled) => setSubtitlesEnabled(enabled));
+
+    return () => {
+      unsubSfx();
+      unsubTts();
+      unsubPitch();
+      unsubVoice();
+      unsubSubs();
+    };
+  }, []);
+
+  const handleToggleSubtitles = () => {
+    const next = !subtitlesEnabled;
+    setSubtitlesEnabled(next);
+    ambientNoiseService.setSubtitlesEnabled(next);
+    soundFx.playClick();
+    vibrateTap();
+  };
+
+  const handleToggleAmbientListener = () => {
+    const next = !ambientListenerEnabled;
+    setAmbientListenerEnabled(next);
+    ambientNoiseService.setListenerEnabled(next);
+    soundFx.playClick();
+    vibrateTap();
+  };
+
+  const handleSfxVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setSfxVolume(val);
+    soundFx.setVolume(val);
+    if (!sfxEnabled && val > 0) {
+      setSfxEnabled(true);
+      soundFx.setEnabled(true);
+    }
+  };
+
+  const handleToggleSfx = () => {
+    const next = !sfxEnabled;
+    setSfxEnabled(next);
+    soundFx.setEnabled(next);
+    vibrateTap();
+    if (next) soundFx.playClick();
+  };
+
+  const handleTtsVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setTtsVolume(val);
+    aiExplanationService.setTtsVolume(val);
+  };
+
+  const handleTtsPitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setTtsPitch(val);
+    aiExplanationService.setTtsPitch(val);
+  };
+
+  const handleSetPitchPreset = (val: number) => {
+    setTtsPitch(val);
+    aiExplanationService.setTtsPitch(val);
+    soundFx.playClick();
+    vibrateTap();
+  };
+
+  const handleVoiceSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedVoiceURI(val);
+    aiExplanationService.setSelectedVoiceURI(val);
+    soundFx.playClick();
+    vibrateTap();
+  };
+
+  const handleToggleAutoSpeak = () => {
+    const next = !autoSpeakAnswer;
+    setAutoSpeakAnswer(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bti_auto_speak_answer', String(next));
+    }
+    soundFx.playClick();
+    vibrateTap();
+  };
+
+  const handleTestSfx = () => {
+    vibrateSelection();
+    soundFx.playTing();
+  };
+
+  const handleTestTts = () => {
+    if (isTestingTts) {
+      aiExplanationService.stopSpeech();
+      setIsTestingTts(false);
+      return;
+    }
+    setIsTestingTts(true);
+    const testPhrase = localLanguage === 'en'
+      ? 'AI Voice narration volume test.'
+      : 'Thử nghiệm âm lượng giọng đọc AI thành công.';
+    aiExplanationService.speakQuestionText(
+      testPhrase,
+      localLanguage,
+      () => setIsTestingTts(false),
+      () => setIsTestingTts(false)
+    );
+  };
 
   // Language preference state
     const handleToggleLanguage = () => {
@@ -528,6 +667,293 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Audio & Voice Settings Card */}
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-4">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
+              <div className="w-8 h-8 rounded-[2px] bg-sky-500/15 border border-sky-500/30 text-sky-300 flex items-center justify-center">
+                <Sliders className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>{t("audio_settings_title", localLanguage)}</span>
+                </h4>
+                <p className="text-[10px] text-[#B6A6D8]">
+                  {t("audio_settings_desc", localLanguage)}
+                </p>
+              </div>
+            </div>
+
+            {/* 1. Sound FX Volume */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  {sfxEnabled && sfxVolume > 0 ? (
+                    <Volume2 className="w-3.5 h-3.5 text-sky-400" />
+                  ) : (
+                    <VolumeX className="w-3.5 h-3.5 text-white/40" />
+                  )}
+                  <span className="font-mono text-white font-bold">{t("audio_sfx_title", localLanguage)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-sky-300 px-1.5 py-0.2 bg-sky-500/20 rounded-[1px] border border-sky-400/30">
+                    {sfxEnabled ? `${Math.round(sfxVolume * 100)}%` : 'MUTE'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleToggleSfx}
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-white/20 bg-white/5 hover:bg-white/10 text-white transition cursor-pointer"
+                  >
+                    {sfxEnabled ? 'Tắt' : 'Bật'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  disabled={!sfxEnabled}
+                  value={sfxEnabled ? sfxVolume : 0}
+                  onChange={handleSfxVolumeChange}
+                  className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-sky-400 disabled:opacity-40"
+                />
+                <button
+                  type="button"
+                  onClick={handleTestSfx}
+                  disabled={!sfxEnabled || sfxVolume === 0}
+                  className="shrink-0 px-2 py-1 text-[10px] font-mono rounded-[2px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                >
+                  <Play className="w-2.5 h-2.5 text-sky-400" />
+                  <span>Thử</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. TTS AI Voice Volume */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  {ttsVolume > 0 ? (
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : (
+                    <VolumeX className="w-3.5 h-3.5 text-white/40" />
+                  )}
+                  <span className="font-mono text-white font-bold">{t("audio_tts_title", localLanguage)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-emerald-300 px-1.5 py-0.2 bg-emerald-500/20 rounded-[1px] border border-emerald-400/30">
+                    {ttsVolume > 0 ? `${Math.round(ttsVolume * 100)}%` : 'MUTE'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextVal = ttsVolume > 0 ? 0 : 1.0;
+                      setTtsVolume(nextVal);
+                      aiExplanationService.setTtsVolume(nextVal);
+                      vibrateTap();
+                    }}
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-white/20 bg-white/5 hover:bg-white/10 text-white transition cursor-pointer"
+                  >
+                    {ttsVolume > 0 ? 'Tắt' : 'Bật'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={ttsVolume}
+                  onChange={handleTtsVolumeChange}
+                  className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-emerald-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleTestTts}
+                  disabled={ttsVolume === 0}
+                  className={`shrink-0 px-2 py-1 text-[10px] font-mono rounded-[2px] border text-white/80 flex items-center gap-1 cursor-pointer ${
+                    isTestingTts ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400' : 'bg-white/5 hover:bg-white/10 border-white/10'
+                  } disabled:opacity-40`}
+                >
+                  {isTestingTts ? <Square className="w-2.5 h-2.5 text-emerald-300" /> : <Play className="w-2.5 h-2.5 text-emerald-400" />}
+                  <span>{isTestingTts ? 'Dừng' : 'Thử'}</span>
+                </button>
+              </div>
+
+              {/* Pitch Slider in Profile */}
+              <div className="pt-2 border-t border-white/5 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-mono text-white font-bold text-[11px]">
+                    <Music className="w-3 h-3 text-emerald-400" />
+                    <span>{t("audio_pitch_title", localLanguage)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] font-mono text-emerald-300 px-1.5 py-0.2 bg-emerald-500/20 rounded-[1px] border border-emerald-400/30">
+                      {ttsPitch < 0.85
+                        ? `${t('audio_pitch_deep', localLanguage)} (${ttsPitch.toFixed(2)}x)`
+                        : ttsPitch > 1.15
+                        ? `${t('audio_pitch_high', localLanguage)} (${ttsPitch.toFixed(2)}x)`
+                        : `${t('audio_pitch_normal', localLanguage)} (${ttsPitch.toFixed(2)}x)`}
+                    </span>
+                    {ttsPitch !== 1.0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetPitchPreset(1.0)}
+                        title={t('audio_pitch_reset', localLanguage)}
+                        className="text-[9px] font-mono px-1 py-0.2 rounded-[1px] bg-white/10 hover:bg-white/20 text-white/80 border border-white/10 flex items-center gap-0.5 cursor-pointer"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        <span>1.0x</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono text-white/40">0.5x</span>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.05"
+                    value={ttsPitch}
+                    onChange={handleTtsPitchChange}
+                    className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-emerald-400"
+                  />
+                  <span className="text-[9px] font-mono text-white/40">2.0x</span>
+                </div>
+                {/* Presets */}
+                <div className="flex items-center gap-1 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSetPitchPreset(0.7)}
+                    className={`flex-1 py-0.5 text-[9px] font-mono rounded-[2px] border transition cursor-pointer ${
+                      Math.abs(ttsPitch - 0.7) < 0.08
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 font-bold'
+                        : 'bg-white/5 hover:bg-white/10 text-white/70 border-white/10'
+                    }`}
+                  >
+                    {t('audio_pitch_deep', localLanguage)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetPitchPreset(1.0)}
+                    className={`flex-1 py-0.5 text-[9px] font-mono rounded-[2px] border transition cursor-pointer ${
+                      Math.abs(ttsPitch - 1.0) < 0.08
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 font-bold'
+                        : 'bg-white/5 hover:bg-white/10 text-white/70 border-white/10'
+                    }`}
+                  >
+                    {t('audio_pitch_normal', localLanguage)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetPitchPreset(1.3)}
+                    className={`flex-1 py-0.5 text-[9px] font-mono rounded-[2px] border transition cursor-pointer ${
+                      Math.abs(ttsPitch - 1.3) < 0.08
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 font-bold'
+                        : 'bg-white/5 hover:bg-white/10 text-white/70 border-white/10'
+                    }`}
+                  >
+                    {t('audio_pitch_high', localLanguage)}
+                  </button>
+                </div>
+              </div>
+
+              {/* System Voice Selection in Profile */}
+              <div className="pt-2 border-t border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-mono text-white font-bold text-[11px]">
+                    <Mic className="w-3 h-3 text-emerald-400" />
+                    <span>{t("audio_voice_select_title", localLanguage)}</span>
+                  </div>
+                  <span className="text-[9px] font-mono text-white/40">
+                    {availableVoices.length > 0 ? `${availableVoices.length} voices` : ''}
+                  </span>
+                </div>
+                <div className="relative">
+                  <select
+                    value={selectedVoiceURI}
+                    onChange={handleVoiceSelectChange}
+                    className="w-full text-[11px] font-mono bg-black/40 border border-white/15 rounded-[2px] px-2 py-1 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
+                  >
+                    <option value="auto" className="bg-slate-900 text-white">
+                      {t('audio_voice_auto', localLanguage)}
+                    </option>
+                    {availableVoices.length === 0 ? (
+                      <option value="" disabled className="bg-slate-900 text-white/50">
+                        {t('audio_voice_no_voices', localLanguage)}
+                      </option>
+                    ) : (
+                      availableVoices.map((voice) => (
+                        <option
+                          key={voice.voiceURI || voice.name}
+                          value={voice.voiceURI || voice.name}
+                          className="bg-slate-900 text-white"
+                        >
+                          {voice.name} ({voice.lang}){voice.default ? ' ★' : ''}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Live Subtitles */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono font-bold text-white">{t("audio_subtitles_title", localLanguage)}</p>
+                <p className="text-[10px] text-[#B6A6D8]">{t("audio_subtitles_desc", localLanguage)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleSubtitles}
+                className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
+                  subtitlesEnabled ? 'bg-teal-500 justify-end' : 'bg-gray-700 justify-start'
+                }`}
+              >
+                <div className="w-4 h-4 rounded-[2px] bg-white shadow-md transform transition" />
+              </button>
+            </div>
+
+            {/* 4. Ambient Noise Detection */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono font-bold text-white">{t("audio_ambient_title", localLanguage)}</p>
+                <p className="text-[10px] text-[#B6A6D8]">{t("audio_ambient_desc", localLanguage)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleAmbientListener}
+                className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
+                  ambientListenerEnabled ? 'bg-amber-500 justify-end' : 'bg-gray-700 justify-start'
+                }`}
+              >
+                <div className="w-4 h-4 rounded-[2px] bg-white shadow-md transform transition" />
+              </button>
+            </div>
+
+            {/* 5. Auto Read Answers */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono font-bold text-white">{t("audio_auto_read_title", localLanguage)}</p>
+                <p className="text-[10px] text-[#B6A6D8]">{t("audio_auto_read_desc", localLanguage)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleAutoSpeak}
+                className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
+                  autoSpeakAnswer ? 'bg-emerald-500 justify-end' : 'bg-gray-700 justify-start'
+                }`}
+              >
+                <div className="w-4 h-4 rounded-[2px] bg-white shadow-md transform transition" />
+              </button>
+            </div>
           </div>
             </div>
           )}

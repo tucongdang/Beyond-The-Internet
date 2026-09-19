@@ -123,16 +123,17 @@ export const translationService = {
   },
 
   /**
-   * Translates a short answer or term into natural, accurate Vietnamese (Tiếng Việt).
+   * Translates a short answer or term into the target language (Vietnamese, English, Korean, Japanese, Chinese, etc.).
    * Checks local memory and localStorage cache first for 0ms lookup.
    */
-  async translateShortAnswerToVietnamese(text: string, apiKey?: string): Promise<string> {
+  async translateShortAnswer(text: string, targetLang: string = 'vi', apiKey?: string): Promise<string> {
     if (!text || typeof text !== 'string' || !text.trim()) {
       return '';
     }
 
     const trimmed = text.trim();
-    const cacheKey = `bti_trans_short_vi_${trimmed.toLowerCase()}`;
+    const lang = targetLang || 'vi';
+    const cacheKey = `bti_trans_short_${lang}_${trimmed.toLowerCase()}`;
 
     try {
       const cached = localStorage.getItem(cacheKey);
@@ -147,7 +148,7 @@ export const translationService = {
         },
         body: JSON.stringify({
           text: trimmed,
-          target_lang: 'vi',
+          target_lang: lang,
           apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
         })
       });
@@ -165,9 +166,16 @@ export const translationService = {
 
       return translated;
     } catch (err) {
-      console.warn(`[TranslationService] Failed to translate short answer "${trimmed}" to vi:`, err);
+      console.warn(`[TranslationService] Failed to translate short answer "${trimmed}" to ${lang}:`, err);
       return trimmed;
     }
+  },
+
+  /**
+   * Translates a short answer or term into natural, accurate Vietnamese (Tiếng Việt).
+   */
+  async translateShortAnswerToVietnamese(text: string, apiKey?: string): Promise<string> {
+    return this.translateShortAnswer(text, 'vi', apiKey);
   },
 
   /**

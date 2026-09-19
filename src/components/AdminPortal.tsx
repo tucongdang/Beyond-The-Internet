@@ -10,7 +10,12 @@ const fluentDarkTransparentTheme = {};
 
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { syncService, DEFAULT_GAME_STATE } from '../services/syncService';
-import { soundFx } from '../services/audioEffects';
+import { soundFx as realSoundFx } from '../services/audioEffects';
+
+// Completely remove all sound FX on the Admin screen as requested by user
+const soundFx = new Proxy({} as any, {
+  get: () => () => {}
+});
 import { generateSPSSData, exportToCSV, exportToJSON, exportLeaderboardToCSV, normalizeVcnvAnswer } from '../utils/exportUtils';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import QRCode from 'qrcode';
@@ -152,6 +157,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onViewChange,
   onLogout
 }) => {
+  // Completely disable all sound FX on the Admin screen
+  useEffect(() => {
+    realSoundFx.setAdminMuted(true);
+    return () => {
+      realSoundFx.setAdminMuted(false);
+    };
+  }, []);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const notify = (message: string, intent: 'success' | 'warning' | 'error' = 'success') => {
@@ -1447,10 +1460,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Master Step 2: Lock Voting
   const handleLockVoting = useCallback(() => {
+    const item = questionBank.find(q => q.id === gameState.question_id);
+    const correctKey = item?.correct_key || 'A';
     vibrateWarning();
     soundFx.playLock();
     syncService.updateGameState({
-      status: 'LOCKED'
+      status: 'LOCKED',
+      correct_key: correctKey
     });
 
     syncService.logActivity(
@@ -1461,10 +1477,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         category: 'ADMIN_CONTROL',
         question_id: gameState.question_id,
         round_id: gameState.round_name,
-        new_status: 'LOCKED'
+        new_status: 'LOCKED',
+        correct_key: correctKey
       }
     );
-  }, [gameState.question_id, gameState.round_name]);
+  }, [questionBank, gameState.question_id, gameState.round_name]);
 
   // Master Step 3: Reveal Results
   const handleRevealResults = useCallback(() => {
@@ -7482,7 +7499,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={showMcCoPilotModal}
         onClose={() => setShowMcCoPilotModal(false)}
         gameState={gameState}
-        responses={responses}
+        responses={currentResponses}
       />
 
       {/* Floating Host Pacing Toaster Notifications */}

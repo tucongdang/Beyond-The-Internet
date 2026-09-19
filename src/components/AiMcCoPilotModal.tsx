@@ -29,7 +29,7 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
     const counts: Record<string, number> = {};
     let total = 0;
 
-    Object.values(responses || {}).forEach(r => {
+    (Object.values(responses || {}) as UserResponse[]).forEach(r => {
       const choice = (r.choice || '').trim().toUpperCase();
       if (choice) {
         counts[choice] = (counts[choice] || 0) + 1;
@@ -78,11 +78,13 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
     if (onSendToAnnouncer) {
       onSendToAnnouncer(text);
     } else {
-      syncService.setAnnouncerOverlay({
-        text,
-        active: true,
-        type: 'INFO',
-        speed: 'NORMAL'
+      syncService.updateGameState({
+        announcer_overlay: {
+          text,
+          active: true,
+          type: 'INFO',
+          speed: 'NORMAL'
+        }
       });
     }
     setSentToast(true);
