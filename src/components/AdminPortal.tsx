@@ -38,6 +38,7 @@ import { AdminContextMenu } from './AdminContextMenu';
 import { AdminDashboard } from './AdminDashboard';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
+import { AiTranslationModal } from './AiTranslationModal';
 import { shortcutService } from '../services/shortcutService';
 import { AudienceAnswerDistributionChart } from './AudienceAnswerDistributionChart';
 import { FluentSearchBar } from './FluentSearchBar';
@@ -248,6 +249,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Round 3 Auto-elimination state
   const [autoEliminateEvery10s, setAutoEliminateEvery10s] = useState<boolean>(false);
+
+  // Multilingual AI Translation Modal state
+  const [isAiTranslateModalOpen, setIsAiTranslateModalOpen] = useState<boolean>(false);
 
   // QR Code data URL & Live Access State
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
@@ -5016,6 +5020,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     >
                       State: {gameState.status}
                     </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsAiTranslateModalOpen(true)}
+                      className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-sky-500/20 to-indigo-500/20 hover:from-sky-500/30 hover:to-indigo-500/30 text-sky-200 border border-sky-400/40 text-[10px] font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                      title="Dịch câu hỏi hiện tại sang tiếng Anh, Trung, Nhật, Hàn... bằng AI và phát sóng ngay"
+                    >
+                      <Globe className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Dịch AI Đa Ngôn Ngữ</span>
+                      {Object.keys(gameState.translations || {}).length > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-[2px] bg-sky-500 text-[#0D0420] text-[9px] font-mono font-black">
+                          {Object.keys(gameState.translations || {}).length} thứ tiếng
+                        </span>
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -7487,6 +7506,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <span>{toastMessage}</span>
         </div>
       )}
+
+      <AiTranslationModal
+        isOpen={isAiTranslateModalOpen}
+        onClose={() => setIsAiTranslateModalOpen(false)}
+        gameState={gameState}
+      />
       </div>
     </FluentProvider>
   );

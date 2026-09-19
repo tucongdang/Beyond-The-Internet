@@ -1,7 +1,7 @@
 import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
-import { translationService } from '../services/translationService';
+import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
@@ -71,7 +71,7 @@ import {
   Heart,
   MessageSquare,
   Megaphone,
-  RefreshCw, Globe, Languages
+  RefreshCw, Globe, Languages, ChevronDown, Check
 } from 'lucide-react';
 import { useScreenWakeLock } from '../hooks/useScreenWakeLock';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
@@ -182,6 +182,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [localTranslation, setLocalTranslation] = useState<QuestionTranslation | null>(null);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
 
   // Synchronize translation from broadcast or local storage cache
   useEffect(() => {
@@ -1991,24 +1992,94 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         {gameState.round_name} • {t("view_code", localLanguage)}: {gameState.question_id}
                       </span>
                       <div className="flex items-center gap-2">
-                        {localLanguage !== 'vi' && (
-                          localTranslation ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                              <Languages className="w-3 h-3" />
-                              {localLanguage.toUpperCase()}
-                            </span>
-                          ) : (
-                            <button
-                              onClick={handleRequestTranslate}
-                              disabled={isTranslating}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-bold bg-[#F7CAC9]/20 hover:bg-[#F7CAC9]/30 text-[#FCEEEC] border border-[#F7CAC9]/30 shadow-sm transition active:scale-95 cursor-pointer disabled:opacity-50"
-                              title="Dịch câu hỏi sang ngôn ngữ của bạn bằng Gemini AI"
-                            >
-                              <Sparkles className={`w-3 h-3 ${isTranslating ? 'animate-spin text-amber-300' : 'text-[#F7CAC9]'}`} />
-                              <span>{isTranslating ? '...' : `Dịch (${localLanguage.toUpperCase()})`}</span>
-                            </button>
-                          )
-                        )}
+                        {/* Always visible AI Translation & Language Switcher Dropdown */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-bold border transition shadow-sm cursor-pointer ${
+                              localLanguage !== 'vi'
+                                ? 'bg-sky-500/20 text-sky-200 border-sky-400/40 hover:bg-sky-500/30'
+                                : 'bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/25 text-[#FCEEEC] border-[#F7CAC9]/30'
+                            }`}
+                            title="Dịch câu hỏi sang ngôn ngữ khác bằng AI (Gemini Flash)"
+                          >
+                            <Globe className="w-3 h-3 text-sky-300" />
+                            <span>{localLanguage === 'vi' ? 'Dịch AI' : localLanguage.toUpperCase()}</span>
+                            {isTranslating ? (
+                              <Sparkles className="w-3 h-3 text-amber-300 animate-spin" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 opacity-60" />
+                            )}
+                          </button>
+
+                          {isLanguageMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1.5 w-48 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-60 overflow-y-auto">
+                              <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-[#F7CAC9] border-b border-white/10 uppercase tracking-wider flex items-center justify-between">
+                                <span>Chọn ngôn ngữ dịch</span>
+                                <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setLocalLanguage('vi');
+                                  localStorage.setItem('bti_lang', 'vi');
+                                  window.dispatchEvent(new Event('storage'));
+                                  setIsLanguageMenuOpen(false);
+                                }}
+                                className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
+                                  localLanguage === 'vi' ? 'text-sky-300 font-bold bg-white/5' : 'text-white/80'
+                                }`}
+                              >
+                                <span>🇻🇳 Tiếng Việt (Gốc)</span>
+                                {localLanguage === 'vi' && <Check className="w-3.5 h-3.5 text-sky-400" />}
+                              </button>
+
+                              {SUPPORTED_TRANSLATION_LANGUAGES.map(lang => (
+                                <button
+                                  key={lang.code}
+                                  type="button"
+                                  onClick={async () => {
+                                    setLocalLanguage(lang.code);
+                                    localStorage.setItem('bti_lang', lang.code);
+                                    window.dispatchEvent(new Event('storage'));
+                                    setIsLanguageMenuOpen(false);
+
+                                    // Check if translation is available; if not, translate with AI
+                                    const hasTrans = gameState.translations?.[lang.code] || translationService.getCachedTranslation(gameState.question_id, lang.code);
+                                    if (!hasTrans) {
+                                      setIsTranslating(true);
+                                      try {
+                                        const res = await translationService.translateQuestion(
+                                          {
+                                            id: gameState.question_id,
+                                            question_text: gameState.question_text,
+                                            options: gameState.options,
+                                            explanation: gameState.explanation
+                                          },
+                                          lang.code
+                                        );
+                                        setLocalTranslation(res);
+                                        soundFx.playTing();
+                                        vibrateTap();
+                                      } catch (err) {
+                                        console.warn('Auto translate error:', err);
+                                      } finally {
+                                        setIsTranslating(false);
+                                      }
+                                    }
+                                  }}
+                                  className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
+                                    localLanguage === lang.code ? 'text-sky-300 font-bold bg-white/5' : 'text-white/80'
+                                  }`}
+                                >
+                                  <span className="truncate">{lang.flag} {lang.nativeLabel}</span>
+                                  {localLanguage === lang.code && <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         {isLongQuestion && (
                           <button
                             onClick={() => setIsQuestionZoomed(true)}
