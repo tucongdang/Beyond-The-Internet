@@ -212,7 +212,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
             </span>
             <div className="text-left">
               <div className="font-black tracking-wide flex items-center gap-1.5">
-                <span>CỔ VŨ SÂN KHẤU</span>
+                <span>{localLanguage === 'en' ? 'CHEER ON STAGE' : 'CỔ VŨ SÂN KHẤU'}</span>
                 {combo > 1 && (
                   <span className="px-1.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-white/40 text-[10px] font-mono animate-pulse">
                     x{combo} COMBO!

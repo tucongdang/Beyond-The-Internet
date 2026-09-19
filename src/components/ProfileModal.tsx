@@ -296,7 +296,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <label className="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
                     <span>{t("prof_uid", localLanguage)}</span>
                     <span className="fluent-badge fluent-badge-accent">
-                      Cố Định
+                      {localLanguage === 'en' ? 'Fixed' : 'Cố Định'}
                     </span>
                   </label>
                   <button
@@ -308,7 +308,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     }}
                     className="fluent-btn px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-[4px] text-[11px] font-bold font-mono transition active:scale-95 cursor-pointer shadow"
                   >
-                    Sao Chép Mã
+                    {localLanguage === 'en' ? 'Copy Code' : 'Sao Chép Mã'}
                   </button>
                 </div>
                 <div className="text-sm font-mono font-bold text-white fluent-box-nested border border-white/10 px-3 py-2 rounded-[4px] tracking-wider select-all">
@@ -426,7 +426,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                     <span>{t("prof_dark_mode", localLanguage)}</span>
                     <span className="fluent-badge fluent-badge-warning">
-                      Tối Ưu
+                      {localLanguage === 'en' ? 'Optimal' : 'Tối Ưu'}
                     </span>
                   </h4>
                   <p className="text-[10px] text-[#B6A6D8]">
@@ -461,11 +461,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <span>{t("profile_haptic_title", localLanguage)}</span>
                     {hapticsSupported ? (
                       <span className="fluent-badge fluent-badge-success">
-                        Sẵn Sàng
+                        {localLanguage === 'en' ? 'Ready' : 'Sẵn Sàng'}
                       </span>
                     ) : (
                       <span className="fluent-badge fluent-badge-warning">
-                        Không hỗ trợ
+                        {localLanguage === 'en' ? 'Not Supported' : 'Không hỗ trợ'}
                       </span>
                     )}
                   </h4>

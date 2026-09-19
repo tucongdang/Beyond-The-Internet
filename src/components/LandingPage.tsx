@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import { Shield, Users, Tv, Sparkles, ArrowRight, Zap, Radio, Activity } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap } from '../utils/hapticUtils';
@@ -18,6 +19,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onEnterProjector,
   gameState
 }) => {
+  const { localLanguage } = useLanguage();
+
   return (
     <div className="min-h-[100dvh] w-full bg-transparent relative overflow-x-hidden overflow-y-auto flex flex-col items-center justify-center text-[#F5EFF9] p-4 sm:p-8 pb-20 select-none">
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center py-8 sm:py-14">
@@ -37,7 +40,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </h1>
         
         <p className="text-sm sm:text-base md:text-lg text-[#B6A6D8] max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-          Đấu trường tương tác trực tiếp học thuật thời gian thực. Đồng bộ siêu tốc giữa Khán Giả, Ban Tổ Chức và Màn Chiếu Sân Khấu LED.
+          {localLanguage === 'en'
+            ? 'Real-time interactive academic arena. Ultra-fast synchronization between Audience, Organizers, and Stage LED Screen.'
+            : 'Đấu trường tương tác trực tiếp học thuật thời gian thực. Đồng bộ siêu tốc giữa Khán Giả, Ban Tổ Chức và Màn Chiếu Sân Khấu LED.'}
         </p>
 
         {/* 3 Action Portal Cards */}
@@ -58,13 +63,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Users className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
-              Khán Giả
+              {localLanguage === 'en' ? 'Audience' : 'Khán Giả'}
             </h2>
             <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
-              Tham gia bình chọn trực tiếp, trả lời câu hỏi và tích lũy điểm số thi đấu.
+              {localLanguage === 'en'
+                ? 'Join live voting, answer contest questions, and accumulate competitive points.'
+                : 'Tham gia bình chọn trực tiếp, trả lời câu hỏi và tích lũy điểm số thi đấu.'}
             </p>
             <div className="mt-auto inline-flex items-center gap-1.5 text-[#F7CAC9] font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
-              <span>Vào Sàn Đấu</span>
+              <span>{localLanguage === 'en' ? 'Enter Arena' : 'Vào Sàn Đấu'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -84,13 +91,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Tv className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-sky-300 transition-colors">
-              Màn Chiếu LED
+              {localLanguage === 'en' ? 'Stage LED' : 'Màn Chiếu LED'}
             </h2>
             <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
-              Giao diện hiển thị trực quan toàn màn hình dành cho màn LED sân khấu chính.
+              {localLanguage === 'en'
+                ? 'Fullscreen visual display optimized for the main stage LED screens.'
+                : 'Giao diện hiển thị trực quan toàn màn hình dành cho màn LED sân khấu chính.'}
             </p>
             <div className="mt-auto inline-flex items-center gap-1.5 text-sky-300 font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
-              <span>Mở Màn Chiếu</span>
+              <span>{localLanguage === 'en' ? 'Open Projector' : 'Mở Màn Chiếu'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -110,13 +119,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Shield className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-purple-200 transition-colors">
-              Ban Tổ Chức
+              {localLanguage === 'en' ? 'Organizers' : 'Ban Tổ Chức'}
             </h2>
             <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
-              Điều phối câu hỏi, kiểm soát timer, khóa bình chọn và trích xuất dữ liệu.
+              {localLanguage === 'en'
+                ? 'Coordinate questions, control timers, lock responses, and export data.'
+                : 'Điều phối câu hỏi, kiểm soát timer, khóa bình chọn và trích xuất dữ liệu.'}
             </p>
             <div className="mt-auto inline-flex items-center gap-1.5 text-[#B6A6D8] font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
-              <span>Bảng Điều Khiển</span>
+              <span>{localLanguage === 'en' ? 'Control Panel' : 'Bảng Điều Khiển'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -126,7 +137,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Live Arena Status Pill */}
         {gameState && (
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70">
-            <span className="text-[11px]">Trạng thái sàn đấu:</span>
+            <span className="text-[11px]">{localLanguage === 'en' ? 'Arena status:' : 'Trạng thái sàn đấu:'}</span>
             <span className={`font-bold uppercase ${
               gameState.status === 'ACTIVE'
                 ? 'text-emerald-400'
@@ -136,7 +147,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 ? 'text-purple-300'
                 : 'text-white/50'
             }`}>
-              {gameState.status === 'ACTIVE' ? 'Đang Diễn Ra' : gameState.status === 'LOCKED' ? 'Đã Khóa' : gameState.status === 'REVEAL' ? 'Công Bố Đáp Án' : 'Chờ Khởi Động'}
+              {gameState.status === 'ACTIVE'
+                ? (localLanguage === 'en' ? 'In Progress' : 'Đang Diễn Ra')
+                : gameState.status === 'LOCKED'
+                ? (localLanguage === 'en' ? 'Locked' : 'Đã Khóa')
+                : gameState.status === 'REVEAL'
+                ? (localLanguage === 'en' ? 'Result Revealed' : 'Công Bố Đáp Án')
+                : (localLanguage === 'en' ? 'Waiting to Start' : 'Chờ Khởi Động')}
             </span>
           </div>
         )}

@@ -404,7 +404,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <h4 className="font-extrabold text-sm text-white truncate max-w-[150px]">
-                              {user?.name || 'Khán Giả'}
+                              {user?.name || (localLanguage === 'en' ? 'Audience' : 'Khán Giả')}
                             </h4>
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title={t("sidebar_connecting", localLanguage)} />
                           </div>
@@ -416,7 +416,9 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
                       {userPerformance && (
                         <div className="px-3 py-1.5 rounded-[4px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex flex-col items-end">
-                          <span className="text-[9px] font-mono uppercase font-bold text-amber-400/90 tracking-wider">HẠNG</span>
+                          <span className="text-[9px] font-mono uppercase font-bold text-amber-400/90 tracking-wider">
+                            {localLanguage === 'en' ? 'RANK' : 'HẠNG'}
+                          </span>
                           <span className="text-base font-black font-mono leading-none">#{userPerformance.rank}</span>
                         </div>
                       )}
@@ -521,20 +523,22 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
               {activeTab === 'HOTKEYS' && (
                 <div className="space-y-3.5 animate-fadeIn">
                   <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                    <span className="text-xs font-bold text-white/80">TRẢ LỜI CÂU HỎI TRỰC TIẾP</span>
+                    <span className="text-xs font-bold text-white/80">
+                      {localLanguage === 'en' ? 'DIRECT ANSWER' : 'TRẢ LỜI CÂU HỎI TRỰC TIẾP'}
+                    </span>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[4px] font-bold ${
                       isQuestionActive ? 'bg-white/10 text-emerald-300 border border-emerald-500/40 animate-pulse' : 'bg-white/10 text-white/50'
                     }`}>
-                      {isQuestionActive ? 'NHẬN PHÍM' : 'SẴN SÀNG'}
+                      {isQuestionActive ? (localLanguage === 'en' ? 'KEY PRESS' : 'NHẬN PHÍM') : (localLanguage === 'en' ? 'READY' : 'SẴN SÀNG')}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                     {[
-                      { num: '1', letter: 'A', label: '{"Đáp án A"}' },
-                      { num: '2', letter: 'B', label: 'Đáp án B' },
-                      { num: '3', letter: 'C', label: 'Đáp án C' },
-                      { num: '4', letter: 'D', label: 'Đáp án D' }
+                      { num: '1', letter: 'A', label: localLanguage === 'en' ? 'Option A' : 'Đáp án A' },
+                      { num: '2', letter: 'B', label: localLanguage === 'en' ? 'Option B' : 'Đáp án B' },
+                      { num: '3', letter: 'C', label: localLanguage === 'en' ? 'Option C' : 'Đáp án C' },
+                      { num: '4', letter: 'D', label: localLanguage === 'en' ? 'Option D' : 'Đáp án D' }
                     ].map((keyItem) => {
                       const isPressed = lastKeyPressed === keyItem.num || lastKeyPressed === keyItem.letter;
                       const isOptSelected = selectedChoice.toUpperCase() === keyItem.letter;
@@ -642,7 +646,9 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       {soundEnabled ? <Volume2 className="w-4 h-4 text-purple-400" /> : <VolumeX className="w-4 h-4 text-white/40" />}
                       <span>{t("sidebar_sound_fx", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{soundEnabled ? 'BẬT (M)' : 'TẮT (M)'}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                      {soundEnabled ? (localLanguage === 'en' ? 'ON (M)' : 'BẬT (M)') : (localLanguage === 'en' ? 'OFF (M)' : 'TẮT (M)')}
+                    </span>
                   </button>
 
                   {/* Wake Lock Screen */}
@@ -664,7 +670,9 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         {isWakeLockLocked ? <Sun className="w-4 h-4 text-amber-400 animate-pulse" /> : <SunMedium className="w-4 h-4 text-white/40" />}
                         <span>{t("sidebar_keep_awake", localLanguage)}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{isWakeLockLocked ? 'Đang Bật' : 'Tắt'}</span>
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                        {isWakeLockLocked ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Off' : 'Tắt')}
+                      </span>
                     </button>
                   )}
 
@@ -707,9 +715,11 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   >
                     <div className="flex items-center gap-2.5">
                       <Zap className="w-4 h-4 fill-current" />
-                      <span>{localLanguage === 'en' ? 'Battery Saver' : '{t("sidebar_battery_saver_set", localLanguage)}'}</span>
+                      <span>{t("sidebar_battery_saver_set", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{isBatterySaver ? 'Đang Bật' : 'Chi Tiết'}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                      {isBatterySaver ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Details' : 'Chi Tiết')}
+                    </span>
                   </button>
 
                   {/* Share QR */}

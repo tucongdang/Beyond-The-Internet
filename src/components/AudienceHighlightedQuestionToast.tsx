@@ -145,7 +145,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                   </span>
-                  Đang chiếu trên sân khấu
+                  {localLanguage === 'en' ? 'Broadcasting on stage' : 'Đang chiếu trên sân khấu'}
                 </span>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border truncate ${catInfo.badgeBg}`}>
                   {catInfo.label}
@@ -195,11 +195,11 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
 
                 <div className="mt-2 flex items-center justify-between text-[11px]">
                   <span className="text-sky-300 font-bold flex items-center gap-1 group-hover:underline">
-                    Xem & tham gia Q&A
+                    {localLanguage === 'en' ? 'View & join Q&A' : 'Xem & tham gia Q&A'}
                     <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                   </span>
                   <span className="text-[10px] text-white/40 font-mono">
-                    Nhấn để mở
+                    {localLanguage === 'en' ? 'Tap to open' : 'Nhấn để mở'}
                   </span>
                 </div>
               </div>

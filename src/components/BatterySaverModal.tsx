@@ -20,6 +20,7 @@ import {
   getAutoBatterySaverEnabled,
   setAutoBatterySaverEnabled
 } from '../utils/batterySaverUtils';
+import { useLanguage } from '../hooks/useLanguage';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
 
 interface BatteryManager extends EventTarget {
@@ -51,6 +52,7 @@ interface BatterySaverModalProps {
 }
 
 export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, onClose }) => {
+  const { localLanguage } = useLanguage();
   const { isBatterySaver, toggleBatterySaver } = useBatterySaver();
   const [autoEnable, setAutoEnable] = useState<boolean>(getAutoBatterySaverEnabled());
 
@@ -129,6 +131,10 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
     if (!Number.isFinite(seconds) || seconds <= 0) return null;
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
+    if (localLanguage === 'en') {
+      if (hrs > 0) return `${hrs}h ${mins}m`;
+      return `${mins}m`;
+    }
     if (hrs > 0) return `${hrs} giờ ${mins} phút`;
     return `${mins} phút`;
   };
@@ -164,15 +170,19 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">Chế Độ Tiết Kiệm Pin</h3>
+                <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                  {localLanguage === 'en' ? 'Battery Saver Mode' : 'Chế Độ Tiết Kiệm Pin'}
+                </h3>
                 {isBatterySaver && (
                   <span className="px-2 py-0.5 rounded-[4px] bg-emerald-950/80 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wide">
-                    Đang Bật
+                    {localLanguage === 'en' ? 'ACTIVE' : 'Đang Bật'}
                   </span>
                 )}
               </div>
               <p className="text-[11px] sm:text-xs text-emerald-200/70">
-                Tối ưu công suất thiết bị & kéo dài thời gian trải nghiệm
+                {localLanguage === 'en'
+                  ? 'Optimize device power & extend battery runtime'
+                  : 'Tối ưu công suất thiết bị & kéo dài thời gian trải nghiệm'}
               </p>
             </div>
           </div>
@@ -206,16 +216,20 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                   )}
                 </div>
                 <div>
-                  <div className="text-[11px] font-medium text-white/60">Trạng thái Pin thiết bị</div>
+                  <div className="text-[11px] font-medium text-white/60">
+                    {localLanguage === 'en' ? 'Device Battery Status' : 'Trạng thái Pin thiết bị'}
+                  </div>
                   <div className="text-base sm:text-lg font-bold font-mono text-white flex items-center gap-2">
                     <span>{percent}%</span>
                     <span className="text-xs font-sans font-normal text-white/50">
-                      ({isCharging ? '⚡ Đang sạc nguồn' : 'Dùng nguồn pin'})
+                      ({isCharging ? (localLanguage === 'en' ? '⚡ Charging' : '⚡ Đang sạc nguồn') : (localLanguage === 'en' ? 'On battery' : 'Dùng nguồn pin')})
                     </span>
                   </div>
                   {timeStr && (
                     <div className="text-[10px] sm:text-[11px] text-emerald-300/80 font-mono mt-0.5">
-                      {isCharging ? 'Dự kiến đầy sau:' : 'Ước tính sử dụng:'} ~{timeStr}
+                      {isCharging
+                        ? (localLanguage === 'en' ? 'Full in:' : 'Dự kiến đầy sau:')
+                        : (localLanguage === 'en' ? 'Estimated remaining:' : 'Ước tính sử dụng:')} ~{timeStr}
                     </div>
                   )}
                 </div>
@@ -259,12 +273,20 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               </div>
               <div>
                 <div className="font-bold text-sm sm:text-base text-white flex items-center gap-2">
-                  <span>{isBatterySaver ? 'Tiết Kiệm Pin: ĐANG BẬT' : 'Bật Chế Độ Tiết Kiệm Pin'}</span>
+                  <span>
+                    {isBatterySaver
+                      ? (localLanguage === 'en' ? 'Battery Saver: ACTIVE' : 'Tiết Kiệm Pin: ĐANG BẬT')
+                      : (localLanguage === 'en' ? 'Enable Battery Saver' : 'Bật Chế Độ Tiết Kiệm Pin')}
+                  </span>
                 </div>
                 <p className="text-[11px] sm:text-xs text-white/60 mt-0.5">
                   {isBatterySaver
-                    ? 'Đang bật nền đen OLED, tắt chuyển động & giảm tải GPU.'
-                    : 'Nhấn để bật chế độ tiết kiệm năng lượng tối đa.'}
+                    ? (localLanguage === 'en'
+                        ? 'OLED pitch black enabled, motion disabled & GPU load reduced.'
+                        : 'Đang bật nền đen OLED, tắt chuyển động & giảm tải GPU.')
+                    : (localLanguage === 'en'
+                        ? 'Tap to enable maximum power-saving performance.'
+                        : 'Nhấn để bật chế độ tiết kiệm năng lượng tối đa.')}
                 </p>
               </div>
             </div>
@@ -281,16 +303,20 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           {/* Detailed Features List */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400/90 font-mono px-1">
-              Tính năng giảm tiêu thụ điện năng:
+              {localLanguage === 'en' ? 'Power-saving features:' : 'Tính năng giảm tiêu thụ điện năng:'}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Eye className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-white">Nền đen OLED (Pitch Black)</div>
+                  <div className="font-bold text-white">
+                    {localLanguage === 'en' ? 'OLED Pitch Black' : 'Nền đen OLED (Pitch Black)'}
+                  </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
-                    Tắt hoàn toàn bóng bán dẫn điểm ảnh trên màn hình AMOLED/OLED.
+                    {localLanguage === 'en'
+                      ? 'Completely turn off pixels on AMOLED/OLED screens.'
+                      : 'Tắt hoàn toàn bóng bán dẫn điểm ảnh trên màn hình AMOLED/OLED.'}
                   </div>
                 </div>
               </div>
@@ -298,9 +324,13 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-white">Tắt Blur & Visual Glow</div>
+                  <div className="font-bold text-white">
+                    {localLanguage === 'en' ? 'Disable Blur & Glow' : 'Tắt Blur & Visual Glow'}
+                  </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
-                    Bỏ hiệu ứng mờ kính backdrop-blur và chuyển động GPU.
+                    {localLanguage === 'en'
+                      ? 'Disable backdrop-blur glass filters and heavy GPU animations.'
+                      : 'Bỏ hiệu ứng mờ kính backdrop-blur và chuyển động GPU.'}
                   </div>
                 </div>
               </div>
@@ -308,9 +338,13 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Vibrate className="w-4 h-4 text-sky-300 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-white">Tối ưu Rung Haptic</div>
+                  <div className="font-bold text-white">
+                    {localLanguage === 'en' ? 'Haptic Feedback Optimization' : 'Tối ưu Rung Haptic'}
+                  </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
-                    Giảm thời lượng nhịp rung phím bấm để giảm tải motor rung.
+                    {localLanguage === 'en'
+                      ? 'Shorten tap vibration pulses to reduce vibration motor load.'
+                      : 'Giảm thời lượng nhịp rung phím bấm để giảm tải motor rung.'}
                   </div>
                 </div>
               </div>
@@ -318,9 +352,13 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Smartphone className="w-4 h-4 text-rose-300 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-white">Giảm tải CPU/GPU</div>
+                  <div className="font-bold text-white">
+                    {localLanguage === 'en' ? 'Reduce CPU/GPU Load' : 'Giảm tải CPU/GPU'}
+                  </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
-                    Hạn chế vẽ lại khung hình không cần thiết khi chờ câu hỏi.
+                    {localLanguage === 'en'
+                      ? 'Limit unnecessary re-renders while waiting for rounds.'
+                      : 'Hạn chế vẽ lại khung hình không cần thiết khi chờ câu hỏi.'}
                   </div>
                 </div>
               </div>
@@ -332,9 +370,13 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             <div className="flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
-                <div className="text-xs font-bold text-white">Tự động bật khi Pin dưới 20%</div>
+                <div className="text-xs font-bold text-white">
+                  {localLanguage === 'en' ? 'Auto-enable when Battery < 20%' : 'Tự động bật khi Pin dưới 20%'}
+                </div>
                 <div className="text-[11px] text-white/60">
-                  Tự động kích hoạt khi thiết bị chạm ngưỡng pin yếu
+                  {localLanguage === 'en'
+                    ? 'Automatically activate when device reaches low battery'
+                    : 'Tự động kích hoạt khi thiết bị chạm ngưỡng pin yếu'}
                 </div>
               </div>
             </div>
@@ -353,12 +395,12 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           <div className="p-3 rounded-[4px] fluent-box-nested border border-white/10 text-xs space-y-1.5">
             <div className="font-bold text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Mẹo dùng pin lâu nhất tại sự kiện:</span>
+              <span>{localLanguage === 'en' ? 'Event Battery Tips:' : 'Mẹo dùng pin lâu nhất tại sự kiện:'}</span>
             </div>
             <ul className="text-[11px] text-white/70 space-y-1 pl-5 list-disc">
-              <li>Giảm độ sáng màn hình điện thoại xuống mức 40-50%.</li>
-              <li>Khóa màn hình khi chưa đến giờ làm bài thi chính thức.</li>
-              <li>Sử dụng chế độ Tiết kiệm Pin này khi tham gia suốt buổi sự kiện dài.</li>
+              <li>{localLanguage === 'en' ? 'Lower screen brightness to 40-50%.' : 'Giảm độ sáng màn hình điện thoại xuống mức 40-50%.'}</li>
+              <li>{localLanguage === 'en' ? 'Lock screen when the official session is paused.' : 'Khóa màn hình khi chưa đến giờ làm bài thi chính thức.'}</li>
+              <li>{localLanguage === 'en' ? 'Use Battery Saver mode when attending long shows.' : 'Sử dụng chế độ Tiết kiệm Pin này khi tham gia suốt buổi sự kiện dài.'}</li>
             </ul>
           </div>
         </div>
@@ -373,7 +415,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             }}
             className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-[4px] transition shadow-md cursor-pointer"
           >
-            Đã Xong
+            {localLanguage === 'en' ? 'Done' : 'Đã Xong'}
           </button>
         </div>
       </div>

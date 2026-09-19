@@ -3,6 +3,7 @@ import { History, Clock, QrCode, Copy, Check, Trash2, RotateCcw, ExternalLink, C
 import { recentQrUtils, RecentQrRecord } from '../utils/recentQrUtils';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateCopy, vibrateSelection } from '../utils/hapticUtils';
+import { useLanguage } from '../hooks/useLanguage';
 
 export interface RecentQrsSectionProps {
   onSelectQr?: (qr: RecentQrRecord) => void;
@@ -17,6 +18,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
   className = '',
   compact = false
 }) => {
+  const { localLanguage } = useLanguage();
   const [recentList, setRecentList] = useState<RecentQrRecord[]>(() => recentQrUtils.getRecentQrs());
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -50,7 +52,10 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
 
   const handleClearAll = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Bạn có chắc muốn xóa toàn bộ danh sách mã QR gần đây?')) {
+    const confirmMsg = localLanguage === 'en'
+      ? 'Are you sure you want to clear all recent QR codes?'
+      : 'Bạn có chắc muốn xóa toàn bộ danh sách mã QR gần đây?';
+    if (window.confirm(confirmMsg)) {
       vibrateTap();
       soundFx.playClick();
       recentQrUtils.clearRecentQrs();
@@ -79,7 +84,9 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
           className="flex items-center gap-1.5 text-xs font-bold text-[#F7CAC9] hover:text-white transition cursor-pointer select-none"
         >
           <History className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
-          <span className="uppercase tracking-wider">Mã QR Gần Đây (Recent QRs)</span>
+          <span className="uppercase tracking-wider">
+            {localLanguage === 'en' ? 'Recent QRs' : 'Mã QR Gần Đây (Recent QRs)'}
+          </span>
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
             {recentList.length}
           </span>
@@ -95,10 +102,12 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
             type="button"
             onClick={handleClearAll}
             className="text-[10px] text-rose-400 hover:text-rose-300 transition flex items-center gap-1 cursor-pointer px-1.5 py-0.5 rounded hover:bg-rose-500/10"
-            title="Xóa toàn bộ lịch sử mã QR đã lưu trên thiết bị"
+            title={localLanguage === 'en' ? 'Clear all QR code history on this device' : 'Xóa toàn bộ lịch sử mã QR đã lưu trên thiết bị'}
           >
             <Trash2 className="w-3 h-3" />
-            <span className="hidden sm:inline">Xóa Lịch Sử</span>
+            <span className="hidden sm:inline">
+              {localLanguage === 'en' ? 'Clear History' : 'Xóa Lịch Sử'}
+            </span>
           </button>
         )}
       </div>
@@ -109,15 +118,23 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
           {recentList.length === 0 ? (
             <div className="py-3 px-2 text-center text-white/40 text-[11px] space-y-1">
               <QrCode className="w-5 h-5 mx-auto text-white/20" />
-              <p>Chưa có mã QR nào được lưu trong phiên này.</p>
+              <p>
+                {localLanguage === 'en'
+                  ? 'No QR codes saved in this session.'
+                  : 'Chưa có mã QR nào được lưu trong phiên này.'}
+              </p>
               <p className="text-[10px] text-white/30">
-                Các mã QR xuất hiện trong buổi phát sóng sẽ tự động lưu vào đây để bạn quét lại nếu bỏ lỡ.
+                {localLanguage === 'en'
+                  ? 'QR codes broadcast during the show are automatically saved here for quick re-scanning if missed.'
+                  : 'Các mã QR xuất hiện trong buổi phát sóng sẽ tự động lưu vào đây để bạn quét lại nếu bỏ lỡ.'}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-[10px] text-white/50 leading-tight">
-                Bấm vào mã bất kỳ bên dưới để hiển thị phóng to và quét lại:
+                {localLanguage === 'en'
+                  ? 'Click any code below to enlarge and re-scan:'
+                  : 'Bấm vào mã bất kỳ bên dưới để hiển thị phóng to và quét lại:'}
               </p>
 
               <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
@@ -150,11 +167,11 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                       <div className="flex-1 min-w-0 text-left">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-bold truncate text-sky-200">
-                            {item.caption || item.roundName || 'Đấu Trường Live'}
+                            {item.caption || item.roundName || (localLanguage === 'en' ? 'Live Arena' : 'Đấu Trường Live')}
                           </span>
                           {isSelected && (
                             <span className="px-1 py-0.2 rounded bg-sky-400/20 text-sky-300 text-[9px] font-bold border border-sky-400/30">
-                              Đang Xem
+                              {localLanguage === 'en' ? 'Viewing' : 'Đang Xem'}
                             </span>
                           )}
                         </div>
@@ -175,10 +192,12 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                           type="button"
                           onClick={() => handleSelect(item)}
                           className="px-2 py-1 rounded-[4px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
-                          title="Phóng to để quét lại mã này"
+                          title={localLanguage === 'en' ? 'Enlarge to re-scan this code' : 'Phóng to để quét lại mã này'}
                         >
                           <QrCode className="w-3 h-3" />
-                          <span className="hidden sm:inline">Quét lại</span>
+                          <span className="hidden sm:inline">
+                            {localLanguage === 'en' ? 'Re-scan' : 'Quét lại'}
+                          </span>
                         </button>
 
                         <button
@@ -189,7 +208,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                               ? 'bg-emerald-500/30 text-emerald-300 border-emerald-500/50'
                               : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/10'
                           }`}
-                          title="Sao chép link của mã QR này"
+                          title={localLanguage === 'en' ? 'Copy URL of this QR' : 'Sao chép link của mã QR này'}
                         >
                           {copiedId === item.id ? (
                             <Check className="w-3 h-3 text-emerald-300" />
@@ -202,7 +221,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                           type="button"
                           onClick={(e) => handleDelete(e, item.id)}
                           className="p-1 rounded-[4px] bg-white/5 hover:bg-rose-500/20 text-white/40 hover:text-rose-300 border border-transparent hover:border-rose-500/30 transition cursor-pointer active:scale-95"
-                          title="Xóa mã này khỏi danh sách gần đây"
+                          title={localLanguage === 'en' ? 'Remove from recent list' : 'Xóa mã này khỏi danh sách gần đây'}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>

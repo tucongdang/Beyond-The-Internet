@@ -55,7 +55,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           borderColor: isHighContrast ? 'border-rose-500/80 shadow-none' : 'border-rose-500/40 shadow-[0_-8px_32px_rgba(244,63,94,0.25)]',
           badgeBg: 'bg-rose-600/90 text-white shadow-md backdrop-blur-md',
           badgeBorder: 'border-rose-400/60',
-          badgeText: 'CHÚ Ý KHẨN CẤP',
+          badgeText: localLanguage === 'en' ? 'EMERGENCY NOTICE' : 'CHÚ Ý KHẨN CẤP',
           textColor: 'text-rose-100',
           highlightColor: 'text-amber-300 font-bold',
           icon: AlertTriangle,
@@ -69,7 +69,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           borderColor: isHighContrast ? 'border-amber-500/80 shadow-none' : 'border-amber-500/40 shadow-[0_-8px_32px_rgba(245,158,11,0.25)]',
           badgeBg: 'bg-amber-600/90 text-white shadow-md backdrop-blur-md',
           badgeBorder: 'border-amber-400/60',
-          badgeText: 'LƯU Ý QUAN TRỌNG',
+          badgeText: localLanguage === 'en' ? 'IMPORTANT NOTICE' : 'LƯU Ý QUAN TRỌNG',
           textColor: 'text-amber-100',
           highlightColor: 'text-yellow-200 font-bold',
           icon: Bell,
@@ -83,7 +83,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           borderColor: isHighContrast ? 'border-purple-500/80 shadow-none' : 'border-purple-500/40 shadow-[0_-8px_32px_rgba(168,85,247,0.25)]',
           badgeBg: 'bg-gradient-to-r from-purple-600/90 to-pink-600/90 text-white shadow-md backdrop-blur-md',
           badgeBorder: 'border-purple-400/60',
-          badgeText: 'VINH DANH & SỰ KIỆN',
+          badgeText: localLanguage === 'en' ? 'EVENT & HONORS' : 'VINH DANH & SỰ KIỆN',
           textColor: 'text-purple-100',
           highlightColor: 'text-pink-300 font-bold',
           icon: Sparkles,
@@ -98,7 +98,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           borderColor: isHighContrast ? 'border-cyan-500/80 shadow-none' : 'border-cyan-500/40 shadow-[0_-8px_32px_rgba(6,182,212,0.25)]',
           badgeBg: 'bg-gradient-to-r from-blue-600/90 to-cyan-600/90 text-white shadow-md backdrop-blur-md',
           badgeBorder: 'border-cyan-400/60',
-          badgeText: 'THÔNG BÁO TỪ BTC',
+          badgeText: localLanguage === 'en' ? 'ORGANIZER ANNOUNCEMENT' : 'THÔNG BÁO TỪ BTC',
           textColor: 'text-cyan-50',
           highlightColor: 'text-cyan-300 font-bold',
           icon: Megaphone,
@@ -107,7 +107,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           accentGradient: 'from-cyan-400 via-indigo-300 to-purple-400'
         };
     }
-  }, [type, isHighContrast]);
+  }, [type, isHighContrast, localLanguage]);
 
   // Create repeated text segments to guarantee a continuous smooth marquee flow
   const repeatedTextItems = useMemo(() => {

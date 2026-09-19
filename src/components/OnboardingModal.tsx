@@ -111,15 +111,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      setName(user.displayName || 'Khán Giả');
+      setName(user.displayName || (localLanguage === 'en' ? 'Audience' : 'Khán Giả'));
       setMssv(_mssv);
       setMode('register');
       vibrateTap();
-      setErrorMsg('Vui lòng bổ sung thông tin để tạo hồ sơ.');
+      setErrorMsg(t("onboard_err_profile_incomplete", localLanguage));
     } catch (err: any) {
       console.error(err);
       vibrateError();
-      setErrorMsg('Đăng nhập thất bại. ' + err.message);
+      setErrorMsg(t("onboard_err_login_fail", localLanguage) + err.message);
     } finally {
       setLoading(false);
     }
@@ -127,11 +127,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   const validateRegister = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = '{t("reg_req_name", localLanguage)}';
-    if (!mssv.trim()) newErrors.mssv = 'Vui lòng nhập MSSV';
-    if (!gender) newErrors.gender = 'Vui lòng chọn giới tính';
-    if (!birthYear || birthYear.length !== 4) newErrors.birthYear = 'Năm sinh không hợp lệ';
-    if (!anonymizedUid) newErrors.anonymizedUid = 'Vui lòng sinh mã ẩn danh';
+    if (!name.trim()) newErrors.name = t("onboard_err_name", localLanguage);
+    if (!mssv.trim()) newErrors.mssv = t("onboard_err_mssv", localLanguage);
+    if (!gender) newErrors.gender = t("onboard_err_gender", localLanguage);
+    if (!birthYear || birthYear.length !== 4) newErrors.birthYear = t("onboard_err_birth", localLanguage);
+    if (!anonymizedUid) newErrors.anonymizedUid = t("onboard_err_uid", localLanguage);
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -161,7 +161,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     e.preventDefault();
     soundFx.playClick();
     if (!verifyId.trim()) {
-      setErrors({ verifyId: 'Vui lòng nhập mã định danh hoặc MSSV' });
+      setErrors({ verifyId: t("onboard_err_verify_empty", localLanguage) });
       soundFx.playError();
       vibrateError();
       return;
@@ -177,7 +177,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       vibrateSuccess();
       onComplete(pendingProfile);
     } else {
-      setErrors({ verifyId: 'Mã không khớp với hồ sơ của bạn' });
+      setErrors({ verifyId: t("onboard_err_verify_mismatch", localLanguage) });
       soundFx.playError();
       vibrateError();
     }
@@ -192,7 +192,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         <div className="relative z-10 space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-black text-white tracking-tight uppercase">
-              Tham gia <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F7CAC9] to-[#E2DBEC]">Beyond The Internet</span>
+              {t("onboard_join", localLanguage)} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F7CAC9] to-[#E2DBEC]">Beyond The Internet</span>
             </h2>
           </div>
 
@@ -206,7 +206,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {mode === 'google' && (
             <div className="space-y-4 py-4">
               <p className="text-sm text-white/60 mb-6 leading-relaxed text-center">
-                Đăng nhập bằng tài khoản Google của bạn. Nếu bạn đã có hồ sơ, bạn sẽ cần xác thực thêm để tiếp tục.
+                {t("onboard_google_desc", localLanguage)}
               </p>
               
               {errorMsg && (
@@ -226,7 +226,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 ) : (
                   <>
                     <LogIn className="w-5 h-5" />
-                    Đăng nhập với Google
+                    {t("onboard_login_google", localLanguage)}
                   </>
                 )}
               </button>
@@ -237,11 +237,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-white/70 mb-1.5">
-                  Họ và Tên <span className="text-rose-400">*</span>
+                  {t("onboard_name", localLanguage)} <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: Nguyễn Văn A"
+                  placeholder={t("onboard_name_ph", localLanguage)}
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
@@ -254,11 +254,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               
               <div>
                 <label className="block text-xs font-medium text-white/70 mb-1.5">
-                  Mã số Sinh viên (MSSV) <span className="text-rose-400">*</span>
+                  {t("onboard_mssv", localLanguage)} <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: 3170424009"
+                  placeholder={t("onboard_mssv_ph", localLanguage)}
                   value={mssv}
                   onChange={(e) => {
                     setMssv(e.target.value);
@@ -272,7 +272,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-white/70 mb-1.5">
-                    Giới tính <span className="text-rose-400">*</span>
+                    {t("onboard_gender", localLanguage)} <span className="text-rose-400">*</span>
                   </label>
                   <select
                     value={gender}
@@ -282,20 +282,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     }}
                     className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm text-white outline-none transition appearance-none"
                   >
-                    <option value="" disabled>Chọn giới tính</option>
-                    <option value="1">Nam (1)</option>
-                    <option value="2">Nữ (2)</option>
-                    <option value="0">Khác (0)</option>
+                    <option value="" disabled>{t("onboard_gender_ph", localLanguage)}</option>
+                    <option value="1">{t("onboard_gender_m", localLanguage)}</option>
+                    <option value="2">{t("onboard_gender_f", localLanguage)}</option>
+                    <option value="0">{t("onboard_gender_o", localLanguage)}</option>
                   </select>
                   {errors.gender && <p className="text-xs text-rose-400 mt-1">{errors.gender}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-white/70 mb-1.5">
-                    Năm sinh <span className="text-rose-400">*</span>
+                    {t("onboard_birth", localLanguage)} <span className="text-rose-400">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: 2004"
+                    placeholder={t("onboard_birth_ph", localLanguage)}
                     maxLength={4}
                     value={birthYear}
                     onChange={(e) => {
@@ -311,13 +311,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1.5 mt-2">
                   <label className="text-xs font-medium text-white/70">
-                    Mã định danh cá nhân (12 số)
+                    {t("onboard_uid", localLanguage)}
                   </label>
                   <button
                     type="button"
                     onClick={() => {
                       if (!name || !mssv || !gender || !birthYear) {
-                        setErrors({ anonymizedUid: 'Vui lòng nhập đủ thông tin trước khi sinh mã' });
+                        setErrors({ anonymizedUid: t("onboard_err_need_info", localLanguage) });
                         soundFx.playError();
                         vibrateError();
                         return;
@@ -329,7 +329,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     }}
                     className="text-[10px] text-[#F7CAC9] hover:text-[#FCEEEC] font-mono flex items-center gap-1 uppercase tracking-wider"
                   >
-                    <Sparkles className="w-3 h-3" /> Sinh mã 12 số
+                    <Sparkles className="w-3 h-3" /> {t("onboard_gen_uid", localLanguage)}
                   </button>
                 </div>
                 <div className="relative">
@@ -337,49 +337,46 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     type="text"
                     value={anonymizedUid}
                     readOnly
-                    placeholder="Nhấn 'Sinh mã 12 số' để tạo"
+                    placeholder={t("onboard_uid_ph", localLanguage)}
                     className="w-full fluent-box-nested focus:border-[#F7CAC9] font-mono tracking-widest text-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm outline-none transition"
                   />
                 </div>
                 {errors.anonymizedUid && <p className="text-xs text-rose-400 mt-1">{errors.anonymizedUid}</p>}
                 <p className="text-[10px] text-white/40 mt-1">
-                  Mã 12 số chuẩn: 4 số cuối MSSV + 2 ký tự Tên + 1 số Giới tính + 2 số Năm sinh + 3 số Ngẫu nhiên độc nhất.
+                  {t("onboard_uid_hint", localLanguage)}
                 </p>
               </div>
-                        {teamModeActive && randomTeamAssignment && (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-[4px] text-center">
-                <p className="text-xs font-bold text-amber-300 uppercase">Hệ thống sẽ xếp đội ngẫu nhiên cho bạn!</p>
-              </div>
-            )}
-            {teamModeActive && !randomTeamAssignment && teams && teams.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-white/70 uppercase tracking-wider">
-                  Đội chơi (Bắt buộc)
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {teams.map(t => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setTeamId(t.id)}
-                      className={`p-2 rounded border text-sm font-bold transition flex items-center justify-center ${teamId === t.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/70 hover:bg-white/10'}`}
-                      style={teamId === t.id ? { backgroundColor: t.color, color: '#fff', borderColor: t.color } : {}}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
+              {teamModeActive && randomTeamAssignment && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-[4px] text-center">
+                  <p className="text-xs font-bold text-amber-300 uppercase">{t("onboard_team_random", localLanguage)}</p>
                 </div>
-              </div>
-            )}
+              )}
+              {teamModeActive && !randomTeamAssignment && teams && teams.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-wider">
+                    {t("onboard_team_label", localLanguage)}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {teams.map(tTeam => (
+                      <button
+                        key={tTeam.id}
+                        type="button"
+                        onClick={() => setTeamId(tTeam.id)}
+                        className={`p-2 rounded border text-sm font-bold transition flex items-center justify-center ${teamId === tTeam.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/70 hover:bg-white/10'}`}
+                        style={teamId === tTeam.id ? { backgroundColor: tTeam.color, color: '#fff', borderColor: tTeam.color } : {}}
+                      >
+                        {tTeam.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              
               <button
-
-              
-              type="submit"
+                type="submit"
                 className="w-full mt-6 bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[4px] uppercase text-xs tracking-wider shadow-lg shadow-[#0D0420]/30 flex items-center justify-center gap-2 transition"
               >
-                <span>Tạo Hồ Sơ & Vào Phòng</span>
+                <span>{t("onboard_btn_submit", localLanguage)}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -393,16 +390,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
               </div>
               <p className="text-sm text-white/80 mb-6 leading-relaxed text-center">
-                Chào mừng trở lại, <span className="font-bold text-white">{pendingProfile?.name}</span>!<br/>
-                Vui lòng xác thực thêm để bảo vệ hồ sơ của bạn.
+                {t("onboard_welcome", localLanguage).replace("{name}", pendingProfile?.name || '')}<br/>
+                {t("onboard_verify_desc", localLanguage)}
               </p>
               <div>
                 <label className="block text-xs font-medium text-white/70 mb-1.5">
-                  Mã định danh hoặc MSSV <span className="text-rose-400">*</span>
+                  {t("onboard_verify_id", localLanguage)} <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: 4009DA104"
+                  placeholder={t("onboard_verify_id_ph", localLanguage)}
                   value={verifyId}
                   onChange={(e) => {
                     setVerifyId(e.target.value.toUpperCase());
@@ -416,7 +413,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 type="submit"
                 className="w-full mt-6 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-[4px] uppercase text-xs tracking-wider shadow-lg shadow-amber-900/30 flex items-center justify-center gap-2 transition"
               >
-                <span>Xác Thực & Tiếp Tục</span>
+                <span>{t("onboard_verify_submit", localLanguage)}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>

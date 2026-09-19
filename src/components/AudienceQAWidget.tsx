@@ -70,7 +70,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
           <div className="flex items-center justify-between text-[10px] font-mono text-rose-300 font-bold">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-              ĐANG CHIẾU TRÊN SÂN KHẤU
+              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
             </span>
             <span className="flex items-center gap-1 text-pink-400">
               <Heart className="w-3 h-3 fill-current" /> {featured.upvotes}

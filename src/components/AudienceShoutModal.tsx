@@ -406,7 +406,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     }}
                     className="w-full py-3 rounded-[4px] bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2"
                   >
-                    Đăng Ký Tham Gia Để Hô To
+                    {localLanguage === 'en' ? 'Register To Shout' : 'Đăng Ký Tham Gia Để Hô To'}
                   </button>
                 ) : (
                   <button
@@ -422,7 +422,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                   >
                     {isSending ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" /> Đang gửi...
+                        <RefreshCw className="w-4 h-4 animate-spin" /> {localLanguage === 'en' ? 'Sending...' : 'Đang gửi...'}
                       </>
                     ) : cooldownRemaining > 0 ? (
                       <>
@@ -467,7 +467,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  Của tôi
+                  {localLanguage === 'en' ? 'Mine' : 'Của tôi'}
                 </button>
                 <button
                   onClick={() => setFeedFilter('top')}
@@ -477,7 +477,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  Nhiều Tim ❤️
+                  {localLanguage === 'en' ? 'Top Hearts ❤️' : 'Nhiều Tim ❤️'}
                 </button>
               </div>
 
@@ -488,7 +488,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 }}
                 className="px-2.5 py-1 rounded-[3px] bg-gradient-to-r from-pink-600 to-purple-600 text-xs font-bold text-white shadow hover:opacity-90 flex items-center gap-1"
               >
-                <Megaphone className="w-3 h-3" /> Hô mới
+                <Megaphone className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô mới'}
               </button>
             </div>
 
@@ -599,7 +599,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             }}
             className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
-            Đóng
+            {localLanguage === 'en' ? 'Close' : 'Đóng'}
           </button>
         </div>
       </div>

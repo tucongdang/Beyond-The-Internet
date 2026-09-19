@@ -93,7 +93,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
               }}
               className="px-2.5 py-1 rounded bg-[#B6A6D8]/20 hover:bg-[#B6A6D8]/30 border border-[#B6A6D8]/40 text-xs text-white font-medium flex items-center gap-1 transition-all"
             >
-              <Plus className="w-3 h-3" /> Hô to
+              <Plus className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô to'}
             </button>
           )}
           <button

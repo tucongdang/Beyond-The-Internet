@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import { Clock, ShieldCheck, Megaphone, Radio, Sparkles, Wifi } from 'lucide-react';
 import { GameState } from '../types';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
@@ -8,6 +9,7 @@ interface ClientLandingPageProps {
 }
 
 export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState }) => {
+  const { localLanguage } = useLanguage();
   const overlay = gameState?.announcer_overlay;
   const hasLiveAnnouncement = Boolean(overlay?.active && overlay?.text?.trim());
 
@@ -22,12 +24,15 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState 
         </div>
         
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white mb-3 sm:mb-4 drop-shadow-2xl uppercase">
-          Vui lòng chờ
+          {localLanguage === 'en' ? 'Please Stand By' : 'Vui Lòng Chờ'}
         </h1>
         
         <p className="text-sm sm:text-base text-[#B6A6D8] mb-7 font-normal leading-relaxed max-w-md">
-          Ban tổ chức đang chuẩn bị cho nội dung thi đấu tiếp theo.<br/>
-          Vui lòng giữ nguyên màn hình và sẵn sàng tham gia.
+          {localLanguage === 'en' ? (
+            <>The organizers are preparing for the next contest round.<br/>Please stay on this screen and be ready to participate.</>
+          ) : (
+            <>Ban tổ chức đang chuẩn bị cho nội dung thi đấu tiếp theo.<br/>Vui lòng giữ nguyên màn hình và sẵn sàng tham gia.</>
+          )}
         </p>
 
         {/* High Priority Live Broadcast Banner on Waiting Screen */}
@@ -40,7 +45,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState 
               </span>
               <span className="text-xs font-mono font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Megaphone className="w-3.5 h-3.5" />
-                Thông báo trực tiếp từ Ban Tổ Chức
+                {localLanguage === 'en' ? 'Live Announcement from Organizers' : 'Thông báo trực tiếp từ Ban Tổ Chức'}
               </span>
             </div>
             <p className="text-sm sm:text-base font-bold text-white leading-relaxed">
@@ -55,7 +60,9 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState 
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
           </span>
-          <span className="text-[11px] uppercase tracking-wider">ĐÃ KẾT NỐI VÀ ĐỒNG BỘ THỜI GIAN THỰC</span>
+          <span className="text-[11px] uppercase tracking-wider">
+            {localLanguage === 'en' ? 'CONNECTED & SYNCHRONIZED IN REAL-TIME' : 'ĐÃ KẾT NỐI VÀ ĐỒNG BỘ THỜI GIAN THỰC'}
+          </span>
         </div>
       </div>
 

@@ -282,7 +282,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           {isTTRound && (
             <span className="px-2.5 py-0.5 rounded-[4px] text-[11px] font-black uppercase tracking-wider bg-white/10 text-amber-300 border border-amber-500/40 flex items-center gap-1 shrink-0">
               <Flame className="w-3 h-3 animate-pulse text-amber-400" />
-              Tăng Tốc
+              {localLanguage === 'en' ? 'Acceleration' : 'Tăng Tốc'}
             </span>
           )}
 

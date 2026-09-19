@@ -202,14 +202,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 onClick={() => setTabFilter('INDIVIDUAL')}
                 className={`px-3 py-1.5 rounded text-xs font-bold transition ${tabFilter === 'INDIVIDUAL' ? 'bg-purple-600 text-white' : 'text-white/60 hover:text-white'}`}
               >
-                Cá Nhân
+                {localLanguage === 'en' ? 'Individual' : 'Cá Nhân'}
               </button>
               <button
                 type="button"
                 onClick={() => setTabFilter('TEAM')}
                 className={`px-3 py-1.5 rounded text-xs font-bold transition ${tabFilter === 'TEAM' ? 'bg-rose-600 text-white' : 'text-white/60 hover:text-white'}`}
               >
-                Đội (Trung bình)
+                {localLanguage === 'en' ? 'Team (Average)' : 'Đội (Trung bình)'}
               </button>
             </div>
           )}
@@ -236,7 +236,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             title={localLanguage === 'en' ? 'Firework' : 'Bắn pháo hoa vinh danh'}
           >
             <Sparkles className="w-4 h-4 fill-current" />
-            Vinh Danh Top 1
+            {localLanguage === 'en' ? 'Celebrate Top 1' : 'Vinh Danh Top 1'}
           </button>
 
           {/* View Mode Toggle */}
@@ -253,7 +253,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <Award className="w-3.5 h-3.5" /> Bục Vinh Quang
+              <Award className="w-3.5 h-3.5" /> {localLanguage === 'en' ? 'Podium' : 'Bục Vinh Quang'}
             </button>
             <button
               type="button"
@@ -267,7 +267,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <BarChart3 className="w-3.5 h-3.5" /> Danh Sách
+              <BarChart3 className="w-3.5 h-3.5" /> {localLanguage === 'en' ? 'List' : 'Danh Sách'}
             </button>
           </div>
 
@@ -291,7 +291,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 fluent-box rounded-[4px] p-2.5">
         <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
           <span className="text-white/40 px-2 flex items-center gap-1">
-            <Filter className="w-3 h-3" /> Vòng thi:
+            <Filter className="w-3 h-3" /> {localLanguage === 'en' ? 'Round:' : 'Vòng thi:'}
           </span>
           {[
             { id: 'ALL', label: localLanguage === 'en' ? 'All (Total)' : 'Toàn Cuộc (Tổng Hợp)' },
@@ -334,7 +334,9 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           </div>
           <h3 className="text-lg font-bold text-white font-mono">{localLanguage === 'en' ? 'No response data yet' : 'Chưa có dữ liệu phản hồi nào'}</h3>
           <p className="text-xs sm:text-sm text-white/50 max-w-md mx-auto">
-            Khi khán giả và thí sinh gửi câu trả lời trên điện thoại, hệ thống sẽ tự động tổng hợp và vinh danh Top 5 người có điểm số cao nhất tại đây.
+            {localLanguage === 'en'
+              ? 'When audience and players submit answers on their devices, the system will automatically tally scores and honor the Top 5 highest scorers here.'
+              : 'Khi khán giả và thí sinh gửi câu trả lời trên điện thoại, hệ thống sẽ tự động tổng hợp và vinh danh Top 5 người có điểm số cao nhất tại đây.'}
           </p>
         </div>
       ) : viewMode === 'PODIUM' ? (
@@ -355,7 +357,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       #2
                     </span>
                     <span className="fluent-badge fluent-badge-neutral uppercase tracking-wider flex items-center gap-1">
-                      <Medal className="w-3 h-3 text-slate-300" /> Á Quân 1
+                      <Medal className="w-3 h-3 text-slate-300" /> {localLanguage === 'en' ? 'Runner-Up 1' : 'Á Quân 1'}
                     </span>
                   </div>
 
@@ -394,7 +396,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               </div>
             ) : (
               <div className="order-2 md:order-1 fluent-box border border-dashed border-white/10 rounded-[4px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
-                [Vị trí Á Quân #2 đang chờ]
+                {localLanguage === 'en' ? '[Runner-Up #2 spot waiting]' : '[Vị trí Á Quân #2 đang chờ]'}
               </div>
             )}
 
@@ -415,7 +417,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                         #1
                       </span>
                       <span className="fluent-badge fluent-badge-warning uppercase tracking-widest flex items-center gap-1.5 shadow-md">
-                        <Crown className="w-4 h-4 text-amber-300 fill-amber-300" /> QUÁN QUÂN
+                        <Crown className="w-4 h-4 text-amber-300 fill-amber-300" /> {localLanguage === 'en' ? 'CHAMPION' : 'QUÁN QUÂN'}
                       </span>
                     </div>
 
@@ -459,7 +461,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               </div>
             ) : (
               <div className="order-1 md:order-2 fluent-box border border-dashed border-amber-500/30 rounded-[4px] p-6 min-h-[300px] flex items-center justify-center text-xs text-amber-300/40 font-mono">
-                [Vị trí Quán Quân #1 đang chờ]
+                {localLanguage === 'en' ? '[Champion #1 spot waiting]' : '[Vị trí Quán Quân #1 đang chờ]'}
               </div>
             )}
 
@@ -476,7 +478,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       #3
                     </span>
                     <span className="fluent-badge fluent-badge-warning uppercase tracking-wider flex items-center gap-1">
-                      <Medal className="w-3 h-3 text-amber-400" /> Á Quân 2
+                      <Medal className="w-3 h-3 text-amber-400" /> {localLanguage === 'en' ? 'Runner-Up 2' : 'Á Quân 2'}
                     </span>
                   </div>
 
@@ -515,7 +517,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               </div>
             ) : (
               <div className="order-3 fluent-box border border-dashed border-white/10 rounded-[4px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
-                [Vị trí Á Quân #3 đang chờ]
+                {localLanguage === 'en' ? '[Runner-Up #3 spot waiting]' : '[Vị trí Á Quân #3 đang chờ]'}
               </div>
             )}
           </div>
@@ -600,7 +602,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               {isListAutoScrolling && (
                 <div className="flex items-center fluent-box-nested rounded-[4px] p-0.5 text-[11px]">
                   <span className="text-white/40 px-1.5 flex items-center gap-1">
-                    <Gauge className="w-2.5 h-2.5 text-[#F7CAC9]" /> Tốc độ:
+                    <Gauge className="w-2.5 h-2.5 text-[#F7CAC9]" /> {localLanguage === 'en' ? 'Speed:' : 'Tốc độ:'}
                   </span>
                   {(['slow', 'normal', 'fast'] as AutoScrollSpeed[]).map(spd => (
                     <button
@@ -625,7 +627,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 className="fluent-btn px-2 py-1 rounded-[4px] fluent-box-nested text-white/70 hover:text-white transition flex items-center gap-1 cursor-pointer"
                 title={localLanguage === 'en' ? 'Back to top' : 'Về đầu danh sách'}
               >
-                <RotateCcw className="w-3 h-3" /> Về đầu
+                <RotateCcw className="w-3 h-3" /> {localLanguage === 'en' ? 'Top' : 'Về đầu'}
               </button>
             </div>
 

@@ -104,7 +104,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
             <div className="flex items-center gap-1.5 mb-0.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
               <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300/90">
-                ĐẾM NGƯỢC THỜI GIAN CHỜ
+                {localLanguage === 'en' ? 'ROUND COUNTDOWN' : 'ĐẾM NGƯỢC THỜI GIAN CHỜ'}
               </span>
             </div>
             <h3 className="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">

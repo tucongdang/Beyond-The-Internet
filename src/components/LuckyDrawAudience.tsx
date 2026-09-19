@@ -32,7 +32,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
               <Sparkles className="w-6 h-6" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wider uppercase font-mono">
-              QUAY SỐ MAY MẮN
+              {localLanguage === 'en' ? 'LUCKY DRAW' : 'QUAY SỐ MAY MẮN'}
             </h2>
             <p className="text-white/60 text-xs sm:text-sm">{localLanguage === 'en' ? 'System is preparing the draw. Please wait...' : 'Hệ thống đang chuẩn bị quay số. Xin vui lòng chờ đợi...'}</p>
           </div>
@@ -43,7 +43,9 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
             <div className="w-14 h-14 mx-auto rounded-[4px] bg-white/10 flex items-center justify-center border border-white/10 shadow-lg">
               <Dices className="w-7 h-7 text-[#F7CAC9] animate-bounce" />
             </div>
-            <h2 className="text-sm sm:text-base font-bold text-white/80 tracking-[0.2em] font-mono">ĐANG QUAY SỐ...</h2>
+            <h2 className="text-sm sm:text-base font-bold text-white/80 tracking-[0.2em] font-mono">
+              {localLanguage === 'en' ? 'DRAWING NUMBER...' : 'ĐANG QUAY SỐ...'}
+            </h2>
           </div>
         )}
 
@@ -67,7 +69,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
             
             {isWinner && (
               <div className="bg-amber-400 text-slate-950 font-bold text-base py-3 px-5 rounded-[4px] mt-6 shadow-xl animate-bounce font-mono">
-                🎉 XIN CHÚC MỪNG BẠN!
+                {localLanguage === 'en' ? '🎉 CONGRATULATIONS!' : '🎉 XIN CHÚC MỪNG BẠN!'}
                 <div className="text-xs font-normal mt-0.5">
                   {localLanguage === 'en' ? `Your identifier (${getUserDisplayUid(currentUserInfo)}) has won!` : `Mã định danh của bạn (${getUserDisplayUid(currentUserInfo)}) đã trúng thưởng!`}
                 </div>

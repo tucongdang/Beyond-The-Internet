@@ -61,7 +61,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                TIẾP SỨC SÂN KHẤU
+                {localLanguage === 'en' ? 'STAGE BOOST' : 'TIẾP SỨC SÂN KHẤU'}
                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[4px] bg-white/10 text-rose-300 border border-rose-500/30">
                   LIVE 100%
                 </span>
@@ -124,7 +124,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             onClick={onClose}
             className="text-rose-300 hover:text-rose-200 font-bold underline"
           >
-            Đóng bảng
+            {localLanguage === 'en' ? 'Close' : 'Đóng bảng'}
           </button>
         </div>
       </div>

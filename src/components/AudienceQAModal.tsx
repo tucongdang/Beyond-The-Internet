@@ -187,11 +187,11 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                 {settings.is_open ? (
                   <span className="fluent-badge fluent-badge-success">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    ĐANG MỞ
+                    {localLanguage === 'en' ? 'OPEN' : 'ĐANG MỞ'}
                   </span>
                 ) : (
                   <span className="fluent-badge fluent-badge-danger">
-                    TẠM ĐÓNG
+                    {localLanguage === 'en' ? 'CLOSED' : 'TẠM ĐÓNG'}
                   </span>
                 )}
               </div>
@@ -378,7 +378,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           : 'fluent-box-nested text-white/70 hover:text-white'
                       }`}
                     >
-                      {isAnonymous ? 'Ẩn danh: BẬT' : 'Ẩn danh: TẮT'}
+                      {isAnonymous ? (localLanguage === 'en' ? 'Anonymous: ON' : 'Ẩn danh: BẬT') : (localLanguage === 'en' ? 'Anonymous: OFF' : 'Ẩn danh: TẮT')}
                     </button>
                   </div>
 
@@ -466,19 +466,19 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           {q.status === 'FEATURED' && (
                             <span className="fluent-badge fluent-badge-danger animate-pulse">
                               <Radio className="w-3 h-3" />
-                              ĐANG CHIẾU TRÊN SÂN KHẤU
+                              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
                             </span>
                           )}
                           {q.status === 'APPROVED' && (
                             <span className="fluent-badge fluent-badge-accent">
                               <CheckCircle2 className="w-3 h-3" />
-                              Đã duyệt
+                              {localLanguage === 'en' ? 'Approved' : 'Đã duyệt'}
                             </span>
                           )}
                           {q.status === 'PENDING' && (
                             <span className="fluent-badge fluent-badge-warning">
                               <Clock className="w-3 h-3" />
-                              Đang chờ duyệt
+                              {localLanguage === 'en' ? 'Pending Approval' : 'Đang chờ duyệt'}
                             </span>
                           )}
                           {q.status === 'ANSWERED' && (
@@ -489,7 +489,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           )}
                           {q.status === 'REJECTED' && (
                             <span className="fluent-badge fluent-badge-danger">
-                              Chưa phù hợp
+                              {localLanguage === 'en' ? 'Declined' : 'Chưa phù hợp'}
                             </span>
                           )}
                         </div>
@@ -527,7 +527,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         : 'text-white/60 hover:bg-white/10'
                     }`}
                   >
-                    Tất cả
+                    {localLanguage === 'en' ? 'All' : 'Tất cả'}
                   </button>
                   {QA_CATEGORIES.map((cat) => (
                     <button
@@ -561,7 +561,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     }`}
                   >
                     <Clock className="w-3 h-3" />
-                    Mới nhất
+                    {localLanguage === 'en' ? 'Latest' : 'Mới nhất'}
                   </button>
                 </div>
               </div>
@@ -595,7 +595,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           {isFeatured && (
                             <span className="fluent-badge fluent-badge-danger animate-pulse">
                               <Radio className="w-3 h-3" />
-                              ĐANG CHIẾU TRÊN SÂN KHẤU
+                              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
                             </span>
                           )}
                           {q.status === 'ANSWERED' && (
@@ -606,7 +606,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         </div>
 
                         <span className="text-[10px] font-mono text-white/40">
-                          {new Date(q.created_at).toLocaleTimeString('vi-VN', {
+                          {new Date(q.created_at).toLocaleTimeString(localLanguage === 'en' ? 'en-US' : 'vi-VN', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
@@ -655,7 +655,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             onClick={onClose}
             className="fluent-btn px-3 py-1 rounded-[4px] fluent-box-nested text-white/80 hover:text-white cursor-pointer"
           >
-            Đóng
+            {localLanguage === 'en' ? 'Close' : 'Đóng'}
           </button>
         </div>
       </div>

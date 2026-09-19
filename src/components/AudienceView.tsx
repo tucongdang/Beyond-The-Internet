@@ -1212,7 +1212,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       <div className={`w-8 h-8 rounded-[4px] flex items-center justify-center font-bold text-xs shrink-0 ${
                         isOpen ? 'bg-[#F7CAC9]/20 text-[#F7CAC9]' : 'fluent-box-nested text-[#B6A6D8]/50 border border-white/10'
                       }`}>
-                        {isOpen ? 'MỞ' : '?'}
+                        {isOpen ? (localLanguage === 'en' ? 'OPEN' : 'MỞ') : '?'}
                       </div>
                     </div>
                   );
@@ -1237,7 +1237,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   <div className={`w-8 h-8 rounded-[4px] flex items-center justify-center font-bold text-xs shrink-0 ${
                     gameState.vcnv_center_status ? 'bg-amber-500/20 text-amber-300' : 'fluent-box-nested text-white/20'
                   }`}>
-                    {gameState.vcnv_center_status ? 'MỞ' : '?'}
+                    {gameState.vcnv_center_status ? (localLanguage === 'en' ? 'OPEN' : 'MỞ') : '?'}
                   </div>
                 </div>
               )}
@@ -1411,7 +1411,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <Lock className="w-4 h-4" /> {t("view_risk_frozen", localLanguage)}
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-blue-300 rounded-[4px] border border-[#E39A96]/30 font-bold">
-                NHÁNH 2 • CHỜ CÔNG BỐ CUỐI VÒNG
+                {localLanguage === 'en' ? 'BRANCH 2 • REVEAL AT END OF ROUND' : 'NHÁNH 2 • CHỜ CÔNG BỐ CUỐI VÒNG'}
               </span>
             </div>
 
@@ -1440,7 +1440,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <div className="fluent-box border-2 border-emerald-500/50 rounded-[4px] p-5 sm:p-6 shadow-2xl space-y-4 animate-fadeIn">
             <div className="flex items-center justify-between pb-3 border-b border-emerald-500/30">
               <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase">
-                <Sparkles className="w-4 h-4" /> KẾT QUẢ Ô MẠO HIỂM
+                <Sparkles className="w-4 h-4" /> {localLanguage === 'en' ? 'RISK BOX RESULT' : 'KẾT QUẢ Ô MẠO HIỂM'}
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-emerald-300 rounded-[4px] border border-emerald-500/30 font-bold">{t("view_announced", localLanguage)}</span>
             </div>
@@ -1872,7 +1872,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     ⚠️ {seqToast.title}
                   </h4>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-white/10 text-amber-300 border border-amber-500/30">
-                    CẢNH BÁO
+                    {localLanguage === 'en' ? 'WARNING' : 'CẢNH BÁO'}
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm font-semibold leading-relaxed text-white/95">
@@ -2082,7 +2082,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           <ArrowUpDown className="w-4 h-4 text-[#F7CAC9]" /> {t("view_drag_drop", localLanguage)}
                         </span>
                         <span className="bg-[#F7CAC9]/20 px-2 py-0.5 rounded-[4px] text-[10px]">
-                          {seqItems.length} MỤC
+                          {seqItems.length} {localLanguage === 'en' ? 'ITEMS' : 'MỤC'}
                         </span>
                       </div>
 
@@ -2163,7 +2163,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4" /> XÁC NHẬN SẮP XẾP ({seqItems.join('-')})
+                          <Send className="w-4 h-4" /> {localLanguage === 'en' ? 'CONFIRM ORDER' : 'XÁC NHẬN SẮP XẾP'} ({seqItems.join('-')})
                         </>
                       )}
                     </button>
