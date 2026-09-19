@@ -88,17 +88,17 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
   };
 
   return (
-    <div className="fluent-box border border-white/10 rounded-[4px] p-4 sm:p-6 space-y-6 text-white shadow-2xl">
+    <div className="fluent-box border border-white/10 rounded-[2px] p-4 sm:p-6 space-y-6 text-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <h2 className="text-xs uppercase text-white font-bold tracking-widest font-mono flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[#F7CAC9]" /> QUY TRÌNH QUAY SỐ TRÚNG THƯỞNG
         </h2>
-        <div className="text-white/60 text-xs font-mono fluent-box-nested px-2.5 py-1.5 rounded-[4px] border border-white/10">
+        <div className="text-white/60 text-xs font-mono fluent-box-nested px-2.5 py-1.5 rounded-[2px] border border-white/10">
           Tổng số ứng viên: <strong className="text-white text-sm">{candidates.length}</strong>
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center p-8 fluent-box-nested rounded-[4px] min-h-[300px] border border-white/10">
+      <div className="flex flex-col items-center justify-center p-8 fluent-box-nested rounded-[2px] min-h-[300px] border border-white/10">
         {luckyDraw.status === 'IDLE' && (
           <div className="text-center space-y-4 text-white/50">
             <Sparkles className="w-12 h-12 mx-auto text-[#F7CAC9]/40" />
@@ -117,17 +117,17 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
 
         {luckyDraw.status === 'REVEALED' && luckyDraw.winner && (
           <div className="text-center space-y-6 animate-fadeIn">
-            <div className="inline-flex items-center justify-center w-16 h-16 fluent-box text-amber-300 rounded-[4px] border-2 border-amber-400/40 mb-2 shadow-lg">
+            <div className="inline-flex items-center justify-center w-16 h-16 fluent-box text-amber-300 rounded-[2px] border-2 border-amber-400/40 mb-2 shadow-lg">
               <Trophy className="w-8 h-8" />
             </div>
             <div className="space-y-2">
               <div className="text-xs uppercase text-amber-300 font-bold tracking-widest font-mono">
                 Mã định danh trúng giải (Công khai):
               </div>
-              <div className="text-3xl font-black font-mono text-white fluent-box py-2.5 px-6 rounded-[4px] border-2 border-amber-400/60 inline-block shadow-lg">
+              <div className="text-3xl font-black font-mono text-white fluent-box py-2.5 px-6 rounded-[2px] border-2 border-amber-400/60 inline-block shadow-lg">
                 UID: {getUserDisplayUid(luckyDraw.winner)}
               </div>
-              <div className="pt-2 text-xs font-mono text-white/60 fluent-box-nested py-1.5 px-4 rounded-[4px] border border-white/10 inline-block">
+              <div className="pt-2 text-xs font-mono text-white/60 fluent-box-nested py-1.5 px-4 rounded-[2px] border border-white/10 inline-block">
                 🔒 Xác minh BTC: <strong className="text-white">{luckyDraw.winner.name}</strong> - MSSV: <strong className="text-white">{luckyDraw.winner.mssv}</strong>
               </div>
             </div>
@@ -139,14 +139,14 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
         {luckyDraw.status === 'IDLE' || luckyDraw.status === 'REVEALED' ? (
           <button
             onClick={handleStartSpin}
-            className="flex items-center gap-2 px-6 py-3 bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] rounded-[4px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] rounded-[2px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95"
           >
             <Play className="w-4 h-4 fill-current" /> BẮT ĐẦU QUAY
           </button>
         ) : (
           <button
             onClick={handleStopSpin}
-            className="flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-[4px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-[2px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95"
           >
             <Square className="w-4 h-4 fill-current" /> DỪNG QUAY
           </button>
@@ -155,7 +155,7 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
         {luckyDraw.status === 'REVEALED' && (
           <button
             onClick={handleReset}
-            className="px-5 py-3 fluent-box hover:bg-white/15 text-white rounded-[4px] font-bold font-mono text-sm transition border border-white/10 cursor-pointer shadow"
+            className="px-5 py-3 fluent-box hover:bg-white/15 text-white rounded-[2px] font-bold font-mono text-sm transition border border-white/10 cursor-pointer shadow"
           >
             Làm lại
           </button>
@@ -163,7 +163,7 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
       </div>
 
       {notification && (
-        <div className="fixed bottom-6 right-6 z-[300] fluent-box border border-rose-500/40 text-rose-200 px-4 py-3 rounded-[4px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
+        <div className="fixed bottom-6 right-6 z-[300] fluent-box border border-rose-500/40 text-rose-200 px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
           <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
           <span>{notification}</span>
         </div>

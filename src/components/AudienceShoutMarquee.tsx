@@ -127,7 +127,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
             vibrateTap();
             if (onOpenShoutModal) onOpenShoutModal();
           }}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-[4px] font-bold text-xs shadow-md transition-all group ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-[2px] font-bold text-xs shadow-md transition-all group ${
             variant === 'projector'
               ? 'bg-gradient-to-r from-[#3E1D74] to-[#B6A6D8]/40 text-white border border-[#B6A6D8]/50'
               : 'bg-gradient-to-r from-pink-600/90 to-purple-600/90 hover:from-pink-500 hover:to-purple-500 text-white border border-pink-400/40 active:scale-95'
@@ -163,7 +163,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                   vibrateTap();
                   if (onOpenShoutModal) onOpenShoutModal();
                 }}
-                className={`inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 rounded-[4px] border transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 rounded-[2px] border transition-all cursor-pointer ${
                   shout.is_pinned
                     ? 'bg-amber-950/70 border-amber-500/60 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                     : `${colorConfig.bg} ${colorConfig.border} hover:border-white/40`
@@ -201,7 +201,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                 <button
                   type="button"
                   onClick={(e) => handleLike(e, shout.id)}
-                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono transition-all ml-0.5 ${
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono transition-all ml-0.5 ${
                     isUserLiked 
                       ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold' 
                       : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'

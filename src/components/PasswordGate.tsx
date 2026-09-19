@@ -45,7 +45,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
         {/* Decorative Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#F7CAC9]/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="w-16 h-16 rounded-[4px] bg-[#241148]/50 border border-[#3E1D74] flex items-center justify-center mx-auto relative z-10 shadow-lg border-t-[#F7CAC9]/20">
+        <div className="w-16 h-16 rounded-[2px] bg-[#241148]/50 border border-[#3E1D74] flex items-center justify-center mx-auto relative z-10 shadow-lg border-t-[#F7CAC9]/20">
           <Lock className="w-8 h-8 text-[#F7CAC9]" />
         </div>
         
@@ -58,7 +58,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10 text-left">
           {error && (
-            <div className="flex items-start gap-2 text-rose-400 bg-rose-950/40 p-3 rounded-[4px] border border-rose-500/20 text-xs shadow-inner">
+            <div className="flex items-start gap-2 text-rose-400 bg-rose-950/40 p-3 rounded-[2px] border border-rose-500/20 text-xs shadow-inner">
               <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
               <p>{error}</p>
             </div>
@@ -69,7 +69,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
               placeholder="NHẬP MẬT MÃ QUẢN TRỊ..."
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              className="w-full bg-[#0D0420]/40 border border-white/10 hover:border-white/20 focus:border-[#F7CAC9]/60 text-center font-mono text-sm text-white px-10 py-3 rounded-[4px] outline-none tracking-widest transition shadow-inner"
+              className="w-full bg-[#0D0420]/40 border border-white/10 hover:border-white/20 focus:border-[#F7CAC9]/60 text-center font-mono text-sm text-white px-10 py-3 rounded-[2px] outline-none tracking-widest transition shadow-inner"
               autoFocus
             />
             <button
@@ -86,7 +86,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
           </div>
           <button
             type="submit"
-            className="w-full bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[4px] uppercase text-xs tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 flex items-center justify-center gap-2 active:scale-95"
+            className="w-full bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[2px] uppercase text-xs tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 flex items-center justify-center gap-2 active:scale-95"
           >
             <span>Mở Khóa Hệ Thống</span>
             <ArrowRight className="w-4 h-4" />

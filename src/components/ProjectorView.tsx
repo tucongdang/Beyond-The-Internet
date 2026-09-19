@@ -598,7 +598,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* Stage Header (Bento Style) */}
       <header className={`relative z-10 fluent-box p-2.5 px-3.5 sm:px-4 flex items-center justify-between gap-3 transition-all duration-500 group shrink-0`}>
         <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 shrink-0 rounded-[4px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold shadow-lg`}>
+          <div className={`w-8 h-8 shrink-0 rounded-[2px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold shadow-lg`}>
             <Radio className="w-4 h-4 animate-pulse" />
           </div>
           <div>
@@ -615,14 +615,14 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           {/* Stage Viewport Scale Controller */}
           <div 
             id="projector-scale-control-pill"
-            className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-[4px] p-1 border border-white/15 shadow-inner"
+            className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-[2px] p-1 border border-white/15 shadow-inner"
             title="Điều chỉnh tỷ lệ màn chiếu LED để không bao giờ bị tràn/cuộn"
           >
             <button
               type="button"
               id="btn-projector-zoom-out"
               onClick={() => handleSetScale(effectiveScale - 0.05)}
-              className="p-1 rounded-[4px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
+              className="p-1 rounded-[2px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
               title="Thu nhỏ tỷ lệ màn chiếu (Phím [)"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -632,7 +632,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               type="button"
               id="btn-projector-scale-reset"
               onClick={() => handleSetScale(1)}
-              className={`px-1.5 py-0.5 rounded-[4px] font-mono text-[10px] sm:text-[11px] font-bold transition ${
+              className={`px-1.5 py-0.5 rounded-[2px] font-mono text-[10px] sm:text-[11px] font-bold transition ${
                 effectiveScale === 1 && !isAutoFit
                   ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
                   : 'text-white/85 hover:bg-white/10'
@@ -646,7 +646,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               type="button"
               id="btn-projector-zoom-in"
               onClick={() => handleSetScale(effectiveScale + 0.05)}
-              className="p-1 rounded-[4px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
+              className="p-1 rounded-[2px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
               title="Phóng to tỷ lệ màn chiếu (Phím ])"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -658,7 +658,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               type="button"
               id="btn-projector-toggle-autofit"
               onClick={handleToggleAutoFit}
-              className={`px-2 py-0.5 rounded-[4px] font-mono text-[10px] font-bold transition flex items-center gap-1 border cursor-pointer ${
+              className={`px-2 py-0.5 rounded-[2px] font-mono text-[10px] font-bold transition flex items-center gap-1 border cursor-pointer ${
                 isAutoFit
                   ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-sm'
                   : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/15 hover:text-white'
@@ -684,7 +684,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 setShowWordCloud(false);
               }
             }}
-            className={`px-4 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
+            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
               showBarChart
                 ? 'bg-purple-600 text-white border-purple-400 ring-2 ring-purple-400/40'
                 : 'fluent-acrylic-surface text-purple-300 border-purple-500/40 hover:fluent-box-nested'
@@ -693,7 +693,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <BarChart2 className={`w-4 h-4 ${showBarChart ? 'text-white animate-bounce' : 'text-purple-400'}`} />
             <span>{showBarChart ? 'Quay lại Câu hỏi' : 'Biểu Đồ Cột'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[4px] border ${showBarChart ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-purple-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showBarChart ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-purple-200'}`}>
               B
             </kbd>
           </button>
@@ -710,7 +710,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 setShowBarChart(false);
               }
             }}
-            className={`px-4 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
+            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
               showResponseList
                 ? 'bg-sky-500 text-slate-950 border-sky-400 ring-2 ring-sky-400/40'
                 : 'fluent-acrylic-surface text-sky-300 border-sky-500/40 hover:fluent-box-nested'
@@ -719,7 +719,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <ListFilter className={`w-4 h-4 ${showResponseList ? 'text-slate-950' : 'text-sky-400'}`} />
             <span>{showResponseList ? 'Quay lại Câu hỏi' : `DS Phản Hồi (${voteStats.total})`}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[4px] border ${showResponseList ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-sky-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showResponseList ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-sky-200'}`}>
               R
             </kbd>
           </button>
@@ -736,7 +736,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 setShowBarChart(false);
               }
             }}
-            className={`px-4 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
+            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
               showHeatmap
                 ? 'bg-rose-500 text-white border-rose-400 ring-2 ring-rose-400/40'
                 : 'bg-gradient-to-r from-rose-500/20 to-orange-500/20 text-rose-300 border-rose-500/40 hover:fluent-box-nested'
@@ -745,7 +745,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <BarChart3 className={`w-4 h-4 ${showHeatmap ? 'text-white' : 'text-rose-400'}`} />
             <span>{showHeatmap ? 'Quay lại Câu hỏi' : 'Bản Đồ Nhiệt'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[4px] border ${showHeatmap ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-rose-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showHeatmap ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-rose-200'}`}>
               H
             </kbd>
           </button>
@@ -762,7 +762,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 setShowBarChart(false);
               }
             }}
-            className={`px-4 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
+            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
               isLeaderboardVisible
                 ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-400/40'
                 : 'fluent-acrylic-surface text-amber-300 border-amber-500/40 hover:fluent-box-nested'
@@ -770,7 +770,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             title="Bật/Tắt Bảng Xếp Hạng Top 5 (Phím tắt: L)"
           >
             <Trophy className={`w-4 h-4 ${isLeaderboardVisible ? 'text-slate-950' : 'text-amber-400'}`} />
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[4px] border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
               L
             </kbd>
           </button>
@@ -787,7 +787,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 setShowBarChart(false);
               }
             }}
-            className={`px-4 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
+            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
               showWordCloud
                 ? 'bg-[#F7CAC9] text-[#190839] border-[#F7CAC9] ring-2 ring-[#F7CAC9]/40'
                 : 'fluent-acrylic-surface text-pink-300 border-pink-500/40 hover:fluent-box-nested'
@@ -796,7 +796,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <Cloud className={`w-4 h-4 ${showWordCloud ? 'text-[#190839]' : 'text-[#F7CAC9]'}`} />
             <span>{showWordCloud ? 'Quay lại Câu hỏi' : 'Đám Mây Từ Khóa'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[4px] border ${showWordCloud ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-pink-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showWordCloud ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-pink-200'}`}>
               W
             </kbd>
           </button>
@@ -807,7 +807,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             id="btn-projector-snap-stage"
             onClick={handleCaptureProjectorSnapshot}
             disabled={isCapturingSnapshot}
-            className={`px-3 py-2 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-1.5 border shadow-lg ${
+            className={`px-3 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-1.5 border shadow-lg ${
               isCapturingSnapshot
                 ? 'bg-purple-800 text-purple-200 border-purple-400 animate-pulse'
                 : 'fluent-box-nested hover:fluent-box-nested text-purple-200 border-white/20 hover:border-pink-400 hover:text-white cursor-pointer'
@@ -816,14 +816,14 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <Camera className={`w-4 h-4 ${isCapturingSnapshot ? 'animate-spin' : 'text-pink-300'}`} />
             <span className="hidden xl:inline">{isCapturingSnapshot ? 'Đang Chụp...' : 'Snap Sân Khấu'}</span>
-            <kbd className="px-1.5 py-0.5 text-[9px] rounded-[4px] border fluent-box-nested border-white/20 text-purple-200">
+            <kbd className="px-1.5 py-0.5 text-[9px] rounded-[2px] border fluent-box-nested border-white/20 text-purple-200">
               P
             </kbd>
           </button>
 
           </div>
 
-          <div className={`px-3 py-1.5 rounded-[4px] fluent-box flex items-center gap-2 font-mono text-[11px] text-white/70`}>
+          <div className={`px-3 py-1.5 rounded-[2px] fluent-box flex items-center gap-2 font-mono text-[11px] text-white/70`}>
             <Users className={`w-3.5 h-3.5 text-purple-300`} />
             <span>
               Connected: <strong className="text-white font-bold">{voteStats.total}/{activeCount}</strong>
@@ -831,7 +831,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           </div>
 
           <div
-            className={`px-3 py-1.5 rounded-[4px] font-bold uppercase tracking-wider text-[11px] border ${
+            className={`px-3 py-1.5 rounded-[2px] font-bold uppercase tracking-wider text-[11px] border ${
               gameState.status === 'ACTIVE'
                 ? `${theme.activeBadge} animate-pulse`
                 : gameState.status === 'LOCKED'
@@ -907,15 +907,15 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           /* Dedicated Stage Visual for Round 2: Vượt Chướng Ngại Vật */
           !isVcnvOpened ? (
             /* Standby Stage Visual (Matching Client Landing) */
-            <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[4px] p-10 shadow-2xl backdrop-blur-md animate-fadeIn">
+            <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-10 shadow-2xl backdrop-blur-md animate-fadeIn">
               <div className="relative w-32 h-32 mx-auto mb-4 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-[4px] border-2 border-[#F7CAC9]/20 animate-ping" />
-                <div className="absolute inset-3 rounded-[4px] border border-[#F7CAC9]/40 animate-pulse" />
-                <div className="w-20 h-20 rounded-[4px] bg-gradient-horizon flex items-center justify-center shadow-xl shadow-[#F7CAC9]/30">
+                <div className="absolute inset-0 rounded-[2px] border-2 border-[#F7CAC9]/20 animate-ping" />
+                <div className="absolute inset-3 rounded-[2px] border border-[#F7CAC9]/40 animate-pulse" />
+                <div className="w-20 h-20 rounded-[2px] bg-gradient-horizon flex items-center justify-center shadow-xl shadow-[#F7CAC9]/30">
                   <Radio className="w-10 h-10 text-white animate-pulse" />
                 </div>
               </div>
-              <div className="inline-block px-4 py-1.5 rounded-[4px] text-xs font-bold uppercase tracking-widest bg-[#F7CAC9]/10 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74] font-mono">
+              <div className="inline-block px-4 py-1.5 rounded-[2px] text-xs font-bold uppercase tracking-widest bg-[#F7CAC9]/10 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74] font-mono">
                 SẮN SÀNG KẾT NỐI TRỰC TIẾP
               </div>
               <h2 className="text-3xl lg:text-4xl font-black text-white tracking-tight">
@@ -931,17 +931,17 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           ) : (
             <div className="max-w-7xl xl:max-w-[95%] w-full mx-auto space-y-3 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <span className="px-4 py-1 rounded-[4px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold flex items-center gap-2">
+                <span className="px-4 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT
                 </span>
 
                 <div className="flex items-center gap-2">
                   {gameState.vcnv_status === 'LOCKED' && (
-                    <span className="px-3.5 py-1 rounded-[4px] text-xs font-mono font-bold text-amber-400 fluent-box-nested border border-amber-500/30 flex items-center gap-1.5">
+                    <span className="px-3.5 py-1 rounded-[2px] text-xs font-mono font-bold text-amber-400 fluent-box-nested border border-amber-500/30 flex items-center gap-1.5">
                       <Shield className="w-3.5 h-3.5" /> ĐÃ CHỐT NHẬN DỰ ĐOÁN (CHỜ SÂN KHẤU)
                     </span>
                   )}
-                  <div className="px-4 py-1 rounded-[4px] text-xs font-mono text-emerald-400 fluent-box-nested border border-emerald-500/30">
+                  <div className="px-4 py-1 rounded-[2px] text-xs font-mono text-emerald-400 fluent-box-nested border border-emerald-500/30">
                     {voteStats.total} Khán giả đã gửi dự đoán
                   </div>
                 </div>
@@ -953,7 +953,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <div className="lg:col-span-6 space-y-3">
                   {/* Live Heatmap tag word-cloud for VCNV Predictions (Hidden when round is finalized to prevent vertical stack overload) */}
                   {showHeatmap && shortStats && !gameState.vcnv_summary_active && (
-                    <div className="bg-slate-950/40 border border-white/5 rounded-[4px] p-3 sm:p-3.5 shadow-xl space-y-2 animate-fadeIn">
+                    <div className="bg-slate-950/40 border border-white/5 rounded-[2px] p-3 sm:p-3.5 shadow-xl space-y-2 animate-fadeIn">
                       <div className="flex justify-between items-center pb-2 border-b border-white/10">
                         <span className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                           <Zap className="w-3.5 h-3.5 animate-pulse text-rose-400" /> BẢN ĐỒ NHIỆT: DỰ ĐOÁN TỪ KHÓA CNV ({shortStats.total} câu trả lời)
@@ -968,12 +968,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             const percentage = shortStats.total > 0 ? Math.round((item.count / shortStats.total) * 100) : 0;
                             const heat = getHeatColor(percentage);
                             const sizeClass = percentage > 50
-                              ? 'text-base py-1 px-2.5 rounded-[4px]'
+                              ? 'text-base py-1 px-2.5 rounded-[2px]'
                               : percentage > 25
-                              ? 'text-sm py-0.5 px-2 rounded-[4px]'
+                              ? 'text-sm py-0.5 px-2 rounded-[2px]'
                               : percentage > 10
-                              ? 'text-xs py-0.5 px-1.5 rounded-[4px]'
-                              : 'text-[10px] py-0.5 px-1 rounded-[4px]';
+                              ? 'text-xs py-0.5 px-1.5 rounded-[2px]'
+                              : 'text-[10px] py-0.5 px-1 rounded-[2px]';
 
                             return (
                               <div
@@ -981,7 +981,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                 className={`font-mono border flex items-center gap-1 shadow-md transition-all duration-300 ${heat.bg} ${heat.glow} ${sizeClass}`}
                               >
                                 <span className="font-bold tracking-wider">{item.raw}</span>
-                                <span className={`text-[8px] font-mono font-black py-0.5 px-1 rounded-[4px] ${heat.badge}`}>
+                                <span className={`text-[8px] font-mono font-black py-0.5 px-1 rounded-[2px] ${heat.badge}`}>
                                   {percentage}% ({item.count})
                                 </span>
                               </div>
@@ -994,10 +994,10 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* STAGE RISK BOX ANNOUNCEMENT BANNER */}
                   {gameState.vcnv_risk_status === 'ACTIVE_ANSWER' && (
-                    <div className="p-3 rounded-[4px] fluent-box shadow-2xl space-y-1 text-white animate-fadeIn">
+                    <div className="p-3 rounded-[2px] fluent-box shadow-2xl space-y-1 text-white animate-fadeIn">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-[4px] fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-xs">
+                          <div className="w-7 h-7 rounded-[2px] fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-xs">
                             ⚡
                           </div>
                           <div>
@@ -1009,7 +1009,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             </p>
                           </div>
                         </div>
-                        <span className="text-[9px] font-mono px-2 py-0.5 fluent-box-nested text-amber-300 border border-amber-500/30 rounded-[4px] font-bold">
+                        <span className="text-[9px] font-mono px-2 py-0.5 fluent-box-nested text-amber-300 border border-amber-500/30 rounded-[2px] font-bold">
                           🔥 {riskSubmissionsCount} KHÁN GIẢ ĐANG DỰ ĐOÁN
                         </span>
                       </div>
@@ -1017,7 +1017,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   )}
 
                   {gameState.vcnv_risk_status === 'FROZEN' && (
-                    <div className="p-3 rounded-[4px] fluent-box border border-[#3E1D74] shadow-2xl text-[#F5EFF9] space-y-1 animate-fadeIn">
+                    <div className="p-3 rounded-[2px] fluent-box border border-[#3E1D74] shadow-2xl text-[#F5EFF9] space-y-1 animate-fadeIn">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono uppercase text-[#F7CAC9] font-bold tracking-wider block">
                           🔒 CÂU TRẢ LỜI Ô MẠO HIỂM ĐÃ ĐÓNG BĂNG
@@ -1031,19 +1031,19 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* RISK REVEALED CARD */}
                   {gameState.vcnv_risk_status === 'REVEALED' && (
-                    <div className="p-5 sm:p-6 rounded-[4px] fluent-box border border-[#522b94]/70 shadow-2xl text-[#F5EFF9] space-y-4 animate-fadeIn">
+                    <div className="p-5 sm:p-6 rounded-[2px] fluent-box border border-[#522b94]/70 shadow-2xl text-[#F5EFF9] space-y-4 animate-fadeIn">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <span className="text-sm font-mono uppercase text-[#F7CAC9] font-black tracking-wider block">
                           🌟 CÔNG BỐ NỘI DUNG Ô MẠO HIỂM
                         </span>
-                        <span className="text-xs font-mono px-3 py-1 fluent-box-nested text-emerald-300 rounded-[4px] border border-emerald-500/30 font-bold">
+                        <span className="text-xs font-mono px-3 py-1 fluent-box-nested text-emerald-300 rounded-[2px] border border-emerald-500/30 font-bold">
                           +120 ĐIỂM
                         </span>
                       </div>
                       <p className="text-sm sm:text-base text-slate-200 text-left leading-relaxed">
                         <strong>Gợi ý:</strong> {gameState.vcnv_risk_question}
                       </p>
-                      <p className="text-sm sm:text-base text-emerald-400 font-mono font-bold text-left fluent-box-nested p-2.5 rounded-[4px] border border-emerald-500/20">
+                      <p className="text-sm sm:text-base text-emerald-400 font-mono font-bold text-left fluent-box-nested p-2.5 rounded-[2px] border border-emerald-500/20">
                         <strong>Đáp án:</strong> {gameState.vcnv_risk_answer}
                       </p>
 
@@ -1054,9 +1054,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                           </h5>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {top5Risk.map((r, i) => (
-                              <div key={r.user_info?.uid || i} className="p-2.5 rounded-[4px] fluent-box-nested border border-amber-500/20 flex items-center justify-between shadow-sm">
+                              <div key={r.user_info?.uid || i} className="p-2.5 rounded-[2px] fluent-box-nested border border-amber-500/20 flex items-center justify-between shadow-sm">
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                  <span className="w-5.5 h-5.5 rounded-[4px] bg-amber-500 text-slate-950 font-black flex items-center justify-center text-[10px] font-mono shrink-0 shadow">
+                                  <span className="w-5.5 h-5.5 rounded-[2px] bg-amber-500 text-slate-950 font-black flex items-center justify-center text-[10px] font-mono shrink-0 shadow">
                                     #{i + 1}
                                   </span>
                                   <div className="min-w-0">
@@ -1077,7 +1077,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* VCNV KEYWORD SUMMARY */}
                   {gameState.vcnv_summary_active && (
-                    <div className="fluent-box border border-emerald-500/50 rounded-[4px] p-5 sm:p-6 shadow-2xl space-y-4 animate-fadeIn">
+                    <div className="fluent-box border border-emerald-500/50 rounded-[2px] p-5 sm:p-6 shadow-2xl space-y-4 animate-fadeIn">
                       <div className="text-center pb-3 border-b border-white/10">
                         <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 block mb-1 font-bold">
                           TỪ KHÓA CHƯỚNG NGẠI VẬT CHÍNH XÁC
@@ -1101,10 +1101,10 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             {top5Vcnv.map((r, i) => (
                               <div
                                 key={r.user_info.uid || i}
-                                className="p-2.5 rounded-[4px] fluent-box-nested border border-emerald-500/20 flex items-center justify-between shadow-sm hover:fluent-box-nested transition-all"
+                                className="p-2.5 rounded-[2px] fluent-box-nested border border-emerald-500/20 flex items-center justify-between shadow-sm hover:fluent-box-nested transition-all"
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                  <span className="w-6.5 h-6.5 shrink-0 rounded-[4px] bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shadow-md">
+                                  <span className="w-6.5 h-6.5 shrink-0 rounded-[2px] bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shadow-md">
                                     #{i + 1}
                                   </span>
                                   <div className="min-w-0">
@@ -1138,7 +1138,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       return (
                         <div
                           key={idx}
-                          className={`py-2 px-3.5 rounded-[4px] border-2 transition-all flex items-center justify-between shadow-lg ${
+                          className={`py-2 px-3.5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
                             isOpen
                               ? 'bg-[#F7CAC9]/15 backdrop-blur-md border-[#F7CAC9] text-[#FCEEEC] ring-2 ring-[#F7CAC9]/30'
                               : 'bg-[#241148]/40 backdrop-blur-md border-[#3E1D74] text-[#B6A6D8]/50'
@@ -1153,7 +1153,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             </h3>
                           </div>
                           <div
-                            className={`w-8 h-8 shrink-0 rounded-[4px] flex items-center justify-center font-bold font-mono text-xs ${
+                            className={`w-8 h-8 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-xs ${
                               isOpen ? 'bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9]' : 'bg-[#0D0420]/50 backdrop-blur-md border border-[#3E1D74]/50 text-[#B6A6D8]'
                             }`}
                           >
@@ -1166,7 +1166,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* Center Box Stage Matrix */}
                   {gameState.vcnv_center_visible && (
-                    <div className={`py-2 px-3.5 rounded-[4px] border-2 transition-all flex items-center justify-between shadow-lg ${
+                    <div className={`py-2 px-3.5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
                       gameState.vcnv_center_status
                         ? 'fluent-box-nested border-amber-500 text-amber-200 ring-2 ring-amber-500/30'
                         : 'fluent-box-nested border-white/10 text-white/40'
@@ -1180,7 +1180,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         </h3>
                       </div>
                       <div
-                        className={`w-8 h-8 shrink-0 rounded-[4px] flex items-center justify-center font-bold font-mono text-xs ${
+                        className={`w-8 h-8 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-xs ${
                           gameState.vcnv_center_status ? 'fluent-box-nested text-amber-300' : 'fluent-box-nested'
                         }`}
                       >
@@ -1194,11 +1194,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           )
         ) : gameState.status === 'STANDBY' ? (
           /* Standby Stage Visual (Bento Style) */
-          <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[4px] p-10">
-            <div className="w-24 h-24 rounded-[4px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#F7CAC9]/30 flex items-center justify-center mx-auto text-[#F7CAC9] shadow-xl shadow-[#0D0420]/20">
+          <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-10">
+            <div className="w-24 h-24 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#F7CAC9]/30 flex items-center justify-center mx-auto text-[#F7CAC9] shadow-xl shadow-[#0D0420]/20">
               <Shield className="w-12 h-12 animate-pulse" />
             </div>
-            <div className="inline-block px-3 py-1 rounded-[4px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9] text-[#190839] font-black">
+            <div className="inline-block px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9] text-[#190839] font-black">
               {gameState.round_name}
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
@@ -1214,11 +1214,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             {/* Category & Timer row */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="px-3.5 py-1.5 rounded-[4px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74] font-bold">
+                <span className="px-3.5 py-1.5 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74] font-bold">
                   {gameState.category || gameState.round_name}
                 </span>
                 {isTTRound && (
-                  <span className="px-3 py-1 rounded-[4px] text-xs font-mono uppercase tracking-wider fluent-box-nested text-amber-300 border border-amber-500/40 font-black flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider fluent-box-nested text-amber-300 border border-amber-500/40 font-black flex items-center gap-1.5">
                     <Flame className="w-3.5 h-3.5 animate-pulse" />
                     TĂNG TỐC
                   </span>
@@ -1229,7 +1229,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <div className="flex items-center gap-3">
                   {/* For Elimination 6 questions: show 10s phase indicator on stage */}
                   {isTTRound && gameState.round_type === 'ELIMINATION_6' && (
-                    <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] fluent-box-nested border border-amber-500/30 text-xs font-mono">
+                    <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] fluent-box-nested border border-amber-500/30 text-xs font-mono">
                       <span className="text-white/50 uppercase">Giai đoạn:</span>
                       <span className="font-bold text-amber-300">
                         {ttPhase === 1 ? '1 (6 Phương Án)' : ttPhase === 2 ? '2 (Loại 2 còn 4)' : '3 (Loại tiếp còn 2)'}
@@ -1239,7 +1239,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* Stage Timer Badge */}
                   <div
-                    className={`flex items-center gap-2.5 px-6 py-2 rounded-[4px] font-mono text-2xl lg:text-3xl font-black border transition-all ${
+                    className={`flex items-center gap-2.5 px-6 py-2 rounded-[2px] font-mono text-2xl lg:text-3xl font-black border transition-all ${
                       timeLeft <= 3
                         ? 'fluent-box-nested border-rose-500 text-rose-400 scale-110 animate-bounce shadow-lg shadow-rose-500/30 ring-2 ring-rose-400/50'
                         : timeLeft <= 5
@@ -1262,7 +1262,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
             {/* Tăng Tốc Energy Speed Track Bar */}
             {isTTRound && gameState.status === 'ACTIVE' && (
-              <div className="w-full h-2.5 fluent-box-nested rounded-[4px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 shadow-inner">
+              <div className="w-full h-2.5 fluent-box-nested rounded-[2px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 shadow-inner">
                 <div
                   className={`h-full rounded-[2px] ${
                     timeLeft <= 3
@@ -1291,7 +1291,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 }`}>
                   <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5 mb-2 relative z-10">
                     <span className="text-[11px] uppercase text-[#F7CAC9] font-mono tracking-widest font-bold flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-[4px] bg-[#F7CAC9] animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F7CAC9] animate-pulse" />
                       Payload • [{gameState.question_id}]
                     </span>
                     <span className="text-[10px] font-mono text-white/50">
@@ -1300,7 +1300,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   </div>
                   {gameState.round_type === 'BLIND_POLL' && gameState.status === 'ACTIVE' ? (
                     <div className="text-center py-3 relative z-10">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74]/80 mb-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74]/80 mb-2">
                         <Sparkles className="w-3.5 h-3.5" /> Kịch Tình Huống AID (Blind Poll)
                       </div>
                       <h2 className="text-lg lg:text-xl font-medium text-white/90 leading-relaxed">
@@ -1324,7 +1324,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   )}
                   {gameState.media_type === 'IMAGE' && gameState.media_url && (
                     <div className="mt-4 flex justify-center relative z-10">
-                      <img src={gameState.media_url} crossOrigin="anonymous" alt="Question Media" className="max-h-[22vh] rounded-[4px] object-contain border-2 border-white/20 shadow-2xl" />
+                      <img src={gameState.media_url} crossOrigin="anonymous" alt="Question Media" className="max-h-[22vh] rounded-[2px] object-contain border-2 border-white/20 shadow-2xl" />
                     </div>
                   )}
                   {gameState.media_type === 'VIDEO' && gameState.media_url && (
@@ -1335,7 +1335,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         crossOrigin="anonymous"
                         controls
                         autoPlay={Boolean(gameState.media_autoplay && gameState.status === 'ACTIVE')}
-                        className="max-h-[22vh] rounded-[4px] border-2 border-white/20 shadow-2xl"
+                        className="max-h-[22vh] rounded-[2px] border-2 border-white/20 shadow-2xl"
                       />
                     </div>
                   )}
@@ -1382,7 +1382,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       return (
                         <div
                           key={key}
-                          className={`p-5 rounded-[4px] border transition-all relative overflow-hidden flex flex-col justify-between ${
+                          className={`p-5 rounded-[2px] border transition-all relative overflow-hidden flex flex-col justify-between ${
                             isRevealed
                               ? isDung
                                 ? 'fluent-box-nested border-emerald-500/60 ring-1 ring-emerald-500/40'
@@ -1392,13 +1392,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         >
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <span className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/10 text-[#F7CAC9] font-mono font-bold flex items-center justify-center text-sm border border-white/10">
+                              <span className="w-8 h-8 rounded-[2px] bg-[#F7CAC9]/10 text-[#F7CAC9] font-mono font-bold flex items-center justify-center text-sm border border-white/10">
                                 Ý {key})
                               </span>
 
                               {isRevealed && (
                                 <span
-                                  className={`px-3 py-1 rounded-[4px] font-mono font-black text-xs uppercase tracking-wider shadow-md ${
+                                  className={`px-3 py-1 rounded-[2px] font-mono font-black text-xs uppercase tracking-wider shadow-md ${
                                     isDung
                                       ? 'bg-emerald-500 text-slate-950 ring-1 ring-emerald-400/50'
                                       : 'bg-rose-500 text-white ring-1 ring-rose-400/50'
@@ -1422,11 +1422,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                 <span>{stat.total} phiếu</span>
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                                <div className={`p-2 rounded-[4px] border flex items-center justify-between transition-all duration-300 ${heatD.bg} ${heatD.glow}`}>
+                                <div className={`p-2 rounded-[2px] border flex items-center justify-between transition-all duration-300 ${heatD.bg} ${heatD.glow}`}>
                                   <span className="opacity-70 font-bold">Ý ĐÚNG</span>
                                   <span className="font-black">{percentD}%</span>
                                 </div>
-                                <div className={`p-2 rounded-[4px] border flex items-center justify-between transition-all duration-300 ${heatS.bg} ${heatS.glow}`}>
+                                <div className={`p-2 rounded-[2px] border flex items-center justify-between transition-all duration-300 ${heatS.bg} ${heatS.glow}`}>
                                   <span className="opacity-70 font-bold">Ý SAI</span>
                                   <span className="font-black">{percentS}%</span>
                                 </div>
@@ -1448,7 +1448,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   /* Dedicated display for SHORT_ANSWER / FILL_IN_BLANK */
                   <div className="space-y-4">
                     {gameState.status === 'REVEAL' ? (
-                      <div className="fluent-box border-emerald-500/50 rounded-[4px] p-6 lg:p-8 text-center space-y-3 shadow-2xl animate-fadeIn">
+                      <div className="fluent-box border-emerald-500/50 rounded-[2px] p-6 lg:p-8 text-center space-y-3 shadow-2xl animate-fadeIn">
                         <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block">
                           ĐÁP ÁN CHÍNH XÁC (CÂU TRẢ LỜI NGẮN)
                         </span>
@@ -1460,8 +1460,8 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="fluent-box rounded-[4px] p-8 text-center space-y-3 shadow-xl">
-                        <div className="w-12 h-12 shrink-0 rounded-[4px] bg-[#F7CAC9]/20 text-[#F7CAC9] flex items-center justify-center mx-auto border border-white/10">
+                      <div className="fluent-box rounded-[2px] p-8 text-center space-y-3 shadow-xl">
+                        <div className="w-12 h-12 shrink-0 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] flex items-center justify-center mx-auto border border-white/10">
                           <Sparkles className="w-6 h-6 animate-pulse" />
                         </div>
                         <h3 className="text-xl font-bold text-white">
@@ -1470,7 +1470,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         <p className="text-sm text-white/60 max-w-lg mx-auto">
                           Khán giả và thí sinh đang nhập câu trả lời trực tiếp trên thiết bị di động.
                         </p>
-                        <div className="inline-block px-4 py-1.5 rounded-[4px] bg-[#F7CAC9]/20 border border-white/10 text-[#F7CAC9] font-mono text-xs font-bold">
+                        <div className="inline-block px-4 py-1.5 rounded-[2px] bg-[#F7CAC9]/20 border border-white/10 text-[#F7CAC9] font-mono text-xs font-bold">
                           Đã nhận: {voteStats.total} phản hồi
                         </div>
                       </div>
@@ -1478,7 +1478,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                     {/* Live Integrated Heatmap predictions word cloud for Short Answer */}
                     {showHeatmap && shortStats && (
-                      <div className="fluent-box rounded-[4px] p-6 shadow-xl space-y-4 animate-fadeIn">
+                      <div className="fluent-box rounded-[2px] p-6 shadow-xl space-y-4 animate-fadeIn">
                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
                           <span className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5 animate-pulse text-rose-400" /> BẢN ĐỒ NHIỆT KHÁN GIẢ ({shortStats.total} câu trả lời)
@@ -1493,12 +1493,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                               const percentage = shortStats.total > 0 ? Math.round((item.count / shortStats.total) * 100) : 0;
                               const heat = getHeatColor(percentage);
                               const sizeClass = percentage > 50
-                                ? 'text-xl py-2 px-4 rounded-[4px]'
+                                ? 'text-xl py-2 px-4 rounded-[2px]'
                                 : percentage > 25
-                                ? 'text-lg py-1.5 px-3 rounded-[4px]'
+                                ? 'text-lg py-1.5 px-3 rounded-[2px]'
                                 : percentage > 10
-                                ? 'text-sm py-1 px-2.5 rounded-[4px]'
-                                : 'text-xs py-1 px-2 rounded-[4px]';
+                                ? 'text-sm py-1 px-2.5 rounded-[2px]'
+                                : 'text-xs py-1 px-2 rounded-[2px]';
 
                               return (
                                 <div
@@ -1521,7 +1521,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   /* Dedicated display for SEQUENCING */
                   <div className="space-y-4">
                     {gameState.status === 'REVEAL' ? (
-                      <div className="fluent-box border-emerald-500/50 rounded-[4px] p-6 lg:p-8 text-center space-y-4 shadow-2xl animate-fadeIn">
+                      <div className="fluent-box border-emerald-500/50 rounded-[2px] p-6 lg:p-8 text-center space-y-4 shadow-2xl animate-fadeIn">
                         <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block">
                           TRÌNH TỰ CHÍNH XÁC
                         </span>
@@ -1532,7 +1532,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             return (
                               <React.Fragment key={trimmedKey}>
                                 {idx > 0 && <span className="text-emerald-400 font-black text-xl">➔</span>}
-                                <div className="bg-emerald-500 text-slate-950 px-4 py-2.5 rounded-[4px] font-mono font-black text-sm sm:text-base shadow-lg flex items-center gap-2">
+                                <div className="bg-emerald-500 text-slate-950 px-4 py-2.5 rounded-[2px] font-mono font-black text-sm sm:text-base shadow-lg flex items-center gap-2">
                                   <span className="w-6 h-6 rounded-[2px] bg-slate-950 text-emerald-400 text-xs flex items-center justify-center">
                                     {idx + 1}
                                   </span>
@@ -1550,12 +1550,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-xs font-mono font-bold text-[#F7CAC9] px-1">
                           <span>DANH SÁCH CÁC MỤC CẦN SẮP XẾP TRÌNH TỰ:</span>
-                          <span className="bg-white/10 px-3 py-1 rounded-[4px] text-white border border-white/10">Đã nhận: {voteStats.total} phản hồi</span>
+                          <span className="bg-white/10 px-3 py-1 rounded-[2px] text-white border border-white/10">Đã nhận: {voteStats.total} phản hồi</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {Object.entries(gameState.options || {}).map(([key, label]) => (
-                            <div key={key} className="p-4 fluent-box-nested rounded-[4px] flex items-center gap-3">
-                              <span className="w-8 h-8 rounded-[4px] bg-[#F7CAC9] text-[#0D0420] font-mono font-black text-sm flex items-center justify-center shrink-0 shadow">
+                            <div key={key} className="p-4 fluent-box-nested rounded-[2px] flex items-center gap-3">
+                              <span className="w-8 h-8 rounded-[2px] bg-[#F7CAC9] text-[#0D0420] font-mono font-black text-sm flex items-center justify-center shrink-0 shadow">
                                 {key}
                               </span>
                               <span className="text-sm sm:text-base font-semibold text-white leading-tight">{label}</span>
@@ -1569,11 +1569,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   <div>
                     {/* Inline View Switcher for Multiple Choice (Cards vs Recharts Bar Chart) */}
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <div className="flex items-center gap-1.5 p-1 bg-black/50 border border-white/10 rounded-[4px]">
+                      <div className="flex items-center gap-1.5 p-1 bg-black/50 border border-white/10 rounded-[2px]">
                         <button
                           type="button"
                           onClick={() => setOptionsDisplayMode('CARDS')}
-                          className={`px-3 py-1 rounded-[4px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
+                          className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                             optionsDisplayMode === 'CARDS'
                               ? 'bg-[#F7CAC9] text-[#190839] shadow-sm'
                               : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -1585,7 +1585,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setOptionsDisplayMode('CHART')}
-                          className={`px-3 py-1 rounded-[4px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
+                          className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                             optionsDisplayMode === 'CHART'
                               ? 'fluent-acrylic-surface text-white shadow-sm'
                               : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -1601,7 +1601,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     </div>
 
                     {optionsDisplayMode === 'CHART' ? (
-                      <div className="fluent-box rounded-[4px] p-4 sm:p-5 shadow-2xl">
+                      <div className="fluent-box rounded-[2px] p-4 sm:p-5 shadow-2xl">
                         <ProjectorResponseBarChart
                           gameState={gameState}
                           responses={responses}
@@ -1619,7 +1619,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                           return (
                             <div
                               key={key}
-                              className={`p-3 sm:p-3.5 lg:p-4 rounded-[4px] border transition-all relative overflow-hidden ${
+                              className={`p-3 sm:p-3.5 lg:p-4 rounded-[2px] border transition-all relative overflow-hidden ${
                                 isEliminated
                                   ? 'fluent-box-nested border-rose-500/30 opacity-45'
                                   : isCorrect
@@ -1630,7 +1630,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                               <div className="flex items-center justify-between mb-1.5 relative z-10">
                                 <div className="flex items-center gap-2.5 sm:gap-3.5">
                                   <div
-                                    className={`w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 rounded-[4px] font-mono font-bold text-base sm:text-lg md:text-xl flex items-center justify-center shadow-md transition-colors ${
+                                    className={`w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 rounded-[2px] font-mono font-bold text-base sm:text-lg md:text-xl flex items-center justify-center shadow-md transition-colors ${
                                       isEliminated
                                         ? 'bg-rose-900/60 text-rose-300 border border-rose-500/40 line-through'
                                         : isCorrect
@@ -1642,7 +1642,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                   </div>
                                   <div>
                                     {gameState.option_images?.[key] && (
-                                      <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-48 object-cover rounded-[4px] shadow-md border border-white/10 mb-2" />
+                                      <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-48 object-cover rounded-[2px] shadow-md border border-white/10 mb-2" />
                                     )}
                                     <span className={`text-base sm:text-lg md:text-xl font-bold tracking-tight ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
                                       {label}
@@ -1700,7 +1700,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
             {/* Explanation on Reveal */}
             {gameState.status === 'REVEAL' && gameState.explanation && (
-              <div className="fluent-box rounded-[4px] p-4 sm:p-5 shadow-xl animate-fadeIn mt-2.5">
+              <div className="fluent-box rounded-[2px] p-4 sm:p-5 shadow-xl animate-fadeIn mt-2.5">
                 <div className="text-[10px] font-bold uppercase tracking-widest text-[#F7CAC9] mb-1 font-mono flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-[#F7CAC9]" /> Bóc tách Bẫy Tâm Lý & Căn Cứ Học Thuật:
                 </div>
@@ -1724,7 +1724,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* Real-time Audience Shout Marquee Ticker */}
       {showShoutMarquee && (
         <div className="relative z-20 my-2 animate-fadeIn">
-          <AudienceShoutMarquee variant="projector" className="rounded-[4px]" />
+          <AudienceShoutMarquee variant="projector" className="rounded-[2px]" />
         </div>
       )}
 
@@ -1838,12 +1838,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* MODAL: Audience QR Code Display (Sync with Admin Portal) */}
       {gameState.show_qr && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full bg-[#190839]/50 backdrop-blur-md border-2 border-blue-500/30 rounded-[4px] p-8 text-center text-[#e5e5e5] shadow-[0_0_50px_rgba(59,130,246,0.25)] relative overflow-hidden">
+          <div className="max-w-md w-full bg-[#190839]/50 backdrop-blur-md border-2 border-blue-500/30 rounded-[2px] p-8 text-center text-[#e5e5e5] shadow-[0_0_50px_rgba(59,130,246,0.25)] relative overflow-hidden">
             {/* Subtle decorative glow */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 fluent-box-nested rounded-[4px] blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 fluent-box-nested rounded-[4px] blur-2xl pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-40 h-40 fluent-box-nested rounded-[2px] blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 fluent-box-nested rounded-[2px] blur-2xl pointer-events-none" />
 
-            <div className="w-16 h-16 fluent-box-nested rounded-[4px] flex items-center justify-center text-blue-400 mx-auto mb-4 border border-blue-500/20">
+            <div className="w-16 h-16 fluent-box-nested rounded-[2px] flex items-center justify-center text-blue-400 mx-auto mb-4 border border-blue-500/20">
               <QrCode className="w-8 h-8 animate-pulse" />
             </div>
 
@@ -1852,7 +1852,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               Quét mã bằng camera điện thoại để vào màn hình tương tác và tham gia bình chọn trực tiếp!
             </p>
 
-            <div className={`p-5 rounded-[4px] inline-block shadow-2xl border-4 border-blue-500/20 mb-3 animate-qr-entrance hover:scale-105 transition duration-300 ${
+            <div className={`p-5 rounded-[2px] inline-block shadow-2xl border-4 border-blue-500/20 mb-3 animate-qr-entrance hover:scale-105 transition duration-300 ${
               gameState.qr_transparent_bg
                 ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/40'
                 : 'bg-white'
@@ -1869,7 +1869,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 }}
                 loadingFallback={
                   <div 
-                    className="fluent-box-nested rounded-[4px] mx-auto flex items-center justify-center text-xs text-white/40"
+                    className="fluent-box-nested rounded-[2px] mx-auto flex items-center justify-center text-xs text-white/40"
                     style={{
                       width: `${gameState.qr_code_size || 280}px`,
                       height: `${gameState.qr_code_size || 280}px`
@@ -1885,7 +1885,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             {gameState.qr_custom_caption && (
               <div 
                 id="projector-qr-caption"
-                className="mb-4 px-4 py-2 rounded-[4px] bg-gradient-to-r from-blue-950/90 via-indigo-950/90 to-purple-950/90 border border-blue-400/50 text-sky-200 font-mono font-bold text-sm sm:text-base tracking-wide text-center animate-fadeIn shadow-xl shadow-blue-950/60 inline-flex items-center gap-2 max-w-full break-words"
+                className="mb-4 px-4 py-2 rounded-[2px] bg-gradient-to-r from-blue-950/90 via-indigo-950/90 to-purple-950/90 border border-blue-400/50 text-sky-200 font-mono font-bold text-sm sm:text-base tracking-wide text-center animate-fadeIn shadow-xl shadow-blue-950/60 inline-flex items-center gap-2 max-w-full break-words"
               >
                 <Sparkles className="w-4 h-4 text-amber-300 shrink-0 animate-pulse" />
                 <span className="truncate">{gameState.qr_custom_caption}</span>
@@ -1895,7 +1895,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             {/* Direct URL Bar & Copy Button */}
             {audienceJoinUrl && (
               <div className="mb-4 space-y-2">
-                <div className="fluent-box-nested border border-white/10 rounded-[4px] p-2 flex items-center justify-between gap-2 text-left">
+                <div className="fluent-box-nested border border-white/10 rounded-[2px] p-2 flex items-center justify-between gap-2 text-left">
                   <span className="text-xs font-mono text-sky-300 truncate select-all px-1">
                     {audienceJoinUrl}
                   </span>
@@ -1903,7 +1903,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     id="btn-projector-copy-qr-url"
                     type="button"
                     onClick={handleCopyAudienceUrl}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1.5 shrink-0 transition cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 shrink-0 transition cursor-pointer ${
                       isCopiedUrl
                         ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/30'
                         : 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
@@ -1920,7 +1920,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     id="btn-projector-native-share-qr"
                     type="button"
                     onClick={handleNativeShareAudienceUrl}
-                    className="w-full py-2 px-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-[4px] transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 px-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-[2px] transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Share2 className="w-3.5 h-3.5" />
                     <span>Chia sẻ link qua ứng dụng</span>

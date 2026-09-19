@@ -164,21 +164,21 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
   return (
     <div
       id="projector-word-cloud-container"
-      className="w-full max-w-7xl mx-auto rounded-[4px] fluent-box border-2 border-[#3E1D74] shadow-2xl p-5 sm:p-7 backdrop-blur-2xl text-white relative overflow-hidden transition-all duration-500 animate-fadeIn"
+      className="w-full max-w-7xl mx-auto rounded-[2px] fluent-box border-2 border-[#3E1D74] shadow-2xl p-5 sm:p-7 backdrop-blur-2xl text-white relative overflow-hidden transition-all duration-500 animate-fadeIn"
     >
       {/* Decorative Glow Elements */}
-      <div className="absolute -top-20 -left-20 w-80 h-80 fluent-box-nested rounded-[4px] blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -right-20 w-80 h-80 fluent-box-nested rounded-[4px] blur-3xl pointer-events-none" />
+      <div className="absolute -top-20 -left-20 w-80 h-80 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-80 h-80 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
 
       {/* Top Header & Stage Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/10 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-[4px] bg-gradient-to-tr from-[#F7CAC9] to-[#E39A96] text-[#190839] flex items-center justify-center font-black shadow-lg shadow-[#F7CAC9]/30">
+          <div className="w-12 h-12 rounded-[2px] bg-gradient-to-tr from-[#F7CAC9] to-[#E39A96] text-[#190839] flex items-center justify-center font-black shadow-lg shadow-[#F7CAC9]/30">
             <Cloud className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-[4px] bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 flex items-center gap-1">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
                 STAGE WORD CLOUD ENGINE
               </span>
@@ -198,11 +198,11 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
         {/* Filter Controls & Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Source Filter Switcher */}
-          <div className="flex items-center fluent-box-nested border border-white/10 rounded-[4px] p-1 text-xs font-mono">
+          <div className="flex items-center fluent-box-nested border border-white/10 rounded-[2px] p-1 text-xs font-mono">
             <button
               type="button"
               onClick={() => setSourceFilter('ALL')}
-              className={`px-3 py-1.5 rounded-[4px] font-bold transition ${
+              className={`px-3 py-1.5 rounded-[2px] font-bold transition ${
                 sourceFilter === 'ALL'
                   ? 'bg-[#F7CAC9] text-[#190839] shadow'
                   : 'text-white/60 hover:text-white'
@@ -213,7 +213,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             <button
               type="button"
               onClick={() => setSourceFilter('QA')}
-              className={`px-3 py-1.5 rounded-[4px] font-bold transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-[2px] font-bold transition flex items-center gap-1.5 ${
                 sourceFilter === 'QA'
                   ? 'bg-[#F7CAC9] text-[#190839] shadow'
                   : 'text-white/60 hover:text-white'
@@ -225,7 +225,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             <button
               type="button"
               onClick={() => setSourceFilter('RESPONSES')}
-              className={`px-3 py-1.5 rounded-[4px] font-bold transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-[2px] font-bold transition flex items-center gap-1.5 ${
                 sourceFilter === 'RESPONSES'
                   ? 'bg-[#F7CAC9] text-[#190839] shadow'
                   : 'text-white/60 hover:text-white'
@@ -237,7 +237,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
           </div>
 
           {/* Min occurrence filter */}
-          <div className="hidden sm:flex items-center gap-1.5 fluent-box-nested border border-white/10 px-3 py-1.5 rounded-[4px] text-xs font-mono text-white/70">
+          <div className="hidden sm:flex items-center gap-1.5 fluent-box-nested border border-white/10 px-3 py-1.5 rounded-[2px] text-xs font-mono text-white/70">
             <SlidersHorizontal className="w-3.5 h-3.5 text-[#F7CAC9]" />
             <span>Tối thiểu:</span>
             {[1, 2, 3].map((val) => (
@@ -260,7 +260,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
           <button
             type="button"
             onClick={() => setLayoutKey((prev) => prev + 1)}
-            className="p-2 rounded-[4px] fluent-box-nested hover:fluent-box-nested text-white/70 hover:text-white border border-white/10 transition cursor-pointer"
+            className="p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white/70 hover:text-white border border-white/10 transition cursor-pointer"
             title="Sắp xếp lại vị trí từ khóa"
           >
             <RefreshCw className="w-4 h-4" />
@@ -271,7 +271,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-[4px] fluent-box-nested hover:fluent-box-nested text-white font-mono text-xs font-bold transition flex items-center gap-1.5 border border-white/15 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white font-mono text-xs font-bold transition flex items-center gap-1.5 border border-white/15 cursor-pointer"
             >
               <X className="w-4 h-4" />
               <span>Đóng</span>
@@ -282,7 +282,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4 relative z-10">
-        <div className="fluent-box-nested border border-white/5 rounded-[4px] p-3.5 flex items-center justify-between">
+        <div className="fluent-box-nested border border-white/5 rounded-[2px] p-3.5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-mono text-white/40 uppercase block">Từ Khóa Trích Xuất</span>
             <span className="text-lg sm:text-xl font-bold font-mono text-rose-300">
@@ -292,7 +292,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
           <Layers className="w-5 h-5 text-rose-400/60" />
         </div>
 
-        <div className="fluent-box-nested border border-white/5 rounded-[4px] p-3.5 flex items-center justify-between">
+        <div className="fluent-box-nested border border-white/5 rounded-[2px] p-3.5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-mono text-white/40 uppercase block">Tổng Số Lượt Xuất Hiện</span>
             <span className="text-lg sm:text-xl font-bold font-mono text-amber-300">
@@ -302,7 +302,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
           <TrendingUp className="w-5 h-5 text-amber-400/60" />
         </div>
 
-        <div className="fluent-box-nested border border-white/5 rounded-[4px] p-3.5 flex items-center justify-between">
+        <div className="fluent-box-nested border border-white/5 rounded-[2px] p-3.5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-mono text-white/40 uppercase block">Từ Khóa Dẫn Đầu</span>
             <span className="text-sm sm:text-base font-black font-mono text-[#F7CAC9] truncate max-w-[130px] block">
@@ -312,7 +312,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
           <Flame className="w-5 h-5 text-[#F7CAC9] animate-pulse" />
         </div>
 
-        <div className="fluent-box-nested border border-white/5 rounded-[4px] p-3.5 flex items-center justify-between">
+        <div className="fluent-box-nested border border-white/5 rounded-[2px] p-3.5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-mono text-white/40 uppercase block">Lượt Đóng Góp</span>
             <span className="text-lg sm:text-xl font-bold font-mono text-emerald-300">
@@ -332,7 +332,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             placeholder="Tìm nhanh từ khóa trong đám mây (VD: Ransomware, Zero Trust, Bảo mật...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] pl-10 pr-9 py-2 rounded-[4px] text-xs sm:text-sm text-white placeholder:text-white/30 outline-none transition"
+            className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] pl-10 pr-9 py-2 rounded-[2px] text-xs sm:text-sm text-white placeholder:text-white/30 outline-none transition"
           />
           {searchTerm && (
             <button
@@ -348,7 +348,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
 
       {/* Main Interactive Word Cloud Canvas */}
       <div
-        className="min-h-[380px] sm:min-h-[40vh] max-h-[60vh] overflow-y-auto rounded-[4px] fluent-box-nested border border-white/10 p-6 sm:p-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4.5 content-center relative select-none scrollbar-thin scrollbar-thumb-white/20"
+        className="min-h-[380px] sm:min-h-[40vh] max-h-[60vh] overflow-y-auto rounded-[2px] fluent-box-nested border border-white/10 p-6 sm:p-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4.5 content-center relative select-none scrollbar-thin scrollbar-thumb-white/20"
         key={layoutKey}
       >
         {filteredWords.length === 0 ? (
@@ -391,7 +391,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedWord(selectedWord?.text === item.text ? null : item)}
-                  className={`relative rounded-[4px] border transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-md group ${palette.bg} ${
+                  className={`relative rounded-[2px] border transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-md group ${palette.bg} ${
                     isSelected
                       ? 'ring-4 ring-[#F7CAC9] shadow-[0_0_30px_rgba(247,202,201,0.6)] scale-110 z-30'
                       : isTopTier
@@ -427,7 +427,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
 
                   {/* Frequency & Score Badge */}
                   <span
-                    className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[4px] flex items-center gap-1 shadow-sm shrink-0 ${palette.badge}`}
+                    className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[2px] flex items-center gap-1 shadow-sm shrink-0 ${palette.badge}`}
                   >
                     {item.count}
                     {item.score > item.count * 10 && (
@@ -448,11 +448,11 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
-            className="mt-5 p-5 rounded-[4px] fluent-box border border-[#F7CAC9]/50 shadow-2xl space-y-4 relative z-20"
+            className="mt-5 p-5 rounded-[2px] fluent-box border border-[#F7CAC9]/50 shadow-2xl space-y-4 relative z-20"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[4px] bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 flex items-center justify-center font-black">
+                <div className="w-9 h-9 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 flex items-center justify-center font-black">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
@@ -460,7 +460,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
                     <span className="text-lg sm:text-xl font-black text-white font-mono">
                       "{selectedWord.text}"
                     </span>
-                    <span className="text-xs font-mono px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-rose-300 border border-rose-500/40 font-bold">
+                    <span className="text-xs font-mono px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-rose-300 border border-rose-500/40 font-bold">
                       {selectedWord.count} Lần đề cập ({selectedWord.percentage}%)
                     </span>
                   </div>
@@ -473,7 +473,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedWord(null)}
-                className="p-1.5 rounded-[4px] fluent-box-nested hover:fluent-box-nested text-white/70 hover:text-white transition cursor-pointer"
+                className="p-1.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white/70 hover:text-white transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -484,7 +484,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
               {selectedWord.sources.map((src, i) => (
                 <div
                   key={src.id || i}
-                  className="p-3 rounded-[4px] fluent-box-nested border border-white/10 hover:border-[#F7CAC9]/40 transition space-y-1.5 text-left"
+                  className="p-3 rounded-[2px] fluent-box-nested border border-white/10 hover:border-[#F7CAC9]/40 transition space-y-1.5 text-left"
                 >
                   <div className="flex items-center justify-between text-[11px] text-white/50">
                     <div className="flex items-center gap-1.5">

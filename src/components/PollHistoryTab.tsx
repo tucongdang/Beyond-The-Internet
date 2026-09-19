@@ -619,11 +619,11 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
   return (
     <div id="poll-history-tab" className="space-y-6 animate-fadeIn text-[#e5e5e5]">
       {/* Top Bento Header Banner */}
-      <section className="fluent-box border border-white/10 rounded-[4px] p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+      <section className="fluent-box border border-white/10 rounded-[2px] p-4 sm:p-6 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-white/10">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-purple-300 font-mono text-[10px] font-bold border border-purple-500/40 uppercase tracking-widest">
+              <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-purple-300 font-mono text-[10px] font-bold border border-purple-500/40 uppercase tracking-widest">
                 Real-Time Audience Sentiment Archive
               </span>
               <span className="text-xs text-white/40 font-mono">• BTI 2026 Telemetry</span>
@@ -643,7 +643,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               <button
                 type="button"
                 onClick={handleExportActivePollCSV}
-                className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-amber-500/50 text-amber-200 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm ring-1 ring-amber-500/30 animate-pulse cursor-pointer"
+                className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-amber-500/50 text-amber-200 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm ring-1 ring-amber-500/30 animate-pulse cursor-pointer"
                 title="Tải ngay file CSV toàn bộ phiếu bầu của câu hỏi đang diễn ra"
               >
                 <Download className="w-3.5 h-3.5 text-amber-300" />
@@ -654,7 +654,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-emerald-500/40 text-emerald-300 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-emerald-500/40 text-emerald-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               title="Xuất bảng tổng kết thống kê các cuộc khảo sát sang file CSV (SPSS / Excel)"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -664,7 +664,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
             <button
               type="button"
               onClick={handleExportAllVotersGranularCSV}
-              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-sky-500/40 text-sky-300 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-sky-500/40 text-sky-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               title="Xuất file CSV chi tiết từng lượt bình chọn của toàn bộ các cuộc khảo sát"
             >
               <Users className="w-3.5 h-3.5" />
@@ -674,7 +674,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
             <button
               type="button"
               onClick={handleExportJSON}
-              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-white/15 text-white rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-white/15 text-white rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
               title="Xuất file JSON kèm danh sách chi tiết người bình chọn"
             >
               <Download className="w-3.5 h-3.5" />
@@ -685,7 +685,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               <button
                 type="button"
                 onClick={() => setIsClearHistoryDialogOpen(true)}
-                className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-rose-500/40 text-rose-300 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 fluent-box hover:bg-white/15 border border-rose-500/40 text-rose-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
                 title="Xóa toàn bộ lịch sử khảo sát"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -699,7 +699,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
         {/* 4 Bento KPI Metric Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
           {/* Card 1 */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-1">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 flex items-center justify-between">
               <span>Tổng số cuộc khảo sát</span>
               <BarChart3 className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -713,7 +713,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
           </div>
 
           {/* Card 2 */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-1">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 flex items-center justify-between">
               <span>Tổng lượt bình chọn</span>
               <Users className="w-3.5 h-3.5 text-emerald-400" />
@@ -727,7 +727,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
           </div>
 
           {/* Card 3 */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-1">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 flex items-center justify-between">
               <span>Khán phòng trực tuyến</span>
               <Zap className="w-3.5 h-3.5 text-sky-400" />
@@ -741,7 +741,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
           </div>
 
           {/* Card 4: Source Breakdown */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-1.5">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-1.5">
             <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">
               Nguồn khởi xướng
             </div>
@@ -761,11 +761,11 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
 
         {/* Live Active Poll Quick-Access Banner (if currently running) */}
         {gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' && (
-          <div className="mt-4 p-4 rounded-[4px] fluent-acrylic-surface border border-amber-500/50 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="mt-4 p-4 rounded-[2px] fluent-acrylic-surface border border-amber-500/50 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-amber-300 border border-amber-500/40 text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-[4px] bg-amber-400 animate-ping" />
+                <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-amber-300 border border-amber-500/40 text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-[2px] bg-amber-400 animate-ping" />
                   🔴 CÂU HỎI ĐANG PHÁT TRỰC TIẾP
                 </span>
                 <span className="text-xs text-white/50 font-mono">
@@ -786,7 +786,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               <button
                 type="button"
                 onClick={handleExportActivePollCSV}
-                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-[#190839] font-black rounded-[4px] text-xs font-mono transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-[#190839] font-black rounded-[2px] text-xs font-mono transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
               >
                 <Download className="w-4 h-4 text-[#190839]" />
                 <span>Tải CSV Phiếu Bầu Câu Này</span>
@@ -797,7 +797,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
       </section>
 
       {/* Filter & Search Bar */}
-      <section className="fluent-box border border-white/10 rounded-[4px] p-4 space-y-3">
+      <section className="fluent-box border border-white/10 rounded-[2px] p-4 space-y-3">
         <div className="flex flex-col md:flex-row items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
@@ -807,7 +807,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Tìm kiếm theo từ khóa câu hỏi, tên Cố vấn/Thí sinh, hoặc ngữ cảnh..."
-              className="w-full pl-10 pr-4 py-2 bg-[#0E051C]/60 border border-white/10 focus:border-[#F7CAC9] rounded-[4px] text-xs text-white placeholder-white/40 transition outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-[#0E051C]/60 border border-white/10 focus:border-[#F7CAC9] rounded-[2px] text-xs text-white placeholder-white/40 transition outline-none"
             />
             {searchTerm && (
               <button
@@ -839,7 +839,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   vibrateSelection();
                   setSourceFilter(chip.id as any);
                 }}
-                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition shrink-0 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono transition shrink-0 cursor-pointer ${
                   sourceFilter === chip.id
                     ? 'bg-[#F7CAC9] text-[#190839]'
                     : 'fluent-box-nested hover:bg-white/15 text-white/60 border border-white/5'
@@ -854,8 +854,8 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
 
       {/* Main List of Poll Cards */}
       {filteredList.length === 0 ? (
-        <div className="p-12 text-center fluent-box border border-dashed border-white/15 rounded-[4px] space-y-4">
-          <div className="w-16 h-16 rounded-[4px] fluent-box border border-purple-500/30 text-[#F7CAC9] mx-auto flex items-center justify-center">
+        <div className="p-12 text-center fluent-box border border-dashed border-white/15 rounded-[2px] space-y-4">
+          <div className="w-16 h-16 rounded-[2px] fluent-box border border-purple-500/30 text-[#F7CAC9] mx-auto flex items-center justify-center">
             <History className="w-8 h-8 opacity-60" />
           </div>
           <div className="space-y-1">
@@ -926,25 +926,25 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
             return (
               <div
                 key={item.id}
-                className="bg-[#190839]/80 backdrop-blur-md border border-white/15 hover:border-purple-500/40 rounded-[4px] p-4 sm:p-5 shadow-xl space-y-4 transition group"
+                className="bg-[#190839]/80 backdrop-blur-md border border-white/15 hover:border-purple-500/40 rounded-[2px] p-4 sm:p-5 shadow-xl space-y-4 transition group"
               >
                 {/* Header Meta Line */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-[4px] fluent-box-nested border border-white/10 font-mono text-[11px] text-white/70 font-bold">
+                    <span className="px-2.5 py-1 rounded-[2px] fluent-box-nested border border-white/10 font-mono text-[11px] text-white/70 font-bold">
                       #{filteredList.length - index} • {formattedTime} ({formattedDate})
                     </span>
 
                     {/* Source Badge */}
                     <span
-                      className={`px-3 py-1 rounded-[4px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}
+                      className={`px-3 py-1 rounded-[2px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}
                     >
                       <SourceIcon className="w-3.5 h-3.5" />
                       <span>{item.source_name || sourceConfig.label}</span>
                     </span>
 
                     {item.context_note && (
-                      <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-purple-200 border border-purple-500/20 text-xs italic">
+                      <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-purple-200 border border-purple-500/20 text-xs italic">
                         📌 {item.context_note}
                       </span>
                     )}
@@ -955,7 +955,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                       </span>
                     )}
                     {/* Sentiment Badge */}
-                    <span className={`px-2.5 py-1 rounded-[4px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sentiment.className}`}>
+                    <span className={`px-2.5 py-1 rounded-[2px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sentiment.className}`}>
                       <SentimentIcon className="w-3 h-3" />
                       <span>{sentiment.label}</span>
                     </span>
@@ -966,7 +966,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                     <button
                       type="button"
                       onClick={() => handleExportSinglePollCSV(item)}
-                      className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-emerald-500/40 text-emerald-300 rounded-[4px] text-xs font-bold font-mono flex items-center gap-1 transition shadow-sm"
+                      className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-emerald-500/40 text-emerald-300 rounded-[2px] text-xs font-bold font-mono flex items-center gap-1 transition shadow-sm"
                       title="Tải toàn bộ phiếu bầu của cuộc khảo sát này sang file CSV"
                     >
                       <Download className="w-3.5 h-3.5 text-emerald-400" />
@@ -976,7 +976,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                     <button
                       type="button"
                       onClick={() => handleCopySummary(item)}
-                      className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[4px] text-xs text-white/80 hover:text-white flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[2px] text-xs text-white/80 hover:text-white flex items-center gap-1 transition"
                       title="Sao chép tóm tắt cho MC đọc trên sân khấu"
                     >
                       {copiedId === item.id ? (
@@ -1007,7 +1007,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                             context_note: item.context_note
                           });
                         }}
-                        className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-rose-500/40 text-rose-300 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                        className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-rose-500/40 text-rose-300 rounded-[2px] text-xs font-bold flex items-center gap-1 transition"
                         title="Nạp lại câu hỏi này vào bộ điều khiển khảo sát để phát sóng lại"
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
@@ -1018,7 +1018,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                     <button
                       type="button"
                       onClick={() => setDeleteTargetPollId(item.id)}
-                      className="p-1.5 text-white/30 hover:text-rose-400 hover:fluent-box-nested rounded-[4px] transition cursor-pointer"
+                      className="p-1.5 text-white/30 hover:text-rose-400 hover:fluent-box-nested rounded-[2px] transition cursor-pointer"
                       title="Xóa bản ghi này"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1041,7 +1041,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   {/* Option A Box */}
                   <div
-                    className={`p-3.5 rounded-[4px] border transition ${
+                    className={`p-3.5 rounded-[2px] border transition ${
                       item.dominantChoice === 'A'
                         ? 'fluent-box-nested border-emerald-500/50 shadow-md ring-1 ring-emerald-500/30'
                         : 'fluent-box border-white/10'
@@ -1049,7 +1049,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-[4px] fluent-box-nested border border-emerald-400 text-emerald-300 font-mono font-black text-xs flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-[2px] fluent-box-nested border border-emerald-400 text-emerald-300 font-mono font-black text-xs flex items-center justify-center">
                           A
                         </span>
                         <span className="text-xs font-bold text-white truncate max-w-[180px] sm:max-w-[220px]">
@@ -1076,7 +1076,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
 
                   {/* Option B Box */}
                   <div
-                    className={`p-3.5 rounded-[4px] border transition ${
+                    className={`p-3.5 rounded-[2px] border transition ${
                       item.dominantChoice === 'B'
                         ? 'fluent-box-nested border-rose-500/50 shadow-md ring-1 ring-rose-500/30'
                         : 'fluent-box border-white/10'
@@ -1084,7 +1084,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-[4px] fluent-box-nested border border-rose-400 text-rose-300 font-mono font-black text-xs flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-[2px] fluent-box-nested border border-rose-400 text-rose-300 font-mono font-black text-xs flex items-center justify-center">
                           B
                         </span>
                         <span className="text-xs font-bold text-white truncate max-w-[180px] sm:max-w-[220px]">
@@ -1115,15 +1115,15 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-white/40 font-mono">KẾT LUẬN:</span>
                     {item.dominantChoice === 'A' ? (
-                      <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-emerald-300 font-bold border border-emerald-500/30 flex items-center gap-1">
+                      <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-emerald-300 font-bold border border-emerald-500/30 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Lựa chọn A ("{item.options.A}") chiếm đa số ({item.percentA}%)
                       </span>
                     ) : item.dominantChoice === 'B' ? (
-                      <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-rose-300 font-bold border border-rose-500/30 flex items-center gap-1">
+                      <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-rose-300 font-bold border border-rose-500/30 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Lựa chọn B ("{item.options.B}") chiếm đa số ({item.percentB}%)
                       </span>
                     ) : item.totalVotes > 0 ? (
-                      <span className="px-2.5 py-0.5 rounded-[4px] fluent-box-nested text-amber-300 font-bold border border-amber-500/30">
+                      <span className="px-2.5 py-0.5 rounded-[2px] fluent-box-nested text-amber-300 font-bold border border-amber-500/30">
                         ⚖️ Tỷ lệ cân bằng 50% - 50%
                       </span>
                     ) : (
@@ -1152,7 +1152,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   <div className="pt-3 border-t border-purple-500/20 space-y-4 animate-fadeIn">
                     
                     {/* Vote Velocity Line Chart */}
-                    <div className="bg-[#0B0213]/50 backdrop-blur-md border border-white/10 rounded-[4px] p-4 shadow-inner">
+                    <div className="bg-[#0B0213]/50 backdrop-blur-md border border-white/10 rounded-[2px] p-4 shadow-inner">
                       <h4 className="text-[11px] font-mono font-bold text-white/50 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Activity className="w-3.5 h-3.5 text-purple-400" />
                         Tiến độ & Vận tốc biểu quyết (Tích lũy)
@@ -1222,7 +1222,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                       </div>
                     </div>
 
-                    <div className="max-h-60 overflow-y-auto border border-white/10 rounded-[4px] fluent-box-nested scrollbar-thin">
+                    <div className="max-h-60 overflow-y-auto border border-white/10 rounded-[2px] fluent-box-nested scrollbar-thin">
                       <table className="w-full text-left text-xs font-mono">
                         <thead className="fluent-box-nested text-white/40 sticky top-0 border-b border-white/10">
                           <tr>
@@ -1275,7 +1275,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
       {/* Clear History Confirmation Modal */}
       {isClearHistoryDialogOpen && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full bg-[#160731]/90 backdrop-blur-xl border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full bg-[#160731]/90 backdrop-blur-xl border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa Lịch Sử?</h3>
             <p className="text-white/70 text-sm mt-2">
               Cảnh báo: Hành động này sẽ xóa sạch toàn bộ lịch sử các cuộc khảo sát khẩn cấp đã thực hiện trong phiên đấu. Bạn có chắc chắn không?
@@ -1284,7 +1284,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               <button
                 type="button"
                 onClick={() => setIsClearHistoryDialogOpen(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
+                className="px-4 py-2 rounded-[2px] fluent-box hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
               >
                 Hủy
               </button>
@@ -1297,7 +1297,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   setIsClearHistoryDialogOpen(false);
                   notify('Đã xóa sạch lịch sử khảo sát');
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg shadow-rose-900/50 cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg shadow-rose-900/50 cursor-pointer"
               >
                 Đồng ý Xóa Sạch
               </button>
@@ -1308,7 +1308,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
 
       {deleteTargetPollId && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full bg-[#160731]/90 backdrop-blur-xl border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full bg-[#160731]/90 backdrop-blur-xl border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa?</h3>
             <p className="text-white/70 text-sm mt-2">
               Bạn có chắc chắn muốn xóa bản ghi khảo sát này khỏi lịch sử không?
@@ -1317,7 +1317,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
               <button
                 type="button"
                 onClick={() => setDeleteTargetPollId(null)}
-                className="px-4 py-2 rounded-[4px] fluent-box hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
+                className="px-4 py-2 rounded-[2px] fluent-box hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
               >
                 Hủy
               </button>
@@ -1330,7 +1330,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                   setDeleteTargetPollId(null);
                   notify('Đã xóa bản ghi khảo sát');
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg shadow-rose-900/50 cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg shadow-rose-900/50 cursor-pointer"
               >
                 Đồng ý Xóa
               </button>
@@ -1341,7 +1341,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
 
       {toastMessage && (
 
-        <div className="fixed bottom-6 right-6 z-[350] bg-purple-950/90 border border-purple-500/40 text-purple-200 px-4 py-3 rounded-[4px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
+        <div className="fixed bottom-6 right-6 z-[350] bg-purple-950/90 border border-purple-500/40 text-purple-200 px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
           <AlertCircle className="w-4 h-4 text-purple-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>

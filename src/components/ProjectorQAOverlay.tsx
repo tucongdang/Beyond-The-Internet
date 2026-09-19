@@ -28,7 +28,7 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
 
   return (
     <div className="fixed inset-x-4 sm:inset-x-8 md:inset-x-12 bottom-16 sm:bottom-20 z-50 animate-fadeIn">
-      <div className="relative max-w-5xl mx-auto rounded-[12px] p-6 sm:p-8 bg-gradient-to-r from-[#180936]/95 via-[#230d4a]/95 to-[#150730]/95 border-2 border-pink-500/50 shadow-[0_0_60px_rgba(244,63,94,0.35)] backdrop-blur-2xl overflow-hidden ring-1 ring-pink-400/30">
+      <div className="relative max-w-5xl mx-auto rounded-[4px] p-6 sm:p-8 bg-gradient-to-r from-[#180936]/95 via-[#230d4a]/95 to-[#150730]/95 border-2 border-pink-500/50 shadow-[0_0_60px_rgba(244,63,94,0.35)] backdrop-blur-2xl overflow-hidden ring-1 ring-pink-400/30">
         {/* Subtle Decorative Backdrop Glow */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 backdrop-blur-md rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-white/10 backdrop-blur-md rounded-full blur-3xl pointer-events-none" />
@@ -36,17 +36,17 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
         {/* Top Header Bar */}
         <div className="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-white/15 relative z-10">
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="w-10 h-10 rounded-[4px] fluent-acrylic-surface flex items-center justify-center text-white shadow-lg shadow-rose-500/40 border border-white/20">
+            <div className="w-10 h-10 rounded-[2px] fluent-acrylic-surface flex items-center justify-center text-white shadow-lg shadow-rose-500/40 border border-white/20">
               <MessageSquare className="w-5 h-5" />
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black tracking-widest uppercase font-mono px-2.5 py-0.5 rounded-[4px] bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
+                <span className="text-xs font-black tracking-widest uppercase font-mono px-2.5 py-0.5 rounded-[2px] bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
                   <Radio className="w-3.5 h-3.5 animate-pulse text-rose-400" />
                   ĐẶT CÂU HỎI TỪ KHÁN PHÒNG • LIVE AUDIENCE Q&A
                 </span>
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-[4px] border ${catInfo.badgeBg}`}>
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-[2px] border ${catInfo.badgeBg}`}>
                   {catInfo.label}
                 </span>
               </div>

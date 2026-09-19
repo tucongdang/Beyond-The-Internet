@@ -196,7 +196,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
           <button
             type="button"
             onClick={() => handleOpenTab('PROFILE')}
-            className={`p-2 rounded-[4px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
+            className={`p-2 rounded-[2px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
               isOpen && activeTab === 'PROFILE'
                 ? 'bg-amber-400 text-black font-bold shadow-lg shadow-amber-400/30'
                 : 'bg-white/10 text-amber-300 hover:text-amber-200 border border-amber-400/30'
@@ -215,7 +215,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
           <button
             type="button"
             onClick={() => handleOpenTab('HOTKEYS')}
-            className={`p-2 rounded-[4px] flex items-center gap-2 transition-all cursor-pointer relative hover-effect ${
+            className={`p-2 rounded-[2px] flex items-center gap-2 transition-all cursor-pointer relative hover-effect ${
               isOpen && activeTab === 'HOTKEYS'
                 ? 'bg-purple-500 text-white font-bold shadow-lg shadow-purple-500/30'
                 : 'bg-white/10 text-purple-300 hover:text-purple-200 border border-purple-400/30'
@@ -232,7 +232,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
           <button
             type="button"
             onClick={() => handleOpenTab('TOOLS')}
-            className={`p-2 rounded-[4px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
+            className={`p-2 rounded-[2px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
               isOpen && activeTab === 'TOOLS'
                 ? 'bg-[#F7CAC9] text-black font-bold shadow-lg shadow-[#F7CAC9]/30'
                 : 'bg-white/10 text-slate-200 hover:text-white border border-white/20'
@@ -246,7 +246,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
           <button
             type="button"
             onClick={() => handleOpenTab('COMMUNITY')}
-            className={`p-2 rounded-[4px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
+            className={`p-2 rounded-[2px] flex items-center gap-2 transition-all cursor-pointer hover-effect ${
               isOpen && activeTab === 'COMMUNITY'
                 ? 'bg-rose-500 text-white font-bold shadow-lg shadow-rose-500/30'
                 : 'bg-white/10 text-rose-300 hover:text-rose-200 border border-rose-400/30'
@@ -265,7 +265,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
               setIsDockCollapsed(true);
               setIsOpen(false);
             }}
-            className="p-1 rounded-[4px] bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white flex items-center justify-center transition mr-1.5 hover-effect"
+            className="p-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white flex items-center justify-center transition mr-1.5 hover-effect"
             title={t("sidebar_hide_toolbar", localLanguage)}
           >
             <ChevronRight className="w-4 h-4" />
@@ -293,7 +293,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
             <div className="p-3.5 pb-2.5 border-b border-white/10 fluent-box-nested flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-[4px] fluent-box text-[#F7CAC9] border border-[#F7CAC9]/30">
+                  <div className="p-1.5 rounded-[2px] fluent-box text-[#F7CAC9] border border-[#F7CAC9]/30">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <h3 className="font-extrabold text-sm text-white uppercase tracking-wider">
@@ -302,7 +302,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-white/10 text-white/70 border border-white/10 hidden sm:inline">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-white/10 text-white/70 border border-white/10 hidden sm:inline">
                     {t("sidebar_h_to_close", localLanguage)}
                   </span>
                   <button
@@ -311,7 +311,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       soundFx.playClick();
                       setIsOpen(false);
                     }}
-                    className="p-1.5 rounded-[4px] bg-white/10 hover:bg-white/20 text-white transition hover-effect"
+                    className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white transition hover-effect"
                     title={t("sidebar_esc_to_close", localLanguage)}
                   >
                     <X className="w-4 h-4" />
@@ -320,11 +320,11 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
               </div>
 
               {/* Navigation Tabs Pill Bar */}
-              <div className="grid grid-cols-4 gap-1 p-1 rounded-[4px] fluent-box border border-white/10">
+              <div className="grid grid-cols-4 gap-1 p-1 rounded-[2px] fluent-box border border-white/10">
                 <button
                   type="button"
                   onClick={() => handleOpenTab('PROFILE')}
-                  className={`py-1.5 px-1 rounded-[4px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
+                  className={`py-1.5 px-1 rounded-[2px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
                     activeTab === 'PROFILE'
                       ? 'bg-amber-400 text-black shadow-md'
                       : 'text-white/60 hover:text-white'
@@ -337,7 +337,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOpenTab('HOTKEYS')}
-                  className={`py-1.5 px-1 rounded-[4px] text-xs font-bold transition flex items-center justify-center gap-1 relative hover-effect ${
+                  className={`py-1.5 px-1 rounded-[2px] text-xs font-bold transition flex items-center justify-center gap-1 relative hover-effect ${
                     activeTab === 'HOTKEYS'
                       ? 'bg-purple-500 text-white shadow-md'
                       : 'text-white/60 hover:text-white'
@@ -353,7 +353,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOpenTab('TOOLS')}
-                  className={`py-1.5 px-1 rounded-[4px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
+                  className={`py-1.5 px-1 rounded-[2px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
                     activeTab === 'TOOLS'
                       ? 'bg-[#F7CAC9] text-black shadow-md'
                       : 'text-white/60 hover:text-white'
@@ -366,7 +366,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOpenTab('COMMUNITY')}
-                  className={`py-1.5 px-1 rounded-[4px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
+                  className={`py-1.5 px-1 rounded-[2px] text-xs font-bold transition flex items-center justify-center gap-1 hover-effect ${
                     activeTab === 'COMMUNITY'
                       ? 'bg-rose-500 text-white shadow-md'
                       : 'text-white/60 hover:text-white'
@@ -387,7 +387,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
               {activeTab === 'PROFILE' && (
                 <div className="space-y-3.5 animate-fadeIn">
                   {/* Identity Card */}
-                  <div className="p-4 rounded-[4px] fluent-box-nested">
+                  <div className="p-4 rounded-[2px] fluent-box-nested">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <button
@@ -396,7 +396,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                             setIsOpen(false);
                             onOpenProfile();
                           }}
-                          className="w-11 h-11 rounded-[4px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex items-center justify-center font-bold shadow-md cursor-pointer hover-effect transition"
+                          className="w-11 h-11 rounded-[2px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex items-center justify-center font-bold shadow-md cursor-pointer hover-effect transition"
                           title={t("sidebar_edit_profile", localLanguage)}
                         >
                           <User className="w-5 h-5 text-amber-300" />
@@ -415,7 +415,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       </div>
 
                       {userPerformance && (
-                        <div className="px-3 py-1.5 rounded-[4px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex flex-col items-end">
+                        <div className="px-3 py-1.5 rounded-[2px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex flex-col items-end">
                           <span className="text-[9px] font-mono uppercase font-bold text-amber-400/90 tracking-wider">
                             {localLanguage === 'en' ? 'RANK' : 'HẠNG'}
                           </span>
@@ -427,7 +427,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     {/* Stats Grid */}
                     {userPerformance ? (
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="p-3 rounded-[4px] fluent-box-nested">
+                        <div className="p-3 rounded-[2px] fluent-box-nested">
                           <span className="text-[10px] font-mono text-white/60 uppercase tracking-wider font-semibold flex items-center gap-1">
                             <Trophy className="w-3.5 h-3.5 text-amber-400" /> {t("sidebar_total_score", localLanguage)}
                           </span>
@@ -437,7 +437,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                           </span>
                         </div>
 
-                        <div className="p-3 rounded-[4px] fluent-box-nested">
+                        <div className="p-3 rounded-[2px] fluent-box-nested">
                           <span className="text-[10px] font-mono text-white/60 uppercase tracking-wider font-semibold flex items-center gap-1">
                             <Activity className="w-3.5 h-3.5 text-emerald-400" /> {t("sidebar_correct_rate", localLanguage)}
                           </span>
@@ -452,7 +452,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="p-3 rounded-[4px] fluent-box-nested text-xs text-white/50 text-center">
+                      <div className="p-3 rounded-[2px] fluent-box-nested text-xs text-white/50 text-center">
                         {t("sidebar_syncing_score", localLanguage)}
                       </div>
                     )}
@@ -460,12 +460,12 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
                   {/* Current Voting Status */}
                   {hasVotedThisQuestion && (
-                    <div className="p-3.5 rounded-[4px] fluent-box-nested border-emerald-500/40 flex items-center justify-between text-xs text-emerald-300">
+                    <div className="p-3.5 rounded-[2px] fluent-box-nested border-emerald-500/40 flex items-center justify-between text-xs text-emerald-300">
                       <span className="flex items-center gap-2 font-medium">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                         {t("sidebar_current_choice", localLanguage)}
                       </span>
-                      <span className="font-mono font-black text-sm px-2.5 py-0.5 rounded-[4px] bg-white/10 text-emerald-200 border border-emerald-400/40">
+                      <span className="font-mono font-black text-sm px-2.5 py-0.5 rounded-[2px] bg-white/10 text-emerald-200 border border-emerald-400/40">
                         [{selectedChoice}]
                       </span>
                     </div>
@@ -473,7 +473,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
                   {/* Question Like / Rating */}
                   {gameState.question_id && (
-                    <div className="p-3 rounded-[4px] fluent-box-nested flex items-center justify-between">
+                    <div className="p-3 rounded-[2px] fluent-box-nested flex items-center justify-between">
                       <div className="text-xs text-white/60">
                         <span className="font-mono text-amber-300 font-bold">[{gameState.question_id}]</span> {t("sidebar_question_eval", localLanguage)}
                       </div>
@@ -494,7 +494,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         setIsOpen(false);
                         onOpenProfile();
                       }}
-                      className="p-2.5 rounded-[4px] bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold flex items-center justify-center gap-2 transition hover-effect"
+                      className="p-2.5 rounded-[2px] bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold flex items-center justify-center gap-2 transition hover-effect"
                     >
                       <User className="w-4 h-4 text-amber-300" />
                       <span>{t("sidebar_edit_p", localLanguage)}</span>
@@ -507,7 +507,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                           setIsOpen(false);
                           onOpenLogModal();
                         }}
-                        className="p-2.5 rounded-[4px] bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 border border-[#F7CAC9]/40 text-[#F7CAC9] text-xs font-semibold flex items-center justify-center gap-2 transition hover-effect"
+                        className="p-2.5 rounded-[2px] bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 border border-[#F7CAC9]/40 text-[#F7CAC9] text-xs font-semibold flex items-center justify-center gap-2 transition hover-effect"
                       >
                         <History className="w-4 h-4 text-[#F7CAC9]" />
                         <span>{t("sidebar_log_l", localLanguage)}</span>
@@ -526,7 +526,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     <span className="text-xs font-bold text-white/80">
                       {localLanguage === 'en' ? 'DIRECT ANSWER' : 'TRẢ LỜI CÂU HỎI TRỰC TIẾP'}
                     </span>
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[4px] font-bold ${
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${
                       isQuestionActive ? 'bg-white/10 text-emerald-300 border border-emerald-500/40 animate-pulse' : 'bg-white/10 text-white/50'
                     }`}>
                       {isQuestionActive ? (localLanguage === 'en' ? 'KEY PRESS' : 'NHẬN PHÍM') : (localLanguage === 'en' ? 'READY' : 'SẴN SÀNG')}
@@ -545,7 +545,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       return (
                         <div 
                           key={keyItem.num}
-                          className={`p-2.5 rounded-[4px] border flex items-center justify-between transition-all duration-200 ${
+                          className={`p-2.5 rounded-[2px] border flex items-center justify-between transition-all duration-200 ${
                             isPressed
                               ? 'bg-white/10 border-pink-400 text-white scale-105 shadow-md shadow-pink-500/30 ring-2 ring-pink-400'
                               : isOptSelected
@@ -568,7 +568,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     })}
                   </div>
 
-                  <div className="p-2.5 rounded-[4px] fluent-box-nested border-purple-500/30 flex items-center justify-between text-xs">
+                  <div className="p-2.5 rounded-[2px] fluent-box-nested border-purple-500/30 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <kbd className="px-2 py-0.5 rounded-[2px] bg-white/10 text-purple-200 border border-purple-400/40 font-mono font-bold text-xs">
                         Enter
@@ -581,27 +581,27 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   <div className="pt-2 border-t border-white/10">
                     <h5 className="text-[11px] font-mono font-bold text-white/60 mb-2 uppercase">{t("sidebar_quick_keys", localLanguage)}</h5>
                     <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white border border-white/20 font-bold">F</kbd>
                         <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'Fullscreen' : 'Toàn màn hình'}</span>
                       </div>
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white border border-white/20 font-bold">M</kbd>
                         <span className="text-white/80 text-[11px]">{t("sidebar_mute", localLanguage)}</span>
                       </div>
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-sky-300 border border-sky-500/40 font-bold">Q</kbd>
                         <span className="text-white/80 text-[11px]">{t("sidebar_qna", localLanguage)}</span>
                       </div>
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-purple-300 border border-purple-500/40 font-bold">L</kbd>
                         <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'Question Logs' : 'Nhật ký câu hỏi'}</span>
                       </div>
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-amber-300 border border-amber-400/40 font-bold">T</kbd>
                         <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'High Contrast Mode' : 'Nền đen tương phản'}</span>
                       </div>
-                      <div className="p-2 rounded-[4px] fluent-box-nested border-white/10 flex items-center gap-2">
+                      <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-pink-300 border border-pink-500/40 font-bold">H</kbd>
                         <span className="text-white/80 text-[11px]">{t("sidebar_close_tab", localLanguage)}</span>
                       </div>
@@ -619,7 +619,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   <button
                     type="button"
                     onClick={handleToggleFullscreen}
-                    className={`w-full p-3 rounded-[4px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                       isFullscreen
                         ? 'bg-white/10 border-indigo-400 text-indigo-200'
                         : 'fluent-box-nested text-white/80 hover:text-white'
@@ -629,14 +629,14 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       {isFullscreen ? <Minimize className="w-4 h-4 text-indigo-300" /> : <Maximize className="w-4 h-4 text-indigo-300" />}
                       <span>{t("sidebar_full_mode", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{localLanguage === "en" ? "F Key" : "Phím F"}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "F Key" : "Phím F"}</span>
                   </button>
 
                   {/* Sound FX Toggle */}
                   <button
                     type="button"
                     onClick={handleToggleSound}
-                    className={`w-full p-3 rounded-[4px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                       soundEnabled
                         ? 'bg-white/10 border-purple-500/40 text-purple-200'
                         : 'fluent-box-nested text-white/50 hover:text-white'
@@ -646,7 +646,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       {soundEnabled ? <Volume2 className="w-4 h-4 text-purple-400" /> : <VolumeX className="w-4 h-4 text-white/40" />}
                       <span>{t("sidebar_sound_fx", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
                       {soundEnabled ? (localLanguage === 'en' ? 'ON (M)' : 'BẬT (M)') : (localLanguage === 'en' ? 'OFF (M)' : 'TẮT (M)')}
                     </span>
                   </button>
@@ -660,7 +660,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         vibrateTap();
                         onToggleWakeLock();
                       }}
-                      className={`w-full p-3 rounded-[4px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                      className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                         isWakeLockLocked
                           ? 'bg-white/10 border-amber-500/40 text-amber-300'
                           : 'fluent-box-nested text-white/50 hover:text-white'
@@ -670,7 +670,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         {isWakeLockLocked ? <Sun className="w-4 h-4 text-amber-400 animate-pulse" /> : <SunMedium className="w-4 h-4 text-white/40" />}
                         <span>{t("sidebar_keep_awake", localLanguage)}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
                         {isWakeLockLocked ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Off' : 'Tắt')}
                       </span>
                     </button>
@@ -685,7 +685,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         vibrateTap();
                         onToggleHighContrast();
                       }}
-                      className={`w-full p-3 rounded-[4px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                      className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                         isHighContrast
                           ? 'bg-amber-400 text-black border-amber-300 font-bold'
                           : 'fluent-box-nested text-white/50 hover:text-white'
@@ -695,7 +695,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         <Contrast className="w-4 h-4" />
                         <span>{localLanguage === 'en' ? 'High Contrast Black' : 'Nền Đen Tương Phản Cao'}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{localLanguage === "en" ? "T Key" : "Phím T"}</span>
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "T Key" : "Phím T"}</span>
                     </button>
                   )}
 
@@ -707,7 +707,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       vibrateTap();
                       setIsBatterySaverModalOpen(true);
                     }}
-                    className={`w-full p-3 rounded-[4px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                       isBatterySaver
                         ? 'bg-emerald-500 text-black border-emerald-400 font-bold'
                         : 'fluent-box-nested text-emerald-300'
@@ -717,7 +717,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       <Zap className="w-4 h-4 fill-current" />
                       <span>{t("sidebar_battery_saver_set", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
                       {isBatterySaver ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Details' : 'Chi Tiết')}
                     </span>
                   </button>
@@ -730,13 +730,13 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       setIsOpen(false);
                       onOpenShareModal();
                     }}
-                    className="w-full p-3 rounded-[4px] bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect"
+                    className="w-full p-3 rounded-[2px] bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect"
                   >
                     <div className="flex items-center gap-2.5">
                       <QrCode className="w-4 h-4 text-[#F7CAC9]" />
                       <span>{t("sidebar_invite_qr", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[4px] bg-white/10">{localLanguage === "en" ? "S Key" : "Phím S"}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "S Key" : "Phím S"}</span>
                   </button>
                 </div>
               )}
@@ -752,7 +752,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     <AudienceQAWidget user={user} onOpenModal={onOpenQAModal} isHighContrast={isHighContrast} />
                   )}
 
-                  <div className="p-3.5 rounded-[4px] fluent-box-nested text-xs text-white/60 space-y-1.5 shadow-inner">
+                  <div className="p-3.5 rounded-[2px] fluent-box-nested text-xs text-white/60 space-y-1.5 shadow-inner">
                     <div className="font-bold text-white flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       {t("sidebar_live_aud", localLanguage)}

@@ -126,7 +126,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   if (variant === 'bar') {
     return (
       <div 
-        className={`w-full h-2 bg-[#3E1D74]/50 rounded-[4px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 ${className}`}
+        className={`w-full h-2 bg-[#3E1D74]/50 rounded-[2px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 ${className}`}
         role="progressbar"
         aria-valuenow={currentSeconds}
         aria-valuemin={0}
@@ -150,7 +150,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       <div
         role="timer"
         aria-live="polite"
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] font-mono text-sm font-black border transition-all select-none ${
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] font-mono text-sm font-black border transition-all select-none ${
           isCritical
             ? 'bg-rose-950/80 border-rose-500 text-rose-400 scale-105 animate-bounce shadow-lg shadow-rose-500/30 ring-2 ring-rose-500/40'
             : isUrgent
@@ -219,15 +219,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   // Variant 4: Compact Capsule
   if (variant === 'compact') {
     return (
-      <div className={`w-full fluent-box rounded-[4px] p-2.5 sm:p-3 border border-white/10 text-white shadow-lg space-y-2 select-none ${className}`}>
+      <div className={`w-full fluent-box rounded-[2px] p-2.5 sm:p-3 border border-white/10 text-white shadow-lg space-y-2 select-none ${className}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {isTTRound ? (
-              <span className="p-1 rounded-[4px] bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+              <span className="p-1 rounded-[2px] bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
                 <Flame className="w-3.5 h-3.5 animate-pulse" />
               </span>
             ) : (
-              <span className="p-1 rounded-[4px] bg-white/10 text-[#F7CAC9] shrink-0">
+              <span className="p-1 rounded-[2px] bg-white/10 text-[#F7CAC9] shrink-0">
                 <Timer className="w-3.5 h-3.5" />
               </span>
             )}
@@ -240,7 +240,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           </div>
 
           <div
-            className={`px-2.5 py-1 rounded-[4px] font-mono text-xs font-black border transition-all ${
+            className={`px-2.5 py-1 rounded-[2px] font-mono text-xs font-black border transition-all ${
               isCritical
                 ? 'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
                 : isUrgent
@@ -253,7 +253,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-black/40 rounded-[4px] overflow-hidden p-0.5 border border-white/10">
+        <div className="w-full h-1.5 bg-black/40 rounded-[2px] overflow-hidden p-0.5 border border-white/10">
           <div
             className="h-full rounded-[2px] transition-all duration-300 ease-linear"
             style={{
@@ -274,13 +274,13 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       <div className="flex items-center justify-between gap-3 pt-1">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
           {(label || gameState?.category || gameState?.round_name) && (
-            <span className="px-3 py-1 rounded-[4px] text-xs font-bold uppercase tracking-wider bg-[#F7CAC9]/20 text-[#FCEEEC] border border-[#F7CAC9]/40 truncate">
+            <span className="px-3 py-1 rounded-[2px] text-xs font-bold uppercase tracking-wider bg-[#F7CAC9]/20 text-[#FCEEEC] border border-[#F7CAC9]/40 truncate">
               {label || gameState?.category || gameState?.round_name}
             </span>
           )}
 
           {isTTRound && (
-            <span className="px-2.5 py-0.5 rounded-[4px] text-[11px] font-black uppercase tracking-wider bg-white/10 text-amber-300 border border-amber-500/40 flex items-center gap-1 shrink-0">
+            <span className="px-2.5 py-0.5 rounded-[2px] text-[11px] font-black uppercase tracking-wider bg-white/10 text-amber-300 border border-amber-500/40 flex items-center gap-1 shrink-0">
               <Flame className="w-3 h-3 animate-pulse text-amber-400" />
               {localLanguage === 'en' ? 'Acceleration' : 'Tăng Tốc'}
             </span>
@@ -293,7 +293,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         <div
           role="timer"
           aria-live="polite"
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] font-mono text-sm font-black border transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] font-mono text-sm font-black border transition-all shrink-0 ${
             isCritical
               ? 'bg-rose-950/80 border-rose-500 text-rose-400 scale-105 animate-bounce shadow-lg shadow-rose-500/30 ring-2 ring-rose-500/40'
               : isUrgent
@@ -318,7 +318,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
       {/* Synchronized Linear Progress Bar */}
       <div 
-        className="w-full h-2 bg-[#3E1D74]/50 rounded-[4px] mb-5 overflow-hidden p-0.5 border border-[#F7CAC9]/30"
+        className="w-full h-2 bg-[#3E1D74]/50 rounded-[2px] mb-5 overflow-hidden p-0.5 border border-[#F7CAC9]/30"
         role="progressbar"
         aria-valuenow={currentSeconds}
         aria-valuemin={0}

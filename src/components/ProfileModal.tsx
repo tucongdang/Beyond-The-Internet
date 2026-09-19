@@ -179,7 +179,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[4px] transition cursor-pointer"
+            className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -188,7 +188,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         {/* Avatar Section */}
         <div className="p-5 flex flex-col items-center border-b border-white/5 shrink-0 fluent-box-nested">
           <div className="relative group">
-            <div className="w-20 h-20 rounded-[4px] bg-white/10 border-2 border-purple-500/50 flex items-center justify-center overflow-hidden shadow-xl">
+            <div className="w-20 h-20 rounded-[2px] bg-white/10 border-2 border-purple-500/50 flex items-center justify-center overflow-hidden shadow-xl">
               <img 
                 src={`https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}&backgroundColor=transparent`} 
                 alt="Avatar" 
@@ -198,7 +198,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             {tab === 'edit' && (
               <button 
                 onClick={generateNewAvatar}
-                className="absolute -bottom-2 -right-2 p-2 bg-[#F7CAC9] text-[#190839] hover:brightness-110 rounded-[4px] shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
+                className="absolute -bottom-2 -right-2 p-2 bg-[#F7CAC9] text-[#190839] hover:brightness-110 rounded-[2px] shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
                 title={localLanguage === 'en' ? 'Change avatar' : 'Đổi ảnh đại diện'}
               >
                 <Camera className="w-3.5 h-3.5" />
@@ -269,11 +269,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {tab === 'stats' && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-3">
-                <div className="fluent-box-nested border border-purple-500/30 rounded-[4px] p-4 text-center">
+                <div className="fluent-box-nested border border-purple-500/30 rounded-[2px] p-4 text-center">
                   <div className="text-[#F7CAC9] text-[10px] font-mono font-bold uppercase tracking-wider mb-1">{t("profile_total_score", localLanguage)}</div>
                   <div className="text-3xl font-black text-white font-mono">{scoreState.totalScore}</div>
                 </div>
-                <div className="fluent-box-nested border border-emerald-500/30 rounded-[4px] p-4 text-center">
+                <div className="fluent-box-nested border border-emerald-500/30 rounded-[2px] p-4 text-center">
                   <div className="text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">{t("profile_correct_answers", localLanguage)}</div>
                   <div className="text-3xl font-black text-white font-mono">{scoreState.correctAnswersCount}<span className="text-sm text-emerald-500/50">/{scoreState.totalAnswered}</span></div>
                 </div>
@@ -282,22 +282,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <div className="space-y-2">
                 <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest font-mono mb-2">{t("profile_score_breakdown", localLanguage)}</h4>
                 
-                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[4px] border border-white/5">
+                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[2px] border border-white/5">
                   <span className="text-sm text-white/80 font-medium">{t("prof_stat_kd", localLanguage)}</span>
                   <span className="text-base font-bold text-[#F7CAC9] font-mono">+{scoreState.scoreBreakdown.round1}</span>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[4px] border border-white/5">
+                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[2px] border border-white/5">
                   <span className="text-sm text-white/80 font-medium">{t("prof_stat_vcnv", localLanguage)}</span>
                   <span className="text-base font-bold text-[#F7CAC9] font-mono">+{scoreState.scoreBreakdown.round2}</span>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[4px] border border-white/5">
+                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[2px] border border-white/5">
                   <span className="text-sm text-white/80 font-medium">{t("prof_stat_tt", localLanguage)}</span>
                   <span className="text-base font-bold text-[#F7CAC9] font-mono">+{scoreState.scoreBreakdown.round3}</span>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[4px] border border-white/5">
+                <div className="flex justify-between items-center p-3 fluent-box-nested rounded-[2px] border border-white/5">
                   <span className="text-sm text-white/80 font-medium">{t("prof_stat_vd", localLanguage)}</span>
                   <span className="text-base font-bold text-[#F7CAC9] font-mono">+{scoreState.scoreBreakdown.round4}</span>
                 </div>
@@ -307,7 +307,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
           {tab === 'edit' && (
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="fluent-box-nested border border-purple-500/30 rounded-[4px] p-3.5 space-y-2">
+              <div className="fluent-box-nested border border-purple-500/30 rounded-[2px] p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
                     <span>{t("prof_uid", localLanguage)}</span>
@@ -322,12 +322,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       soundFx.playClick();
                       vibrateTap();
                     }}
-                    className="fluent-btn px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-[4px] text-[11px] font-bold font-mono transition active:scale-95 cursor-pointer shadow"
+                    className="fluent-btn px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] text-[11px] font-bold font-mono transition active:scale-95 cursor-pointer shadow"
                   >
                     {localLanguage === 'en' ? 'Copy Code' : 'Sao Chép Mã'}
                   </button>
                 </div>
-                <div className="text-sm font-mono font-bold text-white fluent-box-nested border border-white/10 px-3 py-2 rounded-[4px] tracking-wider select-all">
+                <div className="text-sm font-mono font-bold text-white fluent-box-nested border border-white/10 px-3 py-2 rounded-[2px] tracking-wider select-all">
                   {user.anonymizedUid || user.uid}
                 </div>
                 <p className="text-[10px] text-purple-200/60 leading-tight">
@@ -389,7 +389,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="fluent-btn w-full mt-4 fluent-acrylic-surface hover:brightness-110 active:scale-98 text-white font-bold py-3 px-4 rounded-[4px] uppercase text-xs font-mono tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                className="fluent-btn w-full mt-4 fluent-acrylic-surface hover:brightness-110 active:scale-98 text-white font-bold py-3 px-4 rounded-[2px] uppercase text-xs font-mono tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg"
               >
                 {isSaving ? (
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -405,9 +405,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {tab === 'settings' && (
             <div className="space-y-4">
               {/* Language Settings Card */}
-              <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between">
+              <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[4px] bg-white/10 text-blue-300 border border-blue-500/30 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-[2px] bg-white/10 text-blue-300 border border-blue-500/30 flex items-center justify-center">
                 <Globe className="w-4 h-4" />
               </div>
               <div>
@@ -424,7 +424,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <button
               type="button"
               onClick={handleToggleLanguage}
-              className={`w-11 h-6 flex items-center rounded-[4px] p-1 transition duration-300 cursor-pointer ${
+              className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                 localLanguage === 'en' ? 'bg-blue-500 justify-end' : 'bg-gray-700 justify-start'
               }`}
               title={t("prof_lang", localLanguage)}
@@ -434,10 +434,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </div>
 
           {/* High Contrast / Pure Black Mode Settings Card */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-3">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[4px] bg-white/10 text-amber-300 border border-amber-500/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[2px] bg-white/10 text-amber-300 border border-amber-500/30 flex items-center justify-center">
                   <Contrast className="w-4 h-4" />
                 </div>
                 <div>
@@ -457,7 +457,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <button
                 type="button"
                 onClick={handleToggleHighContrast}
-                className={`w-11 h-6 flex items-center rounded-[4px] p-1 transition duration-300 cursor-pointer ${
+                className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   highContrastEnabled ? 'bg-amber-500 justify-end' : 'bg-gray-700 justify-start'
                 }`}
                 title={highContrastEnabled ? t("prof_dark_off", localLanguage) : t("prof_dark_on", localLanguage)}
@@ -468,10 +468,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </div>
 
           {/* Haptic Vibration Settings Card */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 space-y-3">
+          <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[4px] bg-white/10 text-purple-300 border border-purple-500/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[2px] bg-white/10 text-purple-300 border border-purple-500/30 flex items-center justify-center">
                   <Smartphone className="w-4 h-4" />
                 </div>
                 <div>
@@ -497,7 +497,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <button
                 type="button"
                 onClick={handleToggleHaptics}
-                className={`w-11 h-6 flex items-center rounded-[4px] p-1 transition duration-300 cursor-pointer ${
+                className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   hapticsEnabled ? 'bg-purple-600 justify-end' : 'bg-gray-700 justify-start'
                 }`}
                 title={hapticsEnabled ? t("prof_haptic_off", localLanguage) : t("prof_haptic_on", localLanguage)}
@@ -514,7 +514,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <button
                   type="button"
                   onClick={handleTestVibrate}
-                  className="fluent-btn px-3 py-1.5 rounded-[4px] bg-white/10 hover:bg-white/15 border border-purple-500/40 text-purple-200 text-xs font-bold font-mono flex items-center gap-1.5 active:scale-95 transition cursor-pointer"
+                  className="fluent-btn px-3 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/15 border border-purple-500/40 text-purple-200 text-xs font-bold font-mono flex items-center gap-1.5 active:scale-95 transition cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>{t("profile_haptic_test", localLanguage)}</span>

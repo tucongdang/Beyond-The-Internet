@@ -70,11 +70,11 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
     >
       <div
         id="firebase-modal-card"
-        className="w-full max-w-lg fluent-box rounded-[4px] shadow-2xl p-6 text-[#F5EFF9] relative overflow-hidden"
+        className="w-full max-w-lg fluent-box rounded-[2px] shadow-2xl p-6 text-[#F5EFF9] relative overflow-hidden"
       >
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[4px] fluent-box-nested text-[#F7CAC9] flex items-center justify-center border border-[#F7CAC9]/30">
+            <div className="w-10 h-10 rounded-[2px] fluent-box-nested text-[#F7CAC9] flex items-center justify-center border border-[#F7CAC9]/30">
               <Database className="w-5 h-5" />
             </div>
             <div>
@@ -88,14 +88,14 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white p-1.5 rounded-[4px] hover:bg-white/10 backdrop-blur-md transition"
+            className="text-white/40 hover:text-white p-1.5 rounded-[2px] hover:bg-white/10 backdrop-blur-md transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Current status pill */}
-        <div className="my-4 p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between text-xs">
+        <div className="my-4 p-3 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span
               className={`w-2.5 h-2.5 rounded-full ${
@@ -120,7 +120,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
 
         {statusMsg && (
           <div
-            className={`p-3 mb-4 rounded-[4px] text-xs flex items-center gap-2 ${
+            className={`p-3 mb-4 rounded-[2px] text-xs flex items-center gap-2 ${
               statusMsg.type === 'success'
                 ? 'bg-white/10 backdrop-blur-md border border-emerald-500/40 text-emerald-300'
                 : 'bg-white/10 backdrop-blur-md border border-rose-500/40 text-rose-300'
@@ -149,7 +149,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
               placeholder="https://bti2026-default-rtdb.asia-southeast1.firebasedatabase.app"
               value={databaseURL}
               onChange={(e) => setDatabaseURL(e.target.value)}
-              className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[4px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
+              className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
             />
           </div>
 
@@ -167,7 +167,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
                 placeholder="AIzaSy..."
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[4px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
+                className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
               />
             </div>
             <div>
@@ -183,7 +183,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
                 placeholder="beyond-the-internet-2026"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[4px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
+                className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition"
               />
             </div>
           </div>
@@ -192,14 +192,14 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[4px] border border-white/10 text-white/60 hover:text-white hover:bg-white/10 backdrop-blur-md transition"
+              className="px-4 py-2.5 rounded-[2px] border border-white/10 text-white/60 hover:text-white hover:bg-white/10 backdrop-blur-md transition"
             >
               Đóng
             </button>
             <button
               id="btn-save-firebase-config"
               type="submit"
-              className="px-5 py-2.5 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black uppercase text-xs tracking-wider flex items-center gap-2 shadow-lg shadow-[#0D0420]/30 transition"
+              className="px-5 py-2.5 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black uppercase text-xs tracking-wider flex items-center gap-2 shadow-lg shadow-[#0D0420]/30 transition"
             >
               <Save className="w-4 h-4" /> Lưu & Kết nối
             </button>
@@ -210,7 +210,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
           <p className="font-semibold text-white/60 mb-1">
             Gợi ý bảo mật Firebase Rules (Công khai đọc/ghi trong giờ phát sóng):
           </p>
-          <pre className="fluent-box-nested p-2.5 rounded-[4px] border border-white/5 font-mono text-[10px] text-emerald-400 overflow-x-auto">
+          <pre className="fluent-box-nested p-2.5 rounded-[2px] border border-white/5 font-mono text-[10px] text-emerald-400 overflow-x-auto">
 {`{
   "rules": {
     "game_state": { ".read": true, ".write": true },

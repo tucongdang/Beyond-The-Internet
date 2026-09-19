@@ -82,7 +82,7 @@ export const CrossFadeQrCode: React.FC<CrossFadeQrCodeProps> = ({
 
   return (
     <div
-      className={`relative ${sizeClass} overflow-hidden rounded-[4px] aspect-square select-none ${className}`}
+      className={`relative ${sizeClass} overflow-hidden rounded-[2px] aspect-square select-none ${className}`}
       style={{ isolation: 'isolate', ...style }}
     >
       {/* Background/Previous QR Image Layer (Holds previous raster during cross-dissolve) */}

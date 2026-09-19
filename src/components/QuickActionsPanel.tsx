@@ -339,33 +339,33 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       {/* Quick Actions Bar Container with Fluent UI v2 styling */}
       <div 
         id="admin-quick-actions-panel"
-        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[12px] overflow-hidden transition-all duration-300 ${className}`}
+        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[4px] overflow-hidden transition-all duration-300 ${className}`}
       >
         {/* Header Ribbon */}
         <div className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2 border-b border-white/10 bg-white/5">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-[4px] bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0">
+            <div className="w-6 h-6 rounded-[2px] bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0">
               <Zap className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-2 truncate">
               <span className="text-xs font-bold font-mono uppercase tracking-wider text-white">
                 Quick Actions • Tác Vụ Nhanh
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-sky-950/80 text-sky-300 border border-sky-500/30">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-sky-950/80 text-sky-300 border border-sky-500/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Câu: <strong>{gameState.question_id || 'Chưa nạp'}</strong>
               </span>
 
               {/* Status Chips */}
               {isTimerPaused && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-amber-950/90 text-amber-300 border border-amber-500/50 animate-pulse">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] bg-amber-950/90 text-amber-300 border border-amber-500/50 animate-pulse">
                   <Pause className="w-2.5 h-2.5" />
                   <span>ĐÃ TẠM DỪNG ĐỒNG HỒ ({gameState.paused_remaining_seconds || 0}s)</span>
                 </span>
               )}
 
               {isLobbyLocked && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-rose-950/90 text-rose-300 border border-rose-500/50">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] bg-rose-950/90 text-rose-300 border border-rose-500/50">
                   <Lock className="w-2.5 h-2.5" />
                   <span>LOBBY LOCKED</span>
                 </span>
@@ -377,7 +377,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   onClick={handleRecallNotification}
                   disabled={isRecalling}
                   title="Đang phát thông báo khẩn - Bấm để thu hồi ngay"
-                  className="hidden md:inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-rose-950 text-rose-300 border border-rose-500/60 hover:bg-rose-900 transition active:scale-95 cursor-pointer animate-pulse"
+                  className="hidden md:inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] bg-rose-950 text-rose-300 border border-rose-500/60 hover:bg-rose-900 transition active:scale-95 cursor-pointer animate-pulse"
                 >
                   <BellOff className="w-3 h-3 text-rose-400" />
                   <span>ĐANG PHÁT TIN • THU HỒI</span>
@@ -388,13 +388,13 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
           <div className="flex items-center gap-2 shrink-0">
             {lastActionFeedback && (
-              <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-[4px] animate-fadeIn flex items-center gap-1">
+              <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-[2px] animate-fadeIn flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 {lastActionFeedback}
               </span>
             )}
 
-            <div className="flex items-center gap-1 text-[10px] font-mono text-white/50 px-2 py-0.5 bg-black/40 rounded-[4px] border border-white/10">
+            <div className="flex items-center gap-1 text-[10px] font-mono text-white/50 px-2 py-0.5 bg-black/40 rounded-[2px] border border-white/10">
               <Users className="w-3 h-3 text-sky-400" />
               <strong className="text-sky-300 font-bold">{activeCount}</strong>
               <span className="hidden md:inline">thiết bị</span>
@@ -403,7 +403,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1 rounded-[4px] text-white/50 hover:text-white hover:bg-white/10 transition"
+              className="p-1 rounded-[2px] text-white/50 hover:text-white hover:bg-white/10 transition"
               title={isCollapsed ? 'Mở rộng Quick Actions' : 'Thu gọn Quick Actions'}
             >
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
@@ -423,7 +423,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Tạm dừng hoặc tiếp tục đếm ngược đồng hồ thi đấu hiện tại trong 1 click"
               data-tooltip-title="Tạm Dừng / Tiếp Tục Đồng Hồ (Pause Timer)"
               data-tooltip-variant="warning"
-              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
                 isTimerPaused
                   ? 'border-amber-400 bg-gradient-to-r from-amber-950/80 to-slate-900/90 text-amber-200 shadow-md shadow-amber-950/50 ring-1 ring-amber-400/50 animate-pulse'
                   : isQuestionActive
@@ -432,7 +432,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 transition-transform ${
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
                   isTimerPaused 
                     ? 'bg-amber-500 text-slate-950 shadow-md' 
                     : isQuestionActive
@@ -473,14 +473,14 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Khóa hoặc mở cổng đăng ký tham gia của khán giả mới"
               data-tooltip-title="Khóa / Mở Cổng Tham Gia (Lobby Lock)"
               data-tooltip-variant="accent"
-              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
                 isLobbyLocked
                   ? 'border-rose-500/70 bg-gradient-to-r from-rose-950/80 to-slate-900/80 text-rose-200 shadow-md shadow-rose-950/40 ring-1 ring-rose-500/40'
                   : 'border-purple-500/40 bg-gradient-to-r from-purple-950/40 to-slate-900/60 hover:from-purple-900/50 hover:to-purple-950/50 text-purple-200 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-950/50'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 transition-transform ${
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
                   isLobbyLocked 
                     ? 'bg-rose-600 text-white shadow-md' 
                     : 'bg-purple-500/20 border border-purple-500/40 text-purple-300 group-hover:scale-105'
@@ -515,10 +515,10 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Xóa toàn bộ phản hồi & đưa bảng điểm của mọi khán giả về 0"
               data-tooltip-title="Reset Toàn Bộ Điểm Số (Reset Scores)"
               data-tooltip-variant="danger"
-              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border border-rose-500/40 bg-gradient-to-r from-rose-950/40 to-slate-900/60 hover:from-rose-900/50 hover:to-rose-950/50 text-rose-200 transition-all hover:border-rose-400 hover:shadow-lg hover:shadow-rose-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
+              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border border-rose-500/40 bg-gradient-to-r from-rose-950/40 to-slate-900/60 hover:from-rose-900/50 hover:to-rose-950/50 text-rose-200 transition-all hover:border-rose-400 hover:shadow-lg hover:shadow-rose-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-[4px] bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-300 shrink-0 group-hover:rotate-12 transition-transform">
+                <div className="w-7 h-7 rounded-[2px] bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-300 shrink-0 group-hover:rotate-12 transition-transform">
                   <Trophy className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0">
@@ -545,10 +545,10 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Xóa sạch phản hồi và đưa câu hỏi về trạng thái Standby để chuẩn bị phát lại"
               data-tooltip-title="Reset Câu Hỏi Hiện Tại"
               data-tooltip-variant="warning"
-              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border border-amber-500/40 bg-gradient-to-r from-amber-950/40 to-slate-900/60 hover:from-amber-900/50 hover:to-amber-950/50 text-amber-200 transition-all hover:border-amber-400 hover:shadow-lg hover:shadow-amber-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
+              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border border-amber-500/40 bg-gradient-to-r from-amber-950/40 to-slate-900/60 hover:from-amber-900/50 hover:to-amber-950/50 text-amber-200 transition-all hover:border-amber-400 hover:shadow-lg hover:shadow-amber-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-[4px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0 group-hover:rotate-[-45deg] transition-transform">
+                <div className="w-7 h-7 rounded-[2px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0 group-hover:rotate-[-45deg] transition-transform">
                   <RotateCcw className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0">
@@ -575,14 +575,14 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Khóa cổng nhận bình chọn tức thì cho tất cả khán giả và dừng đồng hồ đếm ngược"
               data-tooltip-title="Chốt Đáp Án Ngay (Force Lock)"
               data-tooltip-variant="danger"
-              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
                 isQuestionLocked
                   ? 'border-rose-500/70 bg-gradient-to-r from-rose-950/70 to-slate-900/80 text-rose-200 shadow-md shadow-rose-950/40 ring-1 ring-rose-500/40'
                   : 'border-rose-500/40 bg-gradient-to-r from-rose-950/40 to-slate-900/60 hover:from-rose-900/50 hover:to-rose-950/50 text-rose-200 hover:border-rose-400 hover:shadow-lg hover:shadow-rose-950/50'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 transition-transform ${
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
                   isQuestionLocked
                     ? 'bg-rose-600 text-white shadow-md'
                     : 'bg-rose-500/20 border border-rose-500/40 text-rose-300 group-hover:scale-105'
@@ -620,10 +620,10 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               data-tooltip="Bật cửa sổ phát thông báo khẩn cấp tới toàn bộ điện thoại khán giả và màn chiếu sân khấu"
               data-tooltip-title="Gửi Thông Báo Khẩn (Broadcast)"
               data-tooltip-variant="accent"
-              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[4px] border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 to-slate-900/60 hover:from-cyan-900/50 hover:to-cyan-950/50 text-cyan-200 transition-all hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
+              className="has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 to-slate-900/60 hover:from-cyan-900/50 hover:to-cyan-950/50 text-cyan-200 transition-all hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-950/50 active:scale-[0.98] cursor-pointer text-left select-none"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-[4px] bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 group-hover:animate-bounce">
+                <div className="w-7 h-7 rounded-[2px] bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 group-hover:animate-bounce">
                   <Megaphone className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0">
@@ -650,11 +650,11 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       {/* ================= URGENT BROADCAST CENTER MODAL ================= */}
       {showBroadcastModal && (
         <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[12px] shadow-2xl shadow-cyan-950/80 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[4px] shadow-2xl shadow-cyan-950/80 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-cyan-950/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[4px] bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-950/50">
+                <div className="w-10 h-10 rounded-[2px] bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-950/50">
                   <Megaphone className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
@@ -670,7 +670,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBroadcastModal(false)}
-                className="p-1.5 rounded-[4px] text-white/60 hover:text-white hover:bg-white/10 transition"
+                className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -680,9 +680,9 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             <div className="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1">
               {/* Active Broadcast Alert & Instant Recall */}
               {gameState.announcer_overlay?.active && gameState.announcer_overlay?.text && (
-                <div className="p-3 rounded-[4px] fluent-box-nested border border-rose-500/50 bg-rose-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+                <div className="p-3 rounded-[2px] fluent-box-nested border border-rose-500/50 bg-rose-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
                   <div className="flex items-start gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-[4px] bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-[2px] bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
                       <Radio className="w-3.5 h-3.5 animate-pulse" />
                     </div>
                     <div className="min-w-0">
@@ -699,7 +699,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                     type="button"
                     onClick={handleRecallNotification}
                     disabled={isRecalling}
-                    className="px-3 py-1.5 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shrink-0 cursor-pointer shadow-md disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shrink-0 cursor-pointer shadow-md disabled:opacity-50"
                   >
                     <BellOff className="w-3.5 h-3.5" />
                     <span>{isRecalling ? 'Đang thu hồi...' : 'Thu hồi ngay'}</span>
@@ -718,7 +718,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                       key={idx}
                       type="button"
                       onClick={() => handleSelectPreset(preset)}
-                      className="p-2 rounded-[4px] fluent-box-nested hover:fluent-box-nested text-left border border-white/10 hover:border-cyan-400/40 transition flex items-start gap-2 text-xs text-white/80 hover:text-white cursor-pointer"
+                      className="p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-left border border-white/10 hover:border-cyan-400/40 transition flex items-start gap-2 text-xs text-white/80 hover:text-white cursor-pointer"
                     >
                       <span className="shrink-0">{preset.title.split(' ')[0]}</span>
                       <div className="min-w-0">
@@ -744,7 +744,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
                   placeholder="VD: 🚨 THÔNG BÁO KHẨN TỪ BAN TỔ CHỨC"
-                  className="w-full px-3 py-2 rounded-[4px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm font-medium focus:border-cyan-400 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm font-medium focus:border-cyan-400 focus:outline-none"
                 />
               </div>
 
@@ -758,7 +758,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Nhập nội dung thông báo gửi đến toàn bộ điện thoại khán giả và màn chiếu..."
-                  className="w-full px-3 py-2 rounded-[4px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm focus:border-cyan-400 focus:outline-none resize-none"
+                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm focus:border-cyan-400 focus:outline-none resize-none"
                 />
               </div>
 
@@ -775,7 +775,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                         key={t}
                         type="button"
                         onClick={() => setBroadcastType(t)}
-                        className={`py-1.5 px-2 rounded-[4px] text-[10px] font-mono font-bold transition text-center cursor-pointer border ${
+                        className={`py-1.5 px-2 rounded-[2px] text-[10px] font-mono font-bold transition text-center cursor-pointer border ${
                           broadcastType === t
                             ? t === 'URGENT'
                               ? 'bg-rose-600 text-white border-rose-400'
@@ -811,7 +811,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBroadcastModal(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested text-white/70 hover:text-white text-xs font-mono font-bold transition"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested text-white/70 hover:text-white text-xs font-mono font-bold transition"
               >
                 Hủy bỏ
               </button>
@@ -819,7 +819,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                 type="button"
                 onClick={() => handleSendUrgentBroadcast()}
                 disabled={isSending || !broadcastMessage.trim()}
-                className="px-5 py-2 rounded-[4px] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition shadow-lg shadow-cyan-950/60 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="px-5 py-2 rounded-[2px] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition shadow-lg shadow-cyan-950/60 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Radio className="w-3.5 h-3.5 animate-pulse" />
                 <span>{isSending ? 'Đang phát sóng...' : 'Phát Thông Báo Ngay'}</span>

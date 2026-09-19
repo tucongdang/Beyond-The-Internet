@@ -174,10 +174,10 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
       )}
 
       {/* Hero Control Banner: Snap Action & Live Stage Status */}
-      <div className="p-4 sm:p-5 md:p-6 fluent-box border border-purple-500/30 rounded-[4px] shadow-xl space-y-4">
+      <div className="p-4 sm:p-5 md:p-6 fluent-box border border-purple-500/30 rounded-[2px] shadow-xl space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-12 h-12 rounded-[4px] bg-purple-500/20 text-purple-300 flex items-center justify-center border border-purple-500/40 shrink-0">
+            <div className="w-12 h-12 rounded-[2px] bg-purple-500/20 text-purple-300 flex items-center justify-center border border-purple-500/40 shrink-0">
               <Camera className="w-6 h-6 animate-pulse" />
             </div>
             <div>
@@ -185,7 +185,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                 <h2 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
                   Snap Audience Interaction • Chụp Màn Chiếu Trực Tiếp
                 </h2>
-                <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold fluent-box-nested text-purple-200 border border-purple-500/40 uppercase">
+                <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold fluent-box-nested text-purple-200 border border-purple-500/40 uppercase">
                   Broadcast Records ({snapshots.length})
                 </span>
               </div>
@@ -196,7 +196,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
           </div>
 
           {/* Current Stage Quick Pill */}
-          <div className="flex items-center gap-3 fluent-box-nested border border-white/10 px-3.5 py-2 rounded-[4px] text-xs font-mono">
+          <div className="flex items-center gap-3 fluent-box-nested border border-white/10 px-3.5 py-2 rounded-[2px] text-xs font-mono">
             <div className="flex items-center gap-1.5 text-emerald-400">
               <Radio className="w-3.5 h-3.5 animate-pulse" />
               <span>Sân Khấu: <strong>[{gameState.question_id || 'STANDBY'}]</strong></span>
@@ -221,7 +221,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
               placeholder="Ghi chú khoảnh khắc (VD: 95% khán giả đoán đúng, Mây từ khóa sôi nổi...)"
               value={customSnapNote}
               onChange={(e) => setCustomSnapNote(e.target.value)}
-              className="w-full fluent-box-nested border border-purple-500/30 focus:border-pink-400 text-xs text-white px-3.5 py-2.5 rounded-[4px] outline-none placeholder:text-white/30 font-mono transition"
+              className="w-full fluent-box-nested border border-purple-500/30 focus:border-pink-400 text-xs text-white px-3.5 py-2.5 rounded-[2px] outline-none placeholder:text-white/30 font-mono transition"
             />
           </div>
 
@@ -230,7 +230,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             <select
               value={customSnapTag}
               onChange={(e) => setCustomSnapTag(e.target.value as any)}
-              className="w-full fluent-box-nested border border-purple-500/30 focus:border-pink-400 text-xs text-white px-3 py-2.5 rounded-[4px] outline-none font-mono transition cursor-pointer"
+              className="w-full fluent-box-nested border border-purple-500/30 focus:border-pink-400 text-xs text-white px-3 py-2.5 rounded-[2px] outline-none font-mono transition cursor-pointer"
             >
               <option value="GENERAL">🏷️ Nhãn: Tổng Quát (General)</option>
               <option value="HIGHLIGHT">⭐ Nhãn: Khoảnh Khắc Tiêu Biểu</option>
@@ -248,7 +248,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
               id="btn-snap-audience-interaction-main"
               onClick={handleSnap}
               disabled={isSnapping}
-              className={`w-full py-2.5 px-4 rounded-[4px] text-xs font-black font-mono uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg ${
+              className={`w-full py-2.5 px-4 rounded-[2px] text-xs font-black font-mono uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg ${
                 isSnapping
                   ? 'bg-purple-800/40 text-purple-300 cursor-not-allowed border border-purple-500/30'
                   : 'bg-pink-600 hover:bg-pink-500 text-white shadow-pink-500/30 hover:scale-[1.02] active:scale-95 cursor-pointer border border-pink-400'
@@ -262,7 +262,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
       </div>
 
       {/* Gallery Filter & Batch Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 fluent-box border border-white/10 rounded-[4px]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 fluent-box border border-white/10 rounded-[2px]">
         <div className="flex items-center gap-2 flex-1 max-w-md">
           <div className="relative flex-1">
             <Search className="w-3.5 h-3.5 text-[#F7CAC9] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -271,7 +271,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
               placeholder="Tìm kiếm theo mã câu, nội dung, ghi chú..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full fluent-box-nested border border-white/10 focus:border-purple-400 text-xs text-white pl-8 pr-3 py-1.5 rounded-[4px] outline-none placeholder:text-white/30 font-mono transition"
+              className="w-full fluent-box-nested border border-white/10 focus:border-purple-400 text-xs text-white pl-8 pr-3 py-1.5 rounded-[2px] outline-none placeholder:text-white/30 font-mono transition"
             />
           </div>
 
@@ -281,7 +281,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             <select
               value={tagFilter}
               onChange={(e) => setTagFilter(e.target.value)}
-              className="fluent-box-nested border border-white/10 text-xs text-white px-2 py-1.5 rounded-[4px] outline-none font-mono transition cursor-pointer"
+              className="fluent-box-nested border border-white/10 text-xs text-white px-2 py-1.5 rounded-[2px] outline-none font-mono transition cursor-pointer"
             >
               <option value="ALL">Tất cả ({snapshots.length})</option>
               <option value="HIGHLIGHT">⭐ Tiêu biểu</option>
@@ -300,7 +300,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             type="button"
             onClick={handleExportJSON}
             disabled={snapshots.length === 0}
-            className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 disabled:opacity-40 text-white rounded-[4px] text-xs font-mono font-bold flex items-center gap-1.5 transition border border-white/10 cursor-pointer"
+            className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 disabled:opacity-40 text-white rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition border border-white/10 cursor-pointer"
             title="Xuất danh mục nhật ký phát sóng dạng JSON"
           >
             <FileJson className="w-3.5 h-3.5 text-cyan-300" />
@@ -311,7 +311,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             type="button"
             disabled={snapshots.length === 0}
             onClick={() => setIsClearAllDialogOpen(true)}
-            className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 disabled:opacity-40 text-rose-300 border border-rose-500/30 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer"
+            className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 disabled:opacity-40 text-rose-300 border border-rose-500/30 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer"
             title="Xóa toàn bộ lịch sử ảnh chụp"
           >
             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
@@ -323,8 +323,8 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
       {/* Snapshots Grid */}
       {filteredSnapshots.length === 0 ? (
-        <div className="p-12 text-center fluent-box border border-dashed border-white/15 rounded-[4px] space-y-3">
-          <div className="w-16 h-16 rounded-[4px] fluent-box-nested text-purple-300 flex items-center justify-center mx-auto border border-purple-500/20">
+        <div className="p-12 text-center fluent-box border border-dashed border-white/15 rounded-[2px] space-y-3">
+          <div className="w-16 h-16 rounded-[2px] fluent-box-nested text-purple-300 flex items-center justify-center mx-auto border border-purple-500/20">
             <Camera className="w-8 h-8 opacity-60" />
           </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -347,7 +347,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             return (
               <div
                 key={item.id}
-                className="group fluent-box hover:bg-white/5 border border-white/10 hover:border-purple-400/60 rounded-[4px] overflow-hidden transition-all duration-200 shadow-xl flex flex-col"
+                className="group fluent-box hover:bg-white/5 border border-white/10 hover:border-purple-400/60 rounded-[2px] overflow-hidden transition-all duration-200 shadow-xl flex flex-col"
               >
                 {/* Thumbnail Image with hover overlay */}
                 <div
@@ -363,7 +363,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
                   {/* Tag Pill */}
                   <div className="absolute top-2.5 left-2.5 z-10">
-                    <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold bg-[#190839]/80 backdrop-blur-md text-purple-200 border border-white/20 uppercase flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[#190839]/80 backdrop-blur-md text-purple-200 border border-white/20 uppercase flex items-center gap-1">
                       <Tag className="w-3 h-3 text-[#F7CAC9]" />
                       {item.broadcast_tag || 'GENERAL'}
                     </span>
@@ -371,7 +371,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
                   {/* Status Pill */}
                   <div className="absolute top-2.5 right-2.5 z-10">
-                    <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase ${
+                    <span className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold uppercase ${
                       item.status === 'REVEAL'
                         ? 'bg-emerald-500 text-black'
                         : item.status === 'ACTIVE'
@@ -384,7 +384,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
                   {/* Hover Overlay with Preview Icon */}
                   <div className="absolute inset-0 bg-[#190839]/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                    <span className="px-3 py-1.5 rounded-[4px] bg-white/20 backdrop-blur-md text-white font-mono text-xs font-bold flex items-center gap-1.5">
+                    <span className="px-3 py-1.5 rounded-[2px] bg-white/20 backdrop-blur-md text-white font-mono text-xs font-bold flex items-center gap-1.5">
                       <Eye className="w-4 h-4 text-[#F7CAC9]" /> Xem Chi Tiết
                     </span>
                   </div>
@@ -424,7 +424,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
                     {/* Note section */}
                     {item.note ? (
-                      <div className="mt-2 p-2 fluent-box-nested rounded-[4px] text-[11px] text-purple-200 border border-purple-500/20 font-mono italic">
+                      <div className="mt-2 p-2 fluent-box-nested rounded-[2px] text-[11px] text-purple-200 border border-purple-500/20 font-mono italic">
                         "{item.note}"
                       </div>
                     ) : null}
@@ -435,7 +435,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                     <button
                       type="button"
                       onClick={() => setSelectedSnapshot(item)}
-                      className="px-2.5 py-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[4px] text-xs font-mono font-bold flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[2px] text-xs font-mono font-bold flex items-center gap-1 transition"
                       title="Xem phóng to"
                     >
                       <Maximize2 className="w-3 h-3 text-[#F7CAC9]" />
@@ -445,7 +445,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                     <button
                       type="button"
                       onClick={() => snapshotService.downloadImage(item)}
-                      className="px-2.5 py-1.5 fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1 transition"
                       title="Tải ảnh PNG về máy"
                     >
                       <Download className="w-3 h-3 text-emerald-400" />
@@ -455,7 +455,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                     <button
                       type="button"
                       onClick={(e) => handleCopyImage(item, e)}
-                      className="p-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[4px] text-xs transition"
+                      className="p-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[2px] text-xs transition"
                       title="Sao chép ảnh vào Clipboard"
                     >
                       {copiedId === item.id ? (
@@ -467,7 +467,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
 
                     <button
                       type="button"
-                      className="p-1.5 fluent-box-nested hover:bg-white/15 text-rose-300 rounded-[4px] text-xs transition cursor-pointer"
+                      className="p-1.5 fluent-box-nested hover:bg-white/15 text-rose-300 rounded-[2px] text-xs transition cursor-pointer"
                       title="Xóa ảnh này"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -488,11 +488,11 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
       {/* Fullscreen Lightbox Modal */}
       {selectedSnapshot && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-5xl w-full max-h-[92vh] fluent-box border border-purple-500/40 rounded-[4px] overflow-hidden shadow-2xl flex flex-col">
+          <div className="max-w-5xl w-full max-h-[92vh] fluent-box border border-purple-500/40 rounded-[2px] overflow-hidden shadow-2xl flex flex-col">
             {/* Modal Header */}
             <div className="p-4 fluent-box-nested border-b border-white/10 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[4px] fluent-box text-purple-300 flex items-center justify-center border border-purple-500/30 font-mono font-bold">
+                <div className="w-9 h-9 rounded-[2px] fluent-box text-purple-300 flex items-center justify-center border border-purple-500/30 font-mono font-bold">
                   <Camera className="w-4 h-4 text-[#F7CAC9]" />
                 </div>
                 <div>
@@ -500,7 +500,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                     <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
                       Biên Bản Khoảnh Khắc: [{selectedSnapshot.question_id}]
                     </h3>
-                    <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold fluent-box text-[#F7CAC9] border border-pink-500/40 uppercase">
+                    <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold fluent-box text-[#F7CAC9] border border-pink-500/40 uppercase">
                       {selectedSnapshot.broadcast_tag || 'GENERAL'}
                     </span>
                   </div>
@@ -514,7 +514,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                 <button
                   type="button"
                   onClick={() => snapshotService.downloadImage(selectedSnapshot)}
-                  className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition"
                 >
                   <Download className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Tải PNG</span>
@@ -523,7 +523,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                 <button
                   type="button"
                   onClick={() => setSelectedSnapshot(null)}
-                  className="p-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[4px] transition cursor-pointer"
+                  className="p-1.5 fluent-box-nested hover:bg-white/15 text-white rounded-[2px] transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -533,18 +533,18 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
             {/* Modal Scrollable Body */}
             <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
               {/* Full Resolution Image Container */}
-              <div className="fluent-box-nested rounded-[4px] border border-white/10 p-2 sm:p-3 flex items-center justify-center shadow-inner">
+              <div className="fluent-box-nested rounded-[2px] border border-white/10 p-2 sm:p-3 flex items-center justify-center shadow-inner">
                 <img
                   src={selectedSnapshot.image_data_url}
                   alt={`Full ${selectedSnapshot.question_id}`}
-                  className="max-h-[55vh] w-auto max-w-full rounded-[4px] object-contain shadow-2xl"
+                  className="max-h-[55vh] w-auto max-w-full rounded-[2px] object-contain shadow-2xl"
                 />
               </div>
 
               {/* Detail Breakdown */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
                 {/* Left: Info */}
-                <div className="p-4 fluent-box border border-white/10 rounded-[4px] space-y-2">
+                <div className="p-4 fluent-box border border-white/10 rounded-[2px] space-y-2">
                   <h4 className="font-bold text-[#F7CAC9] uppercase flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5" /> Thông Tin Trận Đấu
                   </h4>
@@ -560,7 +560,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                 </div>
 
                 {/* Right: Notes and Top Distribution */}
-                <div className="p-4 fluent-box border border-white/10 rounded-[4px] space-y-3">
+                <div className="p-4 fluent-box border border-white/10 rounded-[2px] space-y-3">
                   <h4 className="font-bold text-purple-300 uppercase flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5" /> Ghi Chú Đạo Diễn / Phát Sóng
                   </h4>
@@ -572,20 +572,20 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                         value={noteInput}
                         onChange={(e) => setNoteInput(e.target.value)}
                         placeholder="Nhập ghi chú cho khoảnh khắc này..."
-                        className="w-full fluent-box-nested border border-purple-400 text-xs text-white p-2.5 rounded-[4px] outline-none font-sans"
+                        className="w-full fluent-box-nested border border-purple-400 text-xs text-white p-2.5 rounded-[2px] outline-none font-sans"
                       />
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleSaveNote(selectedSnapshot.id)}
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-[4px] font-bold text-xs cursor-pointer"
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] font-bold text-xs cursor-pointer"
                         >
                           Lưu Ghi Chú
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingNoteId(null)}
-                          className="px-3 py-1.5 fluent-box hover:bg-white/15 text-white rounded-[4px] text-xs cursor-pointer"
+                          className="px-3 py-1.5 fluent-box hover:bg-white/15 text-white rounded-[2px] text-xs cursor-pointer"
                         >
                           Hủy
                         </button>
@@ -602,7 +602,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                           setEditingNoteId(selectedSnapshot.id);
                           setNoteInput(selectedSnapshot.note || '');
                         }}
-                        className="px-2 py-1 fluent-box-nested hover:bg-white/15 text-white rounded-[4px] text-[11px] shrink-0 cursor-pointer"
+                        className="px-2 py-1 fluent-box-nested hover:bg-white/15 text-white rounded-[2px] text-[11px] shrink-0 cursor-pointer"
                       >
                         {selectedSnapshot.note ? 'Sửa' : '+ Thêm'}
                       </button>
@@ -633,7 +633,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
       {/* Clear All Confirmation Modal */}
       {isClearAllDialogOpen && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa Sạch?</h3>
             <p className="text-white/70 text-sm mt-2">
               Xác nhận xóa sạch toàn bộ {snapshots.length} ảnh chụp khoảnh khắc trong nhật ký? Thao tác này không thể hoàn tác.
@@ -642,7 +642,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
               <button
                 type="button"
                 onClick={() => setIsClearAllDialogOpen(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
               >
                 Hủy
               </button>
@@ -655,7 +655,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                   setSelectedSnapshot(null);
                   setIsClearAllDialogOpen(false);
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Đồng ý Xóa Sạch
               </button>
@@ -667,7 +667,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
       {/* Single Item Delete Confirmation Modal */}
       {deleteTargetId && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa?</h3>
             <p className="text-white/70 text-sm mt-2">
               Bạn có chắc muốn xóa ảnh chụp khoảnh khắc này khỏi nhật ký không?
@@ -676,7 +676,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
               <button
                 type="button"
                 onClick={() => setDeleteTargetId(null)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white font-bold text-sm transition cursor-pointer"
               >
                 Hủy
               </button>
@@ -691,7 +691,7 @@ export const BroadcastSnapshotHistoryTab: React.FC<BroadcastSnapshotHistoryTabPr
                   }
                   setDeleteTargetId(null);
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Đồng ý Xóa
               </button>

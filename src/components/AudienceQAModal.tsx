@@ -176,7 +176,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
         {/* Modal Header */}
         <div className="fluent-dialog-header">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[4px] fluent-acrylic-surface flex items-center justify-center shadow-lg border border-white/20">
+            <div className="w-9 h-9 rounded-[2px] fluent-acrylic-surface flex items-center justify-center shadow-lg border border-white/20">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
             <div>
@@ -206,7 +206,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 rounded-[4px] text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
             title={t("qa_close", localLanguage)}
           >
             <X className="w-5 h-5" />
@@ -221,7 +221,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
               soundFx.playTing();
               setActiveTab('ASK');
             }}
-            className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'ASK'
                 ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                 : 'fluent-box-nested text-white/60 hover:text-white'
@@ -237,7 +237,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
               soundFx.playTing();
               setActiveTab('MY_QUESTIONS');
             }}
-            className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'MY_QUESTIONS'
                 ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                 : 'fluent-box-nested text-white/60 hover:text-white'
@@ -258,7 +258,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
               soundFx.playTing();
               setActiveTab('COMMUNITY');
             }}
-            className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'COMMUNITY'
                 ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                 : 'fluent-box-nested text-white/60 hover:text-white'
@@ -280,8 +280,8 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
           {activeTab === 'ASK' && (
             <div className="space-y-4 animate-fadeIn">
               {submitSuccess ? (
-                <div className="p-6 rounded-[4px] fluent-box-nested border border-emerald-500/30 text-center space-y-3 animate-scaleUp">
-                  <div className="w-12 h-12 mx-auto rounded-[4px] bg-emerald-950/60 flex items-center justify-center text-emerald-400 border border-emerald-500/30 shadow-lg">
+                <div className="p-6 rounded-[2px] fluent-box-nested border border-emerald-500/30 text-center space-y-3 animate-scaleUp">
+                  <div className="w-12 h-12 mx-auto rounded-[2px] bg-emerald-950/60 flex items-center justify-center text-emerald-400 border border-emerald-500/30 shadow-lg">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <h4 className="text-base font-bold text-emerald-300 font-mono">{t("qa_success_title", localLanguage)}</h4>
@@ -307,7 +307,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                               vibrateTap();
                               setCategory(cat.id);
                             }}
-                            className={`p-2.5 rounded-[4px] text-xs font-bold border transition text-left flex flex-col gap-0.5 cursor-pointer ${
+                            className={`p-2.5 rounded-[2px] text-xs font-bold border transition text-left flex flex-col gap-0.5 cursor-pointer ${
                               isSelected
                                 ? 'fluent-option-btn selected text-white'
                                 : 'fluent-option-btn text-white/70'
@@ -349,9 +349,9 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   </div>
 
                   {/* Sender Identity Options */}
-                  <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between gap-3">
+                  <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-[4px] bg-white/10 flex items-center justify-center text-purple-300">
+                      <div className="w-8 h-8 rounded-[2px] bg-white/10 flex items-center justify-center text-purple-300">
                         {isAnonymous ? <EyeOff className="w-4 h-4" /> : <User className="w-4 h-4" />}
                       </div>
                       <div>
@@ -372,7 +372,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         vibrateTap();
                         setIsAnonymous(!isAnonymous);
                       }}
-                      className={`fluent-btn px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition cursor-pointer ${
+                      className={`fluent-btn px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono transition cursor-pointer ${
                         isAnonymous
                           ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border border-purple-500/40'
                           : 'fluent-box-nested text-white/70 hover:text-white'
@@ -383,7 +383,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   </div>
 
                   {submitError && (
-                    <div className="p-3 rounded-[4px] bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2 font-mono">
+                    <div className="p-3 rounded-[2px] bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2 font-mono">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{submitError}</span>
                     </div>
@@ -394,7 +394,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     type="submit"
                     id="btn-submit-qa-question"
                     disabled={isSubmitting || !settings.is_open || cooldownSec > 0 || !questionText.trim()}
-                    className={`fluent-btn w-full py-3 px-4 rounded-[4px] font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98] ${
+                    className={`fluent-btn w-full py-3 px-4 rounded-[2px] font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98] ${
                       !settings.is_open
                         ? 'fluent-box-nested opacity-50 cursor-not-allowed'
                         : cooldownSec > 0
@@ -427,7 +427,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
           {activeTab === 'MY_QUESTIONS' && (
             <div className="space-y-3 animate-fadeIn">
               {myQuestions.length === 0 ? (
-                <div className="p-8 text-center fluent-box-nested rounded-[4px] space-y-2">
+                <div className="p-8 text-center fluent-box-nested rounded-[2px] space-y-2">
                   <MessageSquare className="w-8 h-8 text-white/30 mx-auto" />
                   <p className="text-sm font-bold text-white/60">{t("qa_no_my_q", localLanguage)}</p>
                   <p className="text-xs text-white/40">
@@ -442,7 +442,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   return (
                     <div
                       key={q.id}
-                      className={`p-3.5 rounded-[4px] border transition-all ${
+                      className={`p-3.5 rounded-[2px] border transition-all ${
                         isFeatured
                           ? 'fluent-box border-pink-500/60 ring-1 ring-pink-500/40 shadow-lg'
                           : 'fluent-box'
@@ -517,11 +517,11 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
           {activeTab === 'COMMUNITY' && (
             <div className="space-y-3 animate-fadeIn">
               {/* Category Filter & Sort Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[4px] fluent-box-nested">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[2px] fluent-box-nested">
                 <div className="flex items-center gap-1 overflow-x-auto max-w-full custom-scrollbar">
                   <button
                     onClick={() => setCommunityFilter('ALL')}
-                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
                       communityFilter === 'ALL'
                         ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm'
                         : 'text-white/60 hover:bg-white/10'
@@ -533,7 +533,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     <button
                       key={cat.id}
                       onClick={() => setCommunityFilter(cat.id)}
-                      className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
                         communityFilter === cat.id
                           ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm'
                           : 'text-white/60 hover:bg-white/10'
@@ -544,10 +544,10 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1 fluent-box-nested p-0.5 rounded-[4px]">
+                <div className="flex items-center gap-1 fluent-box-nested p-0.5 rounded-[2px]">
                   <button
                     onClick={() => setCommunitySort('HOT')}
-                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
                       communitySort === 'HOT' ? 'fluent-acrylic-surface bg-pink-500/20 text-pink-200 border-pink-500/40 shadow-sm' : 'text-white/50 hover:text-white border border-transparent'
                     }`}
                   >
@@ -556,7 +556,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   </button>
                   <button
                     onClick={() => setCommunitySort('NEW')}
-                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
                       communitySort === 'NEW' ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border-purple-500/40 shadow-sm' : 'text-white/50 hover:text-white border border-transparent'
                     }`}
                   >
@@ -568,7 +568,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
 
               {/* Questions List */}
               {communityQuestions.length === 0 ? (
-                <div className="p-8 text-center fluent-box-nested rounded-[4px] space-y-2">
+                <div className="p-8 text-center fluent-box-nested rounded-[2px] space-y-2">
                   <MessageSquare className="w-8 h-8 text-white/30 mx-auto" />
                   <p className="text-sm font-bold text-white/60">{t("qa_no_q", localLanguage)}</p>
                 </div>
@@ -581,7 +581,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   return (
                     <div
                       key={q.id}
-                      className={`p-3.5 rounded-[4px] border transition-all ${
+                      className={`p-3.5 rounded-[2px] border transition-all ${
                         isFeatured
                           ? 'fluent-box border-pink-500/60 ring-1 ring-pink-500/40 shadow-lg'
                           : 'fluent-box'
@@ -629,7 +629,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handleToggleUpvote(q.id)}
-                          className={`fluent-btn px-3 py-1 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1.5 transition active:scale-95 cursor-pointer border ${
+                          className={`fluent-btn px-3 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition active:scale-95 cursor-pointer border ${
                             hasUpvoted
                               ? 'bg-rose-600 text-white border-rose-400 shadow-md'
                               : 'fluent-box-nested text-white/80 hover:text-white'
@@ -653,7 +653,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="fluent-btn px-3 py-1 rounded-[4px] fluent-box-nested text-white/80 hover:text-white cursor-pointer"
+            className="fluent-btn px-3 py-1 rounded-[2px] fluent-box-nested text-white/80 hover:text-white cursor-pointer"
           >
             {localLanguage === 'en' ? 'Close' : 'Đóng'}
           </button>

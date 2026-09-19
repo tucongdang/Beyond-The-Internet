@@ -171,7 +171,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           }}
         >
           <div className="relative group flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[4px] fluent-acrylic-surface border border-amber-500/40 text-amber-300 flex items-center justify-center font-bold shadow-lg">
+            <div className="w-10 h-10 rounded-[2px] fluent-acrylic-surface border border-amber-500/40 text-amber-300 flex items-center justify-center font-bold shadow-lg">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
@@ -193,7 +193,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             </div>
 
             {/* Hover Tooltip / Popover */}
-            <div className="absolute top-full left-0 mt-3 w-52 fluent-box-nested border border-white/10 rounded-[4px] shadow-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none origin-top">
+            <div className="absolute top-full left-0 mt-3 w-52 fluent-box-nested border border-white/10 rounded-[2px] shadow-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none origin-top">
               <div className="space-y-1.5">
                 <div className="text-[9px] text-slate-400 font-mono uppercase tracking-wider border-b border-white/10 pb-1.5 mb-2">{t("view_score_per_round", localLanguage)}</div>
                 {ROUND_DETAILS.map(round => {
@@ -223,7 +223,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onToggleWakeLock();
                 }}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[4px] border text-xs font-mono font-bold transition hover-effect ${
+                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
                   isWakeLockLocked
                     ? 'fluent-box-nested text-amber-300 border-amber-500/50 shadow-inner'
                     : 'fluent-box-nested hover:bg-white/15 text-slate-400 hover:text-white border-white/10'
@@ -252,7 +252,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onToggleHighContrast();
                 }}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[4px] border text-xs font-mono font-bold transition hover-effect ${
+                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
                   isHighContrast
                     ? 'bg-amber-400 text-black border-amber-300 shadow-lg'
                     : 'fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white border-white/20'
@@ -276,7 +276,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onOpenLogModal();
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[4px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
                 title={t("view_score_log_title", localLanguage)}
               >
                 <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -289,7 +289,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               type="button"
               id="btn-audience-fullscreen-toggle"
               onClick={handleToggleFullscreen}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] border text-xs font-mono font-bold transition hover-effect ${
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
                 isFullscreen
                   ? 'fluent-box-nested text-indigo-200 border-indigo-400'
                   : 'fluent-box-nested hover:bg-white/15 text-slate-300 hover:text-white border-white/10'
@@ -304,11 +304,11 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               <span className="text-[11px]">{isFullscreen ? (t("view_score_full_exit_short", localLanguage)) : (t("view_score_full_enter_short", localLanguage))}</span>
             </button>
 
-            <div className="hidden sm:flex px-3 py-1.5 rounded-[4px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
+            <div className="hidden sm:flex px-3 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
               <Star className="w-3.5 h-3.5 text-purple-400 fill-purple-400/50" />
               <span>{t("score_rank", localLanguage).toUpperCase()} #{stats.rank}</span>
             </div>
-            <div className="px-2 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect">
+            <div className="px-2 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect">
               {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
             </div>
           </div>
@@ -320,8 +320,8 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">{t("view_score_details", localLanguage)}</span>
               <div className="flex gap-2">
-                <span className="text-[10px] px-2 py-1 fluent-box-nested rounded-[4px] font-mono">{t("score_rank", localLanguage)}: #{stats.rank}/{stats.totalPlayers}</span>
-                <span className="text-[10px] px-2 py-1 fluent-box-nested text-emerald-300 rounded-[4px] font-mono">{stats.accuracyRate}% {t("score_accuracy", localLanguage)}</span>
+                <span className="text-[10px] px-2 py-1 fluent-box-nested rounded-[2px] font-mono">{t("score_rank", localLanguage)}: #{stats.rank}/{stats.totalPlayers}</span>
+                <span className="text-[10px] px-2 py-1 fluent-box-nested text-emerald-300 rounded-[2px] font-mono">{stats.accuracyRate}% {t("score_accuracy", localLanguage)}</span>
               </div>
             </div>
 
@@ -333,7 +333,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 return (
                   <div
                     key={round.key}
-                    className={`p-2.5 rounded-[4px] bg-gradient-to-br border flex flex-col justify-between space-y-1.5 ${round.colorClass}`}
+                    className={`p-2.5 rounded-[2px] bg-gradient-to-br border flex flex-col justify-between space-y-1.5 ${round.colorClass}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">

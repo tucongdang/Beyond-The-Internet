@@ -702,14 +702,14 @@ export default function App() {
         >
           <div 
             id="app-global-qr-modal-content"
-            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar"
+            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar"
           >
             {/* Top Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#F7CAC9] to-transparent pointer-events-none" />
 
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[4px] bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[2px] bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center">
                   <QrIcon className="w-4 h-4" />
                 </div>
                 <div className="text-left">
@@ -725,7 +725,7 @@ export default function App() {
                 type="button"
                 id="btn-close-app-qr-modal"
                 onClick={handleCloseAudienceQrModal}
-                className="p-1.5 text-slate-400 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white rounded-[2px] hover:bg-white/10 transition cursor-pointer"
                 title={localLanguage === 'en' ? 'Close' : 'Đóng'}
               >
                 <X className="w-5 h-5" />
@@ -734,20 +734,20 @@ export default function App() {
 
             {/* QR Code Container with Spring Entrance Animation and Smooth Optical Cross-Fade */}
             <div className="my-2.5 inline-block shrink-0 animate-qr-entrance">
-              <div className={`p-3 rounded-[4px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
+              <div className={`p-3 rounded-[2px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
                 gameState.qr_transparent_bg
                   ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
                   : 'bg-white'
               }`}>
                 {qrError ? (
-                  <div className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[4px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900">
+                  <div className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[2px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900">
                     <AlertTriangle className="w-8 h-8 text-rose-500 shrink-0" />
                     <p className="text-xs font-semibold leading-snug">{qrError}</p>
                     <button
                       type="button"
                       id="btn-retry-qr-generation"
                       onClick={handleRetryQr}
-                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[4px] shadow flex items-center gap-1.5 transition cursor-pointer"
+                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[2px] shadow flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>{localLanguage === 'en' ? 'Retry' : 'Thử lại (Retry)'}</span>
@@ -759,7 +759,7 @@ export default function App() {
                     alt={localLanguage === 'en' ? 'Audience QR Code' : 'QR Code Khán Giả'}
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
-                      <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[4px] flex items-center justify-center text-xs text-slate-500 font-mono">
+                      <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[2px] flex items-center justify-center text-xs text-slate-500 font-mono">
                         {localLanguage === 'en' ? 'Generating QR...' : 'Đang tạo QR...'}
                       </div>
                     }
@@ -772,7 +772,7 @@ export default function App() {
             {gameState.qr_custom_caption && (
               <div 
                 id="landing-qr-custom-caption"
-                className="mb-2.5 px-3 py-1 rounded-[4px] bg-sky-950/80 border border-sky-400/50 text-sky-200 font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
+                className="mb-2.5 px-3 py-1 rounded-[2px] bg-sky-950/80 border border-sky-400/50 text-sky-200 font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
                 <span className="truncate">{gameState.qr_custom_caption}</span>
@@ -831,7 +831,7 @@ export default function App() {
             </div>
 
             {/* Direct URL text display */}
-            <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[4px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
+            <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[2px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
               <span className="text-[11px] font-mono text-sky-300 truncate select-all">
                 {audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app')}
               </span>
@@ -843,7 +843,7 @@ export default function App() {
                 type="button"
                 id="btn-qr-copy-link"
                 onClick={handleCopyQrLink}
-                className={`py-2.5 px-3 rounded-[4px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md ${
+                className={`py-2.5 px-3 rounded-[2px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md ${
                   isCopiedQrUrl
                     ? 'bg-emerald-500 text-black shadow-emerald-500/30'
                     : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839]'
@@ -867,7 +867,7 @@ export default function App() {
                 type="button"
                 id="btn-qr-share-link"
                 onClick={handleShareQrLink}
-                className="py-2.5 px-3 rounded-[4px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
+                className="py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
                 title={localLanguage === 'en' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" />
@@ -879,7 +879,7 @@ export default function App() {
               type="button"
               id="btn-dismiss-app-qr-modal"
               onClick={handleCloseAudienceQrModal}
-              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[4px] transition border border-white/10 cursor-pointer"
+              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[2px] transition border border-white/10 cursor-pointer"
             >
               {localLanguage === 'en' ? 'Close' : 'Đóng'}
             </button>

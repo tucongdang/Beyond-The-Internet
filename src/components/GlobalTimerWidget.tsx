@@ -294,7 +294,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
   const currentPhase = elapsedSec < 10 ? 1 : elapsedSec < 20 ? 2 : 3;
 
   return (
-    <section className="fluent-box border border-amber-500/40 rounded-[4px] p-3 sm:p-4 md:p-6 shadow-2xl space-y-5 relative overflow-hidden">
+    <section className="fluent-box border border-amber-500/40 rounded-[2px] p-3 sm:p-4 md:p-6 shadow-2xl space-y-5 relative overflow-hidden">
       {/* Background Energy Ambient Glow */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 backdrop-blur-md rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 backdrop-blur-md rounded-full blur-3xl pointer-events-none" />
@@ -302,7 +302,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
       {/* Header Banner */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-amber-500/30 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[4px] bg-amber-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/30 animate-pulse">
+          <div className="w-10 h-10 rounded-[2px] bg-amber-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/30 animate-pulse">
             <Flame className="w-6 h-6 fill-current" />
           </div>
           <div>
@@ -310,7 +310,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
               <h2 className="text-xs sm:text-sm font-black uppercase font-mono tracking-wider text-amber-300">
                 GLOBAL COUNTDOWN TIMER
               </h2>
-              <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold fluent-box-nested text-amber-200 border border-amber-500/40 uppercase">
+              <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold fluent-box-nested text-amber-200 border border-amber-500/40 uppercase">
                 MASTER CONTROLS
               </span>
             </div>
@@ -325,7 +325,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
           <button
             type="button"
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-[4px] text-xs font-mono border transition flex items-center gap-1.5 cursor-pointer ${
+            className={`p-2 rounded-[2px] text-xs font-mono border transition flex items-center gap-1.5 cursor-pointer ${
               soundEnabled
                 ? 'bg-amber-400/20 text-amber-300 border-amber-500/50 shadow-sm'
                 : 'fluent-box-nested text-white/50 border-white/10 hover:text-white'
@@ -337,7 +337,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
           </button>
 
           <span
-            className={`text-xs font-mono font-bold px-3 py-1.5 rounded-[4px] border uppercase tracking-wider ${
+            className={`text-xs font-mono font-bold px-3 py-1.5 rounded-[2px] border uppercase tracking-wider ${
               gameState.status === 'ACTIVE'
                 ? isPaused
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
@@ -367,7 +367,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
       {/* Main Countdown Display Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center relative z-10">
         {/* Left Side: Big Digital Clock + SVG Progress Gauge (5 cols) */}
-        <div className="lg:col-span-5 fluent-box border border-white/10 rounded-[4px] p-4 sm:p-5 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-inner">
+        <div className="lg:col-span-5 fluent-box border border-white/10 rounded-[2px] p-4 sm:p-5 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-inner">
           <div className="relative w-40 h-40 sm:w-44 sm:h-44 flex items-center justify-center my-1">
             {/* SVG Circular Ring Gauge */}
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -429,9 +429,9 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
 
           {/* Linear Bar below */}
           <div className="w-full mt-2">
-            <div className="w-full h-2 fluent-box-nested rounded-[4px] overflow-hidden p-0.5 border border-white/5">
+            <div className="w-full h-2 fluent-box-nested rounded-[2px] overflow-hidden p-0.5 border border-white/5">
               <div
-                className={`h-full rounded-[4px] transition-all duration-200 ${
+                className={`h-full rounded-[2px] transition-all duration-200 ${
                   currentSec <= 3
                     ? 'bg-rose-500'
                     : currentSec <= 5
@@ -465,7 +465,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                     key={sec}
                     type="button"
                     onClick={() => handleSelectPreset(sec)}
-                    className={`p-2.5 rounded-[4px] border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                    className={`p-2.5 rounded-[2px] border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                       isSelected
                         ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold shadow-lg shadow-amber-500/25 scale-[1.02] ring-2 ring-amber-300'
                         : 'fluent-box-nested border-white/10 text-white/80 hover:bg-white/10 hover:border-amber-400/50 hover:text-white'
@@ -482,7 +482,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
           </div>
 
           {/* Next Question Waiting Timer Setup Panel */}
-          <div className="p-3 fluent-box-nested border border-amber-500/30 rounded-[4px] space-y-2.5">
+          <div className="p-3 fluent-box-nested border border-amber-500/30 rounded-[2px] space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Timer className="w-4 h-4 text-amber-300 animate-pulse" />
@@ -494,7 +494,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                 <button
                   type="button"
                   onClick={handleCancelWaitTimer}
-                  className="px-2 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-[4px] text-[10px] font-mono font-bold uppercase transition cursor-pointer"
+                  className="px-2 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-[2px] text-[10px] font-mono font-bold uppercase transition cursor-pointer"
                 >
                   ✕ Hủy chờ
                 </button>
@@ -508,7 +508,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                     key={sec}
                     type="button"
                     onClick={() => handleStartWaitTimer(sec)}
-                    className="px-2.5 py-1 fluent-box-nested hover:bg-amber-400/25 border border-amber-400/30 rounded-[4px] text-xs font-mono font-bold text-amber-300 hover:text-amber-200 transition cursor-pointer"
+                    className="px-2.5 py-1 fluent-box-nested hover:bg-amber-400/25 border border-amber-400/30 rounded-[2px] text-xs font-mono font-bold text-amber-300 hover:text-amber-200 transition cursor-pointer"
                   >
                     Chờ {sec}s
                   </button>
@@ -522,14 +522,14 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                   max={300}
                   value={waitTimerInput}
                   onChange={(e) => setWaitTimerInput(e.target.value)}
-                  className="w-14 fluent-box-nested border border-amber-400/40 focus:border-amber-300 rounded-[4px] px-2 py-1 text-xs text-amber-200 font-mono text-center outline-none"
+                  className="w-14 fluent-box-nested border border-amber-400/40 focus:border-amber-300 rounded-[2px] px-2 py-1 text-xs text-amber-200 font-mono text-center outline-none"
                   placeholder="Giây"
                 />
                 <span className="text-[10px] text-amber-300/70 font-mono">s</span>
                 <button
                   type="button"
                   onClick={() => handleStartWaitTimer(Number(waitTimerInput) || 10)}
-                  className="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-[4px] text-xs font-mono font-black uppercase tracking-wide transition shadow-md shadow-amber-400/20 cursor-pointer"
+                  className="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-[2px] text-xs font-mono font-black uppercase tracking-wide transition shadow-md shadow-amber-400/20 cursor-pointer"
                 >
                   🚀 Bật đếm ngược
                 </button>
@@ -538,13 +538,13 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
           </div>
 
           {/* Quick Fine-Tuning & Custom Duration Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 p-2.5 fluent-box-nested border border-white/10 rounded-[4px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 p-2.5 fluent-box-nested border border-white/10 rounded-[2px]">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[10px] uppercase font-mono text-white/50 font-bold mr-1">Bù giờ:</span>
               <button
                 type="button"
                 onClick={() => handleAdjustTime(-5)}
-                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-white/15 border border-white/10 rounded-[4px] text-xs font-mono text-white/80 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-white/15 border border-white/10 rounded-[2px] text-xs font-mono text-white/80 hover:text-white transition flex items-center gap-1 cursor-pointer"
                 title="Giảm 5 giây"
               >
                 <Minus className="w-3 h-3" /> 5s
@@ -552,7 +552,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => handleAdjustTime(5)}
-                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-amber-400/20 border border-amber-400/30 rounded-[4px] text-xs font-mono text-amber-300 transition flex items-center gap-1 font-bold cursor-pointer"
+                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-amber-400/20 border border-amber-400/30 rounded-[2px] text-xs font-mono text-amber-300 transition flex items-center gap-1 font-bold cursor-pointer"
                 title="Cộng 5 giây bù giờ"
               >
                 <Plus className="w-3 h-3" /> 5s
@@ -560,7 +560,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => handleAdjustTime(10)}
-                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-emerald-400/20 border border-emerald-400/30 rounded-[4px] text-xs font-mono text-emerald-300 transition flex items-center gap-1 font-bold cursor-pointer"
+                className="px-2 sm:px-2.5 py-1 fluent-box-nested hover:bg-emerald-400/20 border border-emerald-400/30 rounded-[2px] text-xs font-mono text-emerald-300 transition flex items-center gap-1 font-bold cursor-pointer"
                 title="Cộng 10 giây bù giờ"
               >
                 <Plus className="w-3 h-3" /> 10s
@@ -575,12 +575,12 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                 max={180}
                 value={customInputTime}
                 onChange={(e) => setCustomInputTime(e.target.value)}
-                className="w-14 fluent-box-nested border border-white/20 focus:border-amber-400 rounded-[4px] px-2 py-1 text-xs text-white font-mono text-center outline-none"
+                className="w-14 fluent-box-nested border border-white/20 focus:border-amber-400 rounded-[2px] px-2 py-1 text-xs text-white font-mono text-center outline-none"
               />
               <span className="text-[10px] text-white/40 font-mono">s</span>
               <button
                 type="submit"
-                className="px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-500/40 rounded-[4px] text-[10px] font-mono font-bold uppercase transition cursor-pointer"
+                className="px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-500/40 rounded-[2px] text-[10px] font-mono font-bold uppercase transition cursor-pointer"
               >
                 Đặt
               </button>
@@ -598,7 +598,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                   onStartQuestion();
                 }
               }}
-              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[4px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 shadow-md cursor-pointer ${
+              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[2px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 shadow-md cursor-pointer ${
                 gameState.status === 'ACTIVE'
                   ? isPaused
                     ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-amber-300'
@@ -609,12 +609,12 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             >
               {gameState.status === 'ACTIVE' ? (
                 isPaused ? (
-                  <><Play className="w-4 h-4 fill-current" /><span>Tiếp tục</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-slate-950/20 text-slate-950 border border-slate-950/30">P</kbd></>
+                  <><Play className="w-4 h-4 fill-current" /><span>Tiếp tục</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-slate-950/20 text-slate-950 border border-slate-950/30">P</kbd></>
                 ) : (
-                  <><Pause className="w-4 h-4 fill-current" /><span>Tạm dừng</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-slate-950/20 text-slate-950 border border-slate-950/30">P</kbd></>
+                  <><Pause className="w-4 h-4 fill-current" /><span>Tạm dừng</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-slate-950/20 text-slate-950 border border-slate-950/30">P</kbd></>
                 )
               ) : (
-                <><Play className="w-4 h-4 fill-current" /><span>1. Bắt Đầu</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-white/10 text-white border border-white/20">A / Space</kbd></>
+                <><Play className="w-4 h-4 fill-current" /><span>1. Bắt Đầu</span><kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white border border-white/20">A / Space</kbd></>
               )}
             </button>
             
@@ -623,7 +623,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                 vibrateWarning();
                 onLockVoting();
               }}
-              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[4px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
+              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[2px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
                 gameState.status === 'LOCKED'
                   ? 'bg-amber-400 text-slate-950 font-black shadow-lg ring-2 ring-amber-300'
                   : 'fluent-box-nested border border-amber-500/40 text-amber-300 hover:bg-amber-400/20 font-bold'
@@ -632,7 +632,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             >
               <Lock className="w-4 h-4" />
               <span>2. Khóa Vote</span>
-              <kbd className={`text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] border ${gameState.status === 'LOCKED' ? 'bg-slate-950/20 text-slate-950 border-slate-950/30' : 'fluent-box-nested text-current border-current/20'}`}>L</kbd>
+              <kbd className={`text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] border ${gameState.status === 'LOCKED' ? 'bg-slate-950/20 text-slate-950 border-slate-950/30' : 'fluent-box-nested text-current border-current/20'}`}>L</kbd>
             </button>
             
             <button
@@ -640,7 +640,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                 vibrateSuccess();
                 if (onRevealResults) onRevealResults();
               }}
-              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[4px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
+              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[2px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
                 gameState.status === 'REVEAL'
                   ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white ring-2 ring-pink-300 font-black shadow-lg'
                   : 'fluent-box-nested border border-white/15 hover:border-pink-400/50 text-white hover:text-pink-300 font-bold'
@@ -649,7 +649,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             >
               <Eye className="w-4 h-4" />
               <span>3. Công bố</span>
-              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] fluent-box-nested text-current border border-current/20">R</kbd>
+              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] fluent-box-nested text-current border border-current/20">R</kbd>
             </button>
             
             <button
@@ -658,7 +658,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
                 handleResetTimer();
                 if (onReturnToStandby) onReturnToStandby();
               }}
-              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[4px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
+              className={`py-3 sm:py-4 px-1.5 sm:px-2 rounded-[2px] text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1 sm:gap-1.5 transition active:scale-95 cursor-pointer ${
                 gameState.status === 'STANDBY'
                   ? 'bg-white/20 text-white border border-white/40 font-black shadow'
                   : 'fluent-box-nested border border-white/10 text-white/70 hover:text-white hover:border-white/30 font-bold'
@@ -667,7 +667,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             >
               <RotateCcw className="w-4 h-4" />
               <span>4. Chế độ Chờ</span>
-              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] fluent-box-nested text-current border border-current/20">S</kbd>
+              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] fluent-box-nested text-current border border-current/20">S</kbd>
             </button>
           </div>
         </div>
@@ -675,7 +675,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
 
       {/* 10-Second Elimination Phasing Engine (for Elimination 6 Questions) */}
       {isEliminationRound && (
-        <div className="p-4 fluent-box-nested border border-amber-500/30 rounded-[4px] space-y-3 relative z-10">
+        <div className="p-4 fluent-box-nested border border-amber-500/30 rounded-[2px] space-y-3 relative z-10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -685,11 +685,11 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-amber-200 rounded-[4px] border border-amber-500/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-amber-200 rounded-[2px] border border-amber-500/30">
                 Đã loại: {gameState.eliminated_options?.length || 0}/4 phương án
               </span>
               {gameState.status === 'ACTIVE' && nextEliminationIn > 0 && (
-                <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-rose-300 rounded-[4px] border border-rose-500/30 font-bold animate-pulse">
+                <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-rose-300 rounded-[2px] border border-rose-500/30 font-bold animate-pulse">
                   ⏱️ Mốc kế tiếp: {nextEliminationIn}s
                 </span>
               )}
@@ -699,7 +699,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
           {/* Visual 3-Stage Milestone Track */}
           <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
             <div
-              className={`p-2.5 rounded-[4px] border transition ${
+              className={`p-2.5 rounded-[2px] border transition ${
                 currentPhase === 1 && gameState.status === 'ACTIVE'
                   ? 'fluent-box-nested border-amber-400 text-amber-200 ring-1 ring-amber-400/50'
                   : currentPhase > 1
@@ -712,7 +712,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             </div>
 
             <div
-              className={`p-2.5 rounded-[4px] border transition ${
+              className={`p-2.5 rounded-[2px] border transition ${
                 currentPhase === 2 && gameState.status === 'ACTIVE'
                   ? 'fluent-box-nested border-amber-400 text-amber-200 ring-1 ring-amber-400/50 animate-pulse'
                   : currentPhase > 2
@@ -725,7 +725,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             </div>
 
             <div
-              className={`p-2.5 rounded-[4px] border transition ${
+              className={`p-2.5 rounded-[2px] border transition ${
                 currentPhase === 3 && gameState.status === 'ACTIVE'
                   ? 'fluent-box-nested border-rose-400 text-rose-200 ring-1 ring-rose-400/50 animate-pulse'
                   : 'fluent-box-nested border-white/10 text-white/40'
@@ -741,16 +741,16 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             <button
               type="button"
               onClick={onEliminateRandom2}
-              className="px-3.5 py-2 fluent-acrylic-surface hover:from-amber-500 hover:to-rose-500 text-white rounded-[4px] text-xs font-bold font-mono transition shadow-lg flex items-center gap-1.5"
+              className="px-3.5 py-2 fluent-acrylic-surface hover:from-amber-500 hover:to-rose-500 text-white rounded-[2px] text-xs font-bold font-mono transition shadow-lg flex items-center gap-1.5"
               title="Loại 2 phương án ngẫu nhiên ngay lập tức (Phím tắt: E)"
             >
-              <Zap className="w-3.5 h-3.5" /> ⚡ Loại trừ ngay 2 phương án sai <kbd className="px-1 py-0.5 text-[9px] fluent-box-nested rounded-[4px] border border-white/20">E</kbd>
+              <Zap className="w-3.5 h-3.5" /> ⚡ Loại trừ ngay 2 phương án sai <kbd className="px-1 py-0.5 text-[9px] fluent-box-nested rounded-[2px] border border-white/20">E</kbd>
             </button>
 
             <button
               type="button"
               onClick={onToggleAutoEliminate}
-              className={`px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono transition border flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono transition border flex items-center gap-1.5 ${
                 autoEliminateEvery10s
                   ? 'fluent-box-nested border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/30 animate-pulse'
                   : 'fluent-box-nested border-white/10 text-white/60 hover:text-white'
@@ -764,7 +764,7 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => syncService.updateGameState({ eliminated_options: [] })}
-                className="px-3 py-2 fluent-box-nested hover:fluent-box-nested text-white/70 rounded-[4px] text-xs font-mono transition"
+                className="px-3 py-2 fluent-box-nested hover:fluent-box-nested text-white/70 rounded-[2px] text-xs font-mono transition"
               >
                 Khôi phục tất cả
               </button>

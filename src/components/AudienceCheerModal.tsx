@@ -50,7 +50,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-white/10 relative z-10">
           <div className="flex items-center gap-2.5">
             <div
-              className="w-10 h-10 rounded-[4px] flex items-center justify-center border"
+              className="w-10 h-10 rounded-[2px] flex items-center justify-center border"
               style={{
                 backgroundColor: `${intensityData.colorHex}25`,
                 borderColor: `${intensityData.colorHex}50`,
@@ -62,7 +62,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             <div>
               <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
                 {localLanguage === 'en' ? 'STAGE BOOST' : 'TIẾP SỨC SÂN KHẤU'}
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[4px] bg-white/10 text-rose-300 border border-rose-500/30">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] bg-white/10 text-rose-300 border border-rose-500/30">
                   LIVE 100%
                 </span>
               </h2>
@@ -79,7 +79,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
               soundFx.playClick();
               onClose();
             }}
-            className="p-2 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition"
+            className="p-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -92,7 +92,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
 
           {/* Live Stage Stats Bento Grid */}
           <div className="grid grid-cols-2 gap-2.5 pt-1">
-            <div className="fluent-box-nested rounded-[4px] p-3 border border-white/10">
+            <div className="fluent-box-nested rounded-[2px] p-3 border border-white/10">
               <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage === 'en' ? 'Audience Heartbeat' : 'Nhịp tim khán phòng'}</div>
               <div className="text-xl font-mono font-black text-rose-400 flex items-center gap-1.5 mt-1">
                 <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
@@ -103,7 +103,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
               </div>
             </div>
 
-            <div className="fluent-box-nested rounded-[4px] p-3 border border-white/10">
+            <div className="fluent-box-nested rounded-[2px] p-3 border border-white/10">
               <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage === 'en' ? 'Total Cheers' : 'Tổng lượt tiếp lửa'}</div>
               <div className="text-xl font-mono font-black text-amber-400 flex items-center gap-1.5 mt-1">
                 <Sparkles className="w-4 h-4 text-amber-400" />

@@ -103,7 +103,7 @@ export const LuckyDrawProjector: React.FC<{ gameState: GameState }> = ({ gameSta
           <div className="text-xl md:text-3xl lg:text-4xl font-bold text-white/60 uppercase tracking-widest font-mono text-center">
             ĐANG QUAY SỐ MÃ ĐỊNH DANH...
           </div>
-          <div className={`text-4xl md:text-5xl lg:text-6xl xl:text-[6rem] font-black ${theme.accentText} uppercase tracking-widest font-mono fluent-box-nested px-8 md:px-12 lg:px-16 py-4 md:py-6 rounded-[12px] blur-[1px] truncate max-w-[90%] text-center shadow-2xl`}>
+          <div className={`text-4xl md:text-5xl lg:text-6xl xl:text-[6rem] font-black ${theme.accentText} uppercase tracking-widest font-mono fluent-box-nested px-8 md:px-12 lg:px-16 py-4 md:py-6 rounded-[4px] blur-[1px] truncate max-w-[90%] text-center shadow-2xl`}>
             UID: {randomString}
           </div>
         </div>
@@ -121,7 +121,7 @@ export const LuckyDrawProjector: React.FC<{ gameState: GameState }> = ({ gameSta
             </h2>
             
             <div className="inline-block my-4 max-w-full">
-              <span className="inline-block text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-[6rem] font-black font-mono text-white fluent-box border border-amber-400/50 px-8 md:px-14 py-4 md:py-6 rounded-[12px] shadow-2xl tracking-wider break-all ring-1 ring-amber-400/20">
+              <span className="inline-block text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-[6rem] font-black font-mono text-white fluent-box border border-amber-400/50 px-8 md:px-14 py-4 md:py-6 rounded-[4px] shadow-2xl tracking-wider break-all ring-1 ring-amber-400/20">
                 {getUserDisplayUid(luckyDraw.winner)}
               </span>
             </div>

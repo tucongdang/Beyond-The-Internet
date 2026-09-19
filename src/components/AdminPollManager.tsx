@@ -584,9 +584,9 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
   return (
     <div id="admin-poll-manager-hub" className="space-y-6 animate-fadeIn">
       {/* Top Banner & Mode Switcher */}
-      <div className="fluent-box rounded-[4px] p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 text-white border border-white/10">
+      <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 text-white border border-white/10">
         <div className="flex items-center gap-3.5 relative z-10">
-          <div className="w-12 h-12 rounded-[4px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9] shadow-lg">
+          <div className="w-12 h-12 rounded-[2px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9] shadow-lg">
             <BarChart3 className="w-6 h-6" />
           </div>
           <div>
@@ -595,7 +595,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 Live Poll Control Center • Quản Trị Khảo Sát Sân Khấu
               </h1>
               {isPollLive && (
-                <span className="px-2.5 py-0.5 rounded-[4px] text-[10px] font-mono font-black uppercase bg-rose-600 text-white flex items-center gap-1.5 animate-pulse border border-rose-400">
+                <span className="px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-black uppercase bg-rose-600 text-white flex items-center gap-1.5 animate-pulse border border-rose-400">
                   <span className="w-2 h-2 rounded-full bg-white animate-ping" />
                   LIVE BROADCASTING
                 </span>
@@ -609,7 +609,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
 
         {/* Action Tabs in Header */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap relative z-10">
-          <div className="fluent-box-nested rounded-[4px] p-1 border border-white/10 flex items-center gap-1">
+          <div className="fluent-box-nested rounded-[2px] p-1 border border-white/10 flex items-center gap-1">
             <button
               type="button"
               onClick={() => {
@@ -695,7 +695,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
               <span>Lịch Sử</span>
               {(gameState.emergency_poll_history?.length || 0) > 0 && (
-                <span className="px-1.5 py-0.2 rounded-[4px] bg-[#F7CAC9] text-[#190839] text-[10px] font-mono font-bold">
+                <span className="px-1.5 py-0.2 rounded-[2px] bg-[#F7CAC9] text-[#190839] text-[10px] font-mono font-bold">
                   {gameState.emergency_poll_history?.length}
                 </span>
               )}
@@ -710,7 +710,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
         {managerTab === 'TELEMETRY' && (
         <div className="space-y-6">
           {isPollLive && currentPoll ? (
-            <div className="fluent-box rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden border border-white/10 text-white">
+            <div className="fluent-box rounded-[2px] p-5 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden border border-white/10 text-white">
               {/* Header Status Row */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
@@ -737,20 +737,20 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
 
                 <div className="flex items-center gap-2 flex-wrap">
                   {currentPoll.time_limit > 0 && currentPoll.status === 'ACTIVE' && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] fluent-box-nested text-amber-300 border border-amber-500/40 font-mono font-bold text-xs">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] fluent-box-nested text-amber-300 border border-amber-500/40 font-mono font-bold text-xs">
                       <Clock className="w-4 h-4 text-amber-400 animate-spin" />
                       <span>Đếm ngược: <strong className={activeTimeLeft <= 5 ? 'text-rose-400 text-sm animate-pulse' : 'text-amber-200'}>{activeTimeLeft}s</strong></span>
                     </div>
                   )}
 
                   {currentPoll.source_name && (
-                    <span className={`px-3 py-1.5 rounded-[4px] text-xs font-bold border flex items-center gap-1.5 ${currentSourceCfg.badgeBg} ${currentSourceCfg.border}`}>
+                    <span className={`px-3 py-1.5 rounded-[2px] text-xs font-bold border flex items-center gap-1.5 ${currentSourceCfg.badgeBg} ${currentSourceCfg.border}`}>
                       <CurrentSourceIcon className="w-3.5 h-3.5" />
                       <span>{currentPoll.source_name}</span>
                     </span>
                   )}
 
-                  <span className="px-3 py-1.5 rounded-[4px] text-xs font-mono font-bold fluent-box-nested text-white border border-white/15 flex items-center gap-1.5">
+                  <span className="px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold fluent-box-nested text-white border border-white/15 flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-sky-400" />
                     <span>{totalVotes} / {activeAudienceCount} Khán giả ({activeAudienceCount > 0 ? Math.round((totalVotes / activeAudienceCount) * 100) : 0}%)</span>
                   </span>
@@ -758,7 +758,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               </div>
 
               {/* Question Text Box */}
-              <div className="space-y-1.5 fluent-box-nested border border-white/10 rounded-[4px] p-4 sm:p-5">
+              <div className="space-y-1.5 fluent-box-nested border border-white/10 rounded-[2px] p-4 sm:p-5">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase text-white/50">
                   <span>Câu hỏi khảo sát đang phát sóng:</span>
                   {currentPoll.context_note && (
@@ -797,7 +797,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       return (
                         <div
                           key={item.key}
-                          className={`p-3 rounded-[4px] border transition-all ${
+                          className={`p-3 rounded-[2px] border transition-all ${
                             isCorrect && currentPoll.status === 'REVEALED'
                               ? 'fluent-box-nested border-emerald-400 shadow-md shadow-emerald-950/40'
                               : 'fluent-box-nested border-white/10'
@@ -806,7 +806,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                           <div className="flex items-center justify-between text-xs font-bold font-mono mb-1.5">
                             <div className="flex items-center gap-2">
                               <span
-                                className="w-6 h-6 rounded-[4px] flex items-center justify-center text-xs font-black shadow-inner"
+                                className="w-6 h-6 rounded-[2px] flex items-center justify-center text-xs font-black shadow-inner"
                                 style={{ backgroundColor: `${item.color}30`, color: item.color, border: `1px solid ${item.color}60` }}
                               >
                                 {item.key}
@@ -847,16 +847,16 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 </div>
 
                 {/* Right: Recharts Interactive Graphic */}
-                <div className="lg:col-span-6 fluent-box-nested border border-white/10 rounded-[4px] p-4 flex flex-col items-center justify-center min-h-[280px]">
+                <div className="lg:col-span-6 fluent-box-nested border border-white/10 rounded-[2px] p-4 flex flex-col items-center justify-center min-h-[280px]">
                   <div className="w-full flex items-center justify-between mb-2">
                     <span className="text-xs font-mono font-bold text-white/60 uppercase">
                       Biểu Đồ Trực Quan
                     </span>
-                    <div className="flex items-center gap-1 bg-white/10 p-1 rounded-[4px] border border-white/10">
+                    <div className="flex items-center gap-1 bg-white/10 p-1 rounded-[2px] border border-white/10">
                       <button
                         type="button"
                         onClick={() => setChartViewMode('BAR')}
-                        className={`px-2.5 py-0.5 rounded-[4px] text-[11px] font-mono font-bold transition ${
+                        className={`px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-bold transition ${
                           chartViewMode === 'BAR' ? 'bg-[#F7CAC9] text-[#190839]' : 'text-white/50 hover:text-white'
                         }`}
                       >
@@ -865,7 +865,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       <button
                         type="button"
                         onClick={() => setChartViewMode('DONUT')}
-                        className={`px-2.5 py-0.5 rounded-[4px] text-[11px] font-mono font-bold transition ${
+                        className={`px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-bold transition ${
                           chartViewMode === 'DONUT' ? 'bg-[#F7CAC9] text-[#190839]' : 'text-white/50 hover:text-white'
                         }`}
                       >
@@ -886,7 +886,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                                 if (active && payload && payload.length) {
                                   const data = payload[0].payload;
                                   return (
-                                    <div className="fluent-box border border-purple-500/40 p-2.5 rounded-[4px] shadow-xl text-xs">
+                                    <div className="fluent-box border border-purple-500/40 p-2.5 rounded-[2px] shadow-xl text-xs">
                                       <p className="font-bold text-white mb-0.5">{data.name}</p>
                                       <p className="font-black text-sm" style={{ color: data.color }}>
                                         {data.count} phiếu ({data.percent}%)
@@ -924,7 +924,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                                 if (active && payload && payload.length) {
                                   const data = payload[0].payload;
                                   return (
-                                    <div className="fluent-box border border-purple-500/40 p-2.5 rounded-[4px] shadow-xl text-xs">
+                                    <div className="fluent-box border border-purple-500/40 p-2.5 rounded-[2px] shadow-xl text-xs">
                                       <p className="font-bold text-white mb-0.5">{data.name}</p>
                                       <p className="font-black text-sm" style={{ color: data.color }}>
                                         {data.count} phiếu ({data.percent}%)
@@ -962,7 +962,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       type="button"
                       id="btn-poll-lock"
                       onClick={handleLockPoll}
-                      className="px-4 py-2.5 rounded-[4px] bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-500/50 font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-md cursor-pointer"
+                      className="px-4 py-2.5 rounded-[2px] bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-500/50 font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-md cursor-pointer"
                     >
                       <Lock className="w-4 h-4" />
                       <span>Khóa Nhận Phiếu</span>
@@ -974,7 +974,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       type="button"
                       id="btn-poll-reveal"
                       onClick={handleRevealPoll}
-                      className="px-5 py-2.5 rounded-[4px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition active:scale-95 shadow-lg border border-emerald-400 cursor-pointer"
+                      className="px-5 py-2.5 rounded-[2px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition active:scale-95 shadow-lg border border-emerald-400 cursor-pointer"
                     >
                       <Eye className="w-4 h-4" />
                       <span>Công Bố Kết Quả Lên Màn Chiếu & Điện Thoại</span>
@@ -985,7 +985,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                     type="button"
                     id="btn-poll-export-csv"
                     onClick={handleExportCSV}
-                    className="px-3.5 py-2.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition border border-white/15 cursor-pointer"
+                    className="px-3.5 py-2.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition border border-white/15 cursor-pointer"
                   >
                     <Download className="w-4 h-4 text-sky-400" />
                     <span>Xuất CSV</span>
@@ -997,7 +997,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                     type="button"
                     id="btn-poll-dismiss-trigger"
                     onClick={() => setIsDismissDialogOpen(true)}
-                    className="px-4 py-2.5 rounded-[4px] bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/40 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                    className="px-4 py-2.5 rounded-[2px] bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/40 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
                   >
                     <RotateCcw className="w-4 h-4" />
                     <span>Đóng Poll & Trở Lại Game</span>
@@ -1007,8 +1007,8 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               </div>
             </div>
           ) : (
-            <div className="fluent-box border border-dashed border-white/20 rounded-[4px] p-10 text-center space-y-4 text-white">
-              <div className="w-16 h-16 rounded-[4px] fluent-box-nested border border-purple-500/30 flex items-center justify-center mx-auto text-[#F7CAC9]">
+            <div className="fluent-box border border-dashed border-white/20 rounded-[2px] p-10 text-center space-y-4 text-white">
+              <div className="w-16 h-16 rounded-[2px] fluent-box-nested border border-purple-500/30 flex items-center justify-center mx-auto text-[#F7CAC9]">
                 <BarChart3 className="w-8 h-8" />
               </div>
               <div className="space-y-1">
@@ -1021,7 +1021,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setManagerTab('CREATOR')}
-                  className="px-5 py-2.5 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs flex items-center gap-2 shadow-lg transition active:scale-95 cursor-pointer"
+                  className="px-5 py-2.5 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs flex items-center gap-2 shadow-lg transition active:scale-95 cursor-pointer"
                 >
                   <Zap className="w-4 h-4" />
                   <span>Tạo Poll Trắc Nghiệm Mới</span>
@@ -1030,7 +1030,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setManagerTab('PRESETS')}
-                  className="px-4 py-2.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 transition border border-white/15 cursor-pointer"
+                  className="px-4 py-2.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 transition border border-white/15 cursor-pointer"
                 >
                   <Layers className="w-4 h-4 text-sky-400" />
                   <span>Xem Ngân Hàng Mẫu</span>
@@ -1043,11 +1043,11 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
 
       {/* ================= VIEW 2: MULTIPLE CHOICE POLL CREATOR ================= */}
       {managerTab === 'CREATOR' && (
-        <div className="fluent-box rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
+        <div className="fluent-box rounded-[2px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
           {/* Header Title */}
           <div className="flex items-center justify-between border-b border-white/10 pb-4 flex-wrap gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[4px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9]">
+              <div className="w-10 h-10 rounded-[2px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9]">
                 <Edit3 className="w-5 h-5" />
               </div>
               <div>
@@ -1064,7 +1064,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setManagerTab('PRESETS')}
-                className="px-3 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white text-xs font-mono font-bold transition flex items-center gap-1.5 border border-white/10 cursor-pointer"
+                className="px-3 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white text-xs font-mono font-bold transition flex items-center gap-1.5 border border-white/10 cursor-pointer"
               >
                 <Layers className="w-3.5 h-3.5 text-sky-400" />
                 <span>Nạp Từ Mẫu Sẵn Có</span>
@@ -1091,7 +1091,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleTypeChange(item.id as any)}
-                  className={`p-3 rounded-[4px] border text-left transition flex flex-col justify-between gap-2 cursor-pointer ${
+                  className={`p-3 rounded-[2px] border text-left transition flex flex-col justify-between gap-2 cursor-pointer ${
                     pollType === item.id
                       ? 'fluent-box-nested border-[#F7CAC9] text-white shadow-lg ring-1 ring-[#F7CAC9]'
                       : 'fluent-box-nested border-white/10 text-white/60 hover:text-white hover:bg-white/15'
@@ -1107,7 +1107,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
           </div>
 
           {/* 2. Source Origin Selection (Advisors / Contestants / Jury / Audience / Host) */}
-          <div className="space-y-3 p-4 rounded-[4px] fluent-box-nested border border-white/10">
+          <div className="space-y-3 p-4 rounded-[2px] fluent-box-nested border border-white/10">
             <label className="text-xs font-bold uppercase tracking-wider text-sky-300 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <UserCheck className="w-4 h-4 text-sky-400" />
@@ -1127,7 +1127,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                     key={type}
                     type="button"
                     onClick={() => handleSelectSourceType(type)}
-                    className={`p-2.5 rounded-[4px] border text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                    className={`p-2.5 rounded-[2px] border text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
                       isSelected
                         ? `fluent-box-nested ${cfg.border} ${cfg.color} shadow-lg ring-1 ring-white/20`
                         : 'fluent-box-nested border-white/10 text-white/60 hover:text-white hover:bg-white/15'
@@ -1150,7 +1150,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                   value={sourceName}
                   onChange={(e) => setSourceName(e.target.value)}
                   placeholder={SOURCE_TYPE_CONFIG[sourceType].defaultName}
-                  className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[4px] px-3 py-2 text-xs font-bold text-white focus:outline-none placeholder-white/30"
+                  className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[2px] px-3 py-2 text-xs font-bold text-white focus:outline-none placeholder-white/30"
                 />
                 {/* Suggestions */}
                 <div className="flex flex-wrap gap-1 pt-1">
@@ -1179,7 +1179,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                   value={contextNote}
                   onChange={(e) => setContextNote(e.target.value)}
                   placeholder="VD: Phản biện câu hỏi VCNV, Thử thách phân định điểm số..."
-                  className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[4px] px-3 py-2 text-xs text-white focus:outline-none placeholder-white/30"
+                  className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[2px] px-3 py-2 text-xs text-white focus:outline-none placeholder-white/30"
                 />
               </div>
             </div>
@@ -1199,7 +1199,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               onChange={(e) => setQuestionText(e.target.value)}
               placeholder="Nhập nội dung câu hỏi trắc nghiệm bạn muốn phát sóng tức thì tới toàn bộ khán phòng..."
               rows={3}
-              className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[4px] p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-[#F7CAC9] transition resize-none"
+              className="w-full bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] rounded-[2px] p-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-[#F7CAC9] transition resize-none"
             />
           </div>
 
@@ -1215,7 +1215,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 <button
                   type="button"
                   onClick={handleAddOption}
-                  className="px-2.5 py-1 rounded-[4px] fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold flex items-center gap-1 transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-[2px] fluent-box-nested hover:bg-white/15 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold flex items-center gap-1 transition cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Thêm lựa chọn</span>
@@ -1232,12 +1232,12 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 return (
                   <div
                     key={index}
-                    className="p-3 fluent-box-nested border border-white/10 rounded-[4px] space-y-1.5 focus-within:border-[#F7CAC9] transition relative"
+                    className="p-3 fluent-box-nested border border-white/10 rounded-[2px] space-y-1.5 focus-within:border-[#F7CAC9] transition relative"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-6 h-6 rounded-[4px] font-mono font-black text-xs flex items-center justify-center shadow-inner"
+                          className="w-6 h-6 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shadow-inner"
                           style={{ backgroundColor: `${color}30`, color, border: `1px solid ${color}60` }}
                         >
                           {letter}
@@ -1282,7 +1282,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       value={optText}
                       onChange={(e) => handleOptionChange(index, e.target.value)}
                       placeholder={`Nội dung lựa chọn ${letter}...`}
-                      className="w-full bg-[#0E051C]/60 border border-white/10 rounded-[4px] px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-[#F7CAC9]"
+                      className="w-full bg-[#0E051C]/60 border border-white/10 rounded-[2px] px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-[#F7CAC9]"
                     />
                   </div>
                 );
@@ -1291,14 +1291,14 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
           </div>
 
           {/* 5. Set Duration / Countdown Time Limit */}
-          <div className="space-y-4 p-4 rounded-[4px] fluent-box-nested border border-amber-500/30">
+          <div className="space-y-4 p-4 rounded-[2px] fluent-box-nested border border-amber-500/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
                 <Timer className="w-4 h-4 text-amber-400" />
                 <span>5. Thời lượng đếm ngược:</span>
               </label>
               
-              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-[4px] border border-white/5">
+              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-[2px] border border-white/5">
                  <span className="text-xs font-bold text-white/70">Bật đếm ngược</span>
                  <button
                    type="button"
@@ -1331,7 +1331,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       onChange={(e) => setTimeLimit(Number(e.target.value))}
                       className="w-full h-2 bg-white/20 rounded-[2px] appearance-none cursor-pointer accent-amber-400"
                    />
-                   <span className="text-sm font-mono font-bold text-amber-300 min-w-[60px] text-right bg-black/50 px-3 py-1.5 rounded-[4px] border border-amber-500/30">
+                   <span className="text-sm font-mono font-bold text-amber-300 min-w-[60px] text-right bg-black/50 px-3 py-1.5 rounded-[2px] border border-amber-500/30">
                      {timeLimit}s
                    </span>
                 </div>
@@ -1352,7 +1352,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                         vibrateTap();
                         setTimeLimit(item.sec);
                       }}
-                      className={`px-3 py-1.5 rounded-[4px] border text-xs font-mono font-bold transition cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition cursor-pointer ${
                         timeLimit === item.sec
                           ? 'bg-amber-500 text-black border-amber-400 shadow-md'
                           : 'fluent-box-nested border-white/10 text-white/70 hover:text-white hover:bg-white/15'
@@ -1364,7 +1364,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="text-xs font-mono text-white/50 text-center py-2 italic bg-black/20 rounded-[4px]">
+              <div className="text-xs font-mono text-white/50 text-center py-2 italic bg-black/20 rounded-[2px]">
                 🔒 Đã tắt đếm ngược. Quản trò sẽ khóa bình chọn thủ công.
               </div>
             )}
@@ -1381,7 +1381,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               id="btn-poll-launch-now"
               disabled={isSubmitting || !questionText.trim()}
               onClick={handleLaunchPoll}
-              className="px-8 py-3.5 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-xl transition active:scale-95 disabled:opacity-50 cursor-pointer"
+              className="px-8 py-3.5 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-xl transition active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <Zap className="w-5 h-5 fill-[#190839]" />
               <span>{isSubmitting ? 'Đang phát sóng...' : 'Phát Sóng Live Ngay Tới Khán Phòng'}</span>
@@ -1392,10 +1392,10 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
 
       {/* ================= VIEW 3: PRESETS & SAMPLE QUESTIONS BANK ================= */}
       {managerTab === 'PRESETS' && (
-        <div className="fluent-box rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
+        <div className="fluent-box rounded-[2px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
           <div className="flex items-center justify-between border-b border-white/10 pb-4 flex-wrap gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[4px] fluent-box-nested border border-sky-500/40 flex items-center justify-center text-sky-300">
+              <div className="w-10 h-10 rounded-[2px] fluent-box-nested border border-sky-500/40 flex items-center justify-center text-sky-300">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
@@ -1411,7 +1411,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
             <button
               type="button"
               onClick={() => setManagerTab('CREATOR')}
-              className="px-4 py-2 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs flex items-center gap-1.5 transition cursor-pointer"
+              className="px-4 py-2 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs flex items-center gap-1.5 transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Tự Soạn Câu Hỏi Mới</span>
@@ -1428,11 +1428,11 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               return (
                 <div
                   key={preset.id}
-                  className="p-5 rounded-[4px] fluent-box-nested border border-white/10 hover:border-[#F7CAC9]/40 transition flex flex-col justify-between gap-4 group"
+                  className="p-5 rounded-[2px] fluent-box-nested border border-white/10 hover:border-[#F7CAC9]/40 transition flex flex-col justify-between gap-4 group"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className={`px-2.5 py-0.5 rounded-[4px] text-[11px] font-bold border flex items-center gap-1.5 ${cfg.badgeBg} ${cfg.border}`}>
+                      <span className={`px-2.5 py-0.5 rounded-[2px] text-[11px] font-bold border flex items-center gap-1.5 ${cfg.badgeBg} ${cfg.border}`}>
                         <Icon className="w-3.5 h-3.5" />
                         <span>{preset.source_name || cfg.label}</span>
                       </span>
@@ -1466,7 +1466,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                     <button
                       type="button"
                       onClick={() => handleApplyPreset(preset)}
-                      className="px-3 py-1.5 rounded-[4px] fluent-box hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition border border-white/10 cursor-pointer"
+                      className="px-3 py-1.5 rounded-[2px] fluent-box hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition border border-white/10 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-sky-300" />
                       <span>Nạp & Tùy Chỉnh</span>
@@ -1476,7 +1476,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                       type="button"
                       disabled={isSubmitting}
                       onClick={() => handleLaunchPresetDirectly(preset)}
-                      className="px-4 py-1.5 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] text-xs font-black flex items-center gap-1.5 shadow-md transition disabled:opacity-50 cursor-pointer"
+                      className="px-4 py-1.5 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] text-xs font-black flex items-center gap-1.5 shadow-md transition disabled:opacity-50 cursor-pointer"
                     >
                       <Zap className="w-3.5 h-3.5 fill-[#190839]" />
                       <span>Phát Sóng Ngay</span>
@@ -1491,9 +1491,9 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
 
       {/* ================= VIEW 4: AI ASSISTANT ================= */}
       {managerTab === 'AI_ASSISTANT' && (
-        <div className="fluent-box rounded-[4px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
+        <div className="fluent-box rounded-[2px] p-5 sm:p-7 shadow-2xl space-y-6 text-white border border-white/10">
           <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-            <div className="w-10 h-10 rounded-[4px] fluent-box-nested border border-emerald-500/40 flex items-center justify-center text-emerald-300">
+            <div className="w-10 h-10 rounded-[2px] fluent-box-nested border border-emerald-500/40 flex items-center justify-center text-emerald-300">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
@@ -1515,12 +1515,12 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 value={aiPrompt}
                 onChange={e => setAiPrompt(e.target.value)}
                 placeholder="VD: Tạo 1 câu trắc nghiệm vui về chủ đề bảo mật mạng, độ khó trung bình..."
-                className="w-full bg-[#0E051C]/60 border border-white/10 focus:border-emerald-500/50 rounded-[4px] p-4 text-sm text-white placeholder-white/30 outline-none transition min-h-[120px] resize-none"
+                className="w-full bg-[#0E051C]/60 border border-white/10 focus:border-emerald-500/50 rounded-[2px] p-4 text-sm text-white placeholder-white/30 outline-none transition min-h-[120px] resize-none"
               />
             </div>
 
             {aiError && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[4px] text-xs text-rose-300 flex items-center gap-2">
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[2px] text-xs text-rose-300 flex items-center gap-2">
                 <AlertOctagon className="w-4 h-4" />
                 <span>{aiError}</span>
               </div>
@@ -1531,7 +1531,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 type="button"
                 disabled={isAiGenerating || !aiPrompt.trim()}
                 onClick={handleGenerateAIQuestion}
-                className="px-6 py-3 rounded-[4px] bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm flex items-center gap-2 shadow-lg transition disabled:opacity-50 cursor-pointer"
+                className="px-6 py-3 rounded-[2px] bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm flex items-center gap-2 shadow-lg transition disabled:opacity-50 cursor-pointer"
               >
                 {isAiGenerating ? (
                   <>
@@ -1554,7 +1554,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
       {/* Dismiss Poll Confirmation Modal */}
       {isDismissDialogOpen && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Đóng Poll?</h3>
             <p className="text-white/70 text-sm mt-2">
               Bạn có chắc chắn muốn đóng bình chọn trực tiếp này và đưa khán giả trở lại màn hình chờ không? Thao tác này sẽ dừng ngay lập tức việc nhận bình chọn.
@@ -1563,7 +1563,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setIsDismissDialogOpen(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
               >
                 Hủy
               </button>
@@ -1573,7 +1573,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                   setIsDismissDialogOpen(false);
                   await handleDismissPoll();
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Đồng ý Đóng
               </button>
@@ -1583,7 +1583,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
       )}
 
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-[#F7CAC9]/40 text-[#F7CAC9] px-4 py-3 rounded-[4px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
+        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-[#F7CAC9]/40 text-[#F7CAC9] px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
           <AlertCircle className="w-4 h-4 text-[#F7CAC9] shrink-0" />
           <span>{toastMessage}</span>
         </div>

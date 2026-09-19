@@ -244,10 +244,10 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
           data-tooltip-title={effectiveLanguage === "en" ? "Power Status" : "Tình Trạng Nguồn Pin"}
           data-tooltip-variant="success"
           onClick={handleOpenModal}
-          className={`has-tooltip p-3 fluent-box-nested border border-white/10 hover:border-emerald-500/40 rounded-[4px] flex items-center justify-between shadow-inner cursor-pointer transition ${className}`}
+          className={`has-tooltip p-3 fluent-box-nested border border-white/10 hover:border-emerald-500/40 rounded-[2px] flex items-center justify-between shadow-inner cursor-pointer transition ${className}`}
         >
           <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-[4px] flex items-center justify-center border ${visuals.bgColor} ${visuals.borderColor}`}>
+            <div className={`w-9 h-9 rounded-[2px] flex items-center justify-center border ${visuals.bgColor} ${visuals.borderColor}`}>
               <BatteryIcon className={`w-4 h-4 ${visuals.iconColor}`} />
             </div>
             <div>

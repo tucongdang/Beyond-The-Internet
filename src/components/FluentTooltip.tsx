@@ -146,7 +146,7 @@ export const FluentTooltip: React.FC<FluentTooltipProps> = ({
       }}
     >
       <div
-        className={`relative px-2.5 py-1.5 max-w-[280px] text-xs font-sans rounded-[4px] border shadow-2xl backdrop-blur-md transition-all ${getVariantStyles()}`}
+        className={`relative px-2.5 py-1.5 max-w-[280px] text-xs font-sans rounded-[2px] border shadow-2xl backdrop-blur-md transition-all ${getVariantStyles()}`}
         style={{
           // Fluent UI 2 Acrylic surface matching .fluent-box
           background: 'rgba(21, 7, 44, 0.95)',

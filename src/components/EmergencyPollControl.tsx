@@ -38,11 +38,11 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 overflow-y-auto animate-fadeIn">
-      <div className="relative w-full max-w-5xl fluent-box rounded-[4px] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col text-white">
+      <div className="relative w-full max-w-5xl fluent-box rounded-[2px] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col text-white">
         {/* Modal Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 fluent-box-nested">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[4px] fluent-box text-[#F7CAC9] border border-[#F7CAC9]/30 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-[2px] fluent-box text-[#F7CAC9] border border-[#F7CAC9]/30 flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
@@ -58,7 +58,7 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-[4px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
+            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
             title="Đóng cửa sổ"
           >
             <X className="w-4 h-4" />

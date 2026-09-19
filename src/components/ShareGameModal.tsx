@@ -226,7 +226,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     >
       <div
         id="share-game-modal-content"
-        className={`w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] shadow-2xl shadow-purple-950/90 relative overflow-y-auto my-auto flex flex-col items-center select-none transition-all duration-300 ${
+        className={`w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl shadow-purple-950/90 relative overflow-y-auto my-auto flex flex-col items-center select-none transition-all duration-300 ${
           displayMode === 'fullscreen'
             ? 'max-w-4xl min-h-[88vh] md:min-h-[92vh] justify-between p-6 sm:p-8'
             : 'max-w-md max-h-[90vh] p-4 sm:p-6'
@@ -240,7 +240,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         {/* Structured Header Row */}
         <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 mb-3 shrink-0">
           {/* Live indicator badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-widest bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-widest bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30">
             <Radio className="w-3 h-3 animate-pulse text-[#F7CAC9]" />
             <span>
               {displayMode === 'fullscreen'
@@ -260,7 +260,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 soundFx.playClick();
                 setShowDiagnostics((prev) => !prev);
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-[2px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
                 showDiagnostics
                   ? 'bg-sky-500 text-black border-sky-300 shadow-md shadow-sky-500/30 ring-1 ring-sky-300'
                   : diagnosticData.status === 'error'
@@ -283,7 +283,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 soundFx.playClick();
                 setDisplayMode((prev) => (prev === 'compact' ? 'fullscreen' : 'compact'));
               }}
-              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-[2px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
                 displayMode === 'fullscreen'
                   ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 shadow-sm'
                   : 'bg-white/10 hover:bg-white/20 text-[#F7CAC9] border-[#F7CAC9]/30'
@@ -310,7 +310,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
             {/* Countdown Badge */}
             <div
               id="badge-share-modal-timeout"
-              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] text-[10px] font-mono font-bold border transition ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-[10px] font-mono font-bold border transition ${
                 secondsRemaining <= 10
                   ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
                   : 'bg-white/10 text-white/70 border-white/15'
@@ -330,7 +330,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 vibrateTap();
                 onClose();
               }}
-              className="w-7 h-7 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
+              className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
               aria-label={localLanguage === 'en' ? 'Close (ESC)' : 'Đóng (ESC)'}
               title={localLanguage === 'en' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
             >
@@ -357,7 +357,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         {previewRecentQr && (
           <div 
             id="banner-share-modal-recent-qr-replay"
-            className="w-full my-2 p-2.5 rounded-[4px] bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-2 text-left animate-fadeIn shrink-0"
+            className="w-full my-2 p-2.5 rounded-[2px] bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-2 text-left animate-fadeIn shrink-0"
           >
             <div className="min-w-0">
               <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
@@ -375,7 +375,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 vibrateTap();
                 setPreviewRecentQr(null);
               }}
-              className="px-2.5 py-1 rounded-[4px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
+              className="px-2.5 py-1 rounded-[2px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />
               <span>{localLanguage === 'en' ? 'Live QR' : 'Về Mã Live'}</span>
@@ -384,7 +384,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         )}
         {/* QR Code Container */}
         <div className="relative group my-1 shrink-0 animate-qr-entrance">
-          <div className={`p-3 sm:p-4 rounded-[4px] shadow-2xl border-2 border-[#F7CAC9]/40 relative transition-all duration-300 ${
+          <div className={`p-3 sm:p-4 rounded-[2px] shadow-2xl border-2 border-[#F7CAC9]/40 relative transition-all duration-300 ${
             isTransparentBg
               ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%),linear-gradient(-45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
               : 'bg-white'
@@ -417,7 +417,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         {qrCustomCaption && (
           <div 
             id="share-modal-custom-caption"
-            className="my-1 px-3 py-1 rounded-[4px] bg-purple-950/80 border border-[#F7CAC9]/40 text-[#F7CAC9] font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
+            className="my-1 px-3 py-1 rounded-[2px] bg-purple-950/80 border border-[#F7CAC9]/40 text-[#F7CAC9] font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
             <span className="truncate">{qrCustomCaption}</span>
@@ -428,7 +428,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         <div className="flex items-center justify-center gap-2 flex-wrap my-1.5 shrink-0">
           <div 
             id="badge-share-modal-scans"
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[11px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
             title={localLanguage === 'en' ? 'Total audience scans joining the arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
           >
             <ScanLine className="w-3 h-3 text-sky-400" />
@@ -440,7 +440,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           {isFirebaseConnected ? (
             <div 
               id="badge-share-modal-firebase-online"
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
               title={localLanguage === 'en' ? 'Live arena is online and real-time sync is active' : 'Đấu trường trực tuyến và đồng bộ dữ liệu thời gian thực đang hoạt động ổn định'}
             >
               <span className="relative flex h-2 w-2">
@@ -452,7 +452,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           ) : (
             <div 
               id="badge-share-modal-firebase-offline"
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[11px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
               title={localLanguage === 'en' ? 'Reconnecting with Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
             >
               <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
@@ -462,7 +462,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         </div>
 
         {/* Quick Instructions */}
-        <div className="w-full fluent-box-nested border border-white/10 rounded-[4px] p-2.5 sm:p-3 my-2 text-left text-xs space-y-1 shrink-0">
+        <div className="w-full fluent-box-nested border border-white/10 rounded-[2px] p-2.5 sm:p-3 my-2 text-left text-xs space-y-1 shrink-0">
           <div className="flex items-center gap-2 text-[#F7CAC9] font-bold">
             <Smartphone className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
             <span>{localLanguage === 'en' ? 'Instructions for new audience:' : 'Hướng dẫn cho khán giả mới:'}</span>
@@ -477,7 +477,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         {/* URL Box & Actions */}
         <div className="w-full space-y-2 shrink-0">
           {/* Link Box */}
-          <div className="flex items-center gap-2 p-1.5 rounded-[4px] bg-black/40 border border-white/15">
+          <div className="flex items-center gap-2 p-1.5 rounded-[2px] bg-black/40 border border-white/15">
             <div className="flex-1 min-w-0 px-2 font-mono text-xs text-sky-300 truncate select-all">
               {shareUrl}
             </div>
@@ -485,7 +485,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               id="btn-copy-game-url"
               type="button"
               onClick={handleCopyLink}
-              className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-[2px] text-xs font-bold font-mono transition active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer ${
                 copied
                   ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
                   : 'bg-white/10 hover:bg-white/20 text-[#F7CAC9] border border-[#F7CAC9]/30'
@@ -513,7 +513,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 id="btn-native-share"
                 type="button"
                 onClick={handleNativeShare}
-                className="w-full py-2.5 px-3 rounded-[4px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition active:scale-95 cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition active:scale-95 cursor-pointer"
                 title={localLanguage === 'en' ? 'Share via system apps' : 'Chia sẻ link qua các ứng dụng hệ thống trên thiết bị di động'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" />
@@ -526,7 +526,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 id="btn-copy-url-primary"
                 type="button"
                 onClick={handleCopyLink}
-                className={`py-2.5 px-3 rounded-[4px] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer ${
+                className={`py-2.5 px-3 rounded-[2px] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer ${
                   copied
                     ? 'bg-emerald-500 text-black shadow-emerald-500/30'
                     : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839]'
@@ -550,7 +550,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 type="button"
                 onClick={handleDownloadQr}
                 disabled={!qrDataUrl}
-                className="py-2.5 px-3 rounded-[4px] bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-95 cursor-pointer"
+                className="py-2.5 px-3 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-95 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{localLanguage === 'en' ? 'Download QR' : 'Tải ảnh QR'}</span>

@@ -91,14 +91,14 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
       role="alert"
       aria-live="assertive"
       style={{ left: 'auto' }}
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-auto z-[9999] max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[12px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-auto z-[9999] max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
     >
       {/* Fluent UI 2 Top Highlight Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 pointer-events-none z-10" />
 
       {/* Top Section */}
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-[4px] fluent-box-nested border border-rose-400/40 flex items-center justify-center shrink-0 shadow-inner">
+        <div className="w-10 h-10 rounded-[2px] fluent-box-nested border border-rose-400/40 flex items-center justify-center shrink-0 shadow-inner">
           {isReconnecting ? (
             <RefreshCw className="w-5 h-5 text-rose-300 animate-spin" />
           ) : (
@@ -108,11 +108,11 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-200 border border-rose-400/50">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-200 border border-rose-400/50">
               <AlertCircle className="w-3 h-3 text-rose-400" />
               {localLanguage === 'en' ? 'SERVER DISCONNECTED' : 'MẤT KẾT NỐI MÁY CHỦ'}
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold bg-white/10 text-rose-200 border border-white/15">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-white/10 text-rose-200 border border-white/15">
               <Clock className="w-3 h-3 text-rose-300" />
               {isReconnecting
                 ? (localLanguage === 'en' ? 'Reconnecting...' : 'Đang kết nối lại...')
@@ -142,7 +142,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
           type="button"
           onClick={handleDismiss}
           title={localLanguage === 'en' ? 'Temporarily hide notice' : 'Tạm ẩn thông báo'}
-          className="fluent-subtab-btn p-1.5 rounded-[4px] border border-transparent hover:border-white/15 hover:bg-white/10 text-rose-300/80 hover:text-white transition shrink-0 cursor-pointer"
+          className="fluent-subtab-btn p-1.5 rounded-[2px] border border-transparent hover:border-white/15 hover:bg-white/10 text-rose-300/80 hover:text-white transition shrink-0 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -167,7 +167,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
           <button
             type="button"
             onClick={handleDismiss}
-            className="fluent-btn px-3 py-1.5 rounded-[4px] fluent-box-nested border border-white/10 hover:border-white/20 active:scale-95 text-xs font-mono font-bold text-rose-200 hover:text-white transition cursor-pointer"
+            className="fluent-btn px-3 py-1.5 rounded-[2px] fluent-box-nested border border-white/10 hover:border-white/20 active:scale-95 text-xs font-mono font-bold text-rose-200 hover:text-white transition cursor-pointer"
           >
             {localLanguage === 'en' ? 'Hide (60s)' : 'Ẩn (60s)'}
           </button>
@@ -175,7 +175,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
             type="button"
             onClick={handleManualRetry}
             disabled={isReconnecting}
-            className="fluent-btn px-3.5 py-1.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 active:scale-[0.98] text-xs font-mono font-black uppercase tracking-wider text-white rounded-[4px] transition shadow-lg shadow-rose-950/60 border border-rose-400/50 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+            className="fluent-btn px-3.5 py-1.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 active:scale-[0.98] text-xs font-mono font-black uppercase tracking-wider text-white rounded-[2px] transition shadow-lg shadow-rose-950/60 border border-rose-400/50 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isReconnecting ? 'animate-spin' : ''}`} />
             <span>

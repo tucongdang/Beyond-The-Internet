@@ -135,9 +135,9 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
   return (
     <div className="w-full max-w-7xl mx-auto space-y-4 text-[#e5e5e5] animate-fadeIn select-none">
       {/* Top Banner / Summary */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[4px] p-5 shadow-2xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-5 shadow-2xl backdrop-blur-md">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-[4px] fluent-acrylic-surface flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+          <div className="w-12 h-12 rounded-[2px] fluent-acrylic-surface flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
             <Users className="w-6 h-6 animate-pulse" />
           </div>
           <div>
@@ -145,8 +145,8 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#F7CAC9] font-black">
                 LIVE SUBMISSIONS MATRIX • {gameState.question_id || 'ROUND LIVE'}
               </span>
-              <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[4px] fluent-box-nested text-emerald-300 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-[4px] bg-emerald-400 animate-ping" />
+              <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[2px] fluent-box-nested text-emerald-300 border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-400 animate-ping" />
                 {rawList.length} PHẢN HỒI
               </span>
             </div>
@@ -158,20 +158,20 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
 
         {/* Metrics Pill Grid */}
         <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
-          <div className="fluent-box-nested px-3 py-1.5 rounded-[4px] border border-white/10">
+          <div className="fluent-box-nested px-3 py-1.5 rounded-[2px] border border-white/10">
             <span className="text-white/40 block text-[10px]">Tỷ lệ phản hồi</span>
             <span className="font-bold text-white">
               {rawList.length}/{activeCount} ({participationPercent}%)
             </span>
           </div>
 
-          <div className="fluent-box-nested px-3 py-1.5 rounded-[4px] border border-white/10">
+          <div className="fluent-box-nested px-3 py-1.5 rounded-[2px] border border-white/10">
             <span className="text-white/40 block text-[10px]">Tốc độ phản hồi TB</span>
             <span className="font-bold text-[#F7CAC9]">{avgLatency}s</span>
           </div>
 
           {gameState.status === 'REVEAL' && (
-            <div className="bg-emerald-950/40 backdrop-blur-md px-3 py-1.5 rounded-[4px] border border-emerald-500/30">
+            <div className="bg-emerald-950/40 backdrop-blur-md px-3 py-1.5 rounded-[2px] border border-emerald-500/30">
               <span className="text-emerald-300/60 block text-[10px]">Đúng đáp án</span>
               <span className="font-black text-emerald-400">
                 {correctCount}/{rawList.length} ({rawList.length > 0 ? Math.round((correctCount / rawList.length) * 100) : 0}%)
@@ -183,7 +183,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2.5 rounded-[4px] fluent-box-nested hover:fluent-box-nested text-white/80 hover:text-white transition"
+              className="p-2.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white/80 hover:text-white transition"
               title="Đóng danh sách phản hồi"
             >
               <X className="w-5 h-5" />
@@ -193,7 +193,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
       </div>
 
       {/* Auto-Scroll & Filters Toolbar */}
-      <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 sm:p-4 space-y-3 shadow-xl backdrop-blur-md">
+      <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 sm:p-4 space-y-3 shadow-xl backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           
           {/* AUTO-SCROLL CONTROLS */}
@@ -201,7 +201,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
             <button
               type="button"
               onClick={toggleAutoScroll}
-              className={`px-3.5 py-1.5 rounded-[4px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-md ${
+              className={`px-3.5 py-1.5 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-md ${
                 isAutoScrolling
                   ? 'bg-emerald-500 text-slate-950 border-emerald-400 ring-2 ring-emerald-400/40'
                   : 'fluent-box-nested text-white/70 border-white/20 hover:fluent-box-nested'
@@ -212,7 +212,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                 <>
                   <Pause className="w-3.5 h-3.5 fill-current" />
                   <span>Tự động cuộn: BẬT</span>
-                  <span className="w-2 h-2 rounded-[4px] bg-slate-950 animate-ping ml-0.5" />
+                  <span className="w-2 h-2 rounded-[2px] bg-slate-950 animate-ping ml-0.5" />
                 </>
               ) : (
                 <>
@@ -224,7 +224,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
 
             {/* Speed Selector */}
             {isAutoScrolling && (
-              <div className="flex items-center fluent-box-nested border border-white/10 rounded-[4px] p-0.5 text-[11px] font-mono">
+              <div className="flex items-center fluent-box-nested border border-white/10 rounded-[2px] p-0.5 text-[11px] font-mono">
                 <span className="text-white/40 px-2 flex items-center gap-1">
                   <Gauge className="w-3 h-3 text-[#F7CAC9]" /> Tốc độ:
                 </span>
@@ -233,7 +233,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                     key={spd}
                     type="button"
                     onClick={() => setCurrentSpeed(spd)}
-                    className={`px-2.5 py-1 rounded-[4px] font-bold transition uppercase ${
+                    className={`px-2.5 py-1 rounded-[2px] font-bold transition uppercase ${
                       currentSpeed === spd
                         ? 'bg-[#F7CAC9] text-[#190839]'
                         : 'text-white/60 hover:text-white'
@@ -249,7 +249,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
             <button
               type="button"
               onClick={resetToTop}
-              className="px-2.5 py-1.5 rounded-[4px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white text-xs font-mono transition flex items-center gap-1"
+              className="px-2.5 py-1.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white text-xs font-mono transition flex items-center gap-1"
               title="Về đầu danh sách"
             >
               <RotateCcw className="w-3 h-3" /> Về đầu
@@ -260,12 +260,12 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
               <span className="text-[11px] font-mono text-white/50 px-2 flex items-center gap-1.5">
                 {isPaused ? (
                   <span className="text-amber-300 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-[4px] bg-amber-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-[2px] bg-amber-400 animate-pulse" />
                     Tạm dừng (Rê chuột/Tác vụ)
                   </span>
                 ) : isOverflowing ? (
                   <span className="text-emerald-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-[4px] bg-emerald-400 animate-ping" />
+                    <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-400 animate-ping" />
                     Đang tuần hoàn ({scrollProgress}%)
                   </span>
                 ) : (
@@ -285,7 +285,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="fluent-box-nested border border-white/10 rounded-[4px] px-2.5 py-1.5 text-white/90 text-xs font-mono focus:outline-none focus:border-[#F7CAC9]"
+              className="fluent-box-nested border border-white/10 rounded-[2px] px-2.5 py-1.5 text-white/90 text-xs font-mono focus:outline-none focus:border-[#F7CAC9]"
             >
               <option value="TIME_ASC">Thời gian (Sớm nhất trước)</option>
               <option value="TIME_DESC">Thời gian (Mới nhất trước)</option>
@@ -305,7 +305,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
             <button
               type="button"
               onClick={() => setFilterChoice('ALL')}
-              className={`px-2.5 py-1 rounded-[4px] transition font-bold ${
+              className={`px-2.5 py-1 rounded-[2px] transition font-bold ${
                 filterChoice === 'ALL'
                   ? 'bg-[#F7CAC9] text-[#190839]'
                   : 'fluent-box-nested text-white/60 hover:fluent-box-nested'
@@ -319,7 +319,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                 <button
                   type="button"
                   onClick={() => setFilterChoice('CORRECT')}
-                  className={`px-2.5 py-1 rounded-[4px] transition font-bold flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-[2px] transition font-bold flex items-center gap-1 ${
                     filterChoice === 'CORRECT'
                       ? 'bg-emerald-500 text-slate-950 font-black'
                       : 'fluent-box-nested text-emerald-300 border border-emerald-500/30'
@@ -330,7 +330,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                 <button
                   type="button"
                   onClick={() => setFilterChoice('INCORRECT')}
-                  className={`px-2.5 py-1 rounded-[4px] transition font-bold flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-[2px] transition font-bold flex items-center gap-1 ${
                     filterChoice === 'INCORRECT'
                       ? 'bg-rose-500 text-white font-black'
                       : 'fluent-box-nested text-rose-300 border border-rose-500/30'
@@ -346,7 +346,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                 key={choice}
                 type="button"
                 onClick={() => setFilterChoice(choice)}
-                className={`px-2.5 py-1 rounded-[4px] transition font-bold ${
+                className={`px-2.5 py-1 rounded-[2px] transition font-bold ${
                   filterChoice === choice
                     ? 'bg-amber-400 text-slate-950'
                     : 'fluent-box-nested text-white/60 hover:fluent-box-nested'
@@ -365,7 +365,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
               placeholder="Tìm theo tên, MSSV, đáp án..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full fluent-box-nested border border-white/10 rounded-[4px] pl-8 pr-3 py-1.5 text-xs font-mono text-white placeholder:text-white/30 focus:outline-none focus:border-[#F7CAC9]"
+              className="w-full fluent-box-nested border border-white/10 rounded-[2px] pl-8 pr-3 py-1.5 text-xs font-mono text-white placeholder:text-white/30 focus:outline-none focus:border-[#F7CAC9]"
             />
             {searchQuery && (
               <button
@@ -381,7 +381,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
       </div>
 
       {/* AUTO-SCROLLABLE SUBMISSIONS LIST CONTAINER */}
-      <div className="relative bg-[#241148]/60 backdrop-blur-md border border-[#3E1D74] rounded-[4px] overflow-hidden shadow-2xl">
+      <div className="relative bg-[#241148]/60 backdrop-blur-md border border-[#3E1D74] rounded-[2px] overflow-hidden shadow-2xl">
         {/* Visual auto-scroll progress track */}
         {isAutoScrolling && isOverflowing && (
           <div className="h-1 fluent-box-nested w-full overflow-hidden">
@@ -394,7 +394,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
 
         {filteredList.length === 0 ? (
           <div className="p-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-center mx-auto text-white/30">
+            <div className="w-12 h-12 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-center mx-auto text-white/30">
               <Users className="w-6 h-6" />
             </div>
             <h4 className="text-base font-bold text-white">Chưa có phản hồi nào phù hợp</h4>
@@ -440,7 +440,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                     >
                       {/* Index / Rank */}
                       <td className="p-3.5 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-[4px] fluent-box-nested border border-white/10 text-white/60 font-bold text-sm sm:text-base">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-[2px] fluent-box-nested border border-white/10 text-white/60 font-bold text-sm sm:text-base">
                           {idx + 1}
                         </span>
                       </td>
@@ -448,7 +448,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                       {/* Name */}
                       <td className="p-3.5 font-sans">
                         <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-[4px] fluent-acrylic-surface border border-white/10 text-[#F7CAC9] font-bold text-xs flex items-center justify-center uppercase">
+                          <span className="w-7 h-7 rounded-[2px] fluent-acrylic-surface border border-white/10 text-[#F7CAC9] font-bold text-xs flex items-center justify-center uppercase">
                             {(resp.user_info?.name || 'K')[0]}
                           </span>
                           <div>
@@ -473,7 +473,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                       <td className="p-3.5">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`px-3 py-1 rounded-[4px] font-mono font-black text-xs sm:text-sm tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm ${
+                            className={`px-3 py-1 rounded-[2px] font-mono font-black text-xs sm:text-sm tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm ${
                               isCorrect
                                 ? 'bg-emerald-500 text-slate-950 ring-2 ring-emerald-400/50'
                                 : isIncorrect
@@ -493,7 +493,7 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
 
                       {/* Latency */}
                       <td className="p-3.5 text-center font-mono">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] fluent-box-nested border border-white/10 text-amber-300 font-bold">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] fluent-box-nested border border-white/10 text-amber-300 font-bold">
                           <Clock className="w-3 h-3 text-amber-400" />
                           {(resp.latency_sec ?? 0).toFixed(2)}s
                         </span>
@@ -503,16 +503,16 @@ export const ProjectorResponseList: React.FC<ProjectorResponseListProps> = ({
                       <td className="p-3.5 text-right font-mono">
                         {isReveal ? (
                           isCorrect ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] fluent-box-nested text-emerald-400 border border-emerald-500/40 font-bold text-[11px]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] fluent-box-nested text-emerald-400 border border-emerald-500/40 font-bold text-[11px]">
                               <CheckCircle2 className="w-3.5 h-3.5" /> CHÍNH XÁC
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] fluent-box-nested text-rose-400 border border-rose-500/40 font-bold text-[11px]">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] fluent-box-nested text-rose-400 border border-rose-500/40 font-bold text-[11px]">
                               <XCircle className="w-3.5 h-3.5" /> CHƯA ĐÚNG
                             </span>
                           )
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] fluent-box-nested text-sky-300 border border-sky-500/30 text-[11px]">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] fluent-box-nested text-sky-300 border border-sky-500/30 text-[11px]">
                             <Zap className="w-3 h-3 text-sky-400 animate-pulse" /> ĐÃ GHI NHẬN
                           </span>
                         )}

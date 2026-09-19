@@ -130,7 +130,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
 
       {/* Main Cheer Widget Box */}
       <div
-        className={`rounded-[4px] border transition-all duration-200 ${
+        className={`rounded-[2px] border transition-all duration-200 ${
           isHighContrast
             ? 'bg-black/50 backdrop-blur-[24px] saturate-150 border-2 border-white text-white'
             : 'fluent-box border-white/10 hover:border-rose-400/40'
@@ -164,7 +164,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
 
         {/* Reaction Type Selector Bar (Expandable or inline) */}
         {showEmojiPicker && (
-          <div className="grid grid-cols-5 gap-1.5 p-1.5 mb-2.5 fluent-box-nested rounded-[4px] border border-white/10 animate-fadeIn">
+          <div className="grid grid-cols-5 gap-1.5 p-1.5 mb-2.5 fluent-box-nested rounded-[2px] border border-white/10 animate-fadeIn">
             {getCheerTypes(localLanguage).map((item) => (
               <button
                 key={item.type}
@@ -174,7 +174,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
                   setSelectedType(item.type as CheerType);
                   setShowEmojiPicker(false);
                 }}
-                className={`py-1.5 flex flex-col items-center justify-center rounded-[4px] transition text-xs ${
+                className={`py-1.5 flex flex-col items-center justify-center rounded-[2px] transition text-xs ${
                   selectedType === item.type
                     ? 'bg-white/10 border border-white/40 scale-105 shadow-md'
                     : 'hover:bg-white/5 border border-transparent'
@@ -191,7 +191,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
         <button
           type="button"
           onClick={handleTap}
-          className={`w-full relative overflow-hidden py-3 sm:py-3.5 px-4 rounded-[4px] font-black text-sm sm:text-base text-white shadow-lg transition-all duration-100 flex items-center justify-between cursor-pointer border ${
+          className={`w-full relative overflow-hidden py-3 sm:py-3.5 px-4 rounded-[2px] font-black text-sm sm:text-base text-white shadow-lg transition-all duration-100 flex items-center justify-between cursor-pointer border ${
             isPressing ? 'scale-[0.98] brightness-125' : 'active:scale-95 hover:brightness-110'
           } ${
             isHighContrast

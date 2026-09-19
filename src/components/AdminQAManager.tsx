@@ -170,10 +170,10 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
   return (
     <div className="space-y-6">
       {/* Top Banner / Master Controls */}
-      <div className="fluent-box border border-white/10 rounded-[4px] p-5 sm:p-6 shadow-2xl space-y-4 text-white">
+      <div className="fluent-box border border-white/10 rounded-[2px] p-5 sm:p-6 shadow-2xl space-y-4 text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-[4px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9] shadow-lg">
+            <div className="w-12 h-12 rounded-[2px] fluent-box-nested border border-[#F7CAC9]/30 flex items-center justify-center text-[#F7CAC9] shadow-lg">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
@@ -200,7 +200,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             <button
               type="button"
               onClick={handleToggleOpen}
-              className={`px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono border transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono border transition flex items-center gap-1.5 cursor-pointer ${
                 settings.is_open
                   ? 'fluent-box-nested hover:bg-white/15 text-emerald-300 border-emerald-500/40'
                   : 'fluent-box-nested hover:bg-white/15 text-rose-300 border-rose-500/40'
@@ -213,7 +213,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             <button
               type="button"
               onClick={handleSeedSamples}
-              className="px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-[#F7CAC9] border border-[#F7CAC9]/30 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-[#F7CAC9] border border-[#F7CAC9]/30 transition flex items-center gap-1.5 cursor-pointer"
               title="Thêm 4 câu hỏi mẫu để test thử nghiệm"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -223,7 +223,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             <button
               type="button"
               onClick={() => setIsClearAllDialogOpen(true)}
-              className="px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-white/60 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-white/60 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer"
               title="Xóa toàn bộ câu hỏi"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -236,7 +236,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                 vibrateTap();
                 exportQAToCSV(questions);
               }}
-              className="px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-sky-300 border border-sky-500/30 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono fluent-box-nested hover:bg-white/15 text-sky-300 border border-sky-500/30 transition flex items-center gap-1.5 cursor-pointer"
               title="Xuất dữ liệu Q&A ra CSV"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -248,9 +248,9 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
 
         {/* Currently Featured on Stage Banner */}
         {featuredQuestion ? (
-          <div className="p-4 rounded-[4px] fluent-box-nested border border-rose-500/60 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-pulse">
+          <div className="p-4 rounded-[2px] fluent-box-nested border border-rose-500/60 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[4px] bg-rose-500 text-white flex items-center justify-center shadow-lg shrink-0">
+              <div className="w-10 h-10 rounded-[2px] bg-rose-500 text-white flex items-center justify-center shadow-lg shrink-0">
                 <Radio className="w-5 h-5 animate-spin" />
               </div>
               <div>
@@ -269,14 +269,14 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             <button
               type="button"
               onClick={() => handleFeature(featuredQuestion)}
-              className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             >
               <XCircle className="w-4 h-4" />
               <span>Gỡ Khỏi Sân Khấu</span>
             </button>
           </div>
         ) : (
-          <div className="p-3 rounded-[4px] fluent-box-nested border border-white/10 text-xs text-white/50 flex items-center gap-2">
+          <div className="p-3 rounded-[2px] fluent-box-nested border border-white/10 text-xs text-white/50 flex items-center gap-2">
             <Radio className="w-4 h-4 text-white/40" />
             <span>Chưa có câu hỏi nào đang được chiếu lên màn hình sân khấu. Nhấn nút "⭐ Chiếu Màn Hình" tại bất kỳ câu hỏi nào bên dưới để hiển thị.</span>
           </div>
@@ -284,7 +284,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="fluent-box border border-white/10 rounded-[4px] p-4 space-y-3">
+      <div className="fluent-box border border-white/10 rounded-[2px] p-4 space-y-3">
         {/* Status Filter Tabs */}
         <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1">
           {[
@@ -327,13 +327,13 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 onClick={handleSummarizeQA}
                 disabled={isSummarizing || questions.length === 0}
-                className="px-3 py-1 bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 border border-[#F7CAC9]/30 rounded-[4px] text-xs text-[#F7CAC9] transition disabled:opacity-50"
+                className="px-3 py-1 bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 border border-[#F7CAC9]/30 rounded-[2px] text-xs text-[#F7CAC9] transition disabled:opacity-50"
               >
                 {isSummarizing ? 'Đang phân tích...' : 'Tóm tắt Q&A'}
               </button>
             </div>
             {summary ? (
-              <div className="text-xs text-[#F7CAC9]/90 leading-relaxed bg-[#F7CAC9]/10 p-2 rounded-[4px]">
+              <div className="text-xs text-[#F7CAC9]/90 leading-relaxed bg-[#F7CAC9]/10 p-2 rounded-[2px]">
                 <div dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, '<br/>') }} />
               </div>
             ) : (
@@ -353,7 +353,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm theo nội dung, tên, MSSV..."
-              className="w-full pl-9 pr-3 py-2 rounded-[4px] bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] text-xs text-white placeholder-white/40 transition outline-none"
+              className="w-full pl-9 pr-3 py-2 rounded-[2px] bg-[#0E051C]/60 border border-white/15 focus:border-[#F7CAC9] text-xs text-white placeholder-white/40 transition outline-none"
             />
           </div>
 
@@ -362,7 +362,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 rounded-[4px] bg-[#0E051C]/60 border border-white/15 text-xs text-white focus:border-[#F7CAC9] transition outline-none cursor-pointer"
+              className="px-3 py-2 rounded-[2px] bg-[#0E051C]/60 border border-white/15 text-xs text-white focus:border-[#F7CAC9] transition outline-none cursor-pointer"
             >
               <option value="ALL">Tất cả chủ đề</option>
               {QA_CATEGORIES.map((cat) => (
@@ -373,11 +373,11 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             </select>
 
             {/* Sort Toggle */}
-            <div className="flex items-center fluent-box-nested p-0.5 rounded-[4px] border border-white/10">
+            <div className="flex items-center fluent-box-nested p-0.5 rounded-[2px] border border-white/10">
               <button
                 type="button"
                 onClick={() => setSortBy('NEWEST')}
-                className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[2px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                   sortBy === 'NEWEST' ? 'bg-purple-600 text-white' : 'text-white/50 hover:text-white'
                 }`}
               >
@@ -387,7 +387,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 type="button"
                 onClick={() => setSortBy('HOT')}
-                className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[2px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                   sortBy === 'HOT' ? 'bg-pink-600 text-white' : 'text-white/50 hover:text-white'
                 }`}
               >
@@ -402,7 +402,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
       {/* Questions Cards List */}
       <div key={`${statusFilter}_${categoryFilter}_${sortBy}`} className="fluent-tab-panel space-y-3">
         {filteredQuestions.length === 0 ? (
-          <div className="p-12 text-center fluent-box border border-white/10 rounded-[4px] space-y-3">
+          <div className="p-12 text-center fluent-box border border-white/10 rounded-[2px] space-y-3">
             <MessageSquare className="w-10 h-10 text-white/30 mx-auto" />
             <h4 className="text-sm font-bold text-white/70">Không có câu hỏi nào phù hợp với bộ lọc</h4>
             <p className="text-xs text-white/40 max-w-sm mx-auto">
@@ -417,7 +417,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
             return (
               <div
                 key={q.id}
-                className={`p-5 rounded-[4px] border transition-all duration-200 ${
+                className={`p-5 rounded-[2px] border transition-all duration-200 ${
                   isCurrentlyFeatured
                     ? 'fluent-box border-rose-500/80 shadow-2xl ring-1 ring-rose-500/40'
                     : 'fluent-box hover:border-white/20'
@@ -499,7 +499,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                     <button
                       type="button"
                       onClick={() => handleFeature(q)}
-                      className={`px-3 py-1.5 rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md ${
+                      className={`px-3 py-1.5 rounded-[2px] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md ${
                         isCurrentlyFeatured
                           ? 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400 shadow-rose-600/30'
                           : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black'
@@ -514,7 +514,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                       <button
                         type="button"
                         onClick={() => handleApprove(q.id)}
-                        className="px-2.5 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-sky-200 border border-sky-500/40 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-sky-200 border border-sky-500/40 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
                         title="Duyệt câu hỏi vào luồng cộng đồng"
                       >
                         <Check className="w-3.5 h-3.5" />
@@ -527,7 +527,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                       <button
                         type="button"
                         onClick={() => handleMarkAnswered(q.id)}
-                        className="px-2.5 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-emerald-200 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-emerald-200 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
                         title="Đánh dấu đã được trả lời xong"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -540,7 +540,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                       <button
                         type="button"
                         onClick={() => handleReject(q.id)}
-                        className="px-2 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white/50 hover:text-rose-300 border border-white/10 text-xs transition cursor-pointer"
+                        className="px-2 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white/50 hover:text-rose-300 border border-white/10 text-xs transition cursor-pointer"
                         title="Từ chối câu hỏi"
                       >
                         <XCircle className="w-3.5 h-3.5" />
@@ -551,7 +551,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                     <button
                       type="button"
                       onClick={() => setDeleteTargetQuestionId(q.id)}
-                      className="px-2 py-1.5 rounded-[4px] fluent-box-nested hover:bg-white/15 text-white/40 hover:text-rose-300 border border-white/10 text-xs transition cursor-pointer"
+                      className="px-2 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 text-white/40 hover:text-rose-300 border border-white/10 text-xs transition cursor-pointer"
                       title="Xóa vĩnh viễn"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -566,7 +566,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
 
       {deleteTargetQuestionId && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa?</h3>
             <p className="text-white/70 text-sm mt-2">
               Bạn có chắc chắn muốn xóa câu hỏi này không?
@@ -575,7 +575,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 type="button"
                 onClick={() => setDeleteTargetQuestionId(null)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
               >
                 Hủy
               </button>
@@ -586,7 +586,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                   await qaService.deleteQuestion(deleteTargetQuestionId);
                   setDeleteTargetQuestionId(null);
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Đồng ý Xóa
               </button>
@@ -596,7 +596,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
       )}
       {isClearAllDialogOpen && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[4px] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full fluent-box border border-rose-500/30 rounded-[2px] p-6 shadow-2xl text-white">
             <h3 className="font-black text-rose-300 text-lg">Xác nhận Xóa Hết?</h3>
             <p className="text-white/70 text-sm mt-2">
               Cảnh báo: Bạn có chắc chắn muốn xóa TOÀN BỘ danh sách câu hỏi Q&A không? Thao tác này không thể hoàn tác.
@@ -605,7 +605,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 type="button"
                 onClick={() => setIsClearAllDialogOpen(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
               >
                 Hủy
               </button>
@@ -616,7 +616,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
                   setIsClearAllDialogOpen(false);
                   await qaService.clearAllQuestions();
                 }}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Đồng ý Xóa Hết
               </button>

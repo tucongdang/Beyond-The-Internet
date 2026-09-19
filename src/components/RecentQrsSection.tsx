@@ -71,7 +71,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
   };
 
   return (
-    <div className={`w-full rounded-[12px] bg-black/40 border border-white/15 p-3 text-left font-mono ${className}`}>
+    <div className={`w-full rounded-[4px] bg-black/40 border border-white/15 p-3 text-left font-mono ${className}`}>
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/10">
         <button
@@ -144,14 +144,14 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                     <div
                       key={item.id}
                       onClick={() => handleSelect(item)}
-                      className={`p-2 rounded-[4px] transition cursor-pointer flex items-center justify-between gap-2.5 border ${
+                      className={`p-2 rounded-[2px] transition cursor-pointer flex items-center justify-between gap-2.5 border ${
                         isSelected
                           ? 'bg-sky-500/20 border-sky-400 text-white shadow-md shadow-sky-950/50'
                           : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/80'
                       }`}
                     >
                       {/* Mini QR Thumbnail Preview */}
-                      <div className="w-10 h-10 rounded-[4px] bg-white p-0.5 shrink-0 flex items-center justify-center overflow-hidden shadow">
+                      <div className="w-10 h-10 rounded-[2px] bg-white p-0.5 shrink-0 flex items-center justify-center overflow-hidden shadow">
                         {item.dataUrl ? (
                           <img
                             src={item.dataUrl}
@@ -191,7 +191,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                         <button
                           type="button"
                           onClick={() => handleSelect(item)}
-                          className="px-2 py-1 rounded-[4px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                          className="px-2 py-1 rounded-[2px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
                           title={localLanguage === 'en' ? 'Enlarge to re-scan this code' : 'Phóng to để quét lại mã này'}
                         >
                           <QrCode className="w-3 h-3" />
@@ -203,7 +203,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleCopy(e, item)}
-                          className={`p-1 rounded-[4px] border transition cursor-pointer active:scale-95 ${
+                          className={`p-1 rounded-[2px] border transition cursor-pointer active:scale-95 ${
                             copiedId === item.id
                               ? 'bg-emerald-500/30 text-emerald-300 border-emerald-500/50'
                               : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/10'
@@ -220,7 +220,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleDelete(e, item.id)}
-                          className="p-1 rounded-[4px] bg-white/5 hover:bg-rose-500/20 text-white/40 hover:text-rose-300 border border-transparent hover:border-rose-500/30 transition cursor-pointer active:scale-95"
+                          className="p-1 rounded-[2px] bg-white/5 hover:bg-rose-500/20 text-white/40 hover:text-rose-300 border border-transparent hover:border-rose-500/30 transition cursor-pointer active:scale-95"
                           title={localLanguage === 'en' ? 'Remove from recent list' : 'Xóa mã này khỏi danh sách gần đây'}
                         >
                           <Trash2 className="w-3 h-3" />

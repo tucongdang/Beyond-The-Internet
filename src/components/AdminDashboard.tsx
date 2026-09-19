@@ -27,7 +27,7 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, gameState, snapshotCount }) => {
   const cardClasses = "fluent-box p-4 sm:p-5 transition-all duration-300 ease-out cursor-pointer group hover:bg-white/5 hover:brightness-110 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg";
-  const iconBoxClasses = "w-10 h-10 rounded-[4px] flex items-center justify-center mb-4 transition-transform group-hover:scale-110";
+  const iconBoxClasses = "w-10 h-10 rounded-[2px] flex items-center justify-center mb-4 transition-transform group-hover:scale-110";
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn pb-12">

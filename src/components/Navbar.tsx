@@ -189,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     switch (gameState.status) {
       case 'ACTIVE':
         return (
-          <div className="px-2.5 py-1 bg-emerald-950/50 border border-emerald-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
+          <div className="px-2.5 py-1 bg-emerald-950/50 border border-emerald-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_#34d399]" />
             <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
               {effectiveLanguage === 'en' ? 'In Progress' : 'Đang Diễn Ra'}
@@ -198,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         );
       case 'LOCKED':
         return (
-          <div className="px-2.5 py-1 bg-amber-950/50 border border-amber-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
+          <div className="px-2.5 py-1 bg-amber-950/50 border border-amber-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-amber-400 rounded-full" />
             <span className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
               {effectiveLanguage === 'en' ? 'Locked' : 'Đã Khóa'}
@@ -207,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         );
       case 'REVEAL':
         return (
-          <div className="px-2.5 py-1 bg-purple-950/50 border border-purple-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
+          <div className="px-2.5 py-1 bg-purple-950/50 border border-purple-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse shadow-[0_0_8px_#c084fc]" />
             <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
               {effectiveLanguage === 'en' ? 'Result Revealed' : 'Công Bố Kết Quả'}
@@ -217,7 +217,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'STANDBY':
       default:
         return (
-          <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-[4px] flex items-center gap-2 shadow-sm">
+          <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-[2px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-white/40 rounded-full" />
             <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-wider">
               {effectiveLanguage === 'en' ? 'Waiting for Stage' : 'Chờ Sân Khấu'}
@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 fluent-acrylic-surface rounded-[4px] flex items-center justify-center font-black text-base sm:text-lg text-white shadow-lg shadow-blue-950/50 border border-blue-400/40 group-hover:scale-105 group-hover:border-blue-300/60 transition duration-200">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-base sm:text-lg text-white shadow-lg shadow-blue-950/50 border border-blue-400/40 group-hover:scale-105 group-hover:border-blue-300/60 transition duration-200">
               BTI
             </div>
             <div className="hidden xl:block">
@@ -350,7 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Telemetry Group: Ping, Battery, Connected Count */}
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[4px]">
+          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
             {/* Ping / Latency Indicator */}
             <button
               id="btn-ping-latency-indicator"
@@ -409,7 +409,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }
               data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
               data-tooltip-placement="bottom"
-              className="has-tooltip flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[4px] shrink-0 whitespace-nowrap"
+              className="has-tooltip flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
             >
               <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
                 {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}
@@ -420,7 +420,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[4px]">
+          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
             {/* Quick Language Toggle */}
             <button
               id="btn-toggle-language"
@@ -524,8 +524,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* User Profile / Admin Role Badge */}
           {currentView === 'admin' ? (
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[4px] text-xs select-none shadow-sm">
-              <div className="w-5 h-5 rounded-[4px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-xs select-none shadow-sm">
+              <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
                 A
               </div>
               <div className="flex flex-col items-start font-mono">
@@ -541,9 +541,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   vibrateTap();
                   onOpenProfile();
                 }}
-                className="flex items-center gap-2 px-2.5 py-1 fluent-box-nested border border-white/10 hover:border-sky-500/40 rounded-[4px] text-xs transition cursor-pointer"
+                className="flex items-center gap-2 px-2.5 py-1 fluent-box-nested border border-white/10 hover:border-sky-500/40 rounded-[2px] text-xs transition cursor-pointer"
               >
-                <div className="w-5 h-5 rounded-[4px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
+                <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
                   {user.name.slice(0, 1).toUpperCase()}
                 </div>
                 <div className="flex flex-col items-start font-mono">
@@ -558,7 +558,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     soundFx.playClick();
                     onLogout();
                   }}
-                  className="p-1.5 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[4px]"
+                  className="p-1.5 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
                   title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -571,7 +571,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 vibrateTap();
                 onOpenProfile();
               }}
-              className="hidden sm:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[4px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
+              className="hidden sm:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
             >
               {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
             </button>
@@ -594,9 +594,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isMobileMenuOpen && (
         <div className="sm:hidden border-t border-white/10 bg-[#0D0420]/95 backdrop-blur-2xl p-3.5 space-y-3 shadow-2xl absolute top-full left-0 w-full z-[100] animate-fadeIn">
           {/* Mobile Connection & Latency Telemetry Card */}
-          <div className="p-3 fluent-box-nested border border-white/10 rounded-[4px] flex items-center justify-between shadow-inner">
+          <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between shadow-inner">
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-[4px] flex items-center justify-center border ${pingBadge.container}`}>
+              <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${pingBadge.container}`}>
                 <Activity className={`w-4 h-4 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
               </div>
               <div>
@@ -643,8 +643,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {currentView === 'admin' && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3 p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[4px]">
-                <div className="w-7 h-7 rounded-[4px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+              <div className="flex items-center gap-3 p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[2px]">
+                <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
                   A
                 </div>
                 <div>
@@ -665,7 +665,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onOpenFirebaseConfig();
                   setIsMobileMenuOpen(false);
                 }}
-                className={`px-3 py-2.5 rounded-[4px] flex items-center gap-2.5 transition text-left border text-xs font-semibold ${
+                className={`px-3 py-2.5 rounded-[2px] flex items-center gap-2.5 transition text-left border text-xs font-semibold ${
                   isFirebaseConnected
                     ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
                     : 'bg-amber-950/40 text-amber-300 border-amber-500/30'
@@ -681,7 +681,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     if (onOpenQrCode) onOpenQrCode();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-3 py-2.5 bg-sky-950/30 text-sky-300 border border-sky-500/30 rounded-[4px] flex items-center gap-2.5 text-left text-xs font-semibold"
+                  className="px-3 py-2.5 bg-sky-950/30 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center gap-2.5 text-left text-xs font-semibold"
                 >
                   <QrCode className="w-4 h-4" /> Mã QR Khán Giả
                 </button>
@@ -693,7 +693,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
                   setIsMobileMenuOpen(false);
                 }}
-                className="px-3 py-2.5 bg-sky-600 hover:bg-sky-500 border border-sky-400/60 text-white rounded-[4px] flex items-center gap-2.5 font-bold text-left text-xs shadow-md shadow-sky-950/30"
+                className="px-3 py-2.5 bg-sky-600 hover:bg-sky-500 border border-sky-400/60 text-white rounded-[2px] flex items-center gap-2.5 font-bold text-left text-xs shadow-md shadow-sky-950/30"
               >
                 <Eye className="w-4 h-4" /> Mở Màn Chiếu Sân Khấu
               </button>
@@ -705,7 +705,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     if (onAdminLogout) onAdminLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-3 py-2.5 bg-rose-950/30 text-rose-300 rounded-[4px] flex items-center gap-2.5 font-semibold text-left border border-rose-500/30 text-xs"
+                  className="px-3 py-2.5 bg-rose-950/30 text-rose-300 rounded-[2px] flex items-center gap-2.5 font-semibold text-left border border-rose-500/30 text-xs"
                 >
                   <LogOut className="w-4 h-4" /> Đăng Xuất Admin
                 </button>
@@ -719,7 +719,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   soundFx.playClick();
                   toggleLanguage();
                 }}
-                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
               >
                 <div className="flex items-center gap-2.5">
                   <Globe className="w-4 h-4 text-sky-300" />
@@ -742,7 +742,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   handleToggleFullscreen();
                   setIsMobileMenuOpen(false);
                 }}
-                className={`px-3 py-2.5 rounded-[4px] flex items-center justify-between transition text-left border text-xs font-semibold ${
+                className={`px-3 py-2.5 rounded-[2px] flex items-center justify-between transition text-left border text-xs font-semibold ${
                   isFullscreen
                     ? 'bg-sky-950/40 text-sky-300 border-sky-500/40 font-bold'
                     : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/10'
@@ -767,7 +767,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenInstallModal();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+                  className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
                 >
                   <div className="flex items-center gap-2.5">
                     <Download className="w-4 h-4 text-sky-300" />
@@ -795,7 +795,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   soundFx.playClick();
                   toggleLanguage();
                 }}
-                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
               >
                 <div className="flex items-center gap-2.5">
                   <Globe className="w-4 h-4 text-sky-300" />
@@ -818,7 +818,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   handleToggleFullscreen();
                   setIsMobileMenuOpen(false);
                 }}
-                className={`px-3 py-2.5 rounded-[4px] flex items-center justify-between transition text-left border text-xs font-semibold ${
+                className={`px-3 py-2.5 rounded-[2px] flex items-center justify-between transition text-left border text-xs font-semibold ${
                   isFullscreen
                     ? 'bg-sky-950/40 text-sky-300 border-sky-500/40 font-bold'
                     : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/10'
@@ -847,7 +847,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenInstallModal();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+                  className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
                 >
                   <div className="flex items-center gap-2.5">
                     <Download className="w-4 h-4 text-sky-300" />
@@ -860,7 +860,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
 
               {user ? (
-                <div className="flex items-center justify-between p-2.5 fluent-box-nested rounded-[4px] border border-white/10">
+                <div className="flex items-center justify-between p-2.5 fluent-box-nested rounded-[2px] border border-white/10">
                   <button
                     onClick={() => {
                       vibrateTap();
@@ -869,7 +869,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="flex items-center gap-2.5 text-left"
                   >
-                    <div className="w-7 h-7 rounded-[4px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
+                    <div className="w-7 h-7 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
                       {user.name.slice(0, 1).toUpperCase()}
                     </div>
                     <div>
@@ -885,7 +885,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         onLogout();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[4px]"
+                      className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
                       title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
                     >
                       <LogOut className="w-3.5 h-3.5" />
@@ -899,7 +899,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenProfile();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[4px] flex items-center justify-center font-bold text-xs shadow-md"
+                  className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] flex items-center justify-center font-bold text-xs shadow-md"
                 >
                   {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
                 </button>

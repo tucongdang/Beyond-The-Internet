@@ -230,7 +230,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
       <section className="fluent-box p-4 sm:p-5 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-white/10">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-pink-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-pink-900/30 border border-pink-400/30">
+            <div className="w-10 h-10 rounded-[2px] bg-gradient-to-br from-pink-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-pink-900/30 border border-pink-400/30">
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
@@ -238,7 +238,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                 <h2 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
                   Quản Lý Chat & Tiếng Hô Khán Giả (Audience Shout)
                 </h2>
-                <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                <span className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wider border ${
                   settings.is_open
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse'
                     : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
@@ -257,7 +257,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
             <button
               type="button"
               onClick={handleToggleOpen}
-              className={`px-3.5 py-2 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 border cursor-pointer ${
+              className={`px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 border cursor-pointer ${
                 settings.is_open
                   ? 'bg-rose-600/80 hover:bg-rose-500 text-white border-rose-500/50'
                   : 'bg-emerald-600/80 hover:bg-emerald-500 text-white border-emerald-500/50'
@@ -270,7 +270,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
             <button
               type="button"
               onClick={() => setIsAddCustomOpen(!isAddCustomOpen)}
-              className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-[4px] text-xs font-bold uppercase tracking-wider transition shadow-md shadow-purple-900/30 flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] text-xs font-bold uppercase tracking-wider transition shadow-md shadow-purple-900/30 flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Phát Tiếng Hô MC</span>
@@ -279,7 +279,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
             <button
               type="button"
               onClick={() => setIsClearAllDialogOpen(true)}
-              className="px-3.5 py-2 fluent-box hover-effect border border-rose-500/30 text-rose-300 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 fluent-box hover-effect border border-rose-500/30 text-rose-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Xóa Hết Chat</span>
@@ -290,7 +290,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                 vibrateTap();
                 exportShoutsToCSV(shouts);
               }}
-              className="px-3.5 py-2 fluent-box hover-effect border border-sky-500/30 text-sky-300 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 fluent-box hover-effect border border-sky-500/30 text-sky-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               <span>Xuất CSV</span>
@@ -321,7 +321,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
 
       {/* Broadcast Quick Banner / Form if open */}
       {isAddCustomOpen && (
-        <section className="fluent-box p-4 sm:p-5 border border-purple-500/40 rounded-[4px] animate-fadeIn space-y-4">
+        <section className="fluent-box p-4 sm:p-5 border border-purple-500/40 rounded-[2px] animate-fadeIn space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-300" />
@@ -346,7 +346,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                   value={customSender}
                   onChange={(e) => setCustomSender(e.target.value)}
                   placeholder="MC / Ban Tổ Chức"
-                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none focus:border-purple-400"
+                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none focus:border-purple-400"
                 />
               </div>
               <div>
@@ -356,7 +356,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                   value={customRole}
                   onChange={(e) => setCustomRole(e.target.value)}
                   placeholder="HOST / BTC"
-                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none focus:border-purple-400"
+                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none focus:border-purple-400"
                 />
               </div>
               <div>
@@ -364,7 +364,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                 <select
                   value={customColor}
                   onChange={(e) => setCustomColor(e.target.value as ShoutBadgeColor)}
-                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none focus:border-purple-400"
+                  className="w-full px-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none focus:border-purple-400"
                 >
                   {Object.entries(SHOUT_BADGE_COLORS).map(([key, col]) => (
                     <option key={key} value={key} className="bg-slate-900 text-white">
@@ -386,7 +386,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                   onChange={(e) => setCustomText(e.target.value)}
                   maxLength={settings.max_chars}
                   placeholder="Nhập lời cổ vũ, nhắc nhở hoặc không khí khán phòng..."
-                  className="w-full pl-3 pr-16 py-2 text-xs sm:text-sm bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none focus:border-purple-400"
+                  className="w-full pl-3 pr-16 py-2 text-xs sm:text-sm bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none focus:border-purple-400"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-white/40">
                   {customText.length}/{settings.max_chars}
@@ -402,7 +402,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                   key={emoji}
                   type="button"
                   onClick={() => setCustomEmoji(emoji)}
-                  className={`w-7 h-7 rounded-[4px] flex items-center justify-center text-sm transition ${
+                  className={`w-7 h-7 rounded-[2px] flex items-center justify-center text-sm transition ${
                     customEmoji === emoji
                       ? 'bg-purple-600 border border-purple-400 scale-110'
                       : 'bg-black/30 border border-white/10 hover:bg-white/10'
@@ -429,7 +429,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               <button
                 type="submit"
                 disabled={!customText.trim()}
-                className="px-5 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 text-white rounded-[4px] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg shadow-pink-950/50 cursor-pointer"
+                className="px-5 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 text-white rounded-[2px] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg shadow-pink-950/50 cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" /> Phát Lên Màn Chiếu
               </button>
@@ -449,7 +449,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               key={idx}
               type="button"
               onClick={() => handleSendPreset(preset)}
-              className="px-3 py-1.5 rounded-[4px] bg-black/40 hover:bg-white/10 border border-white/10 hover:border-purple-400/50 text-xs text-white/90 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 rounded-[2px] bg-black/40 hover:bg-white/10 border border-white/10 hover:border-purple-400/50 text-xs text-white/90 transition flex items-center gap-1.5 cursor-pointer"
             >
               <span>{preset.emoji}</span>
               <span>{preset.text}</span>
@@ -479,7 +479,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
           </div>
           <button
             onClick={handleTriggerEffect}
-            className="w-full px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-[4px] text-xs font-medium text-white transition flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-[2px] text-xs font-medium text-white transition flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-purple-300" />
             Bắn Pháo Giấy (Confetti) Lên Màn Chiếu
@@ -495,13 +495,13 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
             <button
               onClick={handleSummarize}
               disabled={isSummarizing || shouts.length === 0}
-              className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[4px] text-xs text-white transition disabled:opacity-50"
+              className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[2px] text-xs text-white transition disabled:opacity-50"
             >
               {isSummarizing ? 'Đang phân tích...' : 'Tạo tóm tắt'}
             </button>
           </div>
           {summary ? (
-            <div className="text-xs text-amber-200/90 leading-relaxed bg-amber-500/10 p-2 rounded-[4px] border border-amber-500/20">
+            <div className="text-xs text-amber-200/90 leading-relaxed bg-amber-500/10 p-2 rounded-[2px] border border-amber-500/20">
               {summary}
             </div>
           ) : (
@@ -523,7 +523,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm theo nội dung, tên người gửi, MSSV..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none focus:border-purple-400"
+              className="w-full pl-9 pr-3 py-1.5 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none focus:border-purple-400"
             />
           </div>
 
@@ -534,7 +534,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               <select
                 value={filterColor}
                 onChange={(e) => setFilterColor(e.target.value)}
-                className="px-2.5 py-1 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none"
+                className="px-2.5 py-1 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none"
               >
                 <option value="ALL">Tất cả màu</option>
                 {Object.entries(SHOUT_BADGE_COLORS).map(([key, col]) => (
@@ -550,7 +550,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-2.5 py-1 text-xs bg-black/40 border border-white/15 rounded-[4px] text-white focus:outline-none"
+                className="px-2.5 py-1 text-xs bg-black/40 border border-white/15 rounded-[2px] text-white focus:outline-none"
               >
                 <option value="NEWEST">Mới nhất</option>
                 <option value="MOST_LIKES">Nhiều tim nhất</option>
@@ -566,7 +566,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 text-xs font-mono rounded-[4px] border transition ${
+            className={`px-3 py-1.5 text-xs font-mono rounded-[2px] border transition ${
               activeTab === tab
                 ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
                 : 'bg-black/40 border-white/10 text-white/50 hover:text-white/80'
@@ -593,7 +593,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               return (
                 <div
                   key={shout.id}
-                  className={`p-3 rounded-[4px] border transition-all ${
+                  className={`p-3 rounded-[2px] border transition-all ${
                     shout.is_pinned
                       ? 'bg-amber-950/20 border-amber-500/50 shadow-md shadow-amber-950/20'
                       : 'fluent-box-nested border-white/10 hover:border-white/20'
@@ -630,7 +630,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                         <button
                           type="button"
                           onClick={() => handleApprove(shout.id)}
-                          className="p-1.5 rounded-[4px] hover:bg-emerald-500/20 text-white/40 hover:text-emerald-300 transition cursor-pointer"
+                          className="p-1.5 rounded-[2px] hover:bg-emerald-500/20 text-white/40 hover:text-emerald-300 transition cursor-pointer"
                           title="Duyệt (Cho phép hiện lên màn chiếu)"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -641,7 +641,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                         <button
                           type="button"
                           onClick={() => handleReject(shout.id)}
-                          className="p-1.5 rounded-[4px] hover:bg-rose-500/20 text-white/40 hover:text-rose-300 transition cursor-pointer"
+                          className="p-1.5 rounded-[2px] hover:bg-rose-500/20 text-white/40 hover:text-rose-300 transition cursor-pointer"
                           title="Từ chối"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -651,7 +651,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                       <button
                         type="button"
                         onClick={() => handleTogglePin(shout.id, Boolean(shout.is_pinned))}
-                        className={`p-1.5 rounded-[4px] transition cursor-pointer ${
+                        className={`p-1.5 rounded-[2px] transition cursor-pointer ${
                           shout.is_pinned
                             ? 'bg-amber-500/30 text-amber-300 border border-amber-400/50'
                             : 'hover:bg-white/10 text-white/50 hover:text-white'
@@ -664,7 +664,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                       <button
                         type="button"
                         onClick={() => handleHideShout(shout.id)}
-                        className="p-1.5 rounded-[4px] hover:bg-rose-500/20 text-white/40 hover:text-rose-300 transition cursor-pointer"
+                        className="p-1.5 rounded-[2px] hover:bg-rose-500/20 text-white/40 hover:text-rose-300 transition cursor-pointer"
                         title="Xóa/Ẩn tiếng hô này khỏi màn chiếu"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -711,14 +711,14 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
               <button
                 type="button"
                 onClick={() => setIsClearAllDialogOpen(false)}
-                className="px-3 py-1.5 fluent-box hover-effect text-xs text-white rounded-[4px]"
+                className="px-3 py-1.5 fluent-box hover-effect text-xs text-white rounded-[2px]"
               >
                 Hủy
               </button>
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-[4px] shadow-md shadow-rose-950/50"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-[2px] shadow-md shadow-rose-950/50"
               >
                 Xóa Toàn Bộ
               </button>

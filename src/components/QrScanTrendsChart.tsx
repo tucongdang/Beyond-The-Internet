@@ -64,7 +64,7 @@ const CustomChartTooltip: React.FC<CustomTooltipProps> = ({ active, payload, lab
   const isPeak = peakCount > 0 && data.scans === peakCount && data.scans > 0;
 
   return (
-    <div className="p-3 rounded-[4px] bg-[#0c1322]/95 border border-sky-400/50 shadow-2xl backdrop-blur-md text-left font-mono min-w-[200px] pointer-events-none">
+    <div className="p-3 rounded-[2px] bg-[#0c1322]/95 border border-sky-400/50 shadow-2xl backdrop-blur-md text-left font-mono min-w-[200px] pointer-events-none">
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-sky-400/20">
         <div className="flex items-center gap-1.5 text-sky-200 font-bold text-xs">
           <Clock className="w-3.5 h-3.5 text-sky-400" />
@@ -192,7 +192,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
       {/* Top Controls Bar */}
       <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-sky-400/20">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-[4px] bg-gradient-to-br from-cyan-500/20 to-sky-500/30 border border-sky-400/40 text-sky-300 shadow-sm shadow-sky-950/50">
+          <div className="p-1.5 rounded-[2px] bg-gradient-to-br from-cyan-500/20 to-sky-500/30 border border-sky-400/40 text-sky-300 shadow-sm shadow-sky-950/50">
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
           <div>
@@ -210,11 +210,11 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
         {/* View Toggle Tabs (Range & Chart Type) */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* Time range switcher */}
-          <div className="flex items-center bg-black/50 border border-white/10 rounded-[4px] p-0.5">
+          <div className="flex items-center bg-black/50 border border-white/10 rounded-[2px] p-0.5">
             <button
               type="button"
               onClick={() => handleTimeRangeChange('today')}
-              className={`px-2 py-1 rounded-[4px] text-[10px] font-bold transition cursor-pointer ${
+              className={`px-2 py-1 rounded-[2px] text-[10px] font-bold transition cursor-pointer ${
                 timeRange === 'today'
                   ? 'bg-sky-500/30 text-sky-200 border border-sky-400/40 shadow-sm'
                   : 'text-white/50 hover:text-white/80'
@@ -225,7 +225,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
             <button
               type="button"
               onClick={() => handleTimeRangeChange('last12h')}
-              className={`px-2 py-1 rounded-[4px] text-[10px] font-bold transition cursor-pointer ${
+              className={`px-2 py-1 rounded-[2px] text-[10px] font-bold transition cursor-pointer ${
                 timeRange === 'last12h'
                   ? 'bg-sky-500/30 text-sky-200 border border-sky-400/40 shadow-sm'
                   : 'text-white/50 hover:text-white/80'
@@ -236,11 +236,11 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
           </div>
 
           {/* Chart visual style toggle */}
-          <div className="flex items-center bg-black/50 border border-white/10 rounded-[4px] p-0.5">
+          <div className="flex items-center bg-black/50 border border-white/10 rounded-[2px] p-0.5">
             <button
               type="button"
               onClick={() => handleChartTypeChange('area')}
-              className={`p-1 rounded-[4px] transition cursor-pointer ${
+              className={`p-1 rounded-[2px] transition cursor-pointer ${
                 chartType === 'area'
                   ? 'bg-sky-500/30 text-sky-300 border border-sky-400/40'
                   : 'text-white/40 hover:text-white/80'
@@ -252,7 +252,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
             <button
               type="button"
               onClick={() => handleChartTypeChange('bar')}
-              className={`p-1 rounded-[4px] transition cursor-pointer ${
+              className={`p-1 rounded-[2px] transition cursor-pointer ${
                 chartType === 'bar'
                   ? 'bg-sky-500/30 text-sky-300 border border-sky-400/40'
                   : 'text-white/40 hover:text-white/80'
@@ -268,7 +268,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
       {/* KPI Metric Summary Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {/* Total Scans Card */}
-        <div className="p-2.5 rounded-[4px] bg-gradient-to-br from-black/60 to-sky-950/40 border border-sky-500/30 flex flex-col justify-between">
+        <div className="p-2.5 rounded-[2px] bg-gradient-to-br from-black/60 to-sky-950/40 border border-sky-500/30 flex flex-col justify-between">
           <div className="flex items-center justify-between text-white/50 text-[10px] mb-1">
             <span>Tổng Lượt Quét</span>
             <Sparkles className="w-3.5 h-3.5 text-sky-400/60" />
@@ -283,7 +283,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
         </div>
 
         {/* Peak Scan Hour Card */}
-        <div className="p-2.5 rounded-[4px] bg-gradient-to-br from-black/60 to-amber-950/40 border border-amber-500/30 flex flex-col justify-between">
+        <div className="p-2.5 rounded-[2px] bg-gradient-to-br from-black/60 to-amber-950/40 border border-amber-500/30 flex flex-col justify-between">
           <div className="flex items-center justify-between text-white/50 text-[10px] mb-1">
             <span>Khung Giờ Đỉnh Điểm</span>
             <Flame className="w-3.5 h-3.5 text-amber-400/70" />
@@ -297,7 +297,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
         </div>
 
         {/* Average Scans / Hour Card */}
-        <div className="p-2.5 rounded-[4px] bg-gradient-to-br from-black/60 to-indigo-950/40 border border-indigo-500/30 flex flex-col justify-between">
+        <div className="p-2.5 rounded-[2px] bg-gradient-to-br from-black/60 to-indigo-950/40 border border-indigo-500/30 flex flex-col justify-between">
           <div className="flex items-center justify-between text-white/50 text-[10px] mb-1">
             <span>Tần Suất / Giờ Hoạt Động</span>
             <Activity className="w-3.5 h-3.5 text-indigo-400/60" />
@@ -312,7 +312,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
         </div>
 
         {/* Current Hour Velocity Card */}
-        <div className="p-2.5 rounded-[4px] bg-gradient-to-br from-black/60 to-emerald-950/40 border border-emerald-500/30 flex flex-col justify-between">
+        <div className="p-2.5 rounded-[2px] bg-gradient-to-br from-black/60 to-emerald-950/40 border border-emerald-500/30 flex flex-col justify-between">
           <div className="flex items-center justify-between text-white/50 text-[10px] mb-1">
             <span>Khung Giờ Hiện Tại</span>
             {metrics.velocityTrend === 'UP' ? (
@@ -340,7 +340,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
       {/* Main Recharts Visualization Canvas Card */}
       <div 
         id="qr-scan-recharts-card"
-        className="p-3 rounded-[12px] bg-gradient-to-br from-[#0a1120] via-[#0d1629] to-[#0a101d] border border-sky-500/40 shadow-xl shadow-black/60 relative overflow-hidden"
+        className="p-3 rounded-[4px] bg-gradient-to-br from-[#0a1120] via-[#0d1629] to-[#0a101d] border border-sky-500/40 shadow-xl shadow-black/60 relative overflow-hidden"
       >
         <div className="flex items-center justify-between text-xs text-white/60 mb-2 font-mono">
           <span className="flex items-center gap-1.5">
@@ -459,15 +459,15 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
         <div className="flex items-center justify-between text-[10px] text-white/50 pt-2 border-t border-white/10 flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm bg-sky-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-[2px] bg-sky-400 inline-block" />
               <span>Lượt quét theo giờ</span>
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-400 inline-block" />
               <span>Giờ đỉnh điểm</span>
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-[2px] bg-emerald-400 inline-block" />
               <span>Giờ hiện tại</span>
             </span>
           </div>
@@ -491,7 +491,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
       {showDetailedLog && (
         <div 
           id="qr-scan-detailed-hourly-log"
-          className="p-3 rounded-[4px] bg-black/60 border border-sky-400/30 animate-fadeIn"
+          className="p-3 rounded-[2px] bg-black/60 border border-sky-400/30 animate-fadeIn"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-sky-200 flex items-center gap-1.5">
@@ -506,16 +506,16 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
               <div 
                 key={d.hour} 
                 className={`pt-1.5 first:pt-0 flex items-center justify-between text-[11px] ${
-                  d.isCurrentHour ? 'text-emerald-300 font-bold bg-emerald-950/20 px-2 py-1 rounded-[4px]' : ''
+                  d.isCurrentHour ? 'text-emerald-300 font-bold bg-emerald-950/20 px-2 py-1 rounded-[2px]' : ''
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-[80px]">
                   <span className="font-mono text-white/80">{d.hour}</span>
                   {d.isCurrentHour && (
-                    <span className="px-1 py-0.2 rounded-[4px] bg-emerald-500/20 text-emerald-400 text-[8px]">NOW</span>
+                    <span className="px-1 py-0.2 rounded-[2px] bg-emerald-500/20 text-emerald-400 text-[8px]">NOW</span>
                   )}
                   {metrics.peakCount > 0 && d.scans === metrics.peakCount && d.scans > 0 && (
-                    <span className="px-1 py-0.2 rounded-[4px] bg-amber-500/20 text-amber-300 text-[8px] flex items-center gap-0.5">
+                    <span className="px-1 py-0.2 rounded-[2px] bg-amber-500/20 text-amber-300 text-[8px] flex items-center gap-0.5">
                       <Flame className="w-2 h-2" /> PEAK
                     </span>
                   )}
@@ -548,14 +548,14 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
       )}
 
       {/* Simulator / Rehearsal Action Controls for Admins */}
-      <div className="p-2.5 rounded-[4px] bg-black/40 border border-white/10 flex items-center justify-between flex-wrap gap-2">
+      <div className="p-2.5 rounded-[2px] bg-black/40 border border-white/10 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] text-white/50 block w-full sm:w-auto mr-1">Thao tác mô phỏng:</span>
           
           <button
             type="button"
             onClick={() => handleSimulateScan(1)}
-            className="px-2 py-1 rounded-[4px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1"
+            className="px-2 py-1 rounded-[2px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1"
             title="Thử nghiệm thêm 1 lượt quét ngay bây giờ"
           >
             <Plus className="w-3 h-3" />
@@ -565,7 +565,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
           <button
             type="button"
             onClick={() => handleSimulateScan(5)}
-            className="px-2 py-1 rounded-[4px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[10px] font-bold transition cursor-pointer active:scale-95"
+            className="px-2 py-1 rounded-[2px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 text-[10px] font-bold transition cursor-pointer active:scale-95"
             title="Thêm +5 lượt quét thử nghiệm"
           >
             +5 Lượt
@@ -575,7 +575,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
             type="button"
             disabled={isSeeding}
             onClick={handleSeedSample}
-            className="px-2 py-1 rounded-[4px] border border-indigo-400/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-200 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1 disabled:opacity-50"
+            className="px-2 py-1 rounded-[2px] border border-indigo-400/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-200 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1 disabled:opacity-50"
             title="Khởi tạo dữ liệu quét mẫu phân bổ đều các giờ trong ngày"
           >
             <RefreshCw className={`w-3 h-3 ${isSeeding ? 'animate-spin' : ''}`} />
@@ -587,7 +587,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
           <button
             type="button"
             onClick={handleReset}
-            className="px-2 py-1 rounded-[4px] border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1"
+            className="px-2 py-1 rounded-[2px] border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[10px] font-bold transition cursor-pointer active:scale-95 flex items-center gap-1"
             title="Xóa toàn bộ lịch sử quét & reset bộ đếm"
           >
             <RotateCcw className="w-3 h-3" />
@@ -606,7 +606,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
               soundFx.playClick();
               onBackToCurrentQr();
             }}
-            className="w-full py-2 px-3 rounded-[4px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-2 px-3 rounded-[2px] border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5" />
             <span>Quay lại trình chiếu Mã QR Hiện Tại</span>
@@ -621,7 +621,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
               soundFx.playClick();
               onBackToHistory();
             }}
-            className="w-full py-2 px-3 rounded-[4px] border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-2 px-3 rounded-[2px] border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <History className="w-3.5 h-3.5" />
             <span>Xem Lịch Sử Cấu Hình QR (5 bản)</span>

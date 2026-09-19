@@ -134,7 +134,7 @@ export const FluentSearchBar: React.FC<FluentSearchBarProps> = ({ db, questionBa
         </div>
         <input
           type="text"
-          className="fluent-input w-full text-white text-sm rounded-[4px] pl-9 pr-8 py-1.5 transition-all outline-none placeholder:text-white/30"
+          className="fluent-input w-full text-white text-sm rounded-[2px] pl-9 pr-8 py-1.5 transition-all outline-none placeholder:text-white/30"
           placeholder="Tìm khán giả, câu hỏi (vd: ID, Tên)..."
           value={searchTerm}
           onChange={(e) => {
@@ -170,14 +170,14 @@ export const FluentSearchBar: React.FC<FluentSearchBarProps> = ({ db, questionBa
               <div className="flex flex-wrap gap-2">
                 <button 
                   onClick={() => setSearchTerm('#new')}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs border border-emerald-500/20 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs border border-emerald-500/20 transition-colors"
                 >
                   <Clock className="w-3.5 h-3.5" />
                   Người dùng mới
                 </button>
                 <button 
                   onClick={() => setSearchTerm('#pending')}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs border border-amber-500/20 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs border border-amber-500/20 transition-colors"
                 >
                   <AlertCircle className="w-3.5 h-3.5" />
                   Câu trả lời chưa duyệt

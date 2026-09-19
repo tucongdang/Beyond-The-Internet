@@ -39,7 +39,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
       onClick={onClose}
     >
       <div 
-        className="fluent-box border border-white/10 w-full max-w-md rounded-[12px] shadow-2xl overflow-hidden p-6 relative text-[#F5EFF9]"
+        className="fluent-box border border-white/10 w-full max-w-md rounded-[4px] shadow-2xl overflow-hidden p-6 relative text-[#F5EFF9]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -48,7 +48,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             soundFx.playClick();
             onClose();
           }}
-          className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-[4px] bg-white/10 hover:bg-white/20 transition"
+          className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-[2px] bg-white/10 hover:bg-white/20 transition"
           aria-label={localLanguage === 'en' ? 'Close' : 'Đóng'}
         >
           <X className="w-4 h-4" />
@@ -56,7 +56,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
 
         {/* Header with App Icon */}
         <div className="flex items-center gap-4 mb-5">
-          <div className="w-12 h-12 rounded-[4px] bg-[#F7CAC9] text-[#190839] flex items-center justify-center font-black text-xl shadow-md shrink-0 border border-white/20">
+          <div className="w-12 h-12 rounded-[2px] bg-[#F7CAC9] text-[#190839] flex items-center justify-center font-black text-xl shadow-md shrink-0 border border-white/20">
             BTI
           </div>
           <div>
@@ -64,7 +64,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               <h3 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">
                 {localLanguage === 'en' ? 'Install Web App' : 'Cài Đặt Ứng Dụng'}
               </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-[4px] bg-[#F7CAC9]/20 text-[#F7CAC9] font-bold border border-[#F7CAC9]/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] font-bold border border-[#F7CAC9]/30">
                 PWA
               </span>
             </div>
@@ -77,7 +77,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Benefits list */}
-        <div className="space-y-2.5 mb-6 text-xs text-white/80 fluent-box-nested p-4 rounded-[4px] border border-white/10">
+        <div className="space-y-2.5 mb-6 text-xs text-white/80 fluent-box-nested p-4 rounded-[2px] border border-white/10">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-[#F7CAC9] shrink-0" />
             <span>
@@ -107,7 +107,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
         {/* Action area */}
         {isInstalled ? (
           <div className="space-y-3">
-            <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[4px] text-center">
+            <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[2px] text-center">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm mb-1">
                 <Check className="w-5 h-5" />{' '}
                 {localLanguage === 'en' ? 'Application is already installed!' : 'Ứng dụng đã được cài đặt!'}
@@ -123,14 +123,14 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                 soundFx.playClick();
                 onClose();
               }}
-              className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[4px] text-xs uppercase tracking-wider transition cursor-pointer"
+              className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition cursor-pointer"
             >
               {localLanguage === 'en' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
             </button>
           </div>
         ) : installSuccess ? (
           <div className="space-y-3">
-            <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[4px] text-center animate-bounce">
+            <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[2px] text-center animate-bounce">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
                 <Check className="w-5 h-5" />{' '}
                 {localLanguage === 'en' ? 'Installation Successful!' : 'Cài đặt thành công!'}
@@ -141,7 +141,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                 soundFx.playClick();
                 onClose();
               }}
-              className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[4px] text-xs uppercase tracking-wider transition cursor-pointer"
+              className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition cursor-pointer"
             >
               {localLanguage === 'en' ? 'Done' : 'Hoàn Tất'}
             </button>
@@ -151,7 +151,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             <button
               id="btn-confirm-pwa-install"
               onClick={handleInstallClick}
-              className="fluent-btn w-full py-3.5 px-4 bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black rounded-[4px] transition shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-xs uppercase tracking-wider border border-white/40 cursor-pointer"
+              className="fluent-btn w-full py-3.5 px-4 bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black rounded-[2px] transition shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-xs uppercase tracking-wider border border-white/40 cursor-pointer"
             >
               <Download className="w-4 h-4 animate-bounce" />
               {localLanguage === 'en' ? 'Install Now (1-Click Install)' : 'Cài Đặt Ngay (1-Click Install)'}
@@ -167,7 +167,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                   soundFx.playClick();
                   onClose();
                 }}
-                className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[4px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
+                className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {localLanguage === 'en' ? 'Maybe Later / Close' : 'Để Sau / Đóng Cửa Sổ'}
               </button>
@@ -176,7 +176,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
         ) : isIOS ? (
           /* iOS Safari Step-by-Step Instructions */
           <div className="space-y-3">
-            <div className="fluent-box-nested p-4 rounded-[4px] border border-white/10 space-y-3">
+            <div className="fluent-box-nested p-4 rounded-[2px] border border-white/10 space-y-3">
               <h4 className="text-xs font-bold text-[#F7CAC9] uppercase tracking-wider mb-2">
                 {localLanguage === 'en'
                   ? 'Installation Guide for iPhone / iPad (Safari):'
@@ -239,7 +239,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                 soundFx.playClick();
                 onClose();
               }}
-              className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[4px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {localLanguage === 'en' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
             </button>
@@ -247,7 +247,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
         ) : (
           /* Generic Desktop / Chrome instructions */
           <div className="space-y-3">
-            <div className="fluent-box-nested p-4 rounded-[4px] border border-white/10 text-center">
+            <div className="fluent-box-nested p-4 rounded-[2px] border border-white/10 text-center">
               <p className="text-xs text-white/80">
                 {localLanguage === 'en' ? (
                   <>
@@ -269,7 +269,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                 soundFx.playClick();
                 onClose();
               }}
-              className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[4px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {localLanguage === 'en' ? 'Close Window' : 'Đóng Cửa Sổ'}
             </button>

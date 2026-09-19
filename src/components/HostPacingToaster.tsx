@@ -163,11 +163,11 @@ const ToastCard: React.FC<ToastCardProps> = ({
 
   return (
     <div
-      className={`pointer-events-auto relative overflow-hidden rounded-[4px] border ${theme.border} ${theme.bg} p-4 shadow-2xl backdrop-blur-xl animate-slideInRight transition-all`}
+      className={`pointer-events-auto relative overflow-hidden rounded-[2px] border ${theme.border} ${theme.bg} p-4 shadow-2xl backdrop-blur-xl animate-slideInRight transition-all`}
     >
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className={`w-10 h-10 rounded-[4px] flex items-center justify-center shrink-0 ${theme.iconBg}`}>
+        <div className={`w-10 h-10 rounded-[2px] flex items-center justify-center shrink-0 ${theme.iconBg}`}>
           <IconComp className="w-5 h-5 animate-pulse" />
         </div>
 
@@ -185,7 +185,7 @@ const ToastCard: React.FC<ToastCardProps> = ({
 
             <button
               onClick={() => onDismiss(toast.id)}
-              className="p-1 text-white/40 hover:text-white rounded-[4px] hover:fluent-box-nested transition"
+              className="p-1 text-white/40 hover:text-white rounded-[2px] hover:fluent-box-nested transition"
               title="Đóng thông báo"
             >
               <X className="w-3.5 h-3.5" />
@@ -217,7 +217,7 @@ const ToastCard: React.FC<ToastCardProps> = ({
                   onQuickLock();
                   onDismiss(toast.id);
                 }}
-                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-[#0D0420] font-mono font-bold text-[11px] uppercase tracking-wider rounded-[4px] shadow transition flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-[#0D0420] font-mono font-bold text-[11px] uppercase tracking-wider rounded-[2px] shadow transition flex items-center gap-1.5"
                 title="Khóa nhận đáp án ngay lúc này"
               >
                 <Lock className="w-3 h-3" />
@@ -322,12 +322,12 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
   return (
     <div
       id="host-pacing-master-widget"
-      className="fluent-box-nested border border-white/10 rounded-[4px] p-3 sm:p-4 md:p-6 space-y-3 relative overflow-hidden"
+      className="fluent-box-nested border border-white/10 rounded-[2px] p-3 sm:p-4 md:p-6 space-y-3 relative overflow-hidden"
     >
       {/* Header & Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#E39A96]/30 text-[#FCEEEC] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#E39A96]/30 text-[#FCEEEC] flex items-center justify-center">
             <Activity className="w-4 h-4" />
           </div>
           <div>
@@ -335,8 +335,8 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
               <h3 className="text-xs uppercase font-mono font-bold text-white tracking-wider">
                 Hệ Thống Kiểm Soát Nhịp Độ (Host Pacing Control)
               </h3>
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] border flex items-center gap-1.5 ${status.color}`}>
-                <span className={`w-1.5 h-1.5 rounded-[4px] ${status.dot}`} />
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] border flex items-center gap-1.5 ${status.color}`}>
+                <span className={`w-1.5 h-1.5 rounded-[2px] ${status.dot}`} />
                 {status.label}
               </span>
             </div>
@@ -351,7 +351,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
           <button
             type="button"
             onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
-            className={`p-2 rounded-[4px] text-xs font-mono transition border ${
+            className={`p-2 rounded-[2px] text-xs font-mono transition border ${
               settings.soundEnabled
                 ? 'fluent-box-nested border-emerald-500/40 text-emerald-300'
                 : 'fluent-box-nested border-white/10 text-white/40 hover:text-white'
@@ -364,7 +364,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
           <button
             type="button"
             onClick={() => onUpdateSettings({ enabled: !settings.enabled })}
-            className={`px-2.5 py-1.5 rounded-[4px] text-xs font-mono font-bold transition border flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-[2px] text-xs font-mono font-bold transition border flex items-center gap-1.5 ${
               settings.enabled
                 ? 'bg-[#F7CAC9]/20 backdrop-blur-md border-[#E39A96]/40 text-[#EBC7D6]'
                 : 'fluent-box-nested border-white/10 text-white/40 hover:text-white'
@@ -380,7 +380,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
           <button
             type="button"
             onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-            className="p-2 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[4px] text-white/60 hover:text-white transition"
+            className="p-2 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[2px] text-white/60 hover:text-white transition"
             title="Cài đặt ngưỡng nhịp độ"
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -390,7 +390,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
             <button
               type="button"
               onClick={() => setShowHistoryModal(true)}
-              className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[4px] text-[11px] font-mono text-white/70 hover:text-white transition flex items-center gap-1"
+              className="px-2.5 py-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[2px] text-[11px] font-mono text-white/70 hover:text-white transition flex items-center gap-1"
               title="Xem lịch sử cảnh báo"
             >
               <Clock className="w-3 h-3" />
@@ -402,7 +402,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
 
       {/* Settings Popover Dropdown */}
       {showSettingsMenu && (
-        <div className="p-3 fluent-box-nested border border-white/10 rounded-[4px] space-y-3 animate-fadeIn text-xs">
+        <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] space-y-3 animate-fadeIn text-xs">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <span className="font-bold text-white">Cấu Hình Ngưỡng Cảnh Báo Toast</span>
             <button
@@ -473,9 +473,9 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
         </div>
 
         {/* Progress bar with glowing milestone pips */}
-        <div className="relative w-full h-3 fluent-box rounded-[4px] border border-white/10 overflow-hidden">
+        <div className="relative w-full h-3 fluent-box rounded-[2px] border border-white/10 overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 rounded-[4px] ${
+            className={`h-full transition-all duration-300 rounded-[2px] ${
               percent >= 100
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
                 : percent >= 90
@@ -509,7 +509,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
 
       {/* Quick Lock Action if majority responded */}
       {isGameActive && percent >= 75 && onQuickLock && (
-        <div className="pt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-2 fluent-box-nested border border-amber-500/30 rounded-[4px] p-2.5">
+        <div className="pt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-2 fluent-box-nested border border-amber-500/30 rounded-[2px] p-2.5">
           <div className="flex items-center gap-2 text-xs text-amber-200">
             <Zap className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
             <span>
@@ -520,7 +520,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
           <button
             type="button"
             onClick={onQuickLock}
-            className="w-full sm:w-auto px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-[#0D0420] font-bold font-mono text-xs rounded-[4px] uppercase tracking-wider transition shadow flex items-center justify-center gap-1.5 shrink-0"
+            className="w-full sm:w-auto px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-[#0D0420] font-bold font-mono text-xs rounded-[2px] uppercase tracking-wider transition shadow flex items-center justify-center gap-1.5 shrink-0"
           >
             <Lock className="w-3.5 h-3.5" /> Khóa Vote (L)
           </button>
@@ -530,7 +530,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
       {/* Recent Alerts Modal */}
       {showHistoryModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[24px] saturate-150/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0f172a]/50 backdrop-blur-md border border-white/10 rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-2xl animate-fadeIn">
+          <div className="bg-[#0f172a]/50 backdrop-blur-md border border-white/10 rounded-[2px] max-w-md w-full p-5 space-y-4 shadow-2xl animate-fadeIn">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#FCEEEC]" />
@@ -556,7 +556,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
                 recentPacingEvents.map((e) => (
                   <div
                     key={e.id}
-                    className="p-3 fluent-box-nested border border-white/10 rounded-[4px] space-y-1 text-xs"
+                    className="p-3 fluent-box-nested border border-white/10 rounded-[2px] space-y-1 text-xs"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-[#FCEEEC]">
@@ -579,7 +579,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
-                className="px-4 py-2 fluent-box-nested hover:fluent-box-nested text-white rounded-[4px] text-xs font-bold transition"
+                className="px-4 py-2 fluent-box-nested hover:fluent-box-nested text-white rounded-[2px] text-xs font-bold transition"
               >
                 Đóng
               </button>

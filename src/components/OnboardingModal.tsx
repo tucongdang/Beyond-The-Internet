@@ -187,7 +187,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#0D0420]/80 backdrop-blur-md" />
       
-      <div className="relative fluent-box rounded-[12px] p-6 sm:p-8 w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="relative fluent-box rounded-[4px] p-6 sm:p-8 w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-horizon" />
         <div className="relative z-10 space-y-6">
           <div className="text-center space-y-2">
@@ -197,7 +197,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </div>
 
           {errorMsg && mode !== 'google' && (
-            <div className="flex items-start gap-2 text-rose-400 bg-white/10 backdrop-blur-md p-3 rounded-[4px] border border-rose-500/20 text-xs text-left">
+            <div className="flex items-start gap-2 text-rose-400 bg-white/10 backdrop-blur-md p-3 rounded-[2px] border border-rose-500/20 text-xs text-left">
               <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
               <p>{errorMsg}</p>
             </div>
@@ -210,7 +210,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </p>
               
               {errorMsg && (
-                <div className="flex items-start gap-2 text-rose-400 bg-white/10 backdrop-blur-md p-3 rounded-[4px] border border-rose-500/20 text-xs text-left mb-4">
+                <div className="flex items-start gap-2 text-rose-400 bg-white/10 backdrop-blur-md p-3 rounded-[2px] border border-rose-500/20 text-xs text-left mb-4">
                   <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                   <p>{errorMsg}</p>
                 </div>
@@ -219,7 +219,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <button
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full bg-white hover:bg-gray-100 disabled:opacity-50 text-gray-900 font-bold rounded-[4px] px-4 py-4 transition-colors flex items-center justify-center gap-3 shadow-lg"
+                className="w-full bg-white hover:bg-gray-100 disabled:opacity-50 text-gray-900 font-bold rounded-[2px] px-4 py-4 transition-colors flex items-center justify-center gap-3 shadow-lg"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
@@ -247,7 +247,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     setName(e.target.value);
                     if (errors.name) setErrors({ ...errors, name: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
                 />
                 {errors.name && <p className="text-xs text-rose-400 mt-1">{errors.name}</p>}
               </div>
@@ -264,7 +264,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     setMssv(e.target.value);
                     if (errors.mssv) setErrors({ ...errors, mssv: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
                 />
                 {errors.mssv && <p className="text-xs text-rose-400 mt-1">{errors.mssv}</p>}
               </div>
@@ -280,7 +280,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       setGender(e.target.value);
                       if (errors.gender) setErrors({ ...errors, gender: undefined });
                     }}
-                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm text-white outline-none transition appearance-none"
+                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white outline-none transition appearance-none"
                   >
                     <option value="" disabled>{t("onboard_gender_ph", localLanguage)}</option>
                     <option value="1">{t("onboard_gender_m", localLanguage)}</option>
@@ -302,7 +302,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       setBirthYear(e.target.value.replace(/\D/g, ''));
                       if (errors.birthYear) setErrors({ ...errors, birthYear: undefined });
                     }}
-                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
                   />
                   {errors.birthYear && <p className="text-xs text-rose-400 mt-1">{errors.birthYear}</p>}
                 </div>
@@ -338,7 +338,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     value={anonymizedUid}
                     readOnly
                     placeholder={t("onboard_uid_ph", localLanguage)}
-                    className="w-full fluent-box-nested focus:border-[#F7CAC9] font-mono tracking-widest text-[#F7CAC9] rounded-[4px] px-4 py-3 text-sm outline-none transition"
+                    className="w-full fluent-box-nested focus:border-[#F7CAC9] font-mono tracking-widest text-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm outline-none transition"
                   />
                 </div>
                 {errors.anonymizedUid && <p className="text-xs text-rose-400 mt-1">{errors.anonymizedUid}</p>}
@@ -347,7 +347,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </p>
               </div>
               {teamModeActive && randomTeamAssignment && (
-                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-[4px] text-center">
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-[2px] text-center">
                   <p className="text-xs font-bold text-amber-300 uppercase">{t("onboard_team_random", localLanguage)}</p>
                 </div>
               )}
@@ -374,7 +374,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full mt-6 bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[4px] uppercase text-xs tracking-wider shadow-lg shadow-[#0D0420]/30 flex items-center justify-center gap-2 transition"
+                className="w-full mt-6 bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[2px] uppercase text-xs tracking-wider shadow-lg shadow-[#0D0420]/30 flex items-center justify-center gap-2 transition"
               >
                 <span>{t("onboard_btn_submit", localLanguage)}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -385,7 +385,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {mode === 'verify' && (
             <form onSubmit={handleVerifySubmit} className="space-y-4">
               <div className="flex justify-center mb-2">
-                <div className="w-12 h-12 fluent-box-nested flex items-center justify-center rounded-[4px]">
+                <div className="w-12 h-12 fluent-box-nested flex items-center justify-center rounded-[2px]">
                   <Lock className="w-6 h-6 text-amber-400" />
                 </div>
               </div>
@@ -405,13 +405,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     setVerifyId(e.target.value.toUpperCase());
                     if (errors.verifyId) setErrors({ ...errors, verifyId: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-amber-500 rounded-[4px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition font-mono tracking-widest"
+                  className="w-full fluent-box-nested focus:border-amber-500 rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition font-mono tracking-widest"
                 />
                 {errors.verifyId && <p className="text-xs text-rose-400 mt-1">{errors.verifyId}</p>}
               </div>
               <button
                 type="submit"
-                className="w-full mt-6 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-[4px] uppercase text-xs tracking-wider shadow-lg shadow-amber-900/30 flex items-center justify-center gap-2 transition"
+                className="w-full mt-6 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-[2px] uppercase text-xs tracking-wider shadow-lg shadow-amber-900/30 flex items-center justify-center gap-2 transition"
               >
                 <span>{t("onboard_verify_submit", localLanguage)}</span>
                 <ArrowRight className="w-4 h-4" />

@@ -103,7 +103,7 @@ export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
         id={`btn-like-question-compact-${questionId}`}
         onClick={handleToggleLike}
         title={isLiked ? t("view_like_unlike", localLanguage) : t("view_like_like", localLanguage)}
-        className={`group relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] font-mono text-xs font-bold transition-all duration-200 border select-none ${
+        className={`group relative inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] font-mono text-xs font-bold transition-all duration-200 border select-none ${
           isLiked
             ? 'fluent-box-nested text-rose-300 border-rose-500/50 shadow-sm shadow-rose-500/20 hover:fluent-box-nested'
             : 'bg-[#0D0420]/80 backdrop-blur-md text-slate-300 border-[#3E1D74] hover:border-rose-400/40 hover:text-rose-300 hover:fluent-box-nested'
@@ -143,7 +143,7 @@ export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
         id={`btn-like-question-header-${questionId}`}
         onClick={handleToggleLike}
         title={isLiked ? t("view_like_liked_btn", localLanguage) : t("view_like_like_btn", localLanguage)}
-        className={`group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] font-mono text-xs font-bold transition-all duration-300 border select-none ${
+        className={`group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] font-mono text-xs font-bold transition-all duration-300 border select-none ${
           isLiked
             ? 'fluent-acrylic-surface text-rose-200 border-rose-400/60 shadow-md shadow-rose-500/20 scale-[1.02]'
             : 'bg-[#0D0420]/70 backdrop-blur-md text-[#B6A6D8] border-[#3E1D74] hover:border-rose-400/50 hover:text-rose-300 hover:fluent-box-nested'
@@ -188,7 +188,7 @@ export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
       id={`btn-like-question-${questionId}`}
       onClick={handleToggleLike}
       title={isLiked ? t("view_like_liked_title", localLanguage) : t("view_like_like_title", localLanguage)}
-      className={`group relative inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-[4px] font-mono text-xs font-bold transition-all duration-300 border select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
+      className={`group relative inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-[2px] font-mono text-xs font-bold transition-all duration-300 border select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
         isLiked
           ? 'fluent-box-nested text-rose-200 border-rose-500/60 shadow-lg shadow-rose-950/40 hover:fluent-box-nested'
           : 'bg-[#241148]/80 backdrop-blur-md text-slate-300 border-[#3E1D74] hover:border-rose-400/50 hover:text-white hover:fluent-box-nested shadow-sm'

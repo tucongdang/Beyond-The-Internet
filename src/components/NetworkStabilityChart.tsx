@@ -141,7 +141,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
     if (active && payload && payload.length) {
       const data: LatencyHistoryPoint = payload[0].payload;
       return (
-        <div className="bg-[#120429]/95 backdrop-blur-md border border-white/20 p-3 rounded-[4px] shadow-2xl text-xs font-sans select-none min-w-[170px] z-50">
+        <div className="bg-[#120429]/95 backdrop-blur-md border border-white/20 p-3 rounded-[2px] shadow-2xl text-xs font-sans select-none min-w-[170px] z-50">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5 mb-2">
             <span className="text-[11px] font-mono text-white/50 flex items-center gap-1">
               <Clock className="w-3 h-3" />
@@ -184,18 +184,18 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
   return (
     <div
       id="network-stability-monitor"
-      className={`fluent-box border border-white/10 rounded-[4px] p-4 sm:p-5 shadow-xl relative overflow-hidden backdrop-blur-md ${className}`}
+      className={`fluent-box border border-white/10 rounded-[2px] p-4 sm:p-5 shadow-xl relative overflow-hidden backdrop-blur-md ${className}`}
     >
       {/* Background Accent Glow */}
       <div
-        className="absolute -top-24 -right-24 w-60 h-60 rounded-[4px] blur-3xl opacity-20 pointer-events-none transition-all duration-700"
+        className="absolute -top-24 -right-24 w-60 h-60 rounded-[2px] blur-3xl opacity-20 pointer-events-none transition-all duration-700"
         style={{ backgroundColor: theme.stroke }}
       />
 
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10 relative z-10">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-[4px] flex items-center justify-center border shadow-inner ${theme.badgeBg}`}>
+          <div className={`w-10 h-10 rounded-[2px] flex items-center justify-center border shadow-inner ${theme.badgeBg}`}>
             <Activity className={`w-5 h-5 ${isMeasuring ? 'animate-spin' : ''}`} />
           </div>
           <div>
@@ -204,7 +204,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
                 <Wifi className="w-4 h-4 text-[#F7CAC9]" />
                 Ổn Định Kết Nối & Độ Trễ Broadcast
               </h3>
-              <span className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-[4px] border flex items-center gap-1 ${theme.badgeBg}`}>
+              <span className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-[2px] border flex items-center gap-1 ${theme.badgeBg}`}>
                 <StatusIcon className="w-3 h-3" />
                 {theme.label}
               </span>
@@ -225,7 +225,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
               vibrateSelection();
               setShowThresholds(!showThresholds);
             }}
-            className={`px-2.5 py-1.5 rounded-[4px] border text-[11px] font-bold font-mono transition flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-[2px] border text-[11px] font-bold font-mono transition flex items-center gap-1.5 ${
               showThresholds
                 ? 'fluent-box-nested border-white/20 text-white'
                 : 'bg-transparent border-white/5 text-white/40 hover:text-white/70'
@@ -240,7 +240,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
             type="button"
             onClick={handleManualMeasure}
             disabled={isMeasuring}
-            className="px-3 py-1.5 fluent-box-nested hover:fluent-box-nested active:scale-95 text-[#F7CAC9] border border-[#F7CAC9]/40 rounded-[4px] text-xs font-bold font-mono flex items-center gap-1.5 transition shadow-sm"
+            className="px-3 py-1.5 fluent-box-nested hover:fluent-box-nested active:scale-95 text-[#F7CAC9] border border-[#F7CAC9]/40 rounded-[2px] text-xs font-bold font-mono flex items-center gap-1.5 transition shadow-sm"
             title="Đo kiểm độ trễ ngay lập tức"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isMeasuring ? 'animate-spin' : ''}`} />
@@ -252,7 +252,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
       {/* Telemetry Metric Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 my-4 relative z-10">
         {/* Metric 1: Current Ping */}
-        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[4px] flex flex-col justify-between">
+        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[2px] flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px] font-mono text-white/50 uppercase tracking-wider">
             <span>Ping Hiện Tại</span>
             <Zap className="w-3 h-3 text-amber-400" />
@@ -269,7 +269,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
         </div>
 
         {/* Metric 2: 5-Min Average */}
-        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[4px] flex flex-col justify-between">
+        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[2px] flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px] font-mono text-white/50 uppercase tracking-wider">
             <span>Trung Bình 5 Phút</span>
             <Activity className="w-3 h-3 text-sky-400" />
@@ -287,7 +287,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
         </div>
 
         {/* Metric 3: Minimum / Best */}
-        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[4px] flex flex-col justify-between">
+        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[2px] flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px] font-mono text-white/50 uppercase tracking-wider">
             <span>Tối Thiểu (Best)</span>
             <ArrowDownRight className="w-3 h-3 text-emerald-400" />
@@ -302,7 +302,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
         </div>
 
         {/* Metric 4: Maximum Spike */}
-        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[4px] flex flex-col justify-between">
+        <div className="p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[2px] flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px] font-mono text-white/50 uppercase tracking-wider">
             <span>Đỉnh Spike (Max)</span>
             <ArrowUpRight className="w-3 h-3 text-rose-400" />
@@ -317,7 +317,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
         </div>
 
         {/* Metric 5: Jitter / Variance */}
-        <div className="col-span-2 sm:col-span-1 p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[4px] flex flex-col justify-between">
+        <div className="col-span-2 sm:col-span-1 p-2.5 sm:p-3 fluent-box-nested border border-white/10 rounded-[2px] flex flex-col justify-between">
           <div className="flex items-center justify-between text-[10px] font-mono text-white/50 uppercase tracking-wider">
             <span>Jitter (Biến thiên)</span>
             <Gauge className="w-3 h-3 text-purple-400" />
@@ -427,19 +427,19 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-1 border-t border-white/10 text-[11px] text-white/50">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-[4px] bg-emerald-400" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-emerald-400" />
             <span>&lt; 100ms (Mượt)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-[4px] bg-sky-400" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-sky-400" />
             <span>100–250ms (Tốt)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-[4px] bg-amber-400" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-400" />
             <span>250–500ms (Trung bình)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-[4px] bg-rose-400" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-400" />
             <span>&gt; 500ms (Chậm)</span>
           </div>
         </div>

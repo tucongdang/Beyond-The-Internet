@@ -172,19 +172,19 @@ export const AdminActivityLog: React.FC = () => {
   const getCategoryBadge = (cat?: ActivityLogCategory) => {
     switch (cat) {
       case 'ADMIN_CONTROL':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">QUẢN TRỊ (ADMIN)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">QUẢN TRỊ (ADMIN)</span>;
       case 'USER_INTERACTION':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">NGƯỜI CHƠI (USER)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">NGƯỜI CHƠI (USER)</span>;
       case 'PSYCHOMETRICS':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-purple-500/20 text-purple-300 border border-purple-500/30">ĐỘ KHÓ (ITEM)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/30">ĐỘ KHÓ (ITEM)</span>;
       case 'VCNV_WORKFLOW':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-amber-500/20 text-amber-300 border border-amber-500/30">VCNV CHƯỚNG NGẠI VẬT</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-amber-500/20 text-amber-300 border border-amber-500/30">VCNV CHƯỚNG NGẠI VẬT</span>;
       case 'POLL_SURVEY':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-pink-500/20 text-pink-300 border border-pink-500/30">THĂM DÒ (POLL)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-pink-500/20 text-pink-300 border border-pink-500/30">THĂM DÒ (POLL)</span>;
       case 'LUCKY_DRAW':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">VÒNG QUAY</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">VÒNG QUAY</span>;
       default:
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[4px] bg-slate-500/20 text-slate-300 border border-slate-500/30">HỆ THỐNG (SYSTEM)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-slate-500/20 text-slate-300 border border-slate-500/30">HỆ THỐNG (SYSTEM)</span>;
     }
   };
 
@@ -271,7 +271,7 @@ export const AdminActivityLog: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header Context Box */}
-      <div className="fluent-box rounded-[4px] border border-cyan-500/30 p-4 sm:p-5 bg-gradient-to-r from-[#004E8C]/30 to-purple-900/30 backdrop-blur-md">
+      <div className="fluent-box rounded-[2px] border border-cyan-500/30 p-4 sm:p-5 bg-gradient-to-r from-[#004E8C]/30 to-purple-900/30 backdrop-blur-md">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export const AdminActivityLog: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={handleExportResearchCSV}
-              className="px-3 py-2 text-xs font-bold rounded-[4px] bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-2 shadow-lg transition cursor-pointer border border-cyan-400/40"
+              className="px-3 py-2 text-xs font-bold rounded-[2px] bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-2 shadow-lg transition cursor-pointer border border-cyan-400/40"
               title="Xuất tệp CSV Nghiên Cứu & Audit Log đầy đủ"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -297,7 +297,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={handleExportJSON}
-              className="px-3 py-2 text-xs font-bold rounded-[4px] fluent-box-nested hover:bg-white/20 text-white flex items-center gap-2 transition cursor-pointer border border-white/15"
+              className="px-3 py-2 text-xs font-bold rounded-[2px] fluent-box-nested hover:bg-white/20 text-white flex items-center gap-2 transition cursor-pointer border border-white/15"
               title="Xuất Full JSON Dump cho R / Python / SPSS"
             >
               <Database className="w-4 h-4 text-purple-300" />
@@ -305,7 +305,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={handleExportJSONL}
-              className="px-2.5 py-2 text-xs font-bold rounded-[4px] fluent-box-nested hover:bg-white/20 text-white/80 hover:text-white flex items-center gap-1.5 transition cursor-pointer border border-white/10"
+              className="px-2.5 py-2 text-xs font-bold rounded-[2px] fluent-box-nested hover:bg-white/20 text-white/80 hover:text-white flex items-center gap-1.5 transition cursor-pointer border border-white/10"
               title="Xuất JSON Lines (.jsonl)"
             >
               <Code2 className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export const AdminActivityLog: React.FC = () => {
 
       {/* Research Statistical Summary KPI Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <Layers className="w-3.5 h-3.5 text-cyan-400" /> Dung Lượng Mẫu (N)
           </span>
@@ -325,7 +325,7 @@ export const AdminActivityLog: React.FC = () => {
           <span className="text-[10px] text-white/40 mt-0.5">Biến cố ghi nhận</span>
         </div>
 
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> Thao Tác BTC
           </span>
@@ -333,7 +333,7 @@ export const AdminActivityLog: React.FC = () => {
           <span className="text-[10px] text-white/40 mt-0.5">Đổi câu, Khóa, Reveal</span>
         </div>
 
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <Send className="w-3.5 h-3.5 text-emerald-400" /> Lượt Phản Hồi
           </span>
@@ -341,7 +341,7 @@ export const AdminActivityLog: React.FC = () => {
           <span className="text-[10px] text-white/40 mt-0.5">Bài nộp thí sinh</span>
         </div>
 
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <Clock className="w-3.5 h-3.5 text-amber-400" /> Phản Xạ TB (RT)
           </span>
@@ -349,7 +349,7 @@ export const AdminActivityLog: React.FC = () => {
           <span className="text-[10px] text-white/40 mt-0.5">{stats.latencySampleCount} mẫu đo lường</span>
         </div>
 
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <BarChart3 className="w-3.5 h-3.5 text-pink-400" /> VCNV &amp; Poll
           </span>
@@ -357,7 +357,7 @@ export const AdminActivityLog: React.FC = () => {
           <span className="text-[10px] text-white/40 mt-0.5">Dự đoán &amp; Thăm dò</span>
         </div>
 
-        <div className="fluent-box-nested rounded-[4px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
+        <div className="fluent-box-nested rounded-[2px] border border-white/10 p-3 flex flex-col justify-center text-center shadow-lg">
           <span className="text-[11px] text-slate-400 font-semibold mb-1 flex items-center justify-center gap-1">
             <Cpu className="w-3.5 h-3.5 text-purple-400" /> Telemetry &amp; Log
           </span>
@@ -367,14 +367,14 @@ export const AdminActivityLog: React.FC = () => {
       </div>
 
       {/* Main Research Log Explorer Card */}
-      <div className="fluent-box rounded-[4px] border border-white/10 shadow-2xl flex flex-col min-h-[640px]">
+      <div className="fluent-box rounded-[2px] border border-white/10 shadow-2xl flex flex-col min-h-[640px]">
         {/* Navigation & Research Category Filter Tabs */}
         <div className="p-3 sm:p-4 border-b border-white/10 bg-black/20 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
             <button
               onClick={() => setActiveCategory('ALL')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer ${
                 activeCategory === 'ALL'
                   ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-white/70 hover:text-white hover:bg-white/10 border border-white/10'
@@ -384,7 +384,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('ADMIN_CONTROL')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategory === 'ADMIN_CONTROL'
                   ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-cyan-300/80 hover:text-cyan-200 hover:bg-white/10 border border-cyan-500/20'
@@ -395,7 +395,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('USER_INTERACTION')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategory === 'USER_INTERACTION'
                   ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-emerald-300/80 hover:text-emerald-200 hover:bg-white/10 border border-emerald-500/20'
@@ -406,7 +406,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('VCNV_WORKFLOW')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategory === 'VCNV_WORKFLOW'
                   ? 'bg-amber-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-amber-300/80 hover:text-amber-200 hover:bg-white/10 border border-amber-500/20'
@@ -417,7 +417,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('POLL_SURVEY')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategory === 'POLL_SURVEY'
                   ? 'bg-pink-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-pink-300/80 hover:text-pink-200 hover:bg-white/10 border border-pink-500/20'
@@ -428,7 +428,7 @@ export const AdminActivityLog: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('SYSTEM_TELEMETRY')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-[4px] transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategory === 'SYSTEM_TELEMETRY'
                   ? 'bg-purple-500 text-slate-950 shadow-md font-black'
                   : 'fluent-box-nested text-purple-300/80 hover:text-purple-200 hover:bg-white/10 border border-purple-500/20'
@@ -444,7 +444,7 @@ export const AdminActivityLog: React.FC = () => {
             {activeCategory !== 'ALL' && (
               <button
                 onClick={handleExportFilteredCSV}
-                className="px-2.5 py-1.5 text-xs rounded-[4px] fluent-box-nested hover:bg-white/15 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/10"
+                className="px-2.5 py-1.5 text-xs rounded-[2px] fluent-box-nested hover:bg-white/15 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/10"
                 title="Xuất CSV cho nhóm đang lọc"
               >
                 <Download className="w-3.5 h-3.5 text-cyan-300" />
@@ -454,7 +454,7 @@ export const AdminActivityLog: React.FC = () => {
 
             <button
               onClick={() => setIsClearDialogOpen(true)}
-              className="px-2.5 py-1.5 text-xs rounded-[4px] bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
+              className="px-2.5 py-1.5 text-xs rounded-[2px] bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
               title="Xóa tất cả bản ghi nhật ký khỏi database"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -472,7 +472,7 @@ export const AdminActivityLog: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm theo MSSV, Tên thí sinh, Q_ID, Action code..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[4px] fluent-box-nested border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-cyan-400"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[2px] fluent-box-nested border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-cyan-400"
             />
             {searchQuery && (
               <button
@@ -490,7 +490,7 @@ export const AdminActivityLog: React.FC = () => {
               <select
                 value={limitCount}
                 onChange={(e) => setLimitCount(Number(e.target.value))}
-                className="fluent-box-nested text-xs rounded-[4px] px-2 py-1 text-white border border-white/10 bg-transparent focus:outline-none"
+                className="fluent-box-nested text-xs rounded-[2px] px-2 py-1 text-white border border-white/10 bg-transparent focus:outline-none"
               >
                 <option value={100} className="bg-slate-900 text-white">100 bản ghi</option>
                 <option value={300} className="bg-slate-900 text-white">300 bản ghi</option>
@@ -514,12 +514,12 @@ export const AdminActivityLog: React.FC = () => {
             return (
               <div
                 key={log.id || `${log.timestamp}-${Math.random()}`}
-                className="fluent-box-nested border border-white/10 rounded-[4px] p-3 hover:bg-white/[0.08] transition relative group"
+                className="fluent-box-nested border border-white/10 rounded-[2px] p-3 hover:bg-white/[0.08] transition relative group"
               >
                 <div className="flex items-start justify-between gap-3">
                   {/* Left: Icon & Core Content */}
                   <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="mt-0.5 shrink-0 p-1.5 rounded-[4px] fluent-box border border-white/10">
+                    <div className="mt-0.5 shrink-0 p-1.5 rounded-[2px] fluent-box border border-white/10">
                       {getIcon(log.type, log.category)}
                     </div>
 
@@ -528,24 +528,24 @@ export const AdminActivityLog: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2">
                         {getCategoryBadge(log.category)}
                         
-                        <span className="text-[11px] font-mono font-bold text-slate-300 bg-white/10 px-1.5 py-0.5 rounded-[4px]">
+                        <span className="text-[11px] font-mono font-bold text-slate-300 bg-white/10 px-1.5 py-0.5 rounded-[2px]">
                           {log.type}
                         </span>
 
                         {log.question_id && (
-                          <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-1.5 py-0.5 rounded-[4px]">
+                          <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-1.5 py-0.5 rounded-[2px]">
                             Q_ID: {log.question_id}
                           </span>
                         )}
 
                         {log.actor_role && (
-                          <span className="text-[10px] text-white/60 bg-white/5 px-1.5 py-0.5 rounded-[4px]">
+                          <span className="text-[10px] text-white/60 bg-white/5 px-1.5 py-0.5 rounded-[2px]">
                             Actor: {log.actor_role} {log.actor_name ? `(${log.actor_name})` : ''}
                           </span>
                         )}
 
                         {typeof log.latency_ms === 'number' && log.latency_ms > 0 && (
-                          <span className="text-[10px] font-mono text-amber-300 bg-amber-950/60 border border-amber-500/30 px-1.5 py-0.5 rounded-[4px]">
+                          <span className="text-[10px] font-mono text-amber-300 bg-amber-950/60 border border-amber-500/30 px-1.5 py-0.5 rounded-[2px]">
                             RT: {(log.latency_ms / 1000).toFixed(3)}s ({log.latency_ms}ms)
                           </span>
                         )}
@@ -572,7 +572,7 @@ export const AdminActivityLog: React.FC = () => {
                           </button>
 
                           {isExpanded && (
-                            <div className="mt-2 fluent-box p-2.5 rounded-[4px] text-[11px] font-mono text-cyan-200/90 overflow-x-auto border border-cyan-500/20 bg-slate-950/80 max-h-48 custom-scrollbar">
+                            <div className="mt-2 fluent-box p-2.5 rounded-[2px] text-[11px] font-mono text-cyan-200/90 overflow-x-auto border border-cyan-500/20 bg-slate-950/80 max-h-48 custom-scrollbar">
                               <pre className="whitespace-pre-wrap">{JSON.stringify(log.metadata, null, 2)}</pre>
                             </div>
                           )}
@@ -600,7 +600,7 @@ export const AdminActivityLog: React.FC = () => {
                     <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleCopyLogItem(log)}
-                        className="p-1.5 rounded-[4px] fluent-box-nested hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer border border-white/10"
+                        className="p-1.5 rounded-[2px] fluent-box-nested hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer border border-white/10"
                         title="Sao chép chi tiết bản ghi (Audit Log Format)"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -632,7 +632,7 @@ export const AdminActivityLog: React.FC = () => {
       {/* Clear Confirmation Dialog */}
       {isClearDialogOpen && (
         <div className="fluent-dialog-overlay animate-fadeIn">
-          <div className="max-w-md w-full fluent-box border border-rose-500/40 rounded-[4px] p-6 shadow-2xl text-white space-y-4">
+          <div className="max-w-md w-full fluent-box border border-rose-500/40 rounded-[2px] p-6 shadow-2xl text-white space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <AlertCircle className="w-6 h-6 shrink-0" />
               <h3 className="font-black text-lg text-white">Xóa Toàn Bộ Nhật Ký Nghiên Cứu?</h3>
@@ -644,14 +644,14 @@ export const AdminActivityLog: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsClearDialogOpen(false)}
-                className="px-4 py-2 rounded-[4px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
+                className="px-4 py-2 rounded-[2px] fluent-box-nested hover:bg-white/20 text-white font-bold text-sm transition cursor-pointer border border-white/10"
               >
                 Hủy bỏ
               </button>
               <button
                 type="button"
                 onClick={handleClearLogs}
-                className="px-4 py-2 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
+                className="px-4 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg cursor-pointer"
               >
                 Xác nhận Xóa Hết
               </button>
@@ -662,7 +662,7 @@ export const AdminActivityLog: React.FC = () => {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-cyan-500/40 text-cyan-200 px-4 py-3 rounded-[4px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
+        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-cyan-500/40 text-cyan-200 px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
           <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>

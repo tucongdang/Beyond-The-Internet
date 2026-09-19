@@ -160,11 +160,11 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
 
   return (
     <div className="fluent-dialog-overlay animate-fadeIn">
-      <div className="max-w-3xl w-full fluent-box rounded-[4px] p-5 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col overflow-hidden text-white">
+      <div className="max-w-3xl w-full fluent-box rounded-[2px] p-5 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col overflow-hidden text-white">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[4px] fluent-box-nested text-[#F7CAC9] border border-[#F7CAC9]/30 flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-[2px] fluent-box-nested text-[#F7CAC9] border border-[#F7CAC9]/30 flex items-center justify-center shadow-md">
               <Megaphone className="w-5 h-5 animate-pulse" />
             </div>
             <div>
@@ -173,7 +173,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                   Phát Thông Báo Chữ Chạy (Announcer Overlay)
                 </h3>
                 {isCurrentActive && (
-                  <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold uppercase bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     Đang Phát Live
                   </span>
@@ -188,7 +188,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition"
+            className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -207,7 +207,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                 Tốc độ: {speed === 'FAST' ? 'Nhanh (14s)' : speed === 'SLOW' ? 'Chậm (32s)' : 'Chuẩn (22s)'}
               </span>
             </div>
-            <div className="rounded-[4px] overflow-hidden border border-white/15 fluent-box-nested shadow-inner">
+            <div className="rounded-[2px] overflow-hidden border border-white/15 fluent-box-nested shadow-inner">
               <AnnouncerOverlay overlay={previewOverlay} mode="preview" />
             </div>
           </div>
@@ -227,7 +227,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Nhập nội dung cập nhật, thông báo tiến độ, hướng dẫn khán giả hoặc lời chúc..."
-              className="w-full fluent-box-nested border border-white/15 focus:border-[#F7CAC9] rounded-[4px] p-3 text-sm text-white placeholder-white/30 resize-none font-medium outline-none transition"
+              className="w-full fluent-box-nested border border-white/15 focus:border-[#F7CAC9] rounded-[2px] p-3 text-sm text-white placeholder-white/30 resize-none font-medium outline-none transition"
             />
           </div>
 
@@ -247,7 +247,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                     setText(preset.text);
                     setType(preset.type);
                   }}
-                  className="fluent-subtab-btn p-2.5 rounded-[4px] fluent-box-nested hover:bg-white/15 border border-white/10 hover:border-[#F7CAC9]/40 text-left transition group flex items-start gap-2.5 cursor-pointer"
+                  className="fluent-subtab-btn p-2.5 rounded-[2px] fluent-box-nested hover:bg-white/15 border border-white/10 hover:border-[#F7CAC9]/40 text-left transition group flex items-start gap-2.5 cursor-pointer"
                 >
                   <span className="text-sm mt-0.5">
                     {preset.type === 'URGENT' ? '🚨' : preset.type === 'ALERT' ? '⚠️' : preset.type === 'CELEBRATION' ? '🏆' : '📢'}
@@ -287,7 +287,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                       soundFx.playClick();
                       setType(item.id as any);
                     }}
-                    className={`fluent-subtab-btn py-2 px-2.5 rounded-[4px] border text-xs font-bold transition flex items-center justify-between cursor-pointer ${
+                    className={`fluent-subtab-btn py-2 px-2.5 rounded-[2px] border text-xs font-bold transition flex items-center justify-between cursor-pointer ${
                       type === item.id
                         ? `${item.color} shadow-lg ring-1 ring-white/30 font-black`
                         : 'border-white/10 fluent-box-nested text-white/60 hover:text-white'
@@ -319,7 +319,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                       soundFx.playClick();
                       setSpeed(s.id as any);
                     }}
-                    className={`fluent-subtab-btn py-2 px-2 rounded-[4px] border text-center transition cursor-pointer ${
+                    className={`fluent-subtab-btn py-2 px-2 rounded-[2px] border text-center transition cursor-pointer ${
                       speed === s.id
                         ? 'border-[#F7CAC9] bg-[#F7CAC9]/15 text-[#F7CAC9] shadow-md font-black'
                         : 'border-white/10 fluent-box-nested text-white/60 hover:text-white'
@@ -353,7 +353,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
 
               {isClearHistoryConfirmOpen && (
                 <div className="fluent-dialog-overlay animate-fadeIn">
-                  <div className="max-w-md w-full fluent-box rounded-[4px] p-5 shadow-2xl text-white border border-rose-500/40">
+                  <div className="max-w-md w-full fluent-box rounded-[2px] p-5 shadow-2xl text-white border border-rose-500/40">
                     <h3 className="font-bold text-rose-300 text-base">Xác nhận Xóa Lịch Sử?</h3>
                     <p className="text-white/70 text-xs mt-2">
                       Bạn có chắc chắn muốn xóa toàn bộ lịch sử các thông báo đã gửi không?
@@ -362,7 +362,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsClearHistoryConfirmOpen(false)}
-                        className="px-3.5 py-1.5 rounded-[4px] bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition cursor-pointer"
                       >
                         Hủy
                       </button>
@@ -375,7 +375,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                           } catch {}
                           setIsClearHistoryConfirmOpen(false);
                         }}
-                        className="px-4 py-1.5 rounded-[4px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition shadow-md cursor-pointer"
+                        className="px-4 py-1.5 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition shadow-md cursor-pointer"
                       >
                         Đồng ý Xóa
                       </button>
@@ -393,7 +393,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
                       setText(item.text);
                       setType(item.type);
                     }}
-                    className="p-2 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between gap-2 cursor-pointer transition text-xs group"
+                    className="p-2 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between gap-2 cursor-pointer transition text-xs group"
                   >
                     <span className="truncate text-white/80 group-hover:text-[#F7CAC9] transition">
                       {item.text}
@@ -415,7 +415,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
               <button
                 type="button"
                 onClick={handleStopOverlay}
-                className="px-4 py-2.5 rounded-[4px] bg-rose-950/50 hover:bg-rose-900/50 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center gap-2 transition"
+                className="px-4 py-2.5 rounded-[2px] bg-rose-950/50 hover:bg-rose-900/50 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center gap-2 transition"
               >
                 <Square className="w-4 h-4 fill-rose-400 text-rose-400" />
                 <span>Tắt / Thu Hồi Thông Báo</span>
@@ -427,7 +427,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[4px] border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition text-xs font-semibold"
+              className="px-4 py-2.5 rounded-[2px] border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition text-xs font-semibold"
             >
               Đóng
             </button>
@@ -436,7 +436,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
               type="button"
               onClick={handlePublish}
               disabled={!text.trim()}
-              className="px-5 py-2.5 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="px-5 py-2.5 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span>{isCurrentActive ? 'Cập Nhật & Phát Trực Tiếp' : 'Phát Trực Tiếp'}</span>
@@ -446,7 +446,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
       </div>
 
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-purple-500/40 text-purple-200 px-4 py-3 rounded-[4px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
+        <div className="fixed bottom-6 right-6 z-[350] fluent-box border border-purple-500/40 text-purple-200 px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
           <AlertCircle className="w-4 h-4 text-purple-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>

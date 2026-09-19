@@ -153,7 +153,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
     >
       <div
         id="battery-saver-modal-content"
-        className="relative w-full max-w-lg rounded-[4px] fluent-box shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh] border border-white/10"
+        className="relative w-full max-w-lg rounded-[2px] fluent-box shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh] border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Banner */}
@@ -164,7 +164,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
         >
           <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-[4px] flex items-center justify-center border ${
+              className={`w-10 h-10 rounded-[2px] flex items-center justify-center border ${
                 isBatterySaver ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400' : 'fluent-box-nested border-white/10 text-emerald-400'
               }`}
             >
@@ -176,7 +176,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                   {effectiveLanguage === 'en' ? 'Battery Saver Mode' : 'Chế Độ Tiết Kiệm Pin'}
                 </h3>
                 {isBatterySaver && (
-                  <span className="px-2 py-0.5 rounded-[4px] bg-emerald-950/80 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wide">
+                  <span className="px-2 py-0.5 rounded-[2px] bg-emerald-950/80 border border-emerald-400/50 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wide">
                     {effectiveLanguage === 'en' ? 'ACTIVE' : 'Đang Bật'}
                   </span>
                 )}
@@ -194,7 +194,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               vibrateTap();
               onClose();
             }}
-            className="w-8 h-8 rounded-[4px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition"
+            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -204,7 +204,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
         <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto scrollbar-none flex-1">
           {/* Real-time Battery Status Card */}
           {batteryState.supported && (
-            <div className="p-3.5 sm:p-4 rounded-[4px] fluent-box-nested flex items-center justify-between border border-white/10">
+            <div className="p-3.5 sm:p-4 rounded-[2px] fluent-box-nested flex items-center justify-between border border-white/10">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   {isCharging ? (
@@ -261,13 +261,13 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           <button
             type="button"
             onClick={handleToggleMain}
-            className={`w-full p-4 rounded-[4px] border transition-all duration-200 flex items-center justify-between text-left ${
+            className={`w-full p-4 rounded-[2px] border transition-all duration-200 flex items-center justify-between text-left ${
               isBatterySaver ? 'bg-emerald-950/50 border-emerald-400' : 'fluent-box-nested border-white/10 hover:border-white/20'
             }`}
           >
             <div className="flex items-center gap-3.5">
               <div
-                className={`w-11 h-11 rounded-[4px] flex items-center justify-center transition-all ${
+                className={`w-11 h-11 rounded-[2px] flex items-center justify-center transition-all ${
                   isBatterySaver ? 'bg-emerald-400 text-black' : 'bg-white/10 text-white'
                 }`}
               >
@@ -309,7 +309,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
+              <div className="p-2.5 sm:p-3 rounded-[2px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Eye className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
@@ -323,7 +323,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
+              <div className="p-2.5 sm:p-3 rounded-[2px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
@@ -337,7 +337,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
+              <div className="p-2.5 sm:p-3 rounded-[2px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Vibrate className="w-4 h-4 text-sky-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
@@ -351,7 +351,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
+              <div className="p-2.5 sm:p-3 rounded-[2px] fluent-box-nested border border-white/10 flex items-start gap-2.5">
                 <Smartphone className="w-4 h-4 text-rose-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
@@ -368,7 +368,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           </div>
 
           {/* Auto-activation threshold setting */}
-          <div className="p-3 sm:p-3.5 rounded-[4px] fluent-box-nested flex items-center justify-between border border-emerald-500/25">
+          <div className="p-3 sm:p-3.5 rounded-[2px] fluent-box-nested flex items-center justify-between border border-emerald-500/25">
             <div className="flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
@@ -394,7 +394,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           </div>
 
           {/* Energy Saving Tips */}
-          <div className="p-3 rounded-[4px] fluent-box-nested border border-white/10 text-xs space-y-1.5">
+          <div className="p-3 rounded-[2px] fluent-box-nested border border-white/10 text-xs space-y-1.5">
             <div className="font-bold text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>{effectiveLanguage === 'en' ? 'Event Battery Tips:' : 'Mẹo dùng pin lâu nhất tại sự kiện:'}</span>
@@ -415,7 +415,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               vibrateTap();
               onClose();
             }}
-            className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-[4px] transition shadow-md cursor-pointer"
+            className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-[2px] transition shadow-md cursor-pointer"
           >
             {effectiveLanguage === 'en' ? 'Done' : 'Đã Xong'}
           </button>

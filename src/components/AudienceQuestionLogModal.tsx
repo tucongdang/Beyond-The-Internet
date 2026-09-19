@@ -314,13 +314,13 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
       onClick={onClose}
     >
       <div
-        className="fluent-box border border-white/10 w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] h-full rounded-[4px] shadow-2xl flex flex-col overflow-hidden text-white relative my-auto"
+        className="fluent-box border border-white/10 w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] h-full rounded-[2px] shadow-2xl flex flex-col overflow-hidden text-white relative my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="p-4 sm:p-5 fluent-box-nested border-b border-white/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[4px] fluent-box border border-[#F7CAC9]/40 text-[#F7CAC9] flex items-center justify-center font-bold shadow-md">
+            <div className="w-10 h-10 rounded-[2px] fluent-box border border-[#F7CAC9]/40 text-[#F7CAC9] flex items-center justify-center font-bold shadow-md">
               <History className="w-5 h-5" />
             </div>
             <div>
@@ -328,7 +328,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                 <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
                   {t("log_title", localLanguage)}
                 </h2>
-                <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
+                <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
                   READ-ONLY
                 </span>
               </div>
@@ -342,7 +342,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             <button
               type="button"
               onClick={handleCopySummary}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-[4px] bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-semibold text-white/90 transition"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-semibold text-white/90 transition"
               title={t("log_copy_all", localLanguage)}
             >
               {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-[#F7CAC9]" />}
@@ -355,7 +355,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                 soundFx.playClick();
                 onClose();
               }}
-              className="w-8 h-8 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 flex items-center justify-center transition"
+              className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 flex items-center justify-center transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -364,7 +364,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
 
         {/* Stats Performance Summary Bar */}
         <div className="px-4 py-3 fluent-box border-b border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs shrink-0">
-          <div className="p-2.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
+          <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Total Questions' : 'Tổng Số Câu'}</span>
@@ -372,7 +372,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             </div>
           </div>
 
-          <div className="p-2.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
+          <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <div>
               <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Correct Questions' : 'Số Câu Đúng'}</span>
@@ -382,7 +382,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             </div>
           </div>
 
-          <div className="p-2.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
+          <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />
             <div>
               <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Accumulated Points' : 'Điểm Tích Lũy'}</span>
@@ -390,7 +390,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             </div>
           </div>
 
-          <div className="p-2.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
+          <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
             <div>
               <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Download Logs' : 'Tải Nhật Ký'}</span>
@@ -415,7 +415,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               placeholder={localLanguage === 'en' ? 'Search by question ID, content, answer...' : 'Tìm theo mã câu, nội dung câu hỏi, đáp án...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full fluent-box border border-white/10 focus:border-[#F7CAC9] rounded-[4px] pl-9 pr-8 py-2 text-xs font-mono text-white placeholder-white/30 outline-none transition"
+              className="w-full fluent-box border border-white/10 focus:border-[#F7CAC9] rounded-[2px] pl-9 pr-8 py-2 text-xs font-mono text-white placeholder-white/30 outline-none transition"
             />
             {searchTerm && (
               <button
@@ -435,7 +435,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               soundFx.playClick();
               setRoundFilter(e.target.value);
             }}
-            className="fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[4px] px-3 py-2 text-xs font-mono text-white outline-none cursor-pointer"
+            className="fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3 py-2 text-xs font-mono text-white outline-none cursor-pointer"
           >
             <option value="ALL" className="bg-[#190839] text-white">{t("log_all_rounds", localLanguage)}</option>
             <option value="ROUND1" className="bg-[#190839] text-white">{t("log_round1", localLanguage)}</option>
@@ -446,7 +446,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
           </select>
 
           {/* Result Filter Buttons */}
-          <div className="flex rounded-[4px] fluent-box-nested border border-white/10 p-0.5 gap-1">
+          <div className="flex rounded-[2px] fluent-box-nested border border-white/10 p-0.5 gap-1">
             <button
               onClick={() => setResultFilter('ALL')}
               className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition ${
@@ -477,7 +477,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
         {/* Scrollable Log Entries List */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {!user ? (
-            <div className="text-center py-16 p-6 rounded-[4px] fluent-box-nested border border-white/10">
+            <div className="text-center py-16 p-6 rounded-[2px] fluent-box-nested border border-white/10">
               <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-3 animate-pulse" />
               <h3 className="text-base font-bold text-white mb-1">{t("log_no_auth", localLanguage)}</h3>
               <p className="text-xs text-white/60">
@@ -485,7 +485,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               </p>
             </div>
           ) : filteredEntries.length === 0 ? (
-            <div className="text-center py-16 p-6 rounded-[4px] fluent-box-nested border border-white/10">
+            <div className="text-center py-16 p-6 rounded-[2px] fluent-box-nested border border-white/10">
               <History className="w-12 h-12 text-white/30 mx-auto mb-3" />
               <h3 className="text-base font-bold text-white mb-1">{t("log_no_data", localLanguage)}</h3>
               <p className="text-xs text-white/60">
@@ -501,7 +501,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               return (
                 <div
                   key={entry.questionId + '_' + index}
-                  className={`rounded-[4px] border transition-all duration-200 p-4 sm:p-5 relative overflow-hidden ${
+                  className={`rounded-[2px] border transition-all duration-200 p-4 sm:p-5 relative overflow-hidden ${
                     !entry.hasAnswered
                       ? 'fluent-box-nested border-white/10'
                       : entry.isCorrect
@@ -512,10 +512,10 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                   {/* Card Header: Round badge, Question ID, Status Tag */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-2.5 py-0.5 rounded-[4px] bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30 text-xs font-mono font-bold">
+                      <span className="px-2.5 py-0.5 rounded-[2px] bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30 text-xs font-mono font-bold">
                         {entry.roundName}
                       </span>
-                      <span className="px-2 py-0.5 rounded-[4px] fluent-box text-amber-300 font-mono font-bold text-xs border border-white/10">
+                      <span className="px-2 py-0.5 rounded-[2px] fluent-box text-amber-300 font-mono font-bold text-xs border border-white/10">
                         {entry.questionId}
                       </span>
                       <span className="text-xs text-white/60 font-medium hidden sm:inline">
@@ -534,25 +534,25 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
 
                       {entry.hasAnswered ? (
                         entry.isCorrect ? (
-                          <span className="px-2.5 py-0.5 rounded-[4px] bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
+                          <span className="px-2.5 py-0.5 rounded-[2px] bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                             {t("log_correct_pts", localLanguage).replace("{pts}", String(entry.pointsEarned))}
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-[4px] bg-rose-950/60 text-rose-300 border border-rose-500/40 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
+                          <span className="px-2.5 py-0.5 rounded-[2px] bg-rose-950/60 text-rose-300 border border-rose-500/40 text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
                             <XCircle className="w-3.5 h-3.5 text-rose-400" />
                             {t("log_incorrect_pts", localLanguage).replace("{pts}", String(entry.pointsEarned))}
                           </span>
                         )
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-[4px] bg-white/10 text-white/50 border border-white/10 text-xs font-mono font-bold flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-[2px] bg-white/10 text-white/50 border border-white/10 text-xs font-mono font-bold flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-white/40" />
                           {localLanguage === 'en' ? 'SKIPPED' : 'CHƯA THAM GIA'}
                         </span>
                       )}
 
                       {entry.latencySec !== undefined && entry.latencySec > 0 && (
-                        <span className="text-[11px] font-mono text-white/60 fluent-box px-2 py-0.5 rounded-[4px] border border-white/10">
+                        <span className="text-[11px] font-mono text-white/60 fluent-box px-2 py-0.5 rounded-[2px] border border-white/10">
                           {entry.latencySec.toFixed(1)}s
                         </span>
                       )}
@@ -581,7 +581,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                         return (
                           <div
                             key={optKey}
-                            className={`p-3 rounded-[4px] border text-xs flex items-start gap-2.5 transition-all ${optClass}`}
+                            className={`p-3 rounded-[2px] border text-xs flex items-start gap-2.5 transition-all ${optClass}`}
                           >
                             <span
                               className={`w-6 h-6 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shrink-0 ${
@@ -614,7 +614,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                   )}
 
                   {/* User Choice & Evaluation Notice Summary */}
-                  <div className="mt-3 p-3 rounded-[4px] fluent-box-nested border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="mt-3 p-3 rounded-[2px] fluent-box-nested border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
                       <span className="text-white/60 font-mono">{t("log_your_choice", localLanguage)}</span>
                       <span className="font-mono font-extrabold text-sm px-2 py-0.5 rounded-[2px] fluent-box text-white border border-white/20">
@@ -642,7 +642,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
 
                   {/* Expandable Official Explanation Box */}
                   {showExp && (
-                    <div className="mt-3 p-4 rounded-[4px] fluent-box-nested border border-[#F7CAC9]/30 text-xs text-white/90 animate-fadeIn space-y-1.5">
+                    <div className="mt-3 p-4 rounded-[2px] fluent-box-nested border border-[#F7CAC9]/30 text-xs text-white/90 animate-fadeIn space-y-1.5">
                       <div className="flex items-center gap-1.5 text-[#F7CAC9] font-mono font-bold text-[11px] uppercase tracking-wider pb-1 border-b border-white/10">
                         <FileText className="w-3.5 h-3.5 text-[#F7CAC9]" />
                         <span>{t("log_exp_title", localLanguage)}</span>
@@ -670,7 +670,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               soundFx.playClick();
               onClose();
             }}
-            className="fluent-btn px-5 py-2.5 rounded-[4px] bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 border border-white/40 cursor-pointer"
+            className="fluent-btn px-5 py-2.5 rounded-[2px] bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 border border-white/40 cursor-pointer"
           >
             {localLanguage === 'en' ? 'CLOSE LOGS' : 'ĐÓNG NHẬT KÝ'}
           </button>

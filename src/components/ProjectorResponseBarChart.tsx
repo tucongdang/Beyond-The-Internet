@@ -157,11 +157,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
     if (active && payload && payload.length) {
       const data: ChartItem = payload[0].payload;
       return (
-        <div className="bg-[#190839]/95 border border-purple-500/40 rounded-[4px] p-4 shadow-2xl backdrop-blur-xl max-w-xs text-white z-50">
+        <div className="bg-[#190839]/95 border border-purple-500/40 rounded-[2px] p-4 shadow-2xl backdrop-blur-xl max-w-xs text-white z-50">
           <div className="flex items-center justify-between gap-3 mb-2 border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
               <span
-                className="w-7 h-7 rounded-[4px] font-mono font-black text-xs flex items-center justify-center shadow"
+                className="w-7 h-7 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shadow"
                 style={{ backgroundColor: data.color, color: data.isCorrect ? '#000' : '#fff' }}
               >
                 {data.key}
@@ -169,12 +169,12 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
               <span className="font-bold text-sm text-white">Phương án {data.key}</span>
             </div>
             {data.isCorrect && (
-              <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-black fluent-box-nested text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-black fluent-box-nested text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" /> ĐÁP ÁN ĐÚNG
               </span>
             )}
             {data.isEliminated && (
-              <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-black fluent-box-nested text-rose-300 border border-rose-500/40 flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-black fluent-box-nested text-rose-300 border border-rose-500/40 flex items-center gap-1">
                 <XCircle className="w-3 h-3" /> ĐÃ LOẠI TRỪ
               </span>
             )}
@@ -185,11 +185,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           </p>
 
           <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-white/10">
-            <div className="fluent-box-nested rounded-[4px] p-2 border border-white/5">
+            <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
               <div className="text-[10px] uppercase font-mono text-white/50">Số phiếu</div>
               <div className="text-base font-black font-mono text-cyan-300">{data.votes}</div>
             </div>
-            <div className="fluent-box-nested rounded-[4px] p-2 border border-white/5">
+            <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
               <div className="text-[10px] uppercase font-mono text-white/50">Tỷ lệ</div>
               <div className="text-base font-black font-mono text-pink-300">{data.percent}%</div>
             </div>
@@ -206,18 +206,18 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
       transition={{ duration: 0.3 }}
-      className={`relative w-full rounded-[4px] fluent-box border border-purple-500/30 p-5 sm:p-6 lg:p-7 shadow-2xl backdrop-blur-xl overflow-hidden ${
+      className={`relative w-full rounded-[2px] fluent-box border border-purple-500/30 p-5 sm:p-6 lg:p-7 shadow-2xl backdrop-blur-xl overflow-hidden ${
         compact ? 'p-4' : ''
       }`}
     >
       {/* Background ambient lighting */}
-      <div className="absolute top-0 right-0 w-96 h-96 fluent-box-nested rounded-[4px] blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 fluent-box-nested rounded-[4px] blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
 
       {/* Header Bar */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[4px] fluent-acrylic-surface flex items-center justify-center text-white shadow-lg shadow-pink-500/30 border border-white/20">
+          <div className="w-10 h-10 rounded-[2px] fluent-acrylic-surface flex items-center justify-center text-white shadow-lg shadow-pink-500/30 border border-white/20">
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
@@ -226,8 +226,8 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 Phân Bố Bình Chọn Khán Giả
               </h3>
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-[4px] bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-[4px] h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-[2px] bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-[2px] h-2 w-2 bg-emerald-500"></span>
               </span>
             </div>
             <p className="text-xs text-[#EBC7D6] font-mono">
@@ -239,11 +239,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
         {/* View Controls & Toggles */}
         <div className="flex items-center flex-wrap gap-2">
           {/* Orientation Toggle */}
-          <div className="flex items-center fluent-box-nested p-1 rounded-[4px] border border-white/10">
+          <div className="flex items-center fluent-box-nested p-1 rounded-[2px] border border-white/10">
             <button
               type="button"
               onClick={() => setOrientation('vertical')}
-              className={`px-3 py-1 rounded-[4px] text-xs font-mono font-bold transition ${
+              className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition ${
                 orientation === 'vertical'
                   ? 'bg-purple-600 text-white shadow'
                   : 'text-white/60 hover:text-white'
@@ -255,7 +255,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             <button
               type="button"
               onClick={() => setOrientation('horizontal')}
-              className={`px-3 py-1 rounded-[4px] text-xs font-mono font-bold transition ${
+              className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition ${
                 orientation === 'horizontal'
                   ? 'bg-purple-600 text-white shadow'
                   : 'text-white/60 hover:text-white'
@@ -267,11 +267,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           </div>
 
           {/* Metric Toggle */}
-          <div className="flex items-center fluent-box-nested p-1 rounded-[4px] border border-white/10">
+          <div className="flex items-center fluent-box-nested p-1 rounded-[2px] border border-white/10">
             <button
               type="button"
               onClick={() => setMetric('percent')}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1 transition ${
+              className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1 transition ${
                 metric === 'percent'
                   ? 'bg-pink-500 text-white shadow'
                   : 'text-white/60 hover:text-white'
@@ -283,7 +283,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             <button
               type="button"
               onClick={() => setMetric('count')}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold flex items-center gap-1 transition ${
+              className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1 transition ${
                 metric === 'count'
                   ? 'bg-pink-500 text-white shadow'
                   : 'text-white/60 hover:text-white'
@@ -298,7 +298,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-[4px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition"
+              className="p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition"
               title="Đóng biểu đồ"
             >
               <X className="w-4 h-4" />
@@ -309,8 +309,8 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
 
       {/* KPI Overview Strip */}
       <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
-        <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[4px] fluent-box-nested text-cyan-300 border border-cyan-500/30 flex items-center justify-center shrink-0">
+        <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[2px] fluent-box-nested text-cyan-300 border border-cyan-500/30 flex items-center justify-center shrink-0">
             <Users className="w-4 h-4" />
           </div>
           <div>
@@ -319,8 +319,8 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           </div>
         </div>
 
-        <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[4px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center shrink-0">
+        <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[2px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center shrink-0">
             <TrendingUp className="w-4 h-4" />
           </div>
           <div>
@@ -329,8 +329,8 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           </div>
         </div>
 
-        <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[4px] fluent-box-nested text-pink-300 border border-pink-500/30 flex items-center justify-center shrink-0">
+        <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[2px] fluent-box-nested text-pink-300 border border-pink-500/30 flex items-center justify-center shrink-0">
             <Flame className="w-4 h-4" />
           </div>
           <div className="min-w-0">
@@ -341,9 +341,9 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           </div>
         </div>
 
-        <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex items-center gap-3">
+        <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-[4px] border flex items-center justify-center shrink-0 ${
+            className={`w-9 h-9 rounded-[2px] border flex items-center justify-center shrink-0 ${
               isRevealed
                 ? 'fluent-box-nested text-emerald-300 border-emerald-500/40'
                 : 'fluent-box-nested text-amber-300 border-amber-500/40'
@@ -369,8 +369,8 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
       {/* Main Recharts Container */}
       <div className="relative z-10 w-full h-[320px] sm:h-[400px] lg:h-[45vh] pt-2">
         {totalVotes === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-white/10 rounded-[4px] bg-black/50 backdrop-blur-[24px] saturate-150/20">
-            <div className="w-14 h-14 rounded-[4px] fluent-box-nested text-purple-300 border border-purple-500/20 flex items-center justify-center mb-3 animate-pulse">
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-white/10 rounded-[2px] bg-black/50 backdrop-blur-[24px] saturate-150/20">
+            <div className="w-14 h-14 rounded-[2px] fluent-box-nested text-purple-300 border border-purple-500/20 flex items-center justify-center mb-3 animate-pulse">
               <BarChart3 className="w-7 h-7" />
             </div>
             <h4 className="text-base font-bold text-white mb-1">Đang chờ lượt bình chọn đầu tiên</h4>
@@ -536,7 +536,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             key={item.key}
             onMouseEnter={() => setHoveredKey(item.key)}
             onMouseLeave={() => setHoveredKey(null)}
-            className={`p-3 rounded-[4px] border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            className={`p-3 rounded-[2px] border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
               item.isCorrect
                 ? 'fluent-box-nested border-emerald-500/50 ring-2 ring-emerald-500/30'
                 : item.isEliminated
@@ -548,7 +548,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
           >
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className="w-7 h-7 rounded-[4px] font-mono font-black text-xs flex items-center justify-center shrink-0 shadow"
+                className="w-7 h-7 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shrink-0 shadow"
                 style={{ backgroundColor: item.color, color: item.isCorrect ? '#000' : '#fff' }}
               >
                 {item.key}

@@ -232,7 +232,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               animationTimingFunction: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
             }}
           >
-            <span className="bg-black/50 backdrop-blur-[24px] saturate-150/60 backdrop-blur-md px-2.5 py-1 rounded-[4px] border border-white/20 text-xs sm:text-sm font-mono text-white shadow-xl flex items-center gap-1">
+            <span className="bg-black/50 backdrop-blur-[24px] saturate-150/60 backdrop-blur-md px-2.5 py-1 rounded-[2px] border border-white/20 text-xs sm:text-sm font-mono text-white shadow-xl flex items-center gap-1">
               {p.text}
             </span>
           </div>
@@ -241,7 +241,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
 
       {/* Main Meter Container */}
       <div
-        className={`rounded-[4px] border transition-all duration-300 overflow-hidden backdrop-blur-xl ${
+        className={`rounded-[2px] border transition-all duration-300 overflow-hidden backdrop-blur-xl ${
           isExpanded
             ? 'p-4 sm:p-5 bg-[#120726]/95 border-rose-500/40 shadow-[0_0_40px_rgba(244,63,94,0.3)]'
             : 'p-2.5 sm:p-3 bg-[#160a2e]/90 backdrop-blur-md border-white/15 hover:border-rose-400/40 shadow-xl'
@@ -259,7 +259,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
             <div className="relative flex items-center justify-center">
               {/* Outer pulsing energy ripple */}
               <div
-                className="absolute inset-0 rounded-[4px] opacity-75 animate-ping"
+                className="absolute inset-0 rounded-[2px] opacity-75 animate-ping"
                 style={{
                   backgroundColor: data.colorHex,
                   animationDuration: `${pulseDurationSec * 1.5}s`,
@@ -268,7 +268,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               />
               {/* Core Icon Box */}
               <div
-                className="w-9 h-9 sm:w-11 sm:h-11 rounded-[4px] flex items-center justify-center border relative z-10 transition-transform duration-100"
+                className="w-9 h-9 sm:w-11 sm:h-11 rounded-[2px] flex items-center justify-center border relative z-10 transition-transform duration-100"
                 style={{
                   backgroundColor: `${data.colorHex}20`,
                   borderColor: `${data.colorHex}60`,
@@ -332,7 +332,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
           {/* Mini EKG / Intensity Bar in compact view */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             {/* Live Waveform Canvas */}
-            <div className="hidden md:block w-32 lg:w-44 h-8 rounded-[4px] fluent-box-nested border border-white/10 overflow-hidden px-1">
+            <div className="hidden md:block w-32 lg:w-44 h-8 rounded-[2px] fluent-box-nested border border-white/10 overflow-hidden px-1">
               <canvas ref={miniCanvasRef} width={180} height={32} className="w-full h-full" />
             </div>
 
@@ -344,9 +344,9 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
                   {data.intensity}%
                 </span>
               </div>
-              <div className="w-full h-2 sm:h-2.5 bg-black/50 backdrop-blur-[24px] saturate-150/50 rounded-[4px] overflow-hidden p-[1px] border border-white/10">
+              <div className="w-full h-2 sm:h-2.5 bg-black/50 backdrop-blur-[24px] saturate-150/50 rounded-[2px] overflow-hidden p-[1px] border border-white/10">
                 <div
-                  className="h-full rounded-[4px] transition-all duration-300"
+                  className="h-full rounded-[2px] transition-all duration-300"
                   style={{
                     width: `${Math.max(6, data.intensity)}%`,
                     backgroundColor: data.colorHex,
@@ -361,7 +361,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               <button
                 type="button"
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`p-1.5 sm:p-2 rounded-[4px] border transition ${
+                className={`p-1.5 sm:p-2 rounded-[2px] border transition ${
                   soundEnabled
                     ? 'fluent-box-nested border-rose-500/50 text-rose-300'
                     : 'fluent-box-nested border-white/10 text-white/40 hover:text-white'
@@ -374,7 +374,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1.5 sm:p-2 rounded-[4px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition cursor-pointer"
                 title={isExpanded ? 'Thu nhỏ bảng nhiệt (Phím C)' : 'Mở rộng bảng nhiệt chi tiết (Phím C)'}
               >
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -387,7 +387,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
         {isExpanded && (
           <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-3 animate-fadeIn text-white">
             {/* Bento Box 1: EKG & Heartbeat Pulse */}
-            <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex flex-col justify-between">
+            <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs font-bold text-rose-300 font-mono">
                 <span className="flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
@@ -395,7 +395,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
                 </span>
                 <span>{data.bpm} BPM</span>
               </div>
-              <div className="h-14 my-2 rounded-[4px] bg-black/50 backdrop-blur-[24px] saturate-150/60 border border-white/10 overflow-hidden p-1 flex items-center justify-center">
+              <div className="h-14 my-2 rounded-[2px] bg-black/50 backdrop-blur-[24px] saturate-150/60 border border-white/10 overflow-hidden p-1 flex items-center justify-center">
                 <canvas ref={expandedCanvasRef} width={280} height={56} className="w-full h-full" />
               </div>
               <div className="text-[10px] text-white/50 font-mono flex items-center justify-between">
@@ -405,7 +405,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
             </div>
 
             {/* Bento Box 2: Crowd Energy Thermometer */}
-            <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex flex-col justify-between">
+            <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs font-bold text-amber-300 font-mono">
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-4 h-4 text-amber-400" />
@@ -415,9 +415,9 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               </div>
 
               <div className="my-2 space-y-1.5">
-                <div className="w-full h-4 bg-black/50 backdrop-blur-[24px] saturate-150/60 rounded-[4px] overflow-hidden p-[2px] border border-white/15">
+                <div className="w-full h-4 bg-black/50 backdrop-blur-[24px] saturate-150/60 rounded-[2px] overflow-hidden p-[2px] border border-white/15">
                   <div
-                    className="h-full rounded-[4px] transition-all duration-300 relative overflow-hidden"
+                    className="h-full rounded-[2px] transition-all duration-300 relative overflow-hidden"
                     style={{
                       width: `${Math.max(5, data.intensity)}%`,
                       backgroundColor: data.colorHex,
@@ -440,7 +440,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
             </div>
 
             {/* Bento Box 3: Recent Activity & Multiplier */}
-            <div className="fluent-box-nested border border-white/10 rounded-[4px] p-3 flex flex-col justify-between">
+            <div className="fluent-box-nested border border-white/10 rounded-[2px] p-3 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs font-bold text-sky-300 font-mono">
                 <span className="flex items-center gap-1.5">
                   <Users className="w-4 h-4 text-sky-400" />

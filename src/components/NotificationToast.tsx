@@ -196,7 +196,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       {/* Show strictly ONLY 1 notification toast at a time with Fluent UI v2 motion */}
       <div
         key={activeToast.id}
-        className={`w-full p-3.5 sm:p-4 rounded-[12px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
+        className={`w-full p-3.5 sm:p-4 rounded-[4px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
           isExiting ? 'animate-fluent-toast-exit' : 'animate-fluent-toast-enter'
         } ${
           isUrgent
@@ -220,7 +220,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
         <div className="flex items-start gap-3 w-full">
           {/* Icon Card */}
           <div
-            className={`w-9 h-9 rounded-[4px] shrink-0 border flex items-center justify-center shadow-inner ${
+            className={`w-9 h-9 rounded-[2px] shrink-0 border flex items-center justify-center shadow-inner ${
               isUrgent
                 ? 'bg-rose-500/20 text-rose-300 border-rose-400/50 ring-1 ring-rose-400/30'
                 : isLuckyDraw
@@ -241,7 +241,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span
-                className={`font-mono font-bold uppercase tracking-wider text-[9px] sm:text-[10px] px-2 py-0.5 rounded-[4px] border flex items-center gap-1.5 ${
+                className={`font-mono font-bold uppercase tracking-wider text-[9px] sm:text-[10px] px-2 py-0.5 rounded-[2px] border flex items-center gap-1.5 ${
                   isUrgent
                     ? 'bg-rose-500/30 text-rose-200 border-rose-400/60 shadow-sm'
                     : isLuckyDraw
@@ -269,7 +269,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
           <button
             type="button"
             onClick={() => handleDismiss(activeToast)}
-            className="fluent-subtab-btn p-1.5 rounded-[4px] border border-transparent hover:border-white/20 hover:bg-white/15 transition shrink-0 text-white/70 hover:text-white cursor-pointer active:scale-95"
+            className="fluent-subtab-btn p-1.5 rounded-[2px] border border-transparent hover:border-white/20 hover:bg-white/15 transition shrink-0 text-white/70 hover:text-white cursor-pointer active:scale-95"
             title={localLanguage === 'en' ? 'Close notice' : 'Đóng thông báo'}
           >
             <X className="w-4 h-4" />

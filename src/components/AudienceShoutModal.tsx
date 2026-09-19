@@ -189,13 +189,13 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div 
-        className="w-full max-w-lg bg-[#190839] border border-white/20 rounded-[12px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-white"
+        className="w-full max-w-lg bg-[#190839] border border-white/20 rounded-[4px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[4px] bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-8 h-8 rounded-[2px] bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center text-white shadow-md">
               <Megaphone className="w-4 h-4" />
             </div>
             <div>
@@ -225,7 +225,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               vibrateTap();
               setActiveTab('create');
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-[4px] flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 text-xs font-bold rounded-[2px] flex items-center justify-center gap-1.5 transition-all ${
               activeTab === 'create'
                 ? 'bg-[#F7CAC9] text-[#190839] shadow-md'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
@@ -238,7 +238,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               vibrateTap();
               setActiveTab('feed');
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-[4px] flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 text-xs font-bold rounded-[2px] flex items-center justify-center gap-1.5 transition-all ${
               activeTab === 'feed'
                 ? 'bg-[#F7CAC9] text-[#190839] shadow-md'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
@@ -256,7 +256,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage === 'en' ? 'Preview on Marquee:' : 'Xem trước hiển thị trên Marquee:'}
               </label>
-              <div className={`p-3 rounded-[4px] border ${currentColorConfig.bg} ${currentColorConfig.border} flex items-center gap-2.5 transition-all shadow-inner`}>
+              <div className={`p-3 rounded-[2px] border ${currentColorConfig.bg} ${currentColorConfig.border} flex items-center gap-2.5 transition-all shadow-inner`}>
                 <span className="text-xl select-none">{selectedEmoji}</span>
                 <div className="min-w-0 flex-1">
                   <div className="text-[11px] font-mono font-bold text-white/80 truncate">
@@ -296,7 +296,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     }}
                     placeholder={localLanguage === "en" ? "Ex: Go Team A! You guys rock 🔥" : "VD: Cố lên đội A ơi! Đỉnh chóp quá 🔥"}
                     maxLength={maxChars}
-                    className="w-full px-3.5 py-2.5 rounded-[4px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-[2px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
                   />
                   {inputText && (
                     <button
@@ -324,7 +324,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                         vibrateTap();
                         setSelectedEmoji(emoji);
                       }}
-                      className={`w-9 h-9 rounded-[4px] text-lg flex items-center justify-center border transition-all ${
+                      className={`w-9 h-9 rounded-[2px] text-lg flex items-center justify-center border transition-all ${
                         selectedEmoji === emoji
                           ? 'bg-[#F7CAC9]/20 border-[#F7CAC9] scale-110 shadow-md'
                           : 'bg-black/30 border-white/10 hover:border-white/30'
@@ -352,7 +352,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                           vibrateTap();
                           setSelectedColor(key as ShoutBadgeColor);
                         }}
-                        className={`p-1.5 rounded-[4px] border text-center text-[10px] font-bold transition-all flex flex-col items-center gap-1 ${
+                        className={`p-1.5 rounded-[2px] border text-center text-[10px] font-bold transition-all flex flex-col items-center gap-1 ${
                           isSelected
                             ? 'border-white bg-white/20 shadow-md scale-105'
                             : 'border-white/10 bg-black/30 hover:border-white/20 text-white/70'
@@ -379,7 +379,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       type="button"
                       key={idx}
                       onClick={() => handlePresetClick(preset)}
-                      className="px-2.5 py-1 rounded-[4px] bg-black/40 hover:bg-white/15 border border-white/15 text-xs text-white/90 transition-all text-left flex items-center gap-1.5 active:scale-95"
+                      className="px-2.5 py-1 rounded-[2px] bg-black/40 hover:bg-white/15 border border-white/15 text-xs text-white/90 transition-all text-left flex items-center gap-1.5 active:scale-95"
                     >
                       <span>{preset.emoji}</span>
                       <span className="truncate max-w-[200px]">{preset.text}</span>
@@ -390,7 +390,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
 
               {/* Error Warning */}
               {errorMessage && (
-                <div className="p-2.5 rounded-[4px] bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-2 animate-shake">
+                <div className="p-2.5 rounded-[2px] bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-2 animate-shake">
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
                   <span>{errorMessage}</span>
                 </div>
@@ -404,7 +404,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     onClick={() => {
                       if (onOpenRegister) onOpenRegister();
                     }}
-                    className="w-full py-3 rounded-[4px] bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-[2px] bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2"
                   >
                     {localLanguage === 'en' ? 'Register To Shout' : 'Đăng Ký Tham Gia Để Hô To'}
                   </button>
@@ -412,7 +412,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                   <button
                     type="submit"
                     disabled={isSending || cooldownRemaining > 0 || !inputText.trim()}
-                    className={`w-full py-3 rounded-[4px] font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-3 rounded-[2px] font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all ${
                       cooldownRemaining > 0
                         ? 'bg-slate-800 text-white/40 border border-white/10 cursor-not-allowed'
                         : isSending || !inputText.trim()
@@ -451,7 +451,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               <div className="flex gap-1">
                 <button
                   onClick={() => setFeedFilter('all')}
-                  className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-bold transition-all ${
                     feedFilter === 'all'
                       ? 'bg-white/20 text-white border border-white/30'
                       : 'text-white/60 hover:text-white'
@@ -461,7 +461,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 </button>
                 <button
                   onClick={() => setFeedFilter('mine')}
-                  className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-bold transition-all ${
                     feedFilter === 'mine'
                       ? 'bg-white/20 text-white border border-white/30'
                       : 'text-white/60 hover:text-white'
@@ -471,7 +471,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 </button>
                 <button
                   onClick={() => setFeedFilter('top')}
-                  className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-bold transition-all ${
                     feedFilter === 'top'
                       ? 'bg-white/20 text-white border border-white/30'
                       : 'text-white/60 hover:text-white'
@@ -486,7 +486,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                   vibrateTap();
                   setActiveTab('create');
                 }}
-                className="px-2.5 py-1 rounded-[4px] bg-gradient-to-r from-pink-600 to-purple-600 text-xs font-bold text-white shadow hover:opacity-90 flex items-center gap-1"
+                className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-pink-600 to-purple-600 text-xs font-bold text-white shadow hover:opacity-90 flex items-center gap-1"
               >
                 <Megaphone className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô mới'}
               </button>
@@ -514,7 +514,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                   return (
                     <div
                       key={shout.id}
-                      className={`p-3 rounded-[4px] border ${
+                      className={`p-3 rounded-[2px] border ${
                         shout.is_pinned
                           ? 'bg-amber-950/70 border-amber-500/60'
                           : `${colorConfig.bg} ${colorConfig.border}`
@@ -552,7 +552,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handleLike(shout.id)}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-[4px] text-xs font-mono transition-all ${
+                          className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-xs font-mono transition-all ${
                             isUserLiked
                               ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold'
                               : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'

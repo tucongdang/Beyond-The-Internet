@@ -259,15 +259,15 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
       className="w-full max-w-2xl mx-auto space-y-4 animate-fadeIn"
     >
       {/* Emergency Live Banner */}
-      <div className="fluent-box border border-rose-500/40 rounded-[4px] p-4 sm:p-5 shadow-2xl text-white relative overflow-hidden fluent-acrylic-surface">
+      <div className="fluent-box border border-rose-500/40 rounded-[2px] p-4 sm:p-5 shadow-2xl text-white relative overflow-hidden fluent-acrylic-surface">
         <div className="flex items-center justify-between gap-3 relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-[4px] bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center shadow-inner animate-pulse">
+            <div className="w-9 h-9 rounded-[2px] bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center shadow-inner animate-pulse">
               <AlertOctagon className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono font-black uppercase tracking-widest bg-rose-900/60 px-2 py-0.5 rounded-[4px] border border-rose-500/40 text-rose-200">
+                <span className="text-[11px] font-mono font-black uppercase tracking-widest bg-rose-900/60 px-2 py-0.5 rounded-[2px] border border-rose-500/40 text-rose-200">
                   {localLanguage === 'en' ? '🔴 INSTANT POLL' : '🔴 KHẢO SÁT TỨC THÌ'}
                 </span>
                 <span className="text-xs font-bold text-rose-200/80 hidden sm:inline">
@@ -282,7 +282,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
 
           {/* Countdown timer pill if active */}
           {poll.time_limit > 0 && poll.status === 'ACTIVE' && !isTimeUp && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] fluent-box-nested border border-white/20 font-mono font-black text-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] fluent-box-nested border border-white/20 font-mono font-black text-sm">
               <Clock className="w-4 h-4 text-amber-300 animate-spin" />
               <span className={timeLeft <= 5 ? 'text-rose-300 animate-pulse text-base' : 'text-white'}>
                 {timeLeft}s
@@ -291,14 +291,14 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
           )}
 
           {isLocked && !isRevealed && (
-            <span className="px-2.5 py-1 rounded-[4px] bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs font-mono font-bold flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-[2px] bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs font-mono font-bold flex items-center gap-1">
               <Lock className="w-3.5 h-3.5" />
               {isTimeUp ? t("view_poll_timeout_locked", localLanguage) : t("view_poll_locked", localLanguage)}
             </span>
           )}
 
           {isRevealed && (
-            <span className="px-2.5 py-1 rounded-[4px] bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-bold flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-[2px] bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-bold flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
               {localLanguage === 'en' ? 'RESULT' : 'KẾT QUẢ'}
             </span>
@@ -310,7 +310,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
       <div className="fluent-question-box p-5 sm:p-6 shadow-2xl space-y-5">
         {/* Time Up Alert Banner (when countdown expires) */}
         {isTimeUp && !isRevealed && (
-          <div className="p-3.5 rounded-[4px] bg-rose-950/60 border border-rose-500/50 text-rose-200 flex items-center gap-2.5 text-xs font-mono font-bold animate-fadeIn">
+          <div className="p-3.5 rounded-[2px] bg-rose-950/60 border border-rose-500/50 text-rose-200 flex items-center gap-2.5 text-xs font-mono font-bold animate-fadeIn">
             <Lock className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{t("view_poll_timeout_msg", localLanguage)}</span>
           </div>
@@ -320,7 +320,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
         <div className="space-y-2.5">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-1 rounded-[4px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}>
+              <span className={`px-2.5 py-1 rounded-[2px] text-xs font-bold border flex items-center gap-1.5 shadow-sm ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}>
                 <SourceIcon className="w-3.5 h-3.5" />
                 <span>{poll.source_name || sourceConfig.label}</span>
               </span>
@@ -359,7 +359,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                 type="button"
                 disabled={!isVotingActive}
                 onClick={() => handleVote(item.key)}
-                className={`p-4 sm:p-5 rounded-[4px] border text-left transition-all duration-300 relative overflow-hidden flex flex-col justify-between group active:scale-95 disabled:cursor-not-allowed cursor-pointer ${
+                className={`p-4 sm:p-5 rounded-[2px] border text-left transition-all duration-300 relative overflow-hidden flex flex-col justify-between group active:scale-95 disabled:cursor-not-allowed cursor-pointer ${
                   isCorrectAnswer && hasSelected
                     ? 'fluent-option-btn !border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] !bg-emerald-500/20 z-10 scale-[1.02] animate-pulse'
                   : isUserIncorrect
@@ -408,7 +408,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                 {/* Glowing Aura Overlay when selected */}
                 {isSelected && (
                   <div
-                    className="absolute inset-0 pointer-events-none rounded-[4px] animate-pulse opacity-40"
+                    className="absolute inset-0 pointer-events-none rounded-[2px] animate-pulse opacity-40"
                     style={{
                       background: `radial-gradient(circle at 50% 50%, ${item.color} 0%, transparent 80%)`
                     }}
@@ -417,7 +417,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
 
                 <div className="flex items-center justify-between relative z-10">
                   <div
-                    className={`w-9 h-9 rounded-[4px] font-mono font-black flex items-center justify-center text-base transition-all ${
+                    className={`w-9 h-9 rounded-[2px] font-mono font-black flex items-center justify-center text-base transition-all ${
                       isSelected ? 'scale-110 text-white shadow-lg' : 'shadow-inner'
                     }`}
                     style={{
@@ -432,7 +432,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
 
                   {isSelected && (
                     <span
-                      className="px-2.5 py-1 rounded-[4px] text-white font-mono font-black text-[11px] flex items-center gap-1.5 shadow-lg animate-pulse"
+                      className="px-2.5 py-1 rounded-[2px] text-white font-mono font-black text-[11px] flex items-center gap-1.5 shadow-lg animate-pulse"
                       style={{
                         backgroundColor: item.color,
                         boxShadow: `0 0 14px ${item.color}`
@@ -444,7 +444,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                     </span>
                   )}
                   {isRevealed && isCorrect && !isSelected && (
-                    <span className="px-2 py-0.5 rounded-[4px] bg-emerald-500 text-white font-mono font-bold text-[10px]">
+                    <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500 text-white font-mono font-bold text-[10px]">
                       {t("view_poll_correct_ans", localLanguage)}
                     </span>
                   )}
@@ -456,7 +456,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                   </span>
                   {isSelected && (
                     <div
-                      className="w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 ml-2 shadow-md animate-pulse"
+                      className="w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 ml-2 shadow-md animate-pulse"
                       style={{ backgroundColor: item.color, boxShadow: `0 0 12px ${item.color}` }}
                     >
                       <CheckCircle2 className="w-5 h-5 text-white" />
@@ -485,7 +485,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
         </div>
 
         {/* User Vote Status Feedback */}
-        <div className="p-3 fluent-box-nested border border-white/10 rounded-[4px] flex items-center justify-between text-xs">
+        <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between text-xs">
           {selectedChoice ? (
             <div className="flex items-center gap-2 text-emerald-400 font-bold">
               <CheckCircle2 className="w-4 h-4" />
@@ -512,7 +512,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
 
         {/* Revealed Winner Callout */}
         {isRevealed && dominantOption && (
-          <div className="p-4 fluent-box-nested border border-purple-500/40 rounded-[4px] text-center space-y-1 animate-fadeIn">
+          <div className="p-4 fluent-box-nested border border-purple-500/40 rounded-[2px] text-center space-y-1 animate-fadeIn">
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#F7CAC9] font-bold flex items-center justify-center gap-1">
               <Award className="w-3.5 h-3.5 text-amber-400" />
               {t("view_poll_majority", localLanguage)}

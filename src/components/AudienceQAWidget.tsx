@@ -32,7 +32,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
 
   return (
     <div
-      className={`rounded-[4px] p-4 border transition-all duration-300 ${
+      className={`rounded-[2px] p-4 border transition-all duration-300 ${
         isHighContrast
           ? 'bg-black/95 border-2 border-white text-white'
           : 'fluent-box border-white/10 text-white shadow-xl'
@@ -40,7 +40,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
     >
       <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-[4px] fluent-box-nested text-[#F7CAC9] flex items-center justify-center border border-white/10">
+          <div className="w-7 h-7 rounded-[2px] fluent-box-nested text-[#F7CAC9] flex items-center justify-center border border-white/10">
             <MessageSquare className="w-4 h-4" />
           </div>
           <div>
@@ -58,7 +58,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
             soundFx.playClick();
             onOpenModal();
           }}
-          className="px-2.5 py-1 rounded-[4px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-[10px] uppercase tracking-wider shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1"
+          className="px-2.5 py-1 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-[10px] uppercase tracking-wider shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1"
         >
           <Send className="w-3 h-3" />
           <span>{localLanguage === 'en' ? 'Ask a question' : 'Đặt câu hỏi'}</span>
@@ -66,7 +66,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
       </div>
 
       {featured ? (
-        <div className="p-3 rounded-[4px] fluent-box-nested border border-rose-500/40 space-y-1.5 mb-3">
+        <div className="p-3 rounded-[2px] fluent-box-nested border border-rose-500/40 space-y-1.5 mb-3">
           <div className="flex items-center justify-between text-[10px] font-mono text-rose-300 font-bold">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
@@ -81,7 +81,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
           </p>
         </div>
       ) : (
-        <div className="text-[11px] text-white/60 mb-3 fluent-box-nested p-2.5 rounded-[4px] border border-white/5">
+        <div className="text-[11px] text-white/60 mb-3 fluent-box-nested p-2.5 rounded-[2px] border border-white/5">
           {questions.length > 0 ? (
             <div className="flex items-center justify-between">
               <span>{questions.length} {localLanguage === "en" ? "questions in hall" : "câu hỏi trong hội trường"}</span>
@@ -104,7 +104,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
           soundFx.playClick();
           onOpenModal();
         }}
-        className="w-full py-2 px-3 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white font-bold text-xs border border-white/10 transition flex items-center justify-center gap-1.5 cursor-pointer"
+        className="w-full py-2 px-3 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white font-bold text-xs border border-white/10 transition flex items-center justify-center gap-1.5 cursor-pointer"
       >
         <Sparkles className="w-3.5 h-3.5 text-[#F7CAC9]" />
         <span>{t("qa_open", localLanguage)}</span>

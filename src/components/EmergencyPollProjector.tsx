@@ -150,14 +150,14 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
       className="w-full max-w-[96vw] xl:max-w-7xl mx-auto space-y-3 sm:space-y-4 animate-fadeIn py-1 sm:py-2 px-2 sm:px-4"
     >
       {/* Compact Cinematic Banner */}
-      <div className="fluent-box border border-rose-500/40 rounded-[4px] p-3.5 sm:p-4 shadow-xl text-white flex items-center justify-between relative overflow-hidden flex-wrap gap-3 fluent-acrylic-surface">
+      <div className="fluent-box border border-rose-500/40 rounded-[2px] p-3.5 sm:p-4 shadow-xl text-white flex items-center justify-between relative overflow-hidden flex-wrap gap-3 fluent-acrylic-surface">
         <div className="flex items-center gap-3 relative z-10">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[4px] bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center shadow-inner animate-pulse shrink-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[2px] bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center shadow-inner animate-pulse shrink-0">
             <AlertOctagon className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-[4px] bg-rose-900/60 text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest border border-rose-500/40 text-rose-200">
+              <span className="px-2.5 py-0.5 rounded-[2px] bg-rose-900/60 text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest border border-rose-500/40 text-rose-200">
                 🔴 KHẢO SÁT TỨC THÌ TRỰC TIẾP
               </span>
               <span className="text-xs sm:text-sm font-bold text-rose-200/80 hidden sm:inline">
@@ -172,7 +172,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
 
         {/* Countdown Timer Badge */}
         {poll.time_limit > 0 && poll.status === 'ACTIVE' && !isTimeUp && (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-[4px] fluent-box-nested border border-amber-400 font-mono font-black text-xl sm:text-2xl shadow-lg">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-[2px] fluent-box-nested border border-amber-400 font-mono font-black text-xl sm:text-2xl shadow-lg">
             <Clock className="w-6 h-6 text-amber-400 animate-spin" />
             <span className={timeLeft <= 5 ? 'text-rose-400 animate-pulse text-2xl sm:text-3xl' : 'text-white'}>
               {timeLeft}s
@@ -181,14 +181,14 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
         )}
 
         {isLocked && !isRevealed && (
-          <div className="px-4 py-2 rounded-[4px] bg-amber-950/60 border border-amber-400 text-amber-200 font-mono font-black text-sm sm:text-base flex items-center gap-2">
+          <div className="px-4 py-2 rounded-[2px] bg-amber-950/60 border border-amber-400 text-amber-200 font-mono font-black text-sm sm:text-base flex items-center gap-2">
             <Lock className="w-5 h-5" />
             {isTimeUp ? 'HẾT GIỜ (ĐÃ KHÓA BÌNH CHỌN)' : 'ĐÃ KHÓA BÌNH CHỌN'}
           </div>
         )}
 
         {isRevealed && (
-          <div className="px-4 py-2 rounded-[4px] bg-emerald-950/60 border border-emerald-400 text-emerald-200 font-mono font-black text-sm sm:text-base flex items-center gap-2">
+          <div className="px-4 py-2 rounded-[2px] bg-emerald-950/60 border border-emerald-400 text-emerald-200 font-mono font-black text-sm sm:text-base flex items-center gap-2">
             <Sparkles className="w-5 h-5" />
             KẾT QUẢ CUỐI CÙNG
           </div>
@@ -200,11 +200,11 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-stretch">
           
           {/* LEFT COLUMN: Question, Context & Live Status */}
-          <div className="lg:col-span-5 flex flex-col justify-between space-y-4 fluent-box-nested rounded-[4px] p-4 sm:p-5 shadow-inner">
+          <div className="lg:col-span-5 flex flex-col justify-between space-y-4 fluent-box-nested rounded-[2px] p-4 sm:p-5 shadow-inner">
             <div className="space-y-3">
               {/* Source & Live Votes Badge */}
               <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-rose-300 font-bold flex-wrap gap-2">
-                <span className={`px-2.5 py-1 rounded-[4px] text-xs font-bold border flex items-center gap-1.5 shadow ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}>
+                <span className={`px-2.5 py-1 rounded-[2px] text-xs font-bold border flex items-center gap-1.5 shadow ${sourceConfig.badgeBg} ${sourceConfig.border} ${sourceConfig.text}`}>
                   <SourceIcon className="w-3.5 h-3.5" />
                   <span>{poll.source_name || sourceConfig.label}</span>
                 </span>
@@ -216,7 +216,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
               </div>
 
               {poll.context_note && (
-                <div className="px-2.5 py-1 rounded-[4px] bg-white/10 border border-white/10 text-xs text-purple-200/90 italic">
+                <div className="px-2.5 py-1 rounded-[2px] bg-white/10 border border-white/10 text-xs text-purple-200/90 italic">
                   💬 {poll.context_note}
                 </div>
               )}
@@ -234,7 +234,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
 
             {/* Status / Dominant Winner Box */}
             {isRevealed && dominantOption ? (
-              <div className="p-3 sm:p-3.5 rounded-[4px] fluent-box border border-purple-400/50 space-y-1 animate-fadeIn shadow-lg">
+              <div className="p-3 sm:p-3.5 rounded-[2px] fluent-box border border-purple-400/50 space-y-1 animate-fadeIn shadow-lg">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-purple-200 font-bold flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-amber-400" />
                   <span>KẾT QUẢ DẪN ĐẦU</span>
@@ -250,7 +250,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-3 sm:p-3.5 rounded-[4px] fluent-box border border-white/10 flex items-center justify-between gap-3">
+              <div className="p-3 sm:p-3.5 rounded-[2px] fluent-box border border-white/10 flex items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] font-mono uppercase text-white/50 font-bold block">
                     TRẠNG THÁI BÌNH CHỌN
@@ -281,7 +281,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                 return (
                   <div
                     key={item.key}
-                    className={`p-3.5 sm:p-4 rounded-[4px] border flex flex-col justify-between space-y-2.5 shadow-xl transition-all relative overflow-hidden ${
+                    className={`p-3.5 sm:p-4 rounded-[2px] border flex flex-col justify-between space-y-2.5 shadow-xl transition-all relative overflow-hidden ${
                       isCorrect && isRevealed
                         ? 'bg-emerald-950/40 border-emerald-400 ring-2 ring-emerald-400'
                         : 'fluent-box-nested border-white/15 hover:border-white/30'
@@ -291,7 +291,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                         <span
-                          className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-[4px] font-mono font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow shrink-0 mt-0.5"
+                          className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-[2px] font-mono font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow shrink-0 mt-0.5"
                           style={{
                             backgroundColor: `${item.color}25`,
                             color: item.color,
@@ -305,7 +305,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                             {item.text}
                           </p>
                           {isCorrect && isRevealed && (
-                            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-[4px] bg-emerald-500 text-white font-mono font-bold text-[10px]">
+                            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-[2px] bg-emerald-500 text-white font-mono font-bold text-[10px]">
                               ✓ ĐÁP ÁN ĐÚNG
                             </span>
                           )}
@@ -319,7 +319,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                         </span>
                         <span className="text-[10px] font-medium text-white/60 block">Phiếu</span>
                         {isRevealed && (
-                          <span className="text-[11px] font-mono font-bold text-white/90 bg-black/60 px-2 py-0.5 rounded-[4px] border border-white/10 mt-1 inline-block">
+                          <span className="text-[11px] font-mono font-bold text-white/90 bg-black/60 px-2 py-0.5 rounded-[2px] border border-white/10 mt-1 inline-block">
                             {item.percent}%
                           </span>
                         )}

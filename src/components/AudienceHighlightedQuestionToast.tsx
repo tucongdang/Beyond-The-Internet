@@ -131,7 +131,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
             onTouchStart={() => setIsPaused(true)}
             onTouchEnd={() => setIsPaused(false)}
             onClick={handleClickToast}
-            className={`pointer-events-auto max-w-lg w-full rounded-[12px] shadow-2xl overflow-hidden cursor-pointer transition-all border group relative ${
+            className={`pointer-events-auto max-w-lg w-full rounded-[4px] shadow-2xl overflow-hidden cursor-pointer transition-all border group relative ${
               isHighContrast
                 ? 'bg-black/50 backdrop-blur-[24px] saturate-150 text-white border-2 border-cyan-400 shadow-[0_8px_30px_rgba(6,182,212,0.4)]'
                 : 'bg-gradient-to-br from-[#1b0a38]/98 via-[#240e49]/95 to-[#130729]/98 text-white border-sky-400/40 shadow-[0_10px_35px_rgba(14,165,233,0.3)] backdrop-blur-xl hover:border-sky-400/70'
@@ -173,7 +173,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
 
             {/* Main Body */}
             <div className="p-3 sm:p-3.5 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-[4px] fluent-acrylic-surface flex items-center justify-center text-white shrink-0 shadow-md shadow-sky-500/20 border border-white/20 mt-0.5">
+              <div className="w-8 h-8 rounded-[2px] fluent-acrylic-surface flex items-center justify-center text-white shrink-0 shadow-md shadow-sky-500/20 border border-white/20 mt-0.5">
                 <MessageSquare className="w-4 h-4" />
               </div>
 

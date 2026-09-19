@@ -134,7 +134,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
         <button
           type="button"
           onClick={() => setIsMinimized(false)}
-          className={`fluent-subtab-btn flex items-center gap-2 px-3 py-2 rounded-[4px] border ${
+          className={`fluent-subtab-btn flex items-center gap-2 px-3 py-2 rounded-[2px] border ${
             isHighContrast
               ? 'border-2 border-white bg-black text-white shadow-none'
               : `${themeConfig.badgeBorder} ${themeConfig.containerBg} text-white shadow-2xl backdrop-blur-xl`
@@ -181,7 +181,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
         {/* Left Badge: Live Announcer Indicator */}
         <div className="flex-shrink-0 flex items-center gap-2 z-10">
           <div
-            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-[4px] border ${themeConfig.badgeBorder} ${themeConfig.badgeBg} font-mono font-black text-[9px] sm:text-xs uppercase tracking-wider shadow-md`}
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-[2px] border ${themeConfig.badgeBorder} ${themeConfig.badgeBg} font-mono font-black text-[9px] sm:text-xs uppercase tracking-wider shadow-md`}
           >
             <span className="relative flex h-2 w-2">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${themeConfig.pulseDot}`} />
@@ -233,7 +233,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
               <button
                 type="button"
                 onClick={() => setIsMinimized(true)}
-                className={`p-1.5 rounded-[4px] ${
+                className={`p-1.5 rounded-[2px] ${
                   isHighContrast
                     ? 'bg-black border border-white text-white hover:bg-white hover:text-black'
                     : 'fluent-box-nested border border-white/10 hover:bg-white/20 text-white/70 hover:text-white'
@@ -247,7 +247,7 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
               <button
                 type="button"
                 onClick={onDismiss}
-                className={`p-1.5 rounded-[4px] ${
+                className={`p-1.5 rounded-[2px] ${
                   isHighContrast
                     ? 'bg-black border border-white text-white hover:bg-white hover:text-black'
                     : 'fluent-box-nested border border-white/10 hover:bg-white/20 text-white/70 hover:text-white'

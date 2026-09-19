@@ -48,7 +48,7 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
       const item = payload[0].payload;
       const pct = totalVotes > 0 ? Math.round((item.value / totalVotes) * 100) : 0;
       return (
-        <div className="fluent-box-nested p-3 rounded-[4px] border border-white/20 shadow-2xl backdrop-blur-xl text-white font-mono space-y-1">
+        <div className="fluent-box-nested p-3 rounded-[2px] border border-white/20 shadow-2xl backdrop-blur-xl text-white font-mono space-y-1">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
             <span className="font-bold text-xs text-white">{item.shortName}</span>
@@ -65,14 +65,14 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
   };
 
   return (
-    <div className="fluent-box rounded-[4px] p-4 sm:p-6 shadow-2xl mb-4 relative overflow-hidden border border-white/15 text-white animate-fadeIn transition-all duration-380 select-none">
+    <div className="fluent-box rounded-[2px] p-4 sm:p-6 shadow-2xl mb-4 relative overflow-hidden border border-white/15 text-white animate-fadeIn transition-all duration-380 select-none">
       {/* Decorative ambient top glow */}
       <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-[#F7CAC9]/60 to-transparent pointer-events-none" />
 
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[4px] fluent-box-nested border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shadow-md relative">
+          <div className="w-9 h-9 rounded-[2px] fluent-box-nested border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shadow-md relative">
             <Activity className="w-4 h-4 text-[#F7CAC9]" />
             {currentPoll.status === 'ACTIVE' && (
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -95,7 +95,7 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
 
         {/* Status badges & Participation rate */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={`px-3 py-1 rounded-[4px] text-[11px] font-mono font-bold flex items-center gap-1.5 border transition-all ${
+          <span className={`px-3 py-1 rounded-[2px] text-[11px] font-mono font-bold flex items-center gap-1.5 border transition-all ${
             currentPoll.status === 'ACTIVE'
               ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-900/30'
               : currentPoll.status === 'LOCKED'
@@ -110,7 +110,7 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
             </span>
           </span>
 
-          <span className="px-3 py-1 rounded-[4px] text-[11px] font-mono font-bold fluent-box-nested text-white/80 border border-white/10 flex items-center gap-1.5">
+          <span className="px-3 py-1 rounded-[2px] text-[11px] font-mono font-bold fluent-box-nested text-white/80 border border-white/10 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-sky-400" />
             <span>{totalVotes} / {activeAudienceCount} tham gia ({participationRate}%)</span>
           </span>
@@ -122,7 +122,7 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
         {/* Left column: Question & Option Cards with Animated Progress Bars */}
         <div className="md:col-span-6 flex flex-col justify-between space-y-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
               <Radio className="w-3 h-3 text-amber-400" />
               <span>CÂU HỎI HIỆN TẠI</span>
             </div>
@@ -140,7 +140,7 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
               return (
                 <div
                   key={index}
-                  className="fluent-box-nested rounded-[4px] border border-white/10 p-3 relative overflow-hidden transition-all duration-300 hover:border-white/25 hover:translate-y-[-1px] group"
+                  className="fluent-box-nested rounded-[2px] border border-white/10 p-3 relative overflow-hidden transition-all duration-300 hover:border-white/25 hover:translate-y-[-1px] group"
                 >
                   {/* Background Progress Fill Bar */}
                   <div
@@ -219,11 +219,11 @@ export const LivePollDashboard: React.FC<LivePollDashboardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="w-full h-full min-h-[200px] flex flex-col items-center justify-center border border-dashed border-white/15 rounded-[4px] fluent-box-nested p-6 text-center relative overflow-hidden group">
+            <div className="w-full h-full min-h-[200px] flex flex-col items-center justify-center border border-dashed border-white/15 rounded-[2px] fluent-box-nested p-6 text-center relative overflow-hidden group">
               {/* Pulsing radar waves */}
               <div className="relative mb-3 flex items-center justify-center">
                 <span className="absolute w-12 h-12 rounded-full bg-white/5 animate-ping opacity-50" />
-                <div className="w-10 h-10 rounded-[4px] fluent-box border border-white/10 flex items-center justify-center text-white/40 group-hover:text-[#F7CAC9] transition-colors">
+                <div className="w-10 h-10 rounded-[2px] fluent-box border border-white/10 flex items-center justify-center text-white/40 group-hover:text-[#F7CAC9] transition-colors">
                   <Activity className="w-5 h-5 animate-pulse" />
                 </div>
               </div>
