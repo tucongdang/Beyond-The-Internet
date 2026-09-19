@@ -75,9 +75,9 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
         </div>
 
         {/* Progress Bar Container */}
-        <div className="w-full h-2.5 bg-black/50 backdrop-blur-[24px] saturate-150/50 rounded-full overflow-hidden border border-white/10 p-0.5 shadow-inner">
+        <div className="w-full h-2.5 bg-black/50 backdrop-blur-[24px] saturate-150/50 rounded-[2px] overflow-hidden border border-white/10 p-0.5 shadow-inner">
           <div
-            className={`h-full rounded-full transition-all duration-150 ease-linear shadow-sm ${
+            className={`h-full rounded-[2px] transition-all duration-150 ease-linear shadow-sm ${
               isUrgent
                 ? 'fluent-acrylic-surface'
                 : 'fluent-acrylic-surface'
@@ -125,9 +125,9 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
 
       {/* Progress Bar */}
       <div className="space-y-1.5">
-        <div className="w-full h-3.5 sm:h-4 bg-black/50 backdrop-blur-[24px] saturate-150/60 rounded-full overflow-hidden border border-white/15 p-0.5 shadow-inner relative">
+        <div className="w-full h-3.5 sm:h-4 bg-black/50 backdrop-blur-[24px] saturate-150/60 rounded-[2px] overflow-hidden border border-white/15 p-0.5 shadow-inner relative">
           <div
-            className={`h-full rounded-full transition-all duration-150 ease-linear shadow-md relative overflow-hidden ${
+            className={`h-full rounded-[2px] transition-all duration-150 ease-linear shadow-md relative overflow-hidden ${
               isUrgent
                 ? 'fluent-acrylic-surface'
                 : 'fluent-acrylic-surface'

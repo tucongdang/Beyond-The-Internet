@@ -212,7 +212,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+            className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/70 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -266,7 +266,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     {inputText.trim() || (localLanguage === 'en' ? 'Enter your shout message...' : 'Nhập nội dung tiếng hô của bạn...')} 
                   </div>
                 </div>
-                <div className="text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-white/50 shrink-0">
+                <div className="text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded-[2px] text-white/50 shrink-0">
                   {inputText.length}/{maxChars}
                 </div>
               </div>
@@ -499,7 +499,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 <p>{localLanguage === 'en' ? 'No shouts in this category.' : 'Chưa có tiếng hô nào trong danh mục này.'}</p>
                 <button
                   onClick={() => setActiveTab('create')}
-                  className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-white font-medium text-xs inline-block"
+                  className="px-3 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-medium text-xs inline-block"
                 >
                   {localLanguage === 'en' ? 'Be the first to Shout!' : 'Hãy là người đầu tiên Hô To!'}
                 </button>
@@ -533,7 +533,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                               </span>
                             )}
                             {shout.is_pinned && (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-amber-500/30 text-amber-300 px-1 rounded font-bold">
+                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-amber-500/30 text-amber-300 px-1 rounded-[2px] font-bold">
                                 <Pin className="w-2.5 h-2.5" /> Ghim
                               </span>
                             )}
@@ -571,7 +571,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                                 await shoutService.hideShout(shout.id);
                               }
                             }}
-                            className="p-1 rounded text-white/40 hover:text-rose-400 transition-colors"
+                            className="p-1 rounded-[2px] text-white/40 hover:text-rose-400 transition-colors"
                             title={localLanguage === "en" ? "Delete / Hide shout (Admin)" : "Xóa / Ẩn tiếng hô (Admin)"}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -597,7 +597,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="px-3 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
             {localLanguage === 'en' ? 'Close' : 'Đóng'}
           </button>

@@ -148,7 +148,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
               {data.timeFormatted}
             </span>
             <span
-              className={`text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded border ${
+              className={`text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded-[2px] border ${
                 data.quality === 'excellent'
                   ? 'fluent-box-nested text-emerald-300 border-emerald-500/30'
                   : data.quality === 'good'

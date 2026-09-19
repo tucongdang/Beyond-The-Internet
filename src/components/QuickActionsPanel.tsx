@@ -798,7 +798,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                       type="checkbox"
                       checked={syncToMarquee}
                       onChange={(e) => setSyncToMarquee(e.target.checked)}
-                      className="w-4 h-4 rounded text-cyan-500 bg-black/50 border-white/20 focus:ring-cyan-400"
+                      className="w-4 h-4 rounded-[2px] text-cyan-500 bg-black/50 border-white/20 focus:ring-cyan-400"
                     />
                     <span>Đồng bộ dải chữ chạy Marquee trên Màn Chiếu</span>
                   </label>

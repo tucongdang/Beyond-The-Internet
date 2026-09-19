@@ -3158,7 +3158,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border ${
                     gameState.qr_transparent_bg
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                       : 'bg-white/10 text-white/70 border-white/10'
@@ -3167,7 +3167,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   </span>
                 </div>
                 {(adminQrCaption || gameState.qr_custom_caption) && (
-                  <div className="w-full text-center px-2 py-1 bg-sky-950/70 border border-sky-500/30 rounded text-[10px] font-mono font-bold text-sky-200 truncate" title={adminQrCaption || gameState.qr_custom_caption}>
+                  <div className="w-full text-center px-2 py-1 bg-sky-950/70 border border-sky-500/30 rounded-[2px] text-[10px] font-mono font-bold text-sky-200 truncate" title={adminQrCaption || gameState.qr_custom_caption}>
                     ✨ {adminQrCaption || gameState.qr_custom_caption}
                   </div>
                 )}
@@ -3182,11 +3182,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <ExternalLink className="w-3.5 h-3.5" /> Đường Dẫn Trực Tiếp Vào Phòng Thi Đấu:
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border border-sky-400/20">
+                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-[2px] border border-sky-400/20">
                         <ScanLine className="w-3 h-3 text-sky-400" />
                         <span>Ước tính quét: <strong className="text-sky-300 font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
                       </span>
-                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border border-emerald-400/20">
+                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-[2px] border border-emerald-400/20">
                         <Users className="w-3 h-3 text-emerald-400" />
                         <span>Online: <strong className="text-emerald-400 font-bold">{activeCount}</strong></span>
                       </span>
@@ -3624,7 +3624,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <button
                       type="button"
                       onClick={() => setQbSearchTerm('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded-[2px] cursor-pointer"
                       title="Xóa tìm kiếm"
                     >
                       ✕
@@ -3638,7 +3638,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           {/* VCNV SPECIAL PACKAGE EDITOR SECTION */}
           {(qbCategoryFilter === 'ALL' || qbCategoryFilter === 'VCNV') && (
             <section className="fluent-box rounded-[2px] p-3 sm:p-4 md:p-5 space-y-4 shadow-xl relative overflow-hidden backdrop-blur-md">
-              <div className="absolute top-0 right-0 fluent-box-nested text-cyan-300 border-l border-b border-cyan-500/30 text-[10px] font-mono font-bold px-3 py-1 rounded-bl-[4px] uppercase tracking-wider">
+              <div className="absolute top-0 right-0 fluent-box-nested text-cyan-300 border-l border-b border-cyan-500/30 text-[10px] font-mono font-bold px-3 py-1 rounded-bl-[2px] uppercase tracking-wider">
                 ⚡ Studio Matrix VCNV
               </div>
 
@@ -4197,7 +4197,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <button
                           type="button"
                           onClick={() => setSearchTerm('')}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded cursor-pointer"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded-[2px] cursor-pointer"
                           title="Xóa tìm kiếm"
                         >
                           ✕
@@ -4574,7 +4574,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-emerald-300">ĐÃ CÔNG BỐ TỪ KHÓA CHƯỚNG NGẠI VẬT</p>
                         <p className="text-[10px] sm:text-[11px] text-white/70 truncate">
-                          Từ khóa chính thức: <strong className="text-white font-mono fluent-box-nested px-1.5 py-0.5 rounded">{gameState.vcnv_keyword}</strong>
+                          Từ khóa chính thức: <strong className="text-white font-mono fluent-box-nested px-1.5 py-0.5 rounded-[2px]">{gameState.vcnv_keyword}</strong>
                         </p>
                       </div>
                     </div>
@@ -5203,7 +5203,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <button
                     type="button"
                     onClick={() => setVcnvSearch('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded cursor-pointer"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded-[2px] cursor-pointer"
                     title="Xóa tìm kiếm"
                   >
                     ✕
@@ -5619,7 +5619,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-1 flex-wrap mb-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-white/10 text-white/90 shrink-0">
+                                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-[2px] bg-white/10 text-white/90 shrink-0">
                                     #{idx + 1}
                                   </span>
                                   <span className="text-xs font-mono font-bold text-white truncate flex items-center gap-1">
@@ -5637,10 +5637,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                               {/* Specs chips */}
                               <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-white/70 mb-1">
-                                <span className="px-1.5 py-0.2 rounded bg-black/40 border border-white/10">
+                                <span className="px-1.5 py-0.2 rounded-[2px] bg-black/40 border border-white/10">
                                   {item.size}px
                                 </span>
-                                <span className={`px-1.5 py-0.2 rounded border ${
+                                <span className={`px-1.5 py-0.2 rounded-[2px] border ${
                                   item.transparentBg
                                     ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                                     : 'bg-white/5 text-white/60 border-white/10'
@@ -5651,7 +5651,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                               {/* Custom Caption display if present */}
                               {item.caption && (
-                                <div className="text-[10px] font-mono text-amber-200/90 truncate flex items-center gap-1 bg-amber-950/30 px-1.5 py-0.5 rounded border border-amber-400/20">
+                                <div className="text-[10px] font-mono text-amber-200/90 truncate flex items-center gap-1 bg-amber-950/30 px-1.5 py-0.5 rounded-[2px] border border-amber-400/20">
                                   <Sparkles className="w-2.5 h-2.5 text-amber-300 shrink-0" />
                                   <span className="truncate">"{item.caption}"</span>
                                 </div>
@@ -5864,7 +5864,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             <div>
                               <div className="text-[11px] font-mono font-bold text-sky-200 uppercase tracking-wider flex items-center gap-1.5">
                                 <span>Lượt Quét Ước Tính</span>
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1 inline-block" />
                                   Firebase Sync
                                 </span>
@@ -6339,7 +6339,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               )}
             </div>
 
-            <div className="text-xs font-mono text-left space-y-1.5 p-2.5 rounded bg-black/40 border border-white/10 mb-3">
+            <div className="text-xs font-mono text-left space-y-1.5 p-2.5 rounded-[2px] bg-black/40 border border-white/10 mb-3">
               <div className="flex justify-between">
                 <span className="text-white/50">Bảng màu:</span>
                 <span className="text-white font-bold">{inspectHistoryItem.paletteName || inspectHistoryItem.palette}</span>
@@ -6641,7 +6641,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 <div className="p-4 fluent-box-nested border border-cyan-500/30 rounded-[2px] space-y-3">
                   <div className="text-cyan-300 font-mono font-bold flex items-center justify-between text-xs">
                     <span>Nội Dung Gói Vượt Chướng Ngại Vật (VCNV)</span>
-                    <span className="text-[10px] text-cyan-200 fluent-box-nested px-2 py-0.5 rounded">Gói VCNV</span>
+                    <span className="text-[10px] text-cyan-200 fluent-box-nested px-2 py-0.5 rounded-[2px]">Gói VCNV</span>
                   </div>
 
                   <div>
@@ -6721,7 +6721,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <label className="text-purple-300 font-mono font-bold">
                       4 Mệnh Đề / Ý Đánh Giá Đúng - Sai (Theo Hình / Tình Huống)
                     </label>
-                    <span className="text-[10px] font-mono text-purple-200 fluent-box-nested px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-purple-200 fluent-box-nested px-2 py-0.5 rounded-[2px]">
                       Key format: a:Đ,b:S,c:S,d:Đ
                     </span>
                   </div>

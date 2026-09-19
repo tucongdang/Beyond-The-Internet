@@ -175,7 +175,7 @@ const ToastCard: React.FC<ToastCardProps> = ({
         <div className="flex-1 min-w-0 pr-1">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase tracking-wider ${theme.badge}`}>
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] uppercase tracking-wider ${theme.badge}`}>
                 {toast.type === 'rush' ? '⚡ TỐC ĐỘ CAO' : toast.type === 'volume' ? '📊 CỘT MỐC LƯỢT NỘP' : `TIẾN ĐỘ ${toast.percent}%`}
               </span>
               <span className="text-[10px] font-mono text-white/40">
@@ -423,7 +423,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
                     key={t}
                     type="button"
                     onClick={() => onUpdateSettings({ minThreshold: t })}
-                    className={`px-2 py-0.5 rounded font-mono text-[11px] font-bold ${
+                    className={`px-2 py-0.5 rounded-[2px] font-mono text-[11px] font-bold ${
                       settings.minThreshold === t
                         ? 'bg-[#F7CAC9] text-white'
                         : 'fluent-box-nested text-white/60 hover:text-white'
@@ -440,7 +440,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
               <button
                 type="button"
                 onClick={() => onUpdateSettings({ rushAlertEnabled: !settings.rushAlertEnabled })}
-                className={`px-2 py-0.5 rounded font-mono text-[11px] font-bold ${
+                className={`px-2 py-0.5 rounded-[2px] font-mono text-[11px] font-bold ${
                   settings.rushAlertEnabled
                     ? 'fluent-box-nested text-emerald-300 border border-emerald-500/40'
                     : 'fluent-box-nested text-white/40'

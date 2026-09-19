@@ -134,7 +134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, game
               <div className={`${iconBoxClasses} bg-pink-500/20 text-pink-400`}>
                 <History className="w-5 h-5" />
                 {(gameState.emergency_poll_history?.length || 0) > 0 && (
-                  <span className="absolute top-3 right-3 text-[10px] font-mono bg-pink-500/30 text-pink-200 px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-3 right-3 text-[10px] font-mono bg-pink-500/30 text-pink-200 px-1.5 py-0.5 rounded-[2px]">
                     {gameState.emergency_poll_history.length}
                   </span>
                 )}
@@ -147,7 +147,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, game
               <div className={`${iconBoxClasses} bg-cyan-500/20 text-cyan-400`}>
                 <Camera className="w-5 h-5" />
                 {snapshotCount > 0 && (
-                  <span className="absolute top-3 right-3 text-[10px] font-mono bg-cyan-500/30 text-cyan-200 px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-3 right-3 text-[10px] font-mono bg-cyan-500/30 text-cyan-200 px-1.5 py-0.5 rounded-[2px]">
                     {snapshotCount}
                   </span>
                 )}

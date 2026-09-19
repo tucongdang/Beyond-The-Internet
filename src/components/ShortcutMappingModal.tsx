@@ -438,7 +438,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-sky-400 animate-pulse shrink-0" />
               <span>
-                <strong>Kiểm tra phím trực tiếp:</strong> Bạn có thể bấm bất kỳ phím nào (ví dụ <kbd className="px-1.5 py-0.5 bg-black/60 rounded border border-sky-400/40 font-mono font-bold text-sky-300">Space</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded border border-sky-400/40 font-mono font-bold text-sky-300">1</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded border border-sky-400/40 font-mono font-bold text-sky-300">2</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded border border-sky-400/40 font-mono font-bold text-sky-300">3</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded border border-sky-400/40 font-mono font-bold text-sky-300">4</kbd>) ngay trên màn hình này để xem hiệu ứng phản hồi!
+                <strong>Kiểm tra phím trực tiếp:</strong> Bạn có thể bấm bất kỳ phím nào (ví dụ <kbd className="px-1.5 py-0.5 bg-black/60 rounded-[2px] border border-sky-400/40 font-mono font-bold text-sky-300">Space</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded-[2px] border border-sky-400/40 font-mono font-bold text-sky-300">1</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded-[2px] border border-sky-400/40 font-mono font-bold text-sky-300">2</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded-[2px] border border-sky-400/40 font-mono font-bold text-sky-300">3</kbd>, <kbd className="px-1.5 py-0.5 bg-black/60 rounded-[2px] border border-sky-400/40 font-mono font-bold text-sky-300">4</kbd>) ngay trên màn hình này để xem hiệu ứng phản hồi!
               </span>
             </div>
           </div>
@@ -450,7 +450,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
               <button
                 type="button"
                 onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
-                className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs rounded"
+                className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs rounded-[2px]"
               >
                 Xóa bộ lọc
               </button>

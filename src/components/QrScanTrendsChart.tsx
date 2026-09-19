@@ -71,12 +71,12 @@ const CustomChartTooltip: React.FC<CustomTooltipProps> = ({ active, payload, lab
           <span>{data.hour} - {String((data.hourNumber + 1) % 24).padStart(2, '0')}:00</span>
         </div>
         {data.isCurrentHour && (
-          <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/40 animate-pulse">
+          <span className="px-1.5 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/40 animate-pulse">
             Giờ Này
           </span>
         )}
         {isPeak && (
-          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/40 flex items-center gap-0.5">
+          <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/40 flex items-center gap-0.5">
             <Flame className="w-2.5 h-2.5" />
             Đỉnh Điểm
           </span>
@@ -102,9 +102,9 @@ const CustomChartTooltip: React.FC<CustomTooltipProps> = ({ active, payload, lab
               <span>So với đỉnh ({peakCount}):</span>
               <span className="text-sky-300 font-bold">{data.peakRatio}%</span>
             </div>
-            <div className="w-full bg-black/60 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-black/60 rounded-[2px] h-1.5 overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-sky-500 to-cyan-400 h-full rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-sky-500 to-cyan-400 h-full rounded-[2px] transition-all duration-300"
                 style={{ width: `${Math.min(100, data.peakRatio)}%` }}
               />
             </div>
@@ -116,7 +116,7 @@ const CustomChartTooltip: React.FC<CustomTooltipProps> = ({ active, payload, lab
             <span className="text-white/40">Nguồn:</span>
             <div className="flex gap-1">
               {Object.entries(data.sources).map(([src, count]) => (
-                <span key={src} className="px-1 py-0.5 rounded bg-white/10 text-sky-200">
+                <span key={src} className="px-1 py-0.5 rounded-[2px] bg-white/10 text-sky-200">
                   {src === 'mobile_qr' ? '📱 QR' : src === 'admin_test' ? '🧪 Thử' : src}: {count}
                 </span>
               ))}
@@ -198,7 +198,7 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
           <div>
             <div className="text-xs sm:text-sm font-bold text-sky-200 uppercase tracking-wider flex items-center gap-1.5">
               <span>Phân Tích Tần Suất Quét QR (Hourly Trends)</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1 inline-block" />
                 Firebase Realtime
               </span>

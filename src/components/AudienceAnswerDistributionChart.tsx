@@ -375,7 +375,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
       {/* Main Chart Body */}
       {totalVotes === 0 ? (
         <div className="h-44 sm:h-52 fluent-box-nested border border-dashed border-white/10 rounded-[2px] flex flex-col items-center justify-center text-center p-4">
-          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/30 mb-2">
+          <div className="w-10 h-10 rounded-[2px] bg-white/5 flex items-center justify-center text-white/30 mb-2">
             <Radio className="w-5 h-5 animate-pulse text-sky-400/60" />
           </div>
           <p className="text-xs font-semibold text-white/70">{localLanguage === 'en' ? 'No answers received yet' : 'Chưa nhận được câu trả lời nào'}</p>

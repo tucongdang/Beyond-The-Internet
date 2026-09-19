@@ -142,7 +142,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
             <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
             <span className="text-white/70">{localLanguage === 'en' ? 'Hall:' : 'Khán phòng:'}</span>
             <span
-              className="font-bold px-1.5 py-0.2 rounded text-[10px]"
+              className="font-bold px-1.5 py-0.2 rounded-[2px] text-[10px]"
               style={{
                 backgroundColor: `${intensityData.colorHex}20`,
                 color: intensityData.colorHex,
@@ -214,7 +214,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
               <div className="font-black tracking-wide flex items-center gap-1.5">
                 <span>{localLanguage === 'en' ? 'CHEER ON STAGE' : 'CỔ VŨ SÂN KHẤU'}</span>
                 {combo > 1 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-white/40 text-[10px] font-mono animate-pulse">
+                  <span className="px-1.5 py-0.5 rounded-[2px] bg-white/10 backdrop-blur-md border border-white/40 text-[10px] font-mono animate-pulse">
                     x{combo} COMBO!
                   </span>
                 )}
@@ -226,7 +226,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
           </div>
 
           <div className="relative z-10 flex flex-col items-end">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider bg-black/50 backdrop-blur-[24px] saturate-150/30 px-2 py-0.5 rounded border border-white/20">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider bg-black/50 backdrop-blur-[24px] saturate-150/30 px-2 py-0.5 rounded-[2px] border border-white/20">
               TAP ME ⚡
             </span>
             {intensityData.totalCheers > 0 && (

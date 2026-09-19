@@ -417,7 +417,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                   type="checkbox"
                   checked={customIsPinned}
                   onChange={(e) => setCustomIsPinned(e.target.checked)}
-                  className="rounded border-white/20 text-purple-600 focus:ring-0"
+                  className="rounded-[2px] border-white/20 text-purple-600 focus:ring-0"
                 />
                 <span className="text-xs font-mono text-amber-300 font-bold flex items-center gap-1">
                   <Pin className="w-3 h-3" /> Ghim đầu hàng
@@ -608,12 +608,12 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                             {shout.sender_name}
                           </span>
                           {shout.sender_mssv && (
-                            <span className="text-[10px] font-mono text-white/40 px-1 py-0.2 rounded bg-white/5">
+                            <span className="text-[10px] font-mono text-white/40 px-1 py-0.2 rounded-[2px] bg-white/5">
                               {shout.sender_mssv}
                             </span>
                           )}
                           {shout.is_pinned && (
-                            <span className="text-[9px] font-mono font-bold text-amber-300 bg-amber-500/20 border border-amber-400/40 px-1 py-0.2 rounded flex items-center gap-0.5">
+                            <span className="text-[9px] font-mono font-bold text-amber-300 bg-amber-500/20 border border-amber-400/40 px-1 py-0.2 rounded-[2px] flex items-center gap-0.5">
                               <Pin className="w-2.5 h-2.5" /> GHIM
                             </span>
                           )}
@@ -679,7 +679,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
 
                   {/* Footer with Likes */}
                   <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/40">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${badgeInfo.bg} ${badgeInfo.text} border ${badgeInfo.border}`}>
+                    <span className={`px-1.5 py-0.5 rounded-[2px] text-[9px] font-bold ${badgeInfo.bg} ${badgeInfo.text} border ${badgeInfo.border}`}>
                       {badgeInfo.name}
                     </span>
                     <span className="flex items-center gap-1 text-rose-300/80 font-bold">

@@ -420,7 +420,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded-[2px] cursor-pointer"
                 title={localLanguage === 'en' ? 'Clear search' : 'Xóa tìm kiếm'}
               >
                 ✕

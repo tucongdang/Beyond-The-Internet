@@ -2213,7 +2213,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     {isConfirmingShortAnswer && (
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
                         <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[4px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp">
-                          <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
+                          <div className="w-12 h-12 rounded-[2px] bg-amber-500/20 flex items-center justify-center mb-4">
                             <AlertCircle className="w-6 h-6 text-amber-400" />
                           </div>
                           <h3 className="text-lg font-bold text-white mb-2">{t("view_confirm_send", localLanguage)}</h3>

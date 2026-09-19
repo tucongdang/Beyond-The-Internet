@@ -245,7 +245,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
                 key={val}
                 type="button"
                 onClick={() => setMinCount(val)}
-                className={`px-2 py-0.5 rounded font-bold transition ${
+                className={`px-2 py-0.5 rounded-[2px] font-bold transition ${
                   minCount === val
                     ? 'bg-rose-500 text-white shadow-sm'
                     : 'fluent-box-nested text-white/50 hover:text-white'
@@ -491,7 +491,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
                       <User className="w-3 h-3 text-[#F7CAC9]" />
                       <span className="font-bold text-white/80">{src.author || 'Khán giả'}</span>
                     </div>
-                    <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded fluent-box-nested border border-white/10 text-white/60">
+                    <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-[2px] fluent-box-nested border border-white/10 text-white/60">
                       {src.type === 'QA' ? 'Câu hỏi Q&A' : src.type === 'VCNV' ? 'Dự đoán VCNV' : 'Bình chọn'}
                     </span>
                   </div>

@@ -586,7 +586,7 @@ export default function App() {
 
         
       {batteryToast.show && (
-        <div className="fixed top-20 right-4 z-[9999] bg-green-900/90 text-green-100 px-4 py-3 rounded shadow-lg border border-green-500/50 flex items-center gap-2 animate-fadeIn">
+        <div className="fixed top-20 right-4 z-[9999] bg-green-900/90 text-green-100 px-4 py-3 rounded-[2px] shadow-lg border border-green-500/50 flex items-center gap-2 animate-fadeIn">
           <Zap className="w-5 h-5 text-green-400 animate-pulse" />
           <span className="text-sm font-medium">{batteryToast.message}</span>
         </div>
@@ -783,7 +783,7 @@ export default function App() {
             <div className="flex items-center justify-center flex-wrap gap-2 mb-2.5">
               <div 
                 id="badge-landing-qr-scans"
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
                 title={localLanguage === 'en' ? 'Total audience scans joining arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
               >
                 <ScanLine className="w-3 h-3 text-sky-400" />
@@ -793,7 +793,7 @@ export default function App() {
               {isFirebaseConnected ? (
                 <div 
                   id="badge-firebase-online"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
                   title={localLanguage === 'en' ? 'Realtime database is operating stably' : 'Hệ thống cơ sở dữ liệu thời gian thực đang hoạt động ổn định'}
                 >
                   <span className="relative flex h-2 w-2">
@@ -805,7 +805,7 @@ export default function App() {
               ) : (
                 <div 
                   id="badge-firebase-offline"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
                   title={localLanguage === 'en' ? 'Reconnecting to Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
                 >
                   <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
@@ -815,7 +815,7 @@ export default function App() {
 
               <div 
                 id="badge-qr-palette"
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
                 title={localLanguage === 'en' ? 'QR Code color palette is synced in real-time from Admin' : 'Bảng màu QR Code đang được đồng bộ thời gian thực từ Admin'}
               >
                 <span 

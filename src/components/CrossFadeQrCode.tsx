@@ -72,7 +72,7 @@ export const CrossFadeQrCode: React.FC<CrossFadeQrCodeProps> = ({
         style={style}
       >
         {loadingFallback || (
-          <div className="w-full h-full bg-slate-100/5 rounded flex items-center justify-center text-xs text-white/40 font-mono">
+          <div className="w-full h-full bg-slate-100/5 rounded-[2px] flex items-center justify-center text-xs text-white/40 font-mono">
             Đang tạo QR...
           </div>
         )}

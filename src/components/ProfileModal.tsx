@@ -226,7 +226,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               setTab('stats');
             }}
-            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
               tab === 'stats' 
                 ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
                 : 'text-white/40 hover:bg-white/5'
@@ -240,7 +240,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               setTab('edit');
             }}
-            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
               tab === 'edit' 
                 ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
                 : 'text-white/40 hover:bg-white/5'
@@ -254,7 +254,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               setTab('settings');
             }}
-            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
               tab === 'settings' 
                 ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
                 : 'text-white/40 hover:bg-white/5'

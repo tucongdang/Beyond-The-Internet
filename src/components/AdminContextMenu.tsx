@@ -195,7 +195,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         background: 'rgba(21, 7, 44, 0.95)',
         backdropFilter: 'blur(28px) saturate(180%)',
         WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-        borderRadius: '8px',
+        borderRadius: '4px',
         border: '1px solid rgba(255, 255, 255, 0.15)',
         boxShadow: '0 16px 40px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
         padding: '6px'

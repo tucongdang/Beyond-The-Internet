@@ -140,21 +140,21 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
             {/* Top Accent Live Stream Indicator */}
             <div className="px-3.5 pt-3 pb-1.5 flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03]">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/40">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10px] font-black uppercase tracking-wider bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/40">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                   </span>
                   {localLanguage === 'en' ? 'Broadcasting on stage' : 'Đang chiếu trên sân khấu'}
                 </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border truncate ${catInfo.badgeBg}`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-[2px] border truncate ${catInfo.badgeBg}`}>
                   {catInfo.label}
                 </span>
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
                 {currentToastQuestion.upvotes > 0 && (
-                  <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-rose-300 bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-full border border-rose-500/30">
+                  <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-rose-300 bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-[2px] border border-rose-500/30">
                     <Heart className="w-2.5 h-2.5 fill-current" />
                     {currentToastQuestion.upvotes}
                   </span>
@@ -162,7 +162,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="p-1 rounded-full text-white/50 hover:text-white hover:bg-white/10 backdrop-blur-md transition"
+                  className="p-1 rounded-[2px] text-white/50 hover:text-white hover:bg-white/10 backdrop-blur-md transition"
                   title={localLanguage === "en" ? "Close notification" : "Đóng thông báo"}
                   aria-label={localLanguage === "en" ? "Close" : "Đóng"}
                 >

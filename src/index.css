@@ -228,7 +228,7 @@ button, a, [role="button"] {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -484,7 +484,7 @@ body.battery-saver-active,
   background-clip: padding-box;
   border: 2px solid transparent;
   background-color: rgba(247, 202, 201, 0.25);
-  border-radius: 9999px;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(247, 202, 201, 0.5);
@@ -507,7 +507,7 @@ body.battery-saver-active,
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -526,7 +526,7 @@ body.battery-saver-active,
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 /* Fluent 2 Question Card & Container System */
@@ -535,7 +535,7 @@ body.battery-saver-active,
   backdrop-filter: blur(36px) saturate(160%);
   -webkit-backdrop-filter: blur(36px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 10px 36px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   position: relative;
   overflow: hidden;
@@ -565,7 +565,7 @@ body.battery-saver-active,
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  border-radius: 2px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: transform 0.38s cubic-bezier(0.13, 0.77, 0.32, 0.99), background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s cubic-bezier(0.13, 0.77, 0.32, 0.99), opacity 0.3s ease;
   transform-origin: center center;
@@ -596,7 +596,7 @@ body.battery-saver-active,
 .fluent-option-badge {
   background: rgba(10, 3, 25, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  border-radius: 2px;
   font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -656,7 +656,7 @@ body.battery-saver-active,
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.025em !important;
-  border-radius: 4px !important;
+  border-radius: 2px !important;
   padding: 0.5rem 0.875rem !important;
   min-height: 40px !important;
   color: rgba(255, 255, 255, 0.7) !important;
@@ -726,7 +726,7 @@ body.battery-saver-active,
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
   font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
@@ -772,7 +772,7 @@ body.battery-saver-active,
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  border-radius: 2px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -783,7 +783,7 @@ body.battery-saver-active,
   gap: 0.375rem;
   padding: 0.45rem 0.75rem;
   min-height: 34px;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
   font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
@@ -829,7 +829,7 @@ body.battery-saver-active,
   height: 36px;
   min-width: 36px;
   padding: 0 0.625rem;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
   font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
@@ -872,7 +872,7 @@ body.battery-saver-active,
   gap: 0.5rem;
   height: 36px;
   padding: 0 0.625rem;
-  border-radius: 4px;
+  border-radius: 2px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
@@ -906,7 +906,7 @@ body.battery-saver-active,
   backdrop-filter: blur(32px) saturate(160%);
   -webkit-backdrop-filter: blur(32px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
@@ -960,7 +960,7 @@ body.battery-saver-active,
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 2px solid rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
+  border-radius: 2px;
   color: #ffffff;
   font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   font-size: 0.875rem;
@@ -998,7 +998,7 @@ body.battery-saver-active,
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 2px;
   font-family: 'SVN-Gilroy', 'Lexend', ui-monospace, monospace;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -1040,7 +1040,7 @@ body.battery-saver-active,
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1056,7 +1056,7 @@ body.battery-saver-active,
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;

@@ -18,8 +18,8 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState 
       <div className="relative z-10 w-full max-w-lg mx-auto flex flex-col items-center text-center py-8 sm:py-12 animate-fadeIn">
         
         {/* Animated Clock / Horizon Radar Icon */}
-        <div className="relative w-20 h-20 sm:w-22 sm:h-22 mb-6 sm:mb-8 bg-[#F7CAC9]/15 backdrop-blur-md rounded-full flex items-center justify-center border border-[#F7CAC9]/30 shadow-xl shadow-[#0D0420]/60">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9]/20 opacity-60"></span>
+        <div className="relative w-20 h-20 sm:w-22 sm:h-22 mb-6 sm:mb-8 bg-[#F7CAC9]/15 backdrop-blur-md rounded-[4px] flex items-center justify-center border border-[#F7CAC9]/30 shadow-xl shadow-[#0D0420]/60">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-[4px] bg-[#F7CAC9]/20 opacity-60"></span>
           <Clock className="w-10 h-10 sm:w-11 sm:h-11 text-[#F7CAC9] animate-pulse" />
         </div>
         

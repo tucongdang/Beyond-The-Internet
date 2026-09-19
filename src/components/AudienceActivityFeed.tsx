@@ -110,7 +110,7 @@ export const AudienceActivityFeed: React.FC<AudienceActivityFeedProps> = ({ game
             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
             className="bg-slate-900/50 backdrop-blur-[24px] saturate-150/90 border border-slate-700/50 shadow-lg shadow-black/20 rounded-[4px] p-3 backdrop-blur-md flex items-center gap-3 w-64 pointer-events-auto"
           >
-            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-blue-500/30">
+            <div className="w-8 h-8 rounded-[2px] bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-blue-500/30">
               <Zap className="w-4 h-4 text-blue-400" />
             </div>
             <div className="flex-1 min-w-0">

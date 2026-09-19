@@ -1164,7 +1164,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                             <XAxis dataKey="timeLabel" stroke="#ffffff40" fontSize={10} tickMargin={8} />
                             <YAxis stroke="#ffffff40" fontSize={10} tickFormatter={(val) => Math.round(val).toString()} />
                             <RechartsTooltip 
-                              contentStyle={{ backgroundColor: '#190839', borderColor: '#ffffff20', borderRadius: '8px' }}
+                              contentStyle={{ backgroundColor: '#190839', borderColor: '#ffffff20', borderRadius: '2px' }}
                               itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                               labelStyle={{ color: '#ffffff80', fontSize: '10px', marginBottom: '4px' }}
                             />
@@ -1186,7 +1186,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                         <div className="flex items-center gap-1 text-[11px] font-mono">
                           <button
                             onClick={() => setVoterFilterChoice('ALL')}
-                            className={`px-2 py-0.5 rounded ${
+                            className={`px-2 py-0.5 rounded-[2px] ${
                               voterFilterChoice === 'ALL' ? 'bg-purple-600 text-white font-bold' : 'fluent-box-nested text-white/50'
                             }`}
                           >
@@ -1194,7 +1194,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                           </button>
                           <button
                             onClick={() => setVoterFilterChoice('A')}
-                            className={`px-2 py-0.5 rounded ${
+                            className={`px-2 py-0.5 rounded-[2px] ${
                               voterFilterChoice === 'A' ? 'bg-emerald-600 text-white font-bold' : 'fluent-box-nested text-emerald-400'
                             }`}
                           >
@@ -1202,7 +1202,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                           </button>
                           <button
                             onClick={() => setVoterFilterChoice('B')}
-                            className={`px-2 py-0.5 rounded ${
+                            className={`px-2 py-0.5 rounded-[2px] ${
                               voterFilterChoice === 'B' ? 'bg-rose-600 text-white font-bold' : 'fluent-box-nested text-rose-400'
                             }`}
                           >
@@ -1213,7 +1213,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                         <button
                           type="button"
                           onClick={() => handleExportSinglePollCSV(item)}
-                          className="px-2 py-0.5 rounded fluent-box-nested hover:fluent-box-nested border border-emerald-500/40 text-emerald-300 font-mono text-[11px] font-bold flex items-center gap-1 transition"
+                          className="px-2 py-0.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-emerald-500/40 text-emerald-300 font-mono text-[11px] font-bold flex items-center gap-1 transition"
                           title="Tải bảng danh sách cử tri này thành file CSV"
                         >
                           <Download className="w-3 h-3 text-emerald-400" />
@@ -1243,7 +1243,7 @@ export const PollHistoryTab: React.FC<PollHistoryTabProps> = ({
                               <td className="p-2 sm:px-3 text-white/50">{voter.user_info?.mssv || voter.mssv || '---'}</td>
                               <td className="p-2 sm:px-3">
                                 <span
-                                  className={`px-2 py-0.5 rounded font-bold ${
+                                  className={`px-2 py-0.5 rounded-[2px] font-bold ${
                                     voter.choice === 'A'
                                       ? 'fluent-box-nested text-emerald-300 border border-emerald-500/40'
                                       : 'fluent-box-nested text-rose-300 border border-rose-500/40'

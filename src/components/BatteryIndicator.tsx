@@ -275,9 +275,9 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
 
           <div className="w-16 flex flex-col items-end gap-1">
             <span className={`text-xs font-mono font-bold ${visuals.textColor}`}>{percent}%</span>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden p-[1px]">
+            <div className="w-full h-1.5 bg-white/10 rounded-[2px] overflow-hidden p-[1px]">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${visuals.barColor}`}
+                className={`h-full rounded-[2px] transition-all duration-500 ${visuals.barColor}`}
                 style={{ width: `${Math.min(100, Math.max(5, percent))}%` }}
               />
             </div>

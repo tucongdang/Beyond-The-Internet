@@ -459,27 +459,27 @@ export const AdminGuide: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Mở / Dừng đếm ngược</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">Space</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">Space</kbd>
               </div>
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Khóa câu hỏi tức thì</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">L</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">L</kbd>
               </div>
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Công bố đáp án (Reveal)</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">R</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">R</kbd>
               </div>
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Câu tiếp theo</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">→</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">→</kbd>
               </div>
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Câu trước đó</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">←</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">←</kbd>
               </div>
               <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
                 <span className="text-xs text-white/80">Chế độ Toàn Màn Hình</span>
-                <kbd className="px-2 py-0.5 rounded bg-white/15 text-white font-mono text-xs font-bold border border-white/20">F</kbd>
+                <kbd className="px-2 py-0.5 rounded-[2px] bg-white/15 text-white font-mono text-xs font-bold border border-white/20">F</kbd>
               </div>
             </div>
           </div>

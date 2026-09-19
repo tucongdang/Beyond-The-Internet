@@ -202,7 +202,7 @@ export const FluentSearchBar: React.FC<FluentSearchBarProps> = ({ db, questionBa
                       setSearchTerm('');
                     }}
                   >
-                    <div className="mt-0.5 p-1.5 rounded bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-[2px] bg-white/5">
                       {res.icon}
                     </div>
                     <div className="min-w-0 flex-1">

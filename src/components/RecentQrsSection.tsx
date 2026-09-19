@@ -87,7 +87,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
           <span className="uppercase tracking-wider">
             {localLanguage === 'en' ? 'Recent QRs' : 'Mã QR Gần Đây (Recent QRs)'}
           </span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
+          <span className="px-1.5 py-0.2 rounded-[2px] text-[10px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
             {recentList.length}
           </span>
           {isExpanded ? (
@@ -101,7 +101,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-[10px] text-rose-400 hover:text-rose-300 transition flex items-center gap-1 cursor-pointer px-1.5 py-0.5 rounded hover:bg-rose-500/10"
+            className="text-[10px] text-rose-400 hover:text-rose-300 transition flex items-center gap-1 cursor-pointer px-1.5 py-0.5 rounded-[2px] hover:bg-rose-500/10"
             title={localLanguage === 'en' ? 'Clear all QR code history on this device' : 'Xóa toàn bộ lịch sử mã QR đã lưu trên thiết bị'}
           >
             <Trash2 className="w-3 h-3" />
@@ -170,7 +170,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                             {item.caption || item.roundName || (localLanguage === 'en' ? 'Live Arena' : 'Đấu Trường Live')}
                           </span>
                           {isSelected && (
-                            <span className="px-1 py-0.2 rounded bg-sky-400/20 text-sky-300 text-[9px] font-bold border border-sky-400/30">
+                            <span className="px-1 py-0.2 rounded-[2px] bg-sky-400/20 text-sky-300 text-[9px] font-bold border border-sky-400/30">
                               {localLanguage === 'en' ? 'Viewing' : 'Đang Xem'}
                             </span>
                           )}

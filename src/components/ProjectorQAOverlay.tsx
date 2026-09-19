@@ -55,7 +55,7 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
 
           <div className="flex items-center gap-3">
             {question.upvotes > 0 && (
-              <div className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/30 text-xs font-mono font-bold flex items-center gap-1.5">
+              <div className="px-3 py-1 rounded-[2px] bg-white/10 backdrop-blur-md text-rose-300 border border-rose-500/30 text-xs font-mono font-bold flex items-center gap-1.5">
                 <Heart className="w-3.5 h-3.5 fill-current text-rose-400" />
                 <span>{question.upvotes} Khán giả cùng quan tâm</span>
               </div>
@@ -64,7 +64,7 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
             <button
               type="button"
               onClick={handleDismiss}
-              className="p-1.5 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/10 backdrop-blur-md text-white/70 hover:text-white transition cursor-pointer"
+              className="p-1.5 rounded-[2px] bg-white/10 backdrop-blur-md hover:bg-white/10 backdrop-blur-md text-white/70 hover:text-white transition cursor-pointer"
               title="Gỡ câu hỏi khỏi màn chiếu"
             >
               <X className="w-4 h-4" />
@@ -82,7 +82,7 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
         {/* Author / Questioner Identity */}
         <div className="flex items-center justify-between pt-3 border-t border-white/10 relative z-10 text-xs sm:text-sm text-white/70">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80">
+            <div className="w-7 h-7 rounded-[2px] bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80">
               <User className="w-4 h-4" />
             </div>
             <div>
@@ -90,7 +90,7 @@ export const ProjectorQAOverlay: React.FC<ProjectorQAOverlayProps> = ({
                 {question.is_anonymous ? 'Khán giả ẩn danh' : question.author_name}
               </span>
               {!question.is_anonymous && question.author_mssv && (
-                <span className="ml-2 font-mono text-xs px-2 py-0.5 rounded bg-white/10 backdrop-blur-md text-white/80">
+                <span className="ml-2 font-mono text-xs px-2 py-0.5 rounded-[2px] bg-white/10 backdrop-blur-md text-white/80">
                   MSSV: {question.author_mssv}
                 </span>
               )}

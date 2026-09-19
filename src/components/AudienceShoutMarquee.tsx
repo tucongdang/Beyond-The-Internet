@@ -91,7 +91,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                 vibrateTap();
                 onOpenShoutModal();
               }}
-              className="px-2.5 py-1 rounded bg-[#B6A6D8]/20 hover:bg-[#B6A6D8]/30 border border-[#B6A6D8]/40 text-xs text-white font-medium flex items-center gap-1 transition-all"
+              className="px-2.5 py-1 rounded-[2px] bg-[#B6A6D8]/20 hover:bg-[#B6A6D8]/30 border border-[#B6A6D8]/40 text-xs text-white font-medium flex items-center gap-1 transition-all"
             >
               <Plus className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô to'}
             </button>
@@ -225,7 +225,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
               vibrateTap();
               onOpenShoutModal();
             }}
-            className="p-1 rounded text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-all"
             title={localLanguage === "en" ? "View all shouts / Open chat board" : "Xem tất cả tiếng hô / Mở bảng chat"}
           >
             <ChevronRight className="w-3.5 h-3.5" />
@@ -234,7 +234,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
         {variant === 'audience' && (
           <button
             onClick={() => setIsCollapsed(true)}
-            className="p-1 rounded text-white/40 hover:text-white/80 transition-colors"
+            className="p-1 rounded-[2px] text-white/40 hover:text-white/80 transition-colors"
             title={localLanguage === "en" ? "Minimize shout bar" : "Thu nhỏ thanh tiếng hô"}
           >
             <EyeOff className="w-3 h-3" />

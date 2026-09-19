@@ -362,7 +362,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         key={tTeam.id}
                         type="button"
                         onClick={() => setTeamId(tTeam.id)}
-                        className={`p-2 rounded border text-sm font-bold transition flex items-center justify-center ${teamId === tTeam.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/70 hover:bg-white/10'}`}
+                        className={`p-2 rounded-[2px] border text-sm font-bold transition flex items-center justify-center ${teamId === tTeam.id ? 'bg-white text-black border-white' : 'border-white/20 text-white/70 hover:bg-white/10'}`}
                         style={teamId === tTeam.id ? { backgroundColor: tTeam.color, color: '#fff', borderColor: tTeam.color } : {}}
                       >
                         {tTeam.name}

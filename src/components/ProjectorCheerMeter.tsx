@@ -295,7 +295,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
                 <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-white flex items-center gap-1.5">
                   Audience Cheer
                   <span
-                    className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight uppercase"
+                    className="px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold tracking-tight uppercase"
                     style={{
                       backgroundColor: `${data.colorHex}25`,
                       color: data.colorHex,
@@ -453,7 +453,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
                 {data.recentEvents.slice(0, 3).map((ev) => (
                   <div
                     key={ev.id}
-                    className="flex items-center justify-between text-[10px] font-mono fluent-box-nested px-2 py-0.5 rounded border border-white/5"
+                    className="flex items-center justify-between text-[10px] font-mono fluent-box-nested px-2 py-0.5 rounded-[2px] border border-white/5"
                   >
                     <span className="text-white/80 truncate max-w-[120px]">
                       {ev.name || 'Khán giả'}

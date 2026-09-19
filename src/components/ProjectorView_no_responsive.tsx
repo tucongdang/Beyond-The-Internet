@@ -429,7 +429,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <BarChart2 className={`w-4 h-4 ${showBarChart ? 'text-white animate-bounce' : 'text-purple-400'}`} />
             <span>{showBarChart ? 'Quay lại Câu hỏi' : 'Biểu Đồ Cột'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${showBarChart ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-purple-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showBarChart ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-purple-200'}`}>
               B
             </kbd>
           </button>
@@ -455,7 +455,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <ListFilter className={`w-4 h-4 ${showResponseList ? 'text-slate-950' : 'text-sky-400'}`} />
             <span>{showResponseList ? 'Quay lại Câu hỏi' : `DS Phản Hồi (${voteStats.total})`}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${showResponseList ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-sky-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showResponseList ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-sky-200'}`}>
               R
             </kbd>
           </button>
@@ -481,7 +481,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <BarChart3 className={`w-4 h-4 ${showHeatmap ? 'text-white' : 'text-rose-400'}`} />
             <span>{showHeatmap ? 'Quay lại Câu hỏi' : 'Bản Đồ Nhiệt'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${showHeatmap ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-rose-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showHeatmap ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-rose-200'}`}>
               H
             </kbd>
           </button>
@@ -507,7 +507,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <Trophy className={`w-4 h-4 ${isLeaderboardVisible ? 'text-slate-950' : 'text-amber-400'}`} />
             <span>{isLeaderboardVisible ? 'Quay lại Câu hỏi' : 'Top 5 BXH'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
               L
             </kbd>
           </button>
@@ -533,7 +533,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <Cloud className={`w-4 h-4 ${showWordCloud ? 'text-[#190839]' : 'text-[#F7CAC9]'}`} />
             <span>{showWordCloud ? 'Quay lại Câu hỏi' : 'Đám Mây Từ Khóa'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${showWordCloud ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-pink-200'}`}>
+            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showWordCloud ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-pink-200'}`}>
               W
             </kbd>
           </button>
@@ -553,7 +553,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           >
             <Camera className={`w-4 h-4 ${isCapturingSnapshot ? 'animate-spin' : 'text-pink-300'}`} />
             <span className="hidden inline">{isCapturingSnapshot ? 'Đang Chụp...' : 'Snap Sân Khấu'}</span>
-            <kbd className="px-1.5 py-0.5 text-[9px] rounded border fluent-box-nested border-white/20 text-purple-200">
+            <kbd className="px-1.5 py-0.5 text-[9px] rounded-[2px] border fluent-box-nested border-white/20 text-purple-200">
               P
             </kbd>
           </button>
@@ -702,7 +702,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                               ? 'text-sm py-0.5 px-2 rounded-[2px]'
                               : percentage > 10
                               ? 'text-xs py-0.5 px-1.5 rounded-[2px]'
-                              : 'text-[10px] py-0.5 px-1 rounded';
+                              : 'text-[10px] py-0.5 px-1 rounded-[2px]';
 
                             return (
                               <div
@@ -710,7 +710,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                 className={`font-mono border flex items-center gap-1 shadow-md transition-all duration-300 ${heat.bg} ${heat.glow} ${sizeClass}`}
                               >
                                 <span className="font-bold tracking-wider">{item.raw}</span>
-                                <span className={`text-[8px] font-mono font-black py-0.5 px-1 rounded ${heat.badge}`}>
+                                <span className={`text-[8px] font-mono font-black py-0.5 px-1 rounded-[2px] ${heat.badge}`}>
                                   {percentage}% ({item.count})
                                 </span>
                               </div>
@@ -726,7 +726,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     <div className="p-3 rounded-[2px] fluent-box shadow-2xl space-y-1 text-white animate-fadeIn">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-xs">
+                          <div className="w-7 h-7 rounded-[2px] fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-xs">
                             ⚡
                           </div>
                           <div>
@@ -738,7 +738,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                             </p>
                           </div>
                         </div>
-                        <span className="text-[9px] font-mono px-2 py-0.5 fluent-box-nested text-amber-300 border border-amber-500/30 rounded font-bold">
+                        <span className="text-[9px] font-mono px-2 py-0.5 fluent-box-nested text-amber-300 border border-amber-500/30 rounded-[2px] font-bold">
                           🔥 {riskSubmissionsCount} KHÁN GIẢ ĐANG DỰ ĐOÁN
                         </span>
                       </div>
