@@ -88,6 +88,8 @@ export const AdminActivityLog: React.FC = () => {
         };
       }) as ActivityLogItem[];
       setLogs(newLogs);
+    }, (error) => {
+      console.warn('Firestore activity_logs listener error:', error);
     });
 
     return () => unsubscribe();

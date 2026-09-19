@@ -219,7 +219,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   // Variant 4: Compact Capsule
   if (variant === 'compact') {
     return (
-      <div className={`w-full fluent-box rounded-[6px] p-2.5 sm:p-3 border border-white/10 text-white shadow-lg space-y-2 select-none ${className}`}>
+      <div className={`w-full fluent-box rounded-[4px] p-2.5 sm:p-3 border border-white/10 text-white shadow-lg space-y-2 select-none ${className}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {isTTRound ? (
@@ -253,9 +253,9 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/10">
+        <div className="w-full h-1.5 bg-black/40 rounded-[4px] overflow-hidden p-0.5 border border-white/10">
           <div
-            className="h-full rounded-full transition-all duration-300 ease-linear"
+            className="h-full rounded-[2px] transition-all duration-300 ease-linear"
             style={{
               width: `${progressPercent}%`,
               backgroundColor: timerColor,

@@ -1903,6 +1903,8 @@ class RealtimeSyncService {
       const notifs: any[] = [];
       snapshot.forEach(docSnap => notifs.push({ id: docSnap.id, ...docSnap.data() }));
       callback(notifs);
+    }, (err) => {
+      console.warn('Firestore notifications listener error:', err);
     });
   }
 

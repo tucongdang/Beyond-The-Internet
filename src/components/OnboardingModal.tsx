@@ -187,7 +187,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#0D0420]/80 backdrop-blur-md" />
       
-      <div className="relative fluent-box rounded-[4px] p-6 sm:p-8 w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="relative fluent-box rounded-[12px] p-6 sm:p-8 w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-horizon" />
         <div className="relative z-10 space-y-6">
           <div className="text-center space-y-2">

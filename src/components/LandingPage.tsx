@@ -26,7 +26,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center py-8 sm:py-14">
         
         {/* Top Horizon Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 fluent-box-nested rounded-full text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6 shadow-sm border border-[#F7CAC9]/20 animate-fadeIn">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 fluent-box-nested rounded-[4px] text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6 shadow-sm border border-[#F7CAC9]/20 animate-fadeIn">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F7CAC9]"></span>
@@ -57,9 +57,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterAudience(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/60 hover:shadow-xl hover:shadow-[#F7CAC9]/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[12px] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/60 hover:shadow-xl hover:shadow-[#F7CAC9]/10 active:scale-98 cursor-pointer"
           >
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-[#F7CAC9]/15 backdrop-blur-md rounded-xl flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/25">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-[#F7CAC9]/15 backdrop-blur-md rounded-[4px] flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/25">
               <Users className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
@@ -85,9 +85,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterProjector(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[12px] transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-98 cursor-pointer"
           >
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-sky-500/15 backdrop-blur-md rounded-xl flex items-center justify-center text-sky-300 font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-sky-400/25">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-sky-500/15 backdrop-blur-md rounded-[4px] flex items-center justify-center text-sky-300 font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-sky-400/25">
               <Tv className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-sky-300 transition-colors">
@@ -113,9 +113,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterAdmin(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[12px] transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-98 cursor-pointer"
           >
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-purple-500/15 backdrop-blur-md rounded-xl flex items-center justify-center text-[#B6A6D8] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-purple-400/25">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-purple-500/15 backdrop-blur-md rounded-[4px] flex items-center justify-center text-[#B6A6D8] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-purple-400/25">
               <Shield className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-purple-200 transition-colors">
@@ -136,7 +136,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Live Arena Status Pill */}
         {gameState && (
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-[4px] bg-white/5 border border-white/10 text-xs font-mono text-white/70">
             <span className="text-[11px]">{localLanguage === 'en' ? 'Arena status:' : 'Trạng thái sàn đấu:'}</span>
             <span className={`font-bold uppercase ${
               gameState.status === 'ACTIVE'

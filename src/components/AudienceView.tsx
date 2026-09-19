@@ -3088,35 +3088,6 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
-  // Team change notification
-  const [teamNotification, setTeamNotification] = useState<{show: boolean, teamName: string, teamColor: string} | null>(null);
-  const prevTeamIdRef = useRef<string | undefined>(props.user?.teamId);
-
-  useEffect(() => {
-    if (props.user && props.user.teamId && prevTeamIdRef.current && props.user.teamId !== prevTeamIdRef.current) {
-      const newTeam = props.gameState.teams?.find(t => t.id === props.user?.teamId);
-      if (newTeam) {
-        setTeamNotification({
-          show: true,
-          teamName: newTeam.name,
-          teamColor: newTeam.color
-        });
-        vibrateGrandCelebration();
-        soundFx.playSuccess();
-        
-        // Auto hide after 5 seconds
-        const timer = setTimeout(() => {
-          setTeamNotification(null);
-        }, 5000);
-        
-        prevTeamIdRef.current = props.user.teamId;
-        return () => clearTimeout(timer);
-      }
-    }
-    if (props.user?.teamId) {
-      prevTeamIdRef.current = props.user.teamId;
-    }
-  }, [props.user?.teamId, props.gameState.teams]);
   const [isCheerModalOpen, setIsCheerModalOpen] = useState(false);
   const [isQAModalOpen, setIsQAModalOpen] = useState(false);
   const [isShoutModalOpen, setIsShoutModalOpen] = useState(false);

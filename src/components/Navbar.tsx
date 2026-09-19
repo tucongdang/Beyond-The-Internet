@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, UserInfo, PingInfo } from '../types';
-import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download } from 'lucide-react';
+import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
@@ -38,7 +38,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleSound,
   onAdminLogout,
   onOpenQrCode,
-  const { localLanguage } = useLanguage();
+  onOpenInstallModal,
+}) => {
+  const { localLanguage, toggleLanguage } = useLanguage();
   // Admin Portal strictly retains Vietnamese navigation bar
   const effectiveLanguage = currentView === 'admin' ? 'vi' : localLanguage;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -348,7 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Telemetry Group: Ping, Battery, Connected Count */}
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-lg">
+          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[4px]">
             {/* Ping / Latency Indicator */}
             <button
               id="btn-ping-latency-indicator"
@@ -418,8 +420,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Utility Group: Sound, Fullscreen, Install App */}
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-lg">
+          {/* Utility Group: Language, Sound, Fullscreen, Install App */}
+          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[4px]">
+            {/* Quick Language Toggle */}
+            <button
+              id="btn-toggle-language"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                toggleLanguage();
+              }}
+              data-tooltip={
+                localLanguage === 'en'
+                  ? 'Chuyển sang Tiếng Việt (Switch to Vietnamese)'
+                  : 'Switch to English (Chuyển sang Tiếng Anh)'
+              }
+              data-tooltip-title={localLanguage === 'en' ? 'Language / Ngôn Ngữ' : 'Ngôn Ngữ / Language'}
+              data-tooltip-placement="bottom"
+              className="has-tooltip fluent-action-btn text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border-white/10 flex items-center gap-1.5 px-2 font-mono cursor-pointer"
+              aria-label={localLanguage === 'en' ? 'Switch to Vietnamese' : 'Switch to English'}
+            >
+              <Globe className="w-3.5 h-3.5 text-sky-300" />
+              <span className="text-[11px] font-black text-sky-200 uppercase tracking-wide">
+                {localLanguage.toUpperCase()}
+              </span>
+            </button>
             {/* Sound Toggle */}
             <button
               id="btn-toggle-sound"
@@ -687,6 +712,30 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
+              {/* Mobile Language Toggle in Admin menu */}
+              <button
+                id="btn-mobile-language-admin"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  toggleLanguage();
+                }}
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Globe className="w-4 h-4 text-sky-300" />
+                  <span>Ngôn Ngữ (Language)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                    VI
+                  </span>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'en' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                    EN
+                  </span>
+                </div>
+              </button>
+
               {/* Mobile Fullscreen Toggle in Admin menu */}
               <button
                 id="btn-mobile-fullscreen-admin"
@@ -738,6 +787,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">
                 {effectiveLanguage === 'en' ? 'System' : 'Hệ thống'}
               </span>
+
+              {/* Mobile Language Toggle */}
+              <button
+                id="btn-mobile-language"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  toggleLanguage();
+                }}
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[4px] flex items-center justify-between font-semibold text-left transition text-xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Globe className="w-4 h-4 text-sky-300" />
+                  <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                    VI
+                  </span>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'en' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                    EN
+                  </span>
+                </div>
+              </button>
 
               {/* Fullscreen Quick Toggle */}
               <button

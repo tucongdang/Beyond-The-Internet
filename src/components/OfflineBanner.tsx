@@ -91,7 +91,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
       role="alert"
       aria-live="assertive"
       style={{ left: 'auto' }}
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-auto z-[9999] max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[8px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-auto z-[9999] max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[12px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
     >
       {/* Fluent UI 2 Top Highlight Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 pointer-events-none z-10" />
@@ -108,11 +108,11 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-200 border border-rose-400/50">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-200 border border-rose-400/50">
               <AlertCircle className="w-3 h-3 text-rose-400" />
               {localLanguage === 'en' ? 'SERVER DISCONNECTED' : 'MẤT KẾT NỐI MÁY CHỦ'}
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[10px] font-mono font-bold bg-white/10 text-rose-200 border border-white/15">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold bg-white/10 text-rose-200 border border-white/15">
               <Clock className="w-3 h-3 text-rose-300" />
               {isReconnecting
                 ? (localLanguage === 'en' ? 'Reconnecting...' : 'Đang kết nối lại...')

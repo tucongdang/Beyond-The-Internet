@@ -39,7 +39,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
       onClick={onClose}
     >
       <div 
-        className="fluent-box border border-white/10 w-full max-w-md rounded-[4px] shadow-2xl overflow-hidden p-6 relative text-[#F5EFF9]"
+        className="fluent-box border border-white/10 w-full max-w-md rounded-[12px] shadow-2xl overflow-hidden p-6 relative text-[#F5EFF9]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

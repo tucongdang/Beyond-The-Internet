@@ -770,7 +770,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             title="Bật/Tắt Bảng Xếp Hạng Top 5 (Phím tắt: L)"
           >
             <Trophy className={`w-4 h-4 ${isLeaderboardVisible ? 'text-slate-950' : 'text-amber-400'}`} />
-            <span>{isLeaderboardVisible ? 'Quay lại Câu hỏi' : (gameState.team_mode_active ? 'BXH Các Đội' : 'Top 5 BXH')}</span>
+            <span>{isLeaderboardVisible ? 'Quay lại Câu hỏi' : 'Top 5 BXH'}</span>
             <kbd className={`px-1.5 py-0.5 text-[9px] rounded border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
               L
             </kbd>
@@ -1814,7 +1814,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             className="text-amber-300/80 hover:text-amber-300 underline transition cursor-pointer flex items-center gap-1"
           >
             <Trophy className="w-3 h-3" />
-            {isLeaderboardVisible ? '↩ Trở về màn hình câu hỏi' : (gameState.team_mode_active ? '🏆 Xem BXH Các Đội (Phím L)' : '🏆 Xem Bảng Xếp Hạng Top 5 (Phím L)')}
+            {isLeaderboardVisible ? '↩ Trở về màn hình câu hỏi' : '🏆 Xem Bảng Xếp Hạng Top 5 (Phím L)'}
           </button>
           <span>•</span>
           <button

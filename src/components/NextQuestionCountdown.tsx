@@ -57,7 +57,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
 
   if (compact) {
     return (
-      <div className={`w-full bg-[#26134B]/95 border border-amber-400/40 rounded-xl p-3 shadow-xl backdrop-blur-md text-white animate-fadeIn ${className}`}>
+      <div className={`w-full bg-[#26134B]/95 border border-amber-400/40 rounded-[12px] p-3 shadow-xl backdrop-blur-md text-white animate-fadeIn ${className}`}>
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
             <Timer className={`w-4 h-4 text-amber-300 shrink-0 ${isUrgent ? 'animate-bounce text-rose-400' : 'animate-pulse'}`} />
@@ -65,7 +65,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
               {displayMsg}
             </span>
           </div>
-          <span className={`font-mono font-black text-sm px-2 py-0.5 rounded-lg border ${
+          <span className={`font-mono font-black text-sm px-2 py-0.5 rounded-[4px] border ${
             isUrgent 
               ? 'bg-white/10 backdrop-blur-md text-rose-300 border-rose-400/50 animate-pulse' 
               : 'bg-white/10 backdrop-blur-md text-amber-300 border-amber-400/30'
@@ -92,10 +92,10 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
   return (
     <div className={`w-full max-w-xl mx-auto fluent-acrylic-surface border-2 ${
       isUrgent ? 'border-rose-400 shadow-rose-500/30 animate-pulse' : 'border-amber-400/60 shadow-amber-500/20'
-    } shadow-2xl rounded-2xl p-4 sm:p-5 text-white backdrop-blur-lg animate-slideInDown transition-all ${className}`}>
+    } shadow-2xl rounded-[12px] p-4 sm:p-5 text-white backdrop-blur-lg animate-slideInDown transition-all ${className}`}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`p-2 rounded-xl shrink-0 ${
+          <div className={`p-2 rounded-[4px] shrink-0 ${
             isUrgent ? 'bg-white/10 backdrop-blur-md text-rose-400 border border-rose-400/30' : 'bg-white/10 backdrop-blur-md text-amber-300 border border-amber-400/30'
           }`}>
             <Timer className={`w-5 h-5 sm:w-6 sm:h-6 ${isUrgent ? 'animate-bounce' : 'animate-spin-slow'}`} />
@@ -114,7 +114,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
         </div>
 
         {/* Big Time Badge */}
-        <div className={`shrink-0 font-mono font-black text-xl sm:text-2xl px-3 sm:px-4 py-1.5 rounded-xl border shadow-lg ${
+        <div className={`shrink-0 font-mono font-black text-xl sm:text-2xl px-3 sm:px-4 py-1.5 rounded-[4px] border shadow-lg ${
           isUrgent
             ? 'bg-white/10 backdrop-blur-md text-rose-200 border-rose-400/60 animate-bounce'
             : 'fluent-acrylic-surface text-amber-300 border-amber-400/50'
