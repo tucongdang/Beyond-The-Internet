@@ -59,7 +59,7 @@
 
 @theme {
   --font-sans: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: 'SVN-Gilroy', 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-primary-bg: #190839;
   --color-primary-highlight: #F7CAC9;
   --color-tim-vu-tru: #0D0420;
@@ -85,6 +85,7 @@
 
 /* Base typography and smooth touch experience */
 html {
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scrollbar-width: thin;

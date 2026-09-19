@@ -394,13 +394,13 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
                 <XAxis
                   dataKey="key"
-                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: 'monospace', fontWeight: 'bold' }}
+                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: "'SVN-Gilroy', monospace", fontWeight: 'bold' }}
                   axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
                   tickLine={{ stroke: 'rgba(255,255,255,0.2)' }}
                 />
                 <YAxis
                   domain={[0, metric === 'percent' ? 100 : 'auto']}
-                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: 'monospace' }}
+                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: "'SVN-Gilroy', monospace" }}
                   axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                   tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                   unit={metric === 'percent' ? '%' : ''}
@@ -432,7 +432,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                       fill: '#FFFFFF',
                       fontSize: 18,
                       fontWeight: 800,
-                      fontFamily: 'monospace',
+                      fontFamily: "'SVN-Gilroy', monospace",
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
                     }}
                   />
@@ -474,14 +474,14 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 <XAxis
                   type="number"
                   domain={[0, metric === 'percent' ? 100 : 'auto']}
-                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: 'monospace' }}
+                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: "'SVN-Gilroy', monospace" }}
                   axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                   unit={metric === 'percent' ? '%' : ''}
                 />
                 <YAxis
                   type="category"
                   dataKey="key"
-                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: 'monospace', fontWeight: 'bold' }}
+                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: "'SVN-Gilroy', monospace", fontWeight: 'bold' }}
                   axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
@@ -498,7 +498,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                       fill: '#FFFFFF',
                       fontSize: 18,
                       fontWeight: 800,
-                      fontFamily: 'monospace',
+                      fontFamily: "'SVN-Gilroy', monospace",
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
                     }}
                   />

@@ -366,7 +366,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
 
             <YAxis
               stroke="rgba(255, 255, 255, 0.35)"
-              tick={{ fontSize: 10, fill: 'rgba(255, 255, 255, 0.45)', fontFamily: 'monospace' }}
+              tick={{ fontSize: 10, fill: 'rgba(255, 255, 255, 0.45)', fontFamily: "'SVN-Gilroy', monospace" }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(255, 255, 255, 0.15)' }}
               domain={[0, (dataMax: number) => Math.max(120, Math.ceil((dataMax + 20) / 40) * 40)]}
@@ -388,7 +388,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
                     position: 'insideTopRight',
                     fill: '#10b981',
                     fontSize: 9,
-                    fontFamily: 'monospace'
+                    fontFamily: "'SVN-Gilroy', monospace"
                   }}
                 />
 
@@ -403,7 +403,7 @@ export const NetworkStabilityChart: React.FC<NetworkStabilityChartProps> = ({
                     position: 'insideTopRight',
                     fill: '#f59e0b',
                     fontSize: 9,
-                    fontFamily: 'monospace'
+                    fontFamily: "'SVN-Gilroy', monospace"
                   }}
                 />
               </>

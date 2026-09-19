@@ -118,8 +118,8 @@ Inherits and extends the **BTI Custom Fluent UI 2 System** (Microsoft Fluent 2 m
 
 ### 4.3 Typography & Font Pairing
 
-* **Typeface**: `'Lexend'`, ui-sans-serif, system-ui (Weights: `300`, `400`, `500`, `600`, `700`, `800`, `900`).
-* **Monospace Engine**: `'Lexend'`, ui-monospace (Used for timers, scores, question IDs, latency tracking, and MSSV to maintain clean tabular numeral alignment).
+* **Typeface**: `'SVN-Gilroy'`, `'Lexend'`, ui-sans-serif, system-ui (Weights: `300`, `400`, `500`, `600`, `700`, `800`, `900` mapped from SVN-Gilroy Medium, SemiBold, Bold, XBold, Black).
+* **Monospace Engine**: `'SVN-Gilroy'`, `'Lexend'`, ui-monospace (Used for timers, scores, question IDs, latency tracking, and MSSV to maintain clean tabular numeral alignment).
 * **Mathematical Hierarchy**:
   * *Stage Display (Projector)*: `text-3xl` to `text-5xl` (36px - 48px), `font-black`, tight leading (`leading-tight`).
   * *Audience Question Box*: `text-base` to `text-xl` (16px - 20px), `font-bold`, leading `1.5`.

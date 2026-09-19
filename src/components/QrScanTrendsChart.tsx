@@ -376,14 +376,14 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
                   fontSize={10}
                   tickLine={false}
                   interval={timeRange === 'today' ? 2 : 1}
-                  fontFamily="monospace"
+                  fontFamily="'SVN-Gilroy', monospace"
                 />
                 <YAxis 
                   stroke="#ffffff40" 
                   fontSize={10}
                   allowDecimals={false}
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="'SVN-Gilroy', monospace"
                 />
                 <Tooltip 
                   content={<CustomChartTooltip peakCount={metrics.peakCount} />} 
@@ -428,14 +428,14 @@ export const QrScanTrendsChart: React.FC<QrScanTrendsChartProps> = ({
                   fontSize={10}
                   tickLine={false}
                   interval={timeRange === 'today' ? 2 : 1}
-                  fontFamily="monospace"
+                  fontFamily="'SVN-Gilroy', monospace"
                 />
                 <YAxis 
                   stroke="#ffffff40" 
                   fontSize={10}
                   allowDecimals={false}
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="'SVN-Gilroy', monospace"
                 />
                 <Tooltip 
                   content={<CustomChartTooltip peakCount={metrics.peakCount} />} 
