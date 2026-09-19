@@ -21,7 +21,7 @@ const fluentDarkTransparentTheme: Theme = {
   colorNeutralBackgroundStatic: 'transparent',
   colorSubtleBackground: 'transparent',
   colorTransparentBackground: 'transparent',
-  fontFamilyBase: "'Lexend', ui-sans-serif, system-ui, sans-serif",
+  fontFamilyBase: "'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif",
   // Fluent 2 Square Geometry Tokens (Windows 11 crisp look)
   borderRadiusNone: '0px',
   borderRadiusSmall: '2px',

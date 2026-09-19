@@ -1,8 +1,65 @@
 @import "tailwindcss";
 
+/* SVN-Gilroy Webfont Definitions */
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-XBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SVN-Gilroy';
+  src: url('/fonts/SVN-Gilroy-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'SVN-Gilroy', 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-primary-bg: #190839;
   --color-primary-highlight: #F7CAC9;
   --color-tim-vu-tru: #0D0420;
@@ -35,7 +92,7 @@ html {
 }
 
 body, input, button, select, textarea {
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -539,7 +596,7 @@ body.battery-saver-active,
   background: rgba(10, 3, 25, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 3px;
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -594,7 +651,7 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab {
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.025em !important;
@@ -671,7 +728,7 @@ body.battery-saver-active,
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.015em;
   white-space: nowrap;
   cursor: pointer;
@@ -728,7 +785,7 @@ body.battery-saver-active,
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.015em;
   white-space: nowrap;
   cursor: pointer;
@@ -774,7 +831,7 @@ body.battery-saver-active,
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -904,7 +961,7 @@ body.battery-saver-active,
   border-bottom: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 4px;
   color: #ffffff;
-  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   font-size: 0.875rem;
   padding: 0.5rem 0.75rem;
   outline: none;
@@ -941,7 +998,7 @@ body.battery-saver-active,
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
   border-radius: 3px;
-  font-family: 'Lexend', ui-monospace, monospace;
+  font-family: 'SVN-Gilroy', 'Lexend', ui-monospace, monospace;
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
