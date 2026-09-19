@@ -127,6 +127,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   });
 
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = localLanguage || 'vi';
+    }
+  }, [localLanguage]);
+
+  useEffect(() => {
     const handleStorageChange = () => {
       setLocalLanguage(localStorage.getItem('bti_lang') || 'vi');
     };

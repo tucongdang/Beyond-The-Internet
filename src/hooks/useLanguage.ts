@@ -14,16 +14,31 @@ export function useLanguage() {
   });
 
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = localLanguage || 'vi';
+    }
+  }, [localLanguage]);
+
+  useEffect(() => {
     const handleStorageChange = () => {
       try {
-        setLocalLanguage(localStorage.getItem('bti_lang') || 'vi');
+        const lang = localStorage.getItem('bti_lang') || 'vi';
+        setLocalLanguage(lang);
+        if (typeof document !== 'undefined') {
+          document.documentElement.lang = lang;
+        }
       } catch {}
     };
     window.addEventListener('storage', handleStorageChange);
     
     // Also listen to a custom event for same-tab updates if needed
     const handleCustomChange = (e: CustomEvent) => {
-      setLocalLanguage(e.detail);
+      if (e.detail) {
+        setLocalLanguage(e.detail);
+        if (typeof document !== 'undefined') {
+          document.documentElement.lang = e.detail;
+        }
+      }
     };
     window.addEventListener('languageChange', handleCustomChange as EventListener);
 
@@ -37,6 +52,9 @@ export function useLanguage() {
     setLocalLanguage(code);
     try {
       localStorage.setItem('bti_lang', code);
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = code || 'vi';
+      }
       window.dispatchEvent(new Event('storage'));
       window.dispatchEvent(new CustomEvent('languageChange', { detail: code }));
     } catch {}

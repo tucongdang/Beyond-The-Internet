@@ -57,9 +57,83 @@
   font-display: swap;
 }
 
+/* NEXON Lv1 Gothic Webfont Definitions for Korean (ko) */
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicRegular.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NEXON Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicBold.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback alias */
+@font-face {
+  font-family: 'Nexon Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nexon Lv1 Gothic';
+  src: url('/fonts/NEXONLv1GothicBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-korean: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   --color-primary-bg: #190839;
   --color-primary-highlight: #F7CAC9;
   --color-tim-vu-tru: #0D0420;
@@ -85,7 +159,7 @@
 
 /* Base typography and smooth touch experience */
 html {
-  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scrollbar-width: thin;
@@ -93,11 +167,43 @@ html {
 }
 
 body, input, button, select, textarea {
-  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Korean (ko) Typography - NEXON Lv1 Gothic Priority */
+html[lang="ko"] {
+  --font-sans: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-monospace, monospace;
+  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+html[lang="ko"] body,
+html[lang="ko"] input,
+html[lang="ko"] button,
+html[lang="ko"] select,
+html[lang="ko"] textarea,
+html[lang="ko"] h1,
+html[lang="ko"] h2,
+html[lang="ko"] h3,
+html[lang="ko"] h4,
+html[lang="ko"] h5,
+html[lang="ko"] h6,
+html[lang="ko"] p,
+html[lang="ko"] span,
+html[lang="ko"] div,
+html[lang="ko"] [class*="font-sans"],
+html[lang="ko"] [class*="font-mono"],
+html[lang="ko"] [class*="font-"] {
+  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.cjk-text-ko,
+.font-korean {
+  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
 }
 
 /* CJK & Non-Latin Typography Engine - Breathing room & anti-cramping */
