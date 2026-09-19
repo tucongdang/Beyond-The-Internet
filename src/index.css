@@ -1,0 +1,1059 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --color-primary-bg: #190839;
+  --color-primary-highlight: #F7CAC9;
+  --color-tim-vu-tru: #0D0420;
+  --color-tim-be-mat: #241148;
+  --color-tim-chang-vang: #3E1D74;
+  --color-hong-suong: #FCEEEC;
+  --color-hong-hoang-hon: #E39A96;
+  --color-hong-man: #EBC7D6;
+  --color-lam-suong: #E2DBEC;
+  --color-trang-nga: #F5EFF9;
+  --color-xam-lam: #B6A6D8;
+}
+
+/* Custom gradient utilities */
+.bg-gradient-horizon {
+  background: linear-gradient(90deg, #F7CAC9 0%, #EBC7D6 50%, #E2DBEC 100%);
+}
+.text-gradient-horizon {
+  background: linear-gradient(90deg, #F7CAC9 0%, #EBC7D6 50%, #E2DBEC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Base typography and smooth touch experience */
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(247, 202, 201, 0.3) transparent;
+}
+
+body, input, button, select, textarea {
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Universal Focus Visible Accessibility Rings */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(247, 202, 201, 0.65), 0 0 12px rgba(247, 202, 201, 0.3);
+}
+
+/* Safe Area Insets Helpers */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pb-safe-nav {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes marqueeContinuous {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUpFade {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes qrSpringEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-qr-entrance {
+  animation: qrSpringEntrance 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: marqueeContinuous 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-continuous {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: marqueeContinuous 35s linear infinite;
+}
+
+.animate-marquee-continuous:hover {
+  animation-play-state: paused;
+}
+
+/* Bento Grid sleek custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+
+
+
+/* High Contrast / Pure Black Dark Mode Synchronization */
+html.audience-high-contrast,
+body.audience-high-contrast,
+.audience-high-contrast {
+  background-color: #000000 !important;
+}
+
+/* Make main containers, root wrapper and backdrop panels pure black in dark contrast mode */
+.audience-high-contrast > div,
+.audience-high-contrast .min-h-screen,
+.audience-high-contrast .min-h-\[100dvh\],
+html.audience-high-contrast .min-h-\[100dvh\],
+body.audience-high-contrast .min-h-\[100dvh\],
+.audience-high-contrast .bg-\[\#190839\],
+html.audience-high-contrast .bg-\[\#190839\],
+body.audience-high-contrast .bg-\[\#190839\],
+.audience-high-contrast .bg-\[\#0D0420\],
+.audience-high-contrast .bg-\[\#15072c\],
+.audience-high-contrast .bg-\[\#1a0b33\] {
+  background-color: #000000 !important;
+}
+
+/* Top App Navbar in Dark Contrast */
+.audience-high-contrast #app-navbar,
+html.audience-high-contrast #app-navbar,
+body.audience-high-contrast #app-navbar {
+  background-color: #000000 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Navbar Pills and Inner Buttons */
+.audience-high-contrast #app-navbar [class*="bg-[#241148]"],
+html.audience-high-contrast #app-navbar [class*="bg-[#241148]"],
+body.audience-high-contrast #app-navbar [class*="bg-[#241148]"] {
+  background-color: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.audience-high-contrast #app-navbar [class*="border-[#3E1D74]"],
+html.audience-high-contrast #app-navbar [class*="border-[#3E1D74]"],
+body.audience-high-contrast #app-navbar [class*="border-[#3E1D74]"],
+.audience-high-contrast #app-navbar [class*="bg-[#3E1D74]"],
+html.audience-high-contrast #app-navbar [class*="bg-[#3E1D74]"],
+body.audience-high-contrast #app-navbar [class*="bg-[#3E1D74]"] {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Score Display Bar in Dark Contrast */
+.audience-high-contrast #bti-score-display,
+.audience-high-contrast .score-display-bar {
+  background-color: #000000 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Inputs and textareas */
+.audience-high-contrast input,
+.audience-high-contrast textarea,
+.audience-high-contrast select {
+  background-color: #0d0d0d !important;
+  color: #ffffff !important;
+}
+
+/* Mobile Nav Bar in Dark Contrast */
+.audience-high-contrast .fixed.bottom-0 {
+  background-color: #000000 !important;
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Announcer Bar in Dark Contrast */
+.audience-high-contrast #bti-announcer-overlay,
+.audience-high-contrast #bti-announcer-overlay > div {
+  background-color: #000000 !important;
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Question Boxes & Options in Dark Contrast */
+.audience-high-contrast .fluent-question-box,
+.audience-high-contrast .fluent-box,
+.audience-high-contrast .fluent-box-nested,
+.audience-high-contrast .fluent-option-btn {
+  background-color: #0d0d0d !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.audience-high-contrast .fluent-option-btn.selected {
+  background-color: #1a1a1a !important;
+  border-color: #ffffff !important;
+}
+
+/* --- BATTERY SAVER MODE STYLES & OPTIMIZATIONS --- */
+html.battery-saver-active,
+body.battery-saver-active,
+.battery-saver-active {
+  background-color: #000000 !important;
+}
+
+/* Disable GPU-heavy backdrop blur, heavy box-shadows, and infinite CSS animations */
+.battery-saver-active *,
+.battery-saver-active *::before,
+.battery-saver-active *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Reduce transition and animation speeds to save rendering cycles */
+.battery-saver-active .animate-pulse,
+.battery-saver-active .animate-bounce {
+  animation: none !important;
+}
+
+/* Top App Navbar battery saver indicator border */
+.battery-saver-active #app-navbar {
+  border-bottom: 2px solid #10b981 !important;
+}
+
+/* Audience Cheer Floating Particles Animations */
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-50px) scale(1.1);
+  }
+  80% {
+    opacity: 0.85;
+    transform: translateY(-280px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-420px) scale(0.9);
+  }
+}
+@keyframes floatFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-40px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px) scale(1.4);
+  }
+}
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-float-up {
+  animation: floatUp 3s ease-out forwards;
+}
+.animate-float-fade {
+  animation: floatFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-shimmer {
+  animation: shimmer 2.5s infinite linear;
+}
+
+/* Hide Mica layers in high contrast / battery saver mode */
+.audience-high-contrast .mica-bg-layer,
+.battery-saver-active .mica-bg-layer {
+  display: none !important;
+}
+
+/* ============================================================ */
+
+@layer components {
+
+/* BTI Custom Fluent UI Styles */
+/* ============================================================ */
+
+/* Scoped Mica & Acrylic surfaces - Opt-in only */
+.fluent-acrylic-surface {
+  background-color: rgba(22, 10, 42, 0.65) !important;
+  backdrop-filter: blur(48px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(180%) !important;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.12), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 16px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.fluent-acrylic-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  z-index: -1;
+}
+
+/* Scoped Button Animation (Use .bti-btn explicitly if needed) */
+.bti-btn {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.bti-btn:active:not(:disabled) {
+  transform: scale(0.96) translateY(1px);
+}
+
+/* Make the root mica layer (the background itself) thicker */
+.mica-bg-layer {
+  backdrop-filter: blur(100px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(100px) saturate(150%) !important;
+  box-shadow: none !important;
+}
+
+/* Windows 11 Fluent Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+::-webkit-scrollbar-thumb {
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  background-color: rgba(247, 202, 201, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(247, 202, 201, 0.5);
+  border-width: 1px;
+}
+
+/* Fluent UI v9 Integration Fixes: Transparent Root Provider & Font preservation */
+.fui-FluentProvider,
+[class*="fui-FluentProvider"],
+[class*="fui-FluentProvider"] > div {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-family: inherit !important;
+}
+
+/* Fluent 2 Acrylic & Mica Box System (Sharp, Square & Subtle Elevation) */
+.fluent-box {
+  background: rgba(25, 8, 57, 0.62);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fluent-box:hover {
+  border-color: rgba(255, 255, 255, 0.20);
+  box-shadow: 0 10px 28px -2px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.fluent-box-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fluent-box-nested {
+  background: rgba(12, 4, 30, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+}
+
+/* Fluent 2 Question Card & Container System */
+.fluent-question-box {
+  background: rgba(36, 17, 72, 0.82);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 36px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fluent-question-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F7CAC9, #E39A96, #B6A6D8);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.fluent-question-box:hover {
+  border-color: rgba(247, 202, 201, 0.45);
+  box-shadow: 0 16px 48px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Fluent Option Button / Card (Windows 11 Fluent UI 380ms Standard) */
+.fluent-option-btn {
+  background: rgba(25, 8, 57, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.38s cubic-bezier(0.13, 0.77, 0.32, 0.99), background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s cubic-bezier(0.13, 0.77, 0.32, 0.99), opacity 0.3s ease;
+  transform-origin: center center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fluent-option-btn:hover:not(:disabled) {
+  background: rgba(45, 18, 90, 0.75);
+  border-color: rgba(247, 202, 201, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: scale(1.02);
+}
+
+.fluent-option-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.fluent-option-btn.selected {
+  background: rgba(168, 85, 247, 0.25) !important;
+  border: 1px solid rgba(247, 202, 201, 0.6) !important;
+  box-shadow: 0 0 24px rgba(247, 202, 201, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.02);
+}
+
+.fluent-option-badge {
+  background: rgba(10, 3, 25, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Fluent UI 2 Button Interaction System (Tactile Elevation & Touch Feedback) */
+.hover-effect,
+.fluent-btn {
+  position: relative;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hover-effect:hover,
+.fluent-btn:hover {
+  filter: brightness(1.12);
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+}
+
+.hover-effect:active,
+.fluent-btn:active {
+  filter: brightness(0.92);
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.hover-effect:disabled,
+.fluent-btn:disabled {
+  opacity: 0.5;
+  transform: none !important;
+  filter: none !important;
+  cursor: not-allowed;
+}
+
+/* Fluent UI v9 TabList & Tab Modern Theme Customization */
+.fluent-tablist {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 0.375rem !important;
+  align-items: center !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 0.125rem !important;
+}
+
+.fluent-tablist::-webkit-scrollbar {
+  height: 4px;
+}
+
+.fluent-tablist .fui-Tab {
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.025em !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 0.875rem !important;
+  min-height: 40px !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: color 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+  position: relative !important;
+  transform-origin: center center !important;
+}
+
+.fluent-tablist .fui-Tab:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-1px) scale(1.01) !important;
+}
+
+.fluent-tablist .fui-Tab:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.fluent-tablist .fui-Tab[aria-selected="true"] {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(79, 70, 229, 0.85), rgba(147, 51, 234, 0.85)) !important;
+  border-color: rgba(96, 165, 250, 0.6) !important;
+  box-shadow: 0 4px 14px -1px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  font-weight: 700 !important;
+  transform: scale(1.02) !important;
+}
+
+.fluent-tablist .fui-Tab[aria-selected="true"]::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 15% !important;
+  right: 15% !important;
+  height: 2px !important;
+  background: #60a5fa !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 8px #60a5fa !important;
+}
+
+/* Fluent UI 2 Tab Panel Motion & Transitions (Windows 11 Page Entrance Timing: 380ms) */
+.fluent-tab-panel {
+  animation: fluentTabEnter 0.38s cubic-bezier(0.13, 0.77, 0.32, 0.99) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes fluentTabEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Fluent UI 2 Unified Sub-tab and Filter Buttons */
+.fluent-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center center;
+}
+
+.fluent-subtab-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.fluent-subtab-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fluent-subtab-btn.active,
+.fluent-subtab-btn[aria-selected="true"] {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Fluent UI Header Action Bar & Command Groups */
+.fluent-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fluent-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fluent-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.75rem;
+  min-height: 34px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  outline: none;
+}
+
+.fluent-action-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.fluent-action-btn:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+.fluent-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* Fluent UI Navbar & Telemetry System */
+.fluent-navbar {
+  background: transparent;
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fluent-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 0.625rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.fluent-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.fluent-nav-btn:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+.fluent-nav-btn-accent {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(79, 70, 229, 0.85));
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fluent-nav-btn-accent:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(99, 102, 241, 0.95));
+  border-color: rgba(147, 197, 253, 0.6);
+  color: #ffffff;
+}
+
+.fluent-telemetry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 36px;
+  padding: 0 0.625rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fluent-telemetry-chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Fluent 2 Modal & Dialog System */
+.fluent-dialog-overlay {
+  background: rgba(8, 3, 20, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.fluent-dialog-overlay > * {
+  margin: auto;
+}
+
+.fluent-dialog {
+  background: rgba(25, 10, 48, 0.88);
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.fluent-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #F7CAC9, #E39A96, #B6A6D8);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.fluent-dialog-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fluent-dialog-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.fluent-dialog-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Fluent 2 Form Input Controls */
+.fluent-input,
+.fluent-textarea,
+.fluent-select {
+  background: rgba(10, 3, 25, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.fluent-input:hover,
+.fluent-textarea:hover,
+.fluent-select:hover {
+  background: rgba(15, 5, 35, 0.75);
+  border-color: rgba(255, 255, 255, 0.16);
+  border-bottom-color: rgba(247, 202, 201, 0.5);
+}
+
+.fluent-input:focus,
+.fluent-textarea:focus,
+.fluent-select:focus {
+  background: rgba(20, 8, 45, 0.85);
+  border-color: rgba(247, 202, 201, 0.4);
+  border-bottom-color: #F7CAC9;
+  box-shadow: 0 0 0 1px rgba(247, 202, 201, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.fluent-input::placeholder,
+.fluent-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Fluent Badge / Chip */
+.fluent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  font-family: 'Lexend', ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fluent-badge-accent {
+  background: rgba(247, 202, 201, 0.15);
+  border-color: rgba(247, 202, 201, 0.35);
+  color: #F7CAC9;
+}
+
+.fluent-badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.fluent-badge-danger {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+}
+
+.fluent-badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+/* Fluent Card / Panel */
+.fluent-card {
+  background: rgba(25, 8, 57, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fluent-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Fluent Toast */
+.fluent-toast {
+  background: rgba(20, 8, 42, 0.92);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.fluent-toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #F7CAC9;
+}
+
+/* Fluent UI v2 Toast Animations */
+@keyframes fluentToastEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fluentToastExit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.92);
+  }
+}
+
+.animate-fluent-toast-enter {
+  animation: fluentToastEnter 0.35s cubic-bezier(0.13, 0.77, 0.32, 0.99) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-fluent-toast-exit {
+  animation: fluentToastExit 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes shrinkWidth {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+}

@@ -1,0 +1,31 @@
+--- src/services/snapshotService.ts
++++ src/services/snapshotService.ts
+@@ -1,4 +1,4 @@
+-import html2canvas from 'html2canvas';
++import * as htmlToImage from 'html-to-image';
+ import { GameState, UserResponse, StageSnapshotRecord } from '../types';
+ import { soundFx } from './audioEffects';
+ import { syncService } from './syncService';
+@@ -54,15 +54,13 @@
+       soundFx.playCameraShutter();
+ 
+       // High-quality canvas render
+-      const canvas = await html2canvas(targetElement, {
+-        scale: 1.5,
+-        useCORS: true,
+-        allowTaint: true,
++      const canvas = await htmlToImage.toCanvas(targetElement, {
++        pixelRatio: 1.5,
+         backgroundColor: '#190839',
+-        logging: false,
+-        imageTimeout: 5000,
+-        ignoreElements: (element) => {
+-          return element.classList.contains('no-screenshot');
++        filter: (node: HTMLElement) => {
++          if (node.classList && node.classList.contains('no-screenshot')) {
++            return false;
++          }
++          return true;
+         }
+       });
+ 

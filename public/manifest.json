@@ -1,0 +1,64 @@
+{
+  "short_name": "BTI 2026",
+  "name": "Beyond The Internet 2026 - Live Gameshow",
+  "description": "Kênh tương tác trực tiếp và điều phối trung tâm Gameshow Beyond The Internet 2026.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0D0420",
+  "theme_color": "#190839",
+  "lang": "vi",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "entertainment",
+    "games"
+  ],
+  "shortcuts": [
+    {
+      "name": "Khán Giả Tương Tác",
+      "short_name": "Khán Giả",
+      "description": "Vào phòng thi đấu và trả lời câu hỏi trực tiếp",
+      "url": "/?view=audience",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Màn Chiếu Hội Trường",
+      "short_name": "Màn Chiếu",
+      "description": "Mở màn hình bảng xếp hạng và câu hỏi máy chiếu",
+      "url": "/?view=projector",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Ban Tổ Chức (Host)",
+      "short_name": "Host",
+      "description": "Bảng điều khiển trung tâm và điều phối câu hỏi",
+      "url": "/?view=admin",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

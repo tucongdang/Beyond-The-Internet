@@ -1,0 +1,6 @@
+{
+  "name": "Beyond The Internet 2026 - Live Gameshow Interaction",
+  "description": "Realtime audience interaction and host control center for Beyond The Internet 2026 academic broadcast.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

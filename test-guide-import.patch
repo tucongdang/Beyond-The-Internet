@@ -1,0 +1,10 @@
+--- src/components/AdminPortal.tsx
++++ src/components/AdminPortal.tsx
+@@ -107,6 +107,7 @@
+ import { PollHistoryManager } from './PollHistoryManager';
+ import { ActivityLogView } from './ActivityLogView';
+ import { LuckyDrawAdmin } from './LuckyDrawAdmin';
++import { AdminGuide } from './AdminGuide';
+ import {
+   Settings,
+   LogOut,

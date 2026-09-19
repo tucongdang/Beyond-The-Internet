@@ -1,0 +1,7 @@
+  LogOut,
+  Save,
+  History,
+  Heart
+ , Monitor, MonitorOff, Volume2, Megaphone, MessageSquare, Cloud, Camera } from 'lucide-react';
+import { PROJECTOR_THEMES, getProjectorTheme } from '../utils/themeUtils';
+import {
