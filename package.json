@@ -12,8 +12,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.74.7",
-    "@fluentui/react-icons": "^2.0.338",
     "@google/genai": "^2.4.0",
     "@react-oauth/google": "^0.13.5",
     "@tailwindcss/vite": "^4.1.14",

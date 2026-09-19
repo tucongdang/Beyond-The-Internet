@@ -350,7 +350,7 @@ export default function App() {
         }
         
         if (shouldListen) {
-          // Listen for remote changes (e.g. admin team re-shuffle)
+          // Listen for remote changes
           unsubsDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
             if (docSnap.exists()) {
               const profile = docSnap.data() as UserInfo;
@@ -362,6 +362,8 @@ export default function App() {
                 return prev || profile;
               });
             }
+          }, (err) => {
+            console.warn('Firestore user profile listener error:', err);
           });
         }
       } else {
@@ -682,9 +684,6 @@ export default function App() {
         isOpen={isOnboardingOpen}
         onComplete={handleUserComplete}
         currentUser={user}
-        teams={gameState.teams}
-        teamModeActive={gameState.team_mode_active}
-        randomTeamAssignment={gameState.random_team_assignment}
       />
 
       <FirebaseConfigModal

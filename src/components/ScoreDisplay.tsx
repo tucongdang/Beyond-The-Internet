@@ -175,8 +175,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block">{t("view_score_total", localLanguage)} {gameState.team_mode_active && user?.teamId && <span className="text-white/70 normal-case ml-1 font-sans">• {gameState.teams?.find(t => t.id === user.teamId)?.name || user.teamName}</span>}
-              </span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block">{t("view_score_total", localLanguage)}</span>
               <div className="flex items-baseline gap-1.5 relative">
                 <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight leading-none relative">
                   {displayScore.toLocaleString('vi-VN')}

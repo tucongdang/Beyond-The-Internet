@@ -1,34 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
   FluentProvider, 
-  webDarkTheme, 
-  Theme,
-  TabList,
-  Tab,
-  SelectTabEvent,
-  SelectTabData
-} from '@fluentui/react-components';
+  TabList, 
+  Tab 
+} from './FluentTabs';
 import { GameState, QuestionItem, UserResponse, RoundType, OptionKey, StageSnapshotRecord, QR_PALETTES, QrPaletteId, QrPaletteConfig, QrHistoryItem } from '../types';
 
-const fluentDarkTransparentTheme: Theme = {
-  ...webDarkTheme,
-  colorNeutralBackground1: 'transparent',
-  colorNeutralBackground2: 'transparent',
-  colorNeutralBackground3: 'transparent',
-  colorNeutralBackground4: 'transparent',
-  colorNeutralBackground5: 'transparent',
-  colorNeutralBackground6: 'transparent',
-  colorNeutralBackgroundStatic: 'transparent',
-  colorSubtleBackground: 'transparent',
-  colorTransparentBackground: 'transparent',
-  fontFamilyBase: "'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif",
-  // Fluent 2 Square Geometry Tokens (Windows 11 crisp look)
-  borderRadiusNone: '0px',
-  borderRadiusSmall: '2px',
-  borderRadiusMedium: '4px',
-  borderRadiusLarge: '4px',
-  borderRadiusXLarge: '6px',
-};
+const fluentDarkTransparentTheme = {};
 
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { syncService, DEFAULT_GAME_STATE } from '../services/syncService';
@@ -64,7 +42,6 @@ import { shortcutService } from '../services/shortcutService';
 import { AudienceAnswerDistributionChart } from './AudienceAnswerDistributionChart';
 import { FluentSearchBar } from './FluentSearchBar';
 import { AdminGuide } from './AdminGuide';
-import { TeamManagerModal } from './TeamManagerModal';
 import { snapshotService } from '../services/snapshotService';
 import { ProjectorView } from './ProjectorView';
 import { QrScanTrendsChart } from './QrScanTrendsChart';
@@ -401,7 +378,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showEmergencyPollModal, setShowEmergencyPollModal] = useState(false);
   const [showAnnouncerModal, setShowAnnouncerModal] = useState(false);
-  const [showTeamManagerModal, setShowTeamManagerModal] = useState(false);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
 
   // Fluent UI 2 Context Menu State
@@ -4127,74 +4103,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {/* Sub-view 1: Leaderboard */}
             {statsSubTab === 'LEADERBOARD' && (
               <div className="space-y-4">
-                <div className="flex flex-wrap justify-end gap-2">
-                                    <button
-                    onClick={() => setShowTeamManagerModal(true)}
-                    className="px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-2 border bg-sky-500/20 text-sky-300 border-sky-500/50 hover:bg-sky-500/30"
-                  >
-                    Tùy Chỉnh Đội
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!confirm('Hành động này sẽ xáo trộn ngẫu nhiên tất cả KHÁN GIẢ ĐANG ONLINE và chia lại đội cho họ. Bạn có chắc chắn?')) return;
-                      const count = await syncService.reShuffleTeamsRandomly();
-                      triggerHudToast(
-                        'TEAM_MODE',
-                        `Đã xáo trộn và chia lại đội cho ${count} khán giả online!`
-                      );
-                    }}
-                    className="px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-2 border bg-violet-500/20 text-violet-300 border-violet-500/50 hover:bg-violet-500/30"
-                  >
-                    Xáo Trộn Đội (Re-shuffle)
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!confirm('Hành động này sẽ chia lại đội cho TẤT CẢ khán giả hiện tại theo thứ tự tham gia. Bạn có chắc chắn?')) return;
-                      const count = await syncService.autoAssignTeamsRoundRobin();
-                      triggerHudToast(
-                        'TEAM_MODE',
-                        `Đã tự động chia đội cho ${count} khán giả thành công!`
-                      );
-                    }}
-                    className="px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-2 border bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30"
-                  >
-                    Auto-Chia Đội (Round-Robin)
-                  </button>
-                  <button
-                    onClick={() => {
-                      const nextState = !gameState.random_team_assignment;
-                      syncService.updateGameState({ random_team_assignment: nextState });
-                      triggerHudToast(
-                        'RANDOM_TEAM',
-                        nextState ? 'Đã bật Chia Đội Ngẫu Nhiên!' : 'Đã tắt Chia Đội Ngẫu Nhiên!'
-                      );
-                    }}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-2 border ${
-                      gameState.random_team_assignment
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                        : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    Chia Đội Ngẫu Nhiên: {gameState.random_team_assignment ? 'ĐANG BẬT' : 'ĐANG TẮT'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const nextState = !gameState.team_mode_active;
-                      syncService.updateGameState({ team_mode_active: nextState });
-                      triggerHudToast(
-                        'TEAM_MODE',
-                        nextState ? 'Đã bật chế độ Chia Đội!' : 'Đã tắt chế độ Chia Đội!'
-                      );
-                    }}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold font-mono transition flex items-center gap-2 border ${
-                      gameState.team_mode_active
-                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/50'
-                        : 'bg-white/5 text-white/50 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    Chế độ Chia Đội: {gameState.team_mode_active ? 'ĐANG BẬT' : 'ĐANG TẮT'}
-                  </button>
-                </div>
                 <Leaderboard 
                   allResponses={allResponses} 
                   gameState={gameState} 

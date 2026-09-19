@@ -56,7 +56,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   };
-  console.error('Firestore Shout Error: ', JSON.stringify(errInfo));
+  console.warn('Firestore Shout Error: ', JSON.stringify(errInfo));
 }
 
 const STORAGE_KEY_SHOUTS = 'BTI2026_AUDIENCE_SHOUTS';

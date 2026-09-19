@@ -40,7 +40,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   gameState
 }) => {
   const { localLanguage, toggleLanguage } = useLanguage();
-  const [tab, setTab] = useState<'stats' | 'edit'>('stats');
+  const [tab, setTab] = useState<'stats' | 'edit' | 'settings'>('stats');
   
   // Edit state
   const [name, setName] = useState(user.name);
@@ -226,13 +226,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               setTab('stats');
             }}
-            className={`px-4 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
               tab === 'stats' 
                 ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
                 : 'text-white/40 hover:bg-white/5'
             }`}
           >
-            <Activity className="w-4 h-4" /> {t("prof_stats", localLanguage)}
+            <Activity className="w-4 h-4 text-[#F7CAC9]" /> {t("prof_stats", localLanguage)}
           </button>
           <button 
             onClick={() => {
@@ -240,19 +240,33 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               setTab('edit');
             }}
-            className={`px-4 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
               tab === 'edit' 
                 ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
                 : 'text-white/40 hover:bg-white/5'
             }`}
           >
-            <Edit3 className="w-4 h-4" /> {t("prof_update", localLanguage)}
+            <Edit3 className="w-4 h-4 text-purple-300" /> {t("prof_update", localLanguage)}
+          </button>
+          <button 
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              setTab('settings');
+            }}
+            className={`px-3.5 py-2 rounded-t-[4px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+              tab === 'settings' 
+                ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
+                : 'text-white/40 hover:bg-white/5'
+            }`}
+          >
+            <Sliders className="w-4 h-4 text-sky-300" /> {t("profile_settings_tab", localLanguage)}
           </button>
         </div>
 
         {/* Content */}
         <div className="fluent-dialog-body space-y-5">
-          {tab === 'stats' ? (
+          {tab === 'stats' && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-3">
                 <div className="fluent-box-nested border border-purple-500/30 rounded-[4px] p-4 text-center">
@@ -289,7 +303,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               </div>
             </div>
-          ) : (
+          )}
+
+          {tab === 'edit' && (
             <form onSubmit={handleSave} className="space-y-4">
               <div className="fluent-box-nested border border-purple-500/30 rounded-[4px] p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
@@ -379,15 +395,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Save className="w-4 h-4" /> {t("prof_update", localLanguage)} Hồ Sơ
+                    <Save className="w-4 h-4" /> {t("prof_btn_update", localLanguage)}
                   </>
                 )}
               </button>
             </form>
           )}
 
-          {/* Language Settings Card */}
-          <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between mb-4">
+          {tab === 'settings' && (
+            <div className="space-y-4">
+              {/* Language Settings Card */}
+              <div className="p-3.5 rounded-[4px] fluent-box-nested border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-[4px] bg-white/10 text-blue-300 border border-blue-500/30 flex items-center justify-center">
                 <Globe className="w-4 h-4" />
@@ -504,6 +522,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </div>
             )}
           </div>
+            </div>
+          )}
         </div>
       </div>
     </div>,

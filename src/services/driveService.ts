@@ -10,8 +10,13 @@ provider.setCustomParameters({
 let cachedAccessToken: string | null = null;
 
 export const driveService = {
-  async authenticate(): Promise<string | null> {
+  isConnected(): boolean {
+    return Boolean(cachedAccessToken);
+  },
+
+  async authenticate(interactive: boolean = false): Promise<string | null> {
     if (cachedAccessToken) return cachedAccessToken;
+    if (!interactive) return null;
     
     try {
       const result = await signInWithPopup(auth, provider);
@@ -21,15 +26,24 @@ export const driveService = {
         return cachedAccessToken;
       }
       return null;
-    } catch (error) {
-      console.error("Failed to authenticate for Google Drive:", error);
+    } catch (error: any) {
+      if (error?.code === 'auth/unauthorized-domain') {
+        console.warn("[driveService] Google Drive auth skipped: current domain is not authorized in Firebase Auth Console.");
+      } else {
+        console.error("Failed to authenticate for Google Drive:", error);
+      }
       return null;
     }
   },
 
   async uploadImage(base64Data: string, filename: string): Promise<string | null> {
-    const token = await this.authenticate();
-    if (!token) throw new Error("Google Drive authentication failed.");
+    // Do not trigger background popup if not already authenticated
+    if (!cachedAccessToken) {
+      return null;
+    }
+
+    const token = cachedAccessToken;
+    if (!token) return null;
 
     // Extract raw base64 content
     const base64Content = base64Data.split(',')[1];
