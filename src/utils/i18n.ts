@@ -1063,6 +1063,28 @@ export const translations = {
 
 export type I18nKey = keyof typeof translations.vi;
 
-export function t(key: I18nKey, lang: 'vi' | 'en' = 'vi'): string {
-  return translations[lang]?.[key] || translations.vi[key] || key;
+/**
+ * Returns localized string for the given key.
+ * For Vietnamese ('vi'), returns Vietnamese translation.
+ * For any other language ('en', 'ko', 'ja', 'zh', etc.), returns translation if available,
+ * and ALWAYS falls back to English ('en') before Vietnamese ('vi').
+ */
+export function t(key: I18nKey, lang: string = 'vi'): string {
+  if (lang === 'vi') {
+    return translations.vi[key] || key;
+  }
+  const directMatch = (translations as Record<string, Record<string, string>>)[lang]?.[key];
+  if (directMatch) {
+    return directMatch;
+  }
+  // Foreign language fallback: English first, then Vietnamese, then raw key
+  return translations.en[key] || translations.vi[key] || key;
 }
+
+/**
+ * Returns true if the language is non-Vietnamese (foreign language / international mode).
+ */
+export function isForeignLang(lang?: string): boolean {
+  return Boolean(lang && lang !== 'vi');
+}
+

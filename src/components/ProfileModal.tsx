@@ -199,7 +199,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <button 
                 onClick={generateNewAvatar}
                 className="absolute -bottom-2 -right-2 p-2 bg-[#F7CAC9] text-[#190839] hover:brightness-110 rounded-[2px] shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
-                title={localLanguage === 'en' ? 'Change avatar' : 'Đổi ảnh đại diện'}
+                title={localLanguage !== 'vi' ? 'Change avatar' : 'Đổi ảnh đại diện'}
               >
                 <Camera className="w-3.5 h-3.5" />
               </button>
@@ -312,7 +312,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <label className="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
                     <span>{t("prof_uid", localLanguage)}</span>
                     <span className="fluent-badge fluent-badge-accent">
-                      {localLanguage === 'en' ? 'Fixed' : 'Cố Định'}
+                      {localLanguage !== 'vi' ? 'Fixed' : 'Cố Định'}
                     </span>
                   </label>
                   <button
@@ -324,14 +324,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     }}
                     className="fluent-btn px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-[2px] text-[11px] font-bold font-mono transition active:scale-95 cursor-pointer shadow"
                   >
-                    {localLanguage === 'en' ? 'Copy Code' : 'Sao Chép Mã'}
+                    {localLanguage !== 'vi' ? 'Copy Code' : 'Sao Chép Mã'}
                   </button>
                 </div>
                 <div className="text-sm font-mono font-bold text-white fluent-box-nested border border-white/10 px-3 py-2 rounded-[2px] tracking-wider select-all">
                   {user.anonymizedUid || user.uid}
                 </div>
                 <p className="text-[10px] text-purple-200/60 leading-tight">
-                  {localLanguage === 'en' ? '💡 12-digit unique identifier format: 4 Student ID + 2 Name chars + Gender + 2 Birth Year + 3 Random.' : '💡 Mã 12 số định danh duy nhất theo chuẩn: 4 số MSSV + 2 ký tự Tên + Giới tính + 2 số Năm sinh + 3 số Ngẫu nhiên.'}
+                  {localLanguage !== 'vi' ? '💡 12-digit unique identifier format: 4 Student ID + 2 Name chars + Gender + 2 Birth Year + 3 Random.' : '💡 Mã 12 số định danh duy nhất theo chuẩn: 4 số MSSV + 2 ký tự Tên + Giới tính + 2 số Năm sinh + 3 số Ngẫu nhiên.'}
                 </p>
               </div>
 
@@ -415,7 +415,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <span>{t("profile_language_settings", localLanguage)}</span>
                 </h4>
                 <p className="text-[10px] text-[#B6A6D8]">
-                  {localLanguage === "en" ? t("profile_language_en", localLanguage) : t("profile_language_vi", localLanguage)}
+                  {localLanguage !== 'vi' ? t("profile_language_en", localLanguage) : t("profile_language_vi", localLanguage)}
                 </p>
               </div>
             </div>
@@ -425,7 +425,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               type="button"
               onClick={handleToggleLanguage}
               className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
-                localLanguage === 'en' ? 'bg-blue-500 justify-end' : 'bg-gray-700 justify-start'
+                localLanguage !== 'vi' ? 'bg-blue-500 justify-end' : 'bg-gray-700 justify-start'
               }`}
               title={t("prof_lang", localLanguage)}
             >
@@ -444,11 +444,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                     <span>{t("prof_dark_mode", localLanguage)}</span>
                     <span className="fluent-badge fluent-badge-warning">
-                      {localLanguage === 'en' ? 'Optimal' : 'Tối Ưu'}
+                      {localLanguage !== 'vi' ? 'Optimal' : 'Tối Ưu'}
                     </span>
                   </h4>
                   <p className="text-[10px] text-[#B6A6D8]">
-                    {localLanguage === 'en' ? 'Switch entire background to deep black #000000 while preserving vibrant game colors for readability and eye comfort.' : 'Chuyển toàn bộ nền sang đen sâu `#000000` và giữ nguyên màu sắc sống động của game để nhìn rõ, đỡ mỏi mắt.'}
+                    {localLanguage !== 'vi' ? 'Switch entire background to deep black #000000 while preserving vibrant game colors for readability and eye comfort.' : 'Chuyển toàn bộ nền sang đen sâu `#000000` và giữ nguyên màu sắc sống động của game để nhìn rõ, đỡ mỏi mắt.'}
                   </p>
                 </div>
               </div>
@@ -479,16 +479,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <span>{t("profile_haptic_title", localLanguage)}</span>
                     {hapticsSupported ? (
                       <span className="fluent-badge fluent-badge-success">
-                        {localLanguage === 'en' ? 'Ready' : 'Sẵn Sàng'}
+                        {localLanguage !== 'vi' ? 'Ready' : 'Sẵn Sàng'}
                       </span>
                     ) : (
                       <span className="fluent-badge fluent-badge-warning">
-                        {localLanguage === 'en' ? 'Not Supported' : 'Không hỗ trợ'}
+                        {localLanguage !== 'vi' ? 'Not Supported' : 'Không hỗ trợ'}
                       </span>
                     )}
                   </h4>
                   <p className="text-[10px] text-[#B6A6D8]">
-                    {localLanguage === 'en' ? 'Provides physical haptic feedback when selecting answers, submitting, and locking time.' : 'Tạo cảm giác rung chạm vật lý khi chọn đáp án, nộp bài, khóa giờ.'}
+                    {localLanguage !== 'vi' ? 'Provides physical haptic feedback when selecting answers, submitting, and locking time.' : 'Tạo cảm giác rung chạm vật lý khi chọn đáp án, nộp bài, khóa giờ.'}
                   </p>
                 </div>
               </div>
@@ -509,7 +509,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             {hapticsSupported && hapticsEnabled && (
               <div className="pt-2 border-t border-white/5 flex items-center justify-between">
                 <span className="text-[11px] text-[#B6A6D8]/80 italic">
-                  {localLanguage === 'en' ? 'Test haptic feedback on your device:' : 'Kiểm tra phản hồi xúc giác trên thiết bị:'}
+                  {localLanguage !== 'vi' ? 'Test haptic feedback on your device:' : 'Kiểm tra phản hồi xúc giác trên thiết bị:'}
                 </span>
                 <button
                   type="button"

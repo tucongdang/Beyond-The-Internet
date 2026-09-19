@@ -268,7 +268,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-mono font-black uppercase tracking-widest bg-rose-900/60 px-2 py-0.5 rounded-[2px] border border-rose-500/40 text-rose-200">
-                  {localLanguage === 'en' ? '🔴 INSTANT POLL' : '🔴 KHẢO SÁT TỨC THÌ'}
+                  {localLanguage !== 'vi' ? '🔴 INSTANT POLL' : '🔴 KHẢO SÁT TỨC THÌ'}
                 </span>
                 <span className="text-xs font-bold text-rose-200/80 hidden sm:inline">
                   {t("view_poll_live", localLanguage)}
@@ -300,7 +300,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
           {isRevealed && (
             <span className="px-2.5 py-1 rounded-[2px] bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-bold flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
-              {localLanguage === 'en' ? 'RESULT' : 'KẾT QUẢ'}
+              {localLanguage !== 'vi' ? 'RESULT' : 'KẾT QUẢ'}
             </span>
           )}
         </div>
@@ -468,7 +468,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                 {isRevealed && (
                   <div className="mt-3 pt-3 border-t border-white/10 space-y-1 relative z-10">
                     <div className="flex justify-between text-xs font-mono font-bold">
-                      <span style={{ color: item.color }}>{item.count} {localLanguage === "en" ? "votes" : "phiếu"}</span>
+                      <span style={{ color: item.color }}>{item.count} {localLanguage !== 'vi' ? "votes" : "phiếu"}</span>
                       <span className="font-black text-sm" style={{ color: item.color }}>{item.percent}%</span>
                     </div>
                     <div className="h-2 bg-white/10 rounded-[2px] overflow-hidden">

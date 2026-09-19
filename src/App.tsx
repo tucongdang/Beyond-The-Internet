@@ -38,6 +38,13 @@ export default function App() {
   const { localLanguage } = useLanguage();
   const { isBatterySaver, batteryLevel } = useBatterySaver();
 
+  // Synchronize document lang attribute with active language
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = localLanguage || 'vi';
+    }
+  }, [localLanguage]);
+
   // State synchronized from syncService
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
 
@@ -93,7 +100,7 @@ export default function App() {
       })
       .catch(err => {
         console.error('QR code generation error:', err);
-        setQrError(localLanguage === 'en' ? 'Failed to generate QR code. Please try again.' : 'Lỗi tạo mã QR. Vui lòng thử lại.');
+        setQrError(localLanguage !== 'vi' ? 'Failed to generate QR code. Please try again.' : 'Lỗi tạo mã QR. Vui lòng thử lại.');
         setIsQrFading(false);
       });
   }, [gameState.qr_color_palette, gameState.qr_transparent_bg, gameState.qr_custom_caption, gameState.round_name, localLanguage]);
@@ -161,8 +168,8 @@ export default function App() {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: localLanguage === 'en' ? 'BTI 2026 - Live Interactive Arena' : 'BTI 2026 - Đấu Trường Trực Tiếp',
-          text: localLanguage === 'en' ? 'Join the real-time interactive BTI 2026 arena now!' : 'Tham gia trực tiếp đấu trường tương tác BTI 2026 ngay bây giờ!',
+          title: localLanguage !== 'vi' ? 'BTI 2026 - Live Interactive Arena' : 'BTI 2026 - Đấu Trường Trực Tiếp',
+          text: localLanguage !== 'vi' ? 'Join the real-time interactive BTI 2026 arena now!' : 'Tham gia trực tiếp đấu trường tương tác BTI 2026 ngay bây giờ!',
           url: urlToShare
         });
       } catch (err: any) {
@@ -714,10 +721,10 @@ export default function App() {
                 </div>
                 <div className="text-left">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                    {localLanguage === 'en' ? 'Join QR Code' : 'Mã QR Tham Gia'}
+                    {localLanguage !== 'vi' ? 'Join QR Code' : 'Mã QR Tham Gia'}
                   </h3>
                   <p className="text-[11px] text-white/50">
-                    {localLanguage === 'en' ? 'Scan code or share room link' : 'Quét mã hoặc chia sẻ link phòng thi'}
+                    {localLanguage !== 'vi' ? 'Scan code or share room link' : 'Quét mã hoặc chia sẻ link phòng thi'}
                   </p>
                 </div>
               </div>
@@ -726,7 +733,7 @@ export default function App() {
                 id="btn-close-app-qr-modal"
                 onClick={handleCloseAudienceQrModal}
                 className="p-1.5 text-slate-400 hover:text-white rounded-[2px] hover:bg-white/10 transition cursor-pointer"
-                title={localLanguage === 'en' ? 'Close' : 'Đóng'}
+                title={localLanguage !== 'vi' ? 'Close' : 'Đóng'}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -750,17 +757,17 @@ export default function App() {
                       className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[2px] shadow flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      <span>{localLanguage === 'en' ? 'Retry' : 'Thử lại (Retry)'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Retry' : 'Thử lại (Retry)'}</span>
                     </button>
                   </div>
                 ) : (
                   <CrossFadeQrCode
                     dataUrl={qrDataUrl}
-                    alt={localLanguage === 'en' ? 'Audience QR Code' : 'QR Code Khán Giả'}
+                    alt={localLanguage !== 'vi' ? 'Audience QR Code' : 'QR Code Khán Giả'}
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
                       <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[2px] flex items-center justify-center text-xs text-slate-500 font-mono">
-                        {localLanguage === 'en' ? 'Generating QR...' : 'Đang tạo QR...'}
+                        {localLanguage !== 'vi' ? 'Generating QR...' : 'Đang tạo QR...'}
                       </div>
                     }
                   />
@@ -784,46 +791,46 @@ export default function App() {
               <div 
                 id="badge-landing-qr-scans"
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
-                title={localLanguage === 'en' ? 'Total audience scans joining arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
+                title={localLanguage !== 'vi' ? 'Total audience scans joining arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
               >
                 <ScanLine className="w-3 h-3 text-sky-400" />
-                <span>{localLanguage === 'en' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
+                <span>{localLanguage !== 'vi' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
               </div>
 
               {isFirebaseConnected ? (
                 <div 
                   id="badge-firebase-online"
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
-                  title={localLanguage === 'en' ? 'Realtime database is operating stably' : 'Hệ thống cơ sở dữ liệu thời gian thực đang hoạt động ổn định'}
+                  title={localLanguage !== 'vi' ? 'Realtime database is operating stably' : 'Hệ thống cơ sở dữ liệu thời gian thực đang hoạt động ổn định'}
                 >
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                   </span>
-                  <span>Firebase: {localLanguage === 'en' ? 'Online' : 'Trực Tuyến'}</span>
+                  <span>Firebase: {localLanguage !== 'vi' ? 'Online' : 'Trực Tuyến'}</span>
                 </div>
               ) : (
                 <div 
                   id="badge-firebase-offline"
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
-                  title={localLanguage === 'en' ? 'Reconnecting to Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
+                  title={localLanguage !== 'vi' ? 'Reconnecting to Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
                 >
                   <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
-                  <span>Firebase: {localLanguage === 'en' ? 'Offline' : 'Ngoại Tuyến'}</span>
+                  <span>Firebase: {localLanguage !== 'vi' ? 'Offline' : 'Ngoại Tuyến'}</span>
                 </div>
               )}
 
               <div 
                 id="badge-qr-palette"
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
-                title={localLanguage === 'en' ? 'QR Code color palette is synced in real-time from Admin' : 'Bảng màu QR Code đang được đồng bộ thời gian thực từ Admin'}
+                title={localLanguage !== 'vi' ? 'QR Code color palette is synced in real-time from Admin' : 'Bảng màu QR Code đang được đồng bộ thời gian thực từ Admin'}
               >
                 <span 
                   className="w-2 h-2 rounded-full shrink-0" 
                   style={{ backgroundColor: (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).dotColor }} 
                 />
                 <span>
-                  {localLanguage === 'en'
+                  {localLanguage !== 'vi'
                     ? (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).name
                     : (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).labelVi}
                 </span>
@@ -848,12 +855,12 @@ export default function App() {
                     ? 'bg-emerald-500 text-black shadow-emerald-500/30'
                     : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839]'
                 }`}
-                title={localLanguage === 'en' ? 'Copy join link to clipboard' : 'Sao chép link tham gia vào bộ nhớ tạm'}
+                title={localLanguage !== 'vi' ? 'Copy join link to clipboard' : 'Sao chép link tham gia vào bộ nhớ tạm'}
               >
                 {isCopiedQrUrl ? (
                   <>
                     <Check className="w-4 h-4 text-black shrink-0" />
-                    <span className="truncate">{localLanguage === 'en' ? 'Copied!' : 'Đã sao chép!'}</span>
+                    <span className="truncate">{localLanguage !== 'vi' ? 'Copied!' : 'Đã sao chép!'}</span>
                   </>
                 ) : (
                   <>
@@ -868,7 +875,7 @@ export default function App() {
                 id="btn-qr-share-link"
                 onClick={handleShareQrLink}
                 className="py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
-                title={localLanguage === 'en' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
+                title={localLanguage !== 'vi' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" />
                 <span className="truncate">Share</span>
@@ -881,7 +888,7 @@ export default function App() {
               onClick={handleCloseAudienceQrModal}
               className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[2px] transition border border-white/10 cursor-pointer"
             >
-              {localLanguage === 'en' ? 'Close' : 'Đóng'}
+              {localLanguage !== 'vi' ? 'Close' : 'Đóng'}
             </button>
           </div>
         </div>,

@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 
+export function isNonVi(lang?: string): boolean {
+  return Boolean(lang && lang !== 'vi');
+}
+
 export function useLanguage() {
-  const [localLanguage, setLocalLanguage] = useState<'vi' | 'en'>(() => {
+  const [localLanguage, setLocalLanguage] = useState<string>(() => {
     try {
-      return (localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi';
+      return localStorage.getItem('bti_lang') || 'vi';
     } catch {
       return 'vi';
     }
@@ -12,7 +16,7 @@ export function useLanguage() {
   useEffect(() => {
     const handleStorageChange = () => {
       try {
-        setLocalLanguage((localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi');
+        setLocalLanguage(localStorage.getItem('bti_lang') || 'vi');
       } catch {}
     };
     window.addEventListener('storage', handleStorageChange);
@@ -39,5 +43,5 @@ export function useLanguage() {
     } catch {}
   };
 
-  return { localLanguage, toggleLanguage, setLocalLanguage };
+  return { localLanguage, toggleLanguage, setLocalLanguage, isNonVi: isNonVi(localLanguage) };
 }

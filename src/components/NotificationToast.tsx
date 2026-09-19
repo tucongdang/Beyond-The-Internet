@@ -53,7 +53,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     const unsubBroadcast = syncService.subscribeToGlobalNotificationBroadcast((notif) => {
       addToast({
         id: notif.id || `global_${Date.now()}_${Math.random()}`,
-        title: notif.title || (localLanguage === 'en' ? 'Urgent Notice' : 'Thông báo khẩn'),
+        title: notif.title || (localLanguage !== 'vi' ? 'Urgent Notice' : 'Thông báo khẩn'),
         message: notif.message,
         type: notif.type || 'URGENT',
         channel: 'global',
@@ -78,7 +78,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     const unsub = syncService.subscribeToNotifications('global', (notifs) => {
       const unread = notifs.filter(n => !n.read).map(n => ({
         id: `global_${n.id}`,
-        title: n.title || (localLanguage === 'en' ? 'System Announcement' : 'Thông báo toàn hệ thống'),
+        title: n.title || (localLanguage !== 'vi' ? 'System Announcement' : 'Thông báo toàn hệ thống'),
         message: n.message,
         type: (n.type || (n.title?.includes('KHẨN') ? 'URGENT' : 'GENERAL')) as 'URGENT' | 'GENERAL',
         channel: 'global',
@@ -114,7 +114,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     const unsub = syncService.subscribeToNotifications(userUid, (notifs) => {
       const unread = notifs.filter(n => !n.read).map(n => ({
         id: `user_${n.id}`,
-        title: n.title || (localLanguage === 'en' ? 'Personal Notice' : 'Thông báo cá nhân'),
+        title: n.title || (localLanguage !== 'vi' ? 'Personal Notice' : 'Thông báo cá nhân'),
         message: n.message,
         type: (n.title?.includes('LUCKY DRAW') ? 'LUCKY_DRAW' : 'GENERAL') as 'LUCKY_DRAW' | 'GENERAL',
         channel: userUid,
@@ -254,7 +254,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
                     isUrgent ? 'bg-rose-400 animate-ping' : isLuckyDraw ? 'bg-amber-300 animate-pulse' : 'bg-cyan-400 animate-pulse'
                   }`}
                 />
-                {isUrgent ? (localLanguage === 'en' ? 'URGENT NOTICE' : 'THÔNG BÁO KHẨN') : isLuckyDraw ? 'LUCKY DRAW' : (localLanguage === 'en' ? 'ORGANIZER NOTICE' : 'THÔNG BÁO TỪ BTC')}
+                {isUrgent ? (localLanguage !== 'vi' ? 'URGENT NOTICE' : 'THÔNG BÁO KHẨN') : isLuckyDraw ? 'LUCKY DRAW' : (localLanguage !== 'vi' ? 'ORGANIZER NOTICE' : 'THÔNG BÁO TỪ BTC')}
               </span>
               <h4 className="font-bold text-xs uppercase tracking-wide truncate text-white/95 font-sans">
                 {activeToast.title}
@@ -270,7 +270,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
             type="button"
             onClick={() => handleDismiss(activeToast)}
             className="fluent-subtab-btn p-1.5 rounded-[2px] border border-transparent hover:border-white/20 hover:bg-white/15 transition shrink-0 text-white/70 hover:text-white cursor-pointer active:scale-95"
-            title={localLanguage === 'en' ? 'Close notice' : 'Đóng thông báo'}
+            title={localLanguage !== 'vi' ? 'Close notice' : 'Đóng thông báo'}
           >
             <X className="w-4 h-4" />
           </button>

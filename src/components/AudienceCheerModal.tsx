@@ -61,13 +61,13 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                {localLanguage === 'en' ? 'STAGE BOOST' : 'TIẾP SỨC SÂN KHẤU'}
+                {localLanguage !== 'vi' ? 'STAGE BOOST' : 'TIẾP SỨC SÂN KHẤU'}
                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] bg-white/10 text-rose-300 border border-rose-500/30">
                   LIVE 100%
                 </span>
               </h2>
               <p className="text-xs text-white/60 font-mono">
-                {localLanguage === 'en' ? 'Every tap increases the heartbeat and hype on screen!' : 'Mỗi lượt bấm sẽ tăng nhịp tim và khí thế trên màn chiếu!'}
+                {localLanguage !== 'vi' ? 'Every tap increases the heartbeat and hype on screen!' : 'Mỗi lượt bấm sẽ tăng nhịp tim và khí thế trên màn chiếu!'}
               </p>
             </div>
           </div>
@@ -93,7 +93,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
           {/* Live Stage Stats Bento Grid */}
           <div className="grid grid-cols-2 gap-2.5 pt-1">
             <div className="fluent-box-nested rounded-[2px] p-3 border border-white/10">
-              <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage === 'en' ? 'Audience Heartbeat' : 'Nhịp tim khán phòng'}</div>
+              <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage !== 'vi' ? 'Audience Heartbeat' : 'Nhịp tim khán phòng'}</div>
               <div className="text-xl font-mono font-black text-rose-400 flex items-center gap-1.5 mt-1">
                 <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
                 {intensityData.bpm} <span className="text-xs text-white/40">BPM</span>
@@ -104,13 +104,13 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             </div>
 
             <div className="fluent-box-nested rounded-[2px] p-3 border border-white/10">
-              <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage === 'en' ? 'Total Cheers' : 'Tổng lượt tiếp lửa'}</div>
+              <div className="text-[10px] font-mono text-white/50 uppercase">{localLanguage !== 'vi' ? 'Total Cheers' : 'Tổng lượt tiếp lửa'}</div>
               <div className="text-xl font-mono font-black text-amber-400 flex items-center gap-1.5 mt-1">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 {intensityData.totalCheers.toLocaleString('vi-VN')}
               </div>
               <div className="text-[10px] font-mono text-emerald-400 mt-0.5">
-                {intensityData.activeCheerers > 0 ? (localLanguage === 'en' ? `${intensityData.activeCheerers} audiences tapping` : `${intensityData.activeCheerers} khán giả đang gõ`) : (localLanguage === 'en' ? 'Ready to cheer' : 'Sẵn sàng tiếp lửa')}
+                {intensityData.activeCheerers > 0 ? (localLanguage !== 'vi' ? `${intensityData.activeCheerers} audiences tapping` : `${intensityData.activeCheerers} khán giả đang gõ`) : (localLanguage !== 'vi' ? 'Ready to cheer' : 'Sẵn sàng tiếp lửa')}
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
             onClick={onClose}
             className="text-rose-300 hover:text-rose-200 font-bold underline"
           >
-            {localLanguage === 'en' ? 'Close' : 'Đóng bảng'}
+            {localLanguage !== 'vi' ? 'Close' : 'Đóng bảng'}
           </button>
         </div>
       </div>

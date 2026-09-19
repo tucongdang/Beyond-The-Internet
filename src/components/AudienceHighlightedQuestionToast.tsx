@@ -145,7 +145,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                   </span>
-                  {localLanguage === 'en' ? 'Broadcasting on stage' : 'Đang chiếu trên sân khấu'}
+                  {localLanguage !== 'vi' ? 'Broadcasting on stage' : 'Đang chiếu trên sân khấu'}
                 </span>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-[2px] border truncate ${catInfo.badgeBg}`}>
                   {catInfo.label}
@@ -163,8 +163,8 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
                   type="button"
                   onClick={handleDismiss}
                   className="p-1 rounded-[2px] text-white/50 hover:text-white hover:bg-white/10 backdrop-blur-md transition"
-                  title={localLanguage === "en" ? "Close notification" : "Đóng thông báo"}
-                  aria-label={localLanguage === "en" ? "Close" : "Đóng"}
+                  title={localLanguage !== 'vi' ? "Close notification" : "Đóng thông báo"}
+                  aria-label={localLanguage !== 'vi' ? "Close" : "Đóng"}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -180,7 +180,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1 text-xs">
                   <span className="font-bold text-white/90 truncate">
-                    {currentToastQuestion.is_anonymous ? (localLanguage === 'en' ? 'Anonymous' : 'Khán giả ẩn danh') : currentToastQuestion.author_name}
+                    {currentToastQuestion.is_anonymous ? (localLanguage !== 'vi' ? 'Anonymous' : 'Khán giả ẩn danh') : currentToastQuestion.author_name}
                   </span>
                   {!currentToastQuestion.is_anonymous && currentToastQuestion.author_mssv && (
                     <span className="text-[10px] font-mono text-white/50">
@@ -195,11 +195,11 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
 
                 <div className="mt-2 flex items-center justify-between text-[11px]">
                   <span className="text-sky-300 font-bold flex items-center gap-1 group-hover:underline">
-                    {localLanguage === 'en' ? 'View & join Q&A' : 'Xem & tham gia Q&A'}
+                    {localLanguage !== 'vi' ? 'View & join Q&A' : 'Xem & tham gia Q&A'}
                     <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                   </span>
                   <span className="text-[10px] text-white/40 font-mono">
-                    {localLanguage === 'en' ? 'Tap to open' : 'Nhấn để mở'}
+                    {localLanguage !== 'vi' ? 'Tap to open' : 'Nhấn để mở'}
                   </span>
                 </div>
               </div>

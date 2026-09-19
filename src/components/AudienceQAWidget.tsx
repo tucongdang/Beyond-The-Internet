@@ -47,7 +47,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
             <h4 className="text-xs font-black uppercase tracking-wider text-white font-mono">
               Audience Q&A
             </h4>
-            <span className="text-[10px] text-white/50 block">{localLanguage === 'en' ? 'Live Q&A' : 'Hỏi đáp trực tiếp'}</span>
+            <span className="text-[10px] text-white/50 block">{localLanguage !== 'vi' ? 'Live Q&A' : 'Hỏi đáp trực tiếp'}</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
           className="px-2.5 py-1 rounded-[2px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black text-[10px] uppercase tracking-wider shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1"
         >
           <Send className="w-3 h-3" />
-          <span>{localLanguage === 'en' ? 'Ask a question' : 'Đặt câu hỏi'}</span>
+          <span>{localLanguage !== 'vi' ? 'Ask a question' : 'Đặt câu hỏi'}</span>
         </button>
       </div>
 
@@ -70,7 +70,7 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
           <div className="flex items-center justify-between text-[10px] font-mono text-rose-300 font-bold">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
+              {localLanguage !== 'vi' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
             </span>
             <span className="flex items-center gap-1 text-pink-400">
               <Heart className="w-3 h-3 fill-current" /> {featured.upvotes}
@@ -84,15 +84,15 @@ export const AudienceQAWidget: React.FC<AudienceQAWidgetProps> = ({
         <div className="text-[11px] text-white/60 mb-3 fluent-box-nested p-2.5 rounded-[2px] border border-white/5">
           {questions.length > 0 ? (
             <div className="flex items-center justify-between">
-              <span>{questions.length} {localLanguage === "en" ? "questions in hall" : "câu hỏi trong hội trường"}</span>
+              <span>{questions.length} {localLanguage !== 'vi' ? "questions in hall" : "câu hỏi trong hội trường"}</span>
               {myQuestionsCount > 0 && (
                 <span className="text-[#F7CAC9] font-bold font-mono">
-                  ({localLanguage === "en" ? `You asked ${myQuestionsCount}` : `Bạn đã gửi ${myQuestionsCount}`})
+                  ({localLanguage !== 'vi' ? `You asked ${myQuestionsCount}` : `Bạn đã gửi ${myQuestionsCount}`})
                 </span>
               )}
             </div>
           ) : (
-            <span>{localLanguage === "en" ? "No questions yet. Be the first to ask!" : "Chưa có câu hỏi nào. Hãy là người đầu tiên đặt câu hỏi!"}</span>
+            <span>{localLanguage !== 'vi' ? "No questions yet. Be the first to ask!" : "Chưa có câu hỏi nào. Hãy là người đầu tiên đặt câu hỏi!"}</span>
           )}
         </div>
       )}

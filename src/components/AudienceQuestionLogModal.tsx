@@ -140,16 +140,16 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
       let isCorrect = false;
       let pointsEarned = 0;
       let partialPoints: number | undefined = undefined;
-      let notice = localLanguage === 'en' ? 'Not answered yet' : 'Chưa tham gia trả lời';
+      let notice = localLanguage !== 'vi' ? 'Not answered yet' : 'Chưa tham gia trả lời';
 
       if (hasAnswered && correctKey) {
         const evalRes = evaluateUserChoice(userChoice, correctKey, roundType, qId, latencySec);
         isCorrect = evalRes.isCorrect;
         pointsEarned = evalRes.pointsEarned;
         partialPoints = evalRes.partialPoints;
-        notice = evalRes.notice || (isCorrect ? (localLanguage === 'en' ? `Correct (+${pointsEarned}pts)` : `Đúng (+${pointsEarned}đ)`) : (localLanguage === 'en' ? 'Incorrect (0pts)' : 'Chưa chính xác (0đ)'));
+        notice = evalRes.notice || (isCorrect ? (localLanguage !== 'vi' ? `Correct (+${pointsEarned}pts)` : `Đúng (+${pointsEarned}đ)`) : (localLanguage !== 'vi' ? 'Incorrect (0pts)' : 'Chưa chính xác (0đ)'));
       } else if (hasAnswered) {
-        notice = localLanguage === 'en' ? `Selected: ${userChoice} (Pending answer reveal)` : `Đã chọn: ${userChoice} (Đang chờ công bố đáp án)`;
+        notice = localLanguage !== 'vi' ? `Selected: ${userChoice} (Pending answer reveal)` : `Đã chọn: ${userChoice} (Đang chờ công bố đáp án)`;
       }
 
       items.push({
@@ -160,7 +160,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
         questionText,
         options,
         correctKey,
-        explanation: explanation || (localLanguage === 'en' ? 'No detailed explanation for this question.' : 'Không có giải thích chi tiết cho câu hỏi này.'),
+        explanation: explanation || (localLanguage !== 'vi' ? 'No detailed explanation for this question.' : 'Không có giải thích chi tiết cho câu hỏi này.'),
         mediaType,
         mediaUrl,
         userChoice,
@@ -189,13 +189,13 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
 
         items.push({
           questionId: poll.id.startsWith('POLL_') ? poll.id : `POLL_${poll.id}`,
-          roundName: localLanguage === 'en' ? 'Emergency Poll' : 'Khảo sát Khẩn cấp',
+          roundName: localLanguage !== 'vi' ? 'Emergency Poll' : 'Khảo sát Khẩn cấp',
           roundType: poll.type || 'POLL',
-          category: poll.context_note || poll.source_name || (localLanguage === 'en' ? 'Audience Opinion' : 'Ý kiến khán giả'),
+          category: poll.context_note || poll.source_name || (localLanguage !== 'vi' ? 'Audience Opinion' : 'Ý kiến khán giả'),
           questionText: poll.question,
           options: poll.options || {},
           correctKey,
-          explanation: localLanguage === 'en'
+          explanation: localLanguage !== 'vi'
             ? `Poll result: Dominant choice was [${poll.dominantChoice || 'N/A'}] with ${poll.totalVotes} votes.`
             : `Kết quả khảo sát: Phương án phổ biến nhất là [${poll.dominantChoice || 'N/A'}] với ${poll.totalVotes} lượt vote.`,
           userChoice,
@@ -203,8 +203,8 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
           isCorrect,
           pointsEarned,
           notice: hasAnswered
-            ? (isCorrect ? (localLanguage === 'en' ? 'Matched majority (+10pts)' : 'Khớp với ý kiến đa số (+10đ)') : (localLanguage === 'en' ? 'Minority choice' : 'Ý kiến thiểu số'))
-            : (localLanguage === 'en' ? 'Did not vote' : 'Chưa tham gia vote'),
+            ? (isCorrect ? (localLanguage !== 'vi' ? 'Matched majority (+10pts)' : 'Khớp với ý kiến đa số (+10đ)') : (localLanguage !== 'vi' ? 'Minority choice' : 'Ý kiến thiểu số'))
+            : (localLanguage !== 'vi' ? 'Did not vote' : 'Chưa tham gia vote'),
           latencySec: userResp?.latency_sec,
           timestamp: poll.completed_at || poll.created_at,
           isEmergencyPoll: true
@@ -284,16 +284,16 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
     soundFx.playClick();
     vibrateTap();
     const lines = [
-      localLanguage === 'en' ? `=== AUDIENCE QUESTION & ANSWER LOG ===` : `=== NHẬT KÝ CÂU HỎI & ĐÁP ÁN KHÁN GIẢ ===`,
-      localLanguage === 'en' ? `Audience: ${user?.name || 'Audience'} (UID: ${user ? getUserDisplayUid(user) : 'N/A'})` : `Khán giả: ${user?.name || 'Khán giả'} (UID: ${user ? getUserDisplayUid(user) : 'N/A'})`,
-      localLanguage === 'en'
+      localLanguage !== 'vi' ? `=== AUDIENCE QUESTION & ANSWER LOG ===` : `=== NHẬT KÝ CÂU HỎI & ĐÁP ÁN KHÁN GIẢ ===`,
+      localLanguage !== 'vi' ? `Audience: ${user?.name || 'Audience'} (UID: ${user ? getUserDisplayUid(user) : 'N/A'})` : `Khán giả: ${user?.name || 'Khán giả'} (UID: ${user ? getUserDisplayUid(user) : 'N/A'})`,
+      localLanguage !== 'vi'
         ? `Total questions: ${stats.totalCount} | Answered: ${stats.answeredCount} | Correct: ${stats.correctCount} (${stats.accuracy}%)\nTotal points: ${stats.totalPoints} pts`
         : `Tổng số câu đã qua: ${stats.totalCount} câu | Đã trả lời: ${stats.answeredCount} câu | Đúng: ${stats.correctCount} câu (${stats.accuracy}%)\nTổng điểm tích lũy: ${stats.totalPoints} điểm`,
       `----------------------------------------`,
       ...logEntries.map((e, idx) => {
-        const choiceText = e.hasAnswered ? `[${e.userChoice}]` : (localLanguage === 'en' ? 'Not answered' : 'Chưa trả lời');
-        const evalText = e.hasAnswered ? (e.isCorrect ? (localLanguage === 'en' ? 'CORRECT' : 'ĐÚNG') : (localLanguage === 'en' ? 'WRONG' : 'SAI')) : (localLanguage === 'en' ? 'SKIPPED' : 'BỎ QUA');
-        return localLanguage === 'en'
+        const choiceText = e.hasAnswered ? `[${e.userChoice}]` : (localLanguage !== 'vi' ? 'Not answered' : 'Chưa trả lời');
+        const evalText = e.hasAnswered ? (e.isCorrect ? (localLanguage !== 'vi' ? 'CORRECT' : 'ĐÚNG') : (localLanguage !== 'vi' ? 'WRONG' : 'SAI')) : (localLanguage !== 'vi' ? 'SKIPPED' : 'BỎ QUA');
+        return localLanguage !== 'vi'
           ? `${idx + 1}. [${e.questionId}] ${e.questionText}\n   - Choice: ${choiceText} -> Result: ${evalText} (${e.notice})\n   - Correct key: [${e.correctKey}]\n   - Explanation: ${e.explanation}`
           : `${idx + 1}. [${e.questionId}] ${e.questionText}\n   - Lựa chọn: ${choiceText} -> Kết quả: ${evalText} (${e.notice})\n   - Đáp án chuẩn: [${e.correctKey}]\n   - Giải thích: ${e.explanation}`;
       })
@@ -367,17 +367,17 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
           <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Total Questions' : 'Tổng Số Câu'}</span>
-              <span className="font-bold font-mono text-white text-sm">{stats.totalCount} {localLanguage === "en" ? "qs" : "câu"}</span>
+              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage !== 'vi' ? 'Total Questions' : 'Tổng Số Câu'}</span>
+              <span className="font-bold font-mono text-white text-sm">{stats.totalCount} {localLanguage !== 'vi' ? "qs" : "câu"}</span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <div>
-              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Correct Questions' : 'Số Câu Đúng'}</span>
+              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage !== 'vi' ? 'Correct Questions' : 'Số Câu Đúng'}</span>
               <span className="font-bold font-mono text-emerald-400 text-sm">
-                {stats.correctCount}/{stats.answeredCount} {localLanguage === 'en' ? 'qs' : 'câu'} ({stats.accuracy}%)
+                {stats.correctCount}/{stats.answeredCount} {localLanguage !== 'vi' ? 'qs' : 'câu'} ({stats.accuracy}%)
               </span>
             </div>
           </div>
@@ -385,21 +385,21 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
           <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />
             <div>
-              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Accumulated Points' : 'Điểm Tích Lũy'}</span>
-              <span className="font-bold font-mono text-yellow-300 text-sm">+{stats.totalPoints}{localLanguage === "en" ? "p" : "đ"}</span>
+              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage !== 'vi' ? 'Accumulated Points' : 'Điểm Tích Lũy'}</span>
+              <span className="font-bold font-mono text-yellow-300 text-sm">+{stats.totalPoints}{localLanguage !== 'vi' ? "p" : "đ"}</span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
             <div>
-              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage === 'en' ? 'Download Logs' : 'Tải Nhật Ký'}</span>
+              <span className="text-[10px] text-white/50 font-mono uppercase block">{localLanguage !== 'vi' ? 'Download Logs' : 'Tải Nhật Ký'}</span>
               <button
                 type="button"
                 onClick={handleCopySummary}
                 className="text-xs font-bold text-[#F7CAC9] hover:underline cursor-pointer"
               >
-                {isCopied ? (localLanguage === 'en' ? 'Copied to clipboard' : 'Đã lưu clipboard') : (localLanguage === 'en' ? 'Click to copy all' : 'Bấm để copy tất cả')}
+                {isCopied ? (localLanguage !== 'vi' ? 'Copied to clipboard' : 'Đã lưu clipboard') : (localLanguage !== 'vi' ? 'Click to copy all' : 'Bấm để copy tất cả')}
               </button>
             </div>
           </div>
@@ -412,7 +412,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             <Search className="w-4 h-4 text-[#F7CAC9] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder={localLanguage === 'en' ? 'Search by question ID, content, answer...' : 'Tìm theo mã câu, nội dung câu hỏi, đáp án...'}
+              placeholder={localLanguage !== 'vi' ? 'Search by question ID, content, answer...' : 'Tìm theo mã câu, nội dung câu hỏi, đáp án...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full fluent-box border border-white/10 focus:border-[#F7CAC9] rounded-[2px] pl-9 pr-8 py-2 text-xs font-mono text-white placeholder-white/30 outline-none transition"
@@ -421,7 +421,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               <button
                 onClick={() => setSearchTerm('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white p-0.5 rounded-[2px] cursor-pointer"
-                title={localLanguage === 'en' ? 'Clear search' : 'Xóa tìm kiếm'}
+                title={localLanguage !== 'vi' ? 'Clear search' : 'Xóa tìm kiếm'}
               >
                 ✕
               </button>
@@ -453,7 +453,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                 resultFilter === 'ALL' ? 'bg-[#F7CAC9] text-[#190839]' : 'text-white/60 hover:text-white'
               }`}
             >
-              {localLanguage === 'en' ? 'All' : 'Tất cả'}
+              {localLanguage !== 'vi' ? 'All' : 'Tất cả'}
             </button>
             <button
               onClick={() => setResultFilter('CORRECT')}
@@ -469,7 +469,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                 resultFilter === 'WRONG' ? 'bg-rose-500 text-white' : 'text-white/60 hover:text-white'
               }`}
             >
-              {localLanguage === 'en' ? 'Wrong' : 'Sai'} ({logEntries.filter((e) => e.hasAnswered && !e.isCorrect).length})
+              {localLanguage !== 'vi' ? 'Wrong' : 'Sai'} ({logEntries.filter((e) => e.hasAnswered && !e.isCorrect).length})
             </button>
           </div>
         </div>
@@ -547,7 +547,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                       ) : (
                         <span className="px-2.5 py-0.5 rounded-[2px] bg-white/10 text-white/50 border border-white/10 text-xs font-mono font-bold flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-white/40" />
-                          {localLanguage === 'en' ? 'SKIPPED' : 'CHƯA THAM GIA'}
+                          {localLanguage !== 'vi' ? 'SKIPPED' : 'CHƯA THAM GIA'}
                         </span>
                       )}
 
@@ -672,7 +672,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
             }}
             className="fluent-btn px-5 py-2.5 rounded-[2px] bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 border border-white/40 cursor-pointer"
           >
-            {localLanguage === 'en' ? 'CLOSE LOGS' : 'ĐÓNG NHẬT KÝ'}
+            {localLanguage !== 'vi' ? 'CLOSE LOGS' : 'ĐÓNG NHẬT KÝ'}
           </button>
         </div>
       </div>

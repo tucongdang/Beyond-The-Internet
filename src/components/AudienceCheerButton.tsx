@@ -22,14 +22,14 @@ interface LocalTapParticle {
 }
 
 const getCheerTypes = (localLanguage: string) => ([
-  { type: 'HEART', label: localLanguage === 'en' ? 'Heart' : 'Thả Tim', icon: '❤️', color: 'from-rose-500 to-pink-600' },
-  { type: 'FIRE', label: localLanguage === 'en' ? 'Fire' : 'Tiếp Lửa', icon: '🔥', color: 'from-amber-500 to-orange-600' },
-  { type: 'ENERGY', label: localLanguage === 'en' ? 'Energy' : 'Năng Lượng', icon: '⚡', color: 'from-cyan-400 to-blue-600' },
-  { type: 'CLAP', label: localLanguage === 'en' ? 'Clap' : 'Vỗ Tay', icon: '👏', color: 'from-emerald-400 to-teal-600' },
-  { type: 'STAR', label: localLanguage === 'en' ? 'Star' : 'Tỏa Sáng', icon: '⭐', color: 'from-yellow-400 to-amber-500' },
-  { type: 'SMILE', label: localLanguage === 'en' ? 'Smile' : 'Vui vẻ', icon: '😄', color: 'from-blue-400 to-indigo-500' },
-  { type: 'NERVOUS', label: localLanguage === 'en' ? 'Nervous' : 'Hồi hộp', icon: '🥶', color: 'from-cyan-400 to-blue-500' },
-  { type: 'HARD', label: localLanguage === 'en' ? 'So Hard' : 'Khó quá', icon: '🤯', color: 'from-purple-500 to-pink-600' }
+  { type: 'HEART', label: localLanguage !== 'vi' ? 'Heart' : 'Thả Tim', icon: '❤️', color: 'from-rose-500 to-pink-600' },
+  { type: 'FIRE', label: localLanguage !== 'vi' ? 'Fire' : 'Tiếp Lửa', icon: '🔥', color: 'from-amber-500 to-orange-600' },
+  { type: 'ENERGY', label: localLanguage !== 'vi' ? 'Energy' : 'Năng Lượng', icon: '⚡', color: 'from-cyan-400 to-blue-600' },
+  { type: 'CLAP', label: localLanguage !== 'vi' ? 'Clap' : 'Vỗ Tay', icon: '👏', color: 'from-emerald-400 to-teal-600' },
+  { type: 'STAR', label: localLanguage !== 'vi' ? 'Star' : 'Tỏa Sáng', icon: '⭐', color: 'from-yellow-400 to-amber-500' },
+  { type: 'SMILE', label: localLanguage !== 'vi' ? 'Smile' : 'Vui vẻ', icon: '😄', color: 'from-blue-400 to-indigo-500' },
+  { type: 'NERVOUS', label: localLanguage !== 'vi' ? 'Nervous' : 'Hồi hộp', icon: '🥶', color: 'from-cyan-400 to-blue-500' },
+  { type: 'HARD', label: localLanguage !== 'vi' ? 'So Hard' : 'Khó quá', icon: '🤯', color: 'from-purple-500 to-pink-600' }
 ]);
 
 export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
@@ -140,7 +140,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5 text-[11px] font-mono">
             <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-            <span className="text-white/70">{localLanguage === 'en' ? 'Hall:' : 'Khán phòng:'}</span>
+            <span className="text-white/70">{localLanguage !== 'vi' ? 'Hall:' : 'Khán phòng:'}</span>
             <span
               className="font-bold px-1.5 py-0.2 rounded-[2px] text-[10px]"
               style={{
@@ -158,7 +158,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             className="text-[10px] font-mono text-rose-300/90 hover:text-rose-200 underline flex items-center gap-1 transition"
           >
-            {showEmojiPicker ? (localLanguage === 'en' ? 'Close icon picker' : 'Đóng chọn icon') : (localLanguage === 'en' ? 'Change icon ▾' : 'Đổi icon khác ▾')}
+            {showEmojiPicker ? (localLanguage !== 'vi' ? 'Close icon picker' : 'Đóng chọn icon') : (localLanguage !== 'vi' ? 'Change icon ▾' : 'Đổi icon khác ▾')}
           </button>
         </div>
 
@@ -212,7 +212,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
             </span>
             <div className="text-left">
               <div className="font-black tracking-wide flex items-center gap-1.5">
-                <span>{localLanguage === 'en' ? 'CHEER ON STAGE' : 'CỔ VŨ SÂN KHẤU'}</span>
+                <span>{localLanguage !== 'vi' ? 'CHEER ON STAGE' : 'CỔ VŨ SÂN KHẤU'}</span>
                 {combo > 1 && (
                   <span className="px-1.5 py-0.5 rounded-[2px] bg-white/10 backdrop-blur-md border border-white/40 text-[10px] font-mono animate-pulse">
                     x{combo} COMBO!
@@ -220,7 +220,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
                 )}
               </div>
               <p className="text-[10px] sm:text-[11px] text-white/80 font-normal leading-tight">
-                {localLanguage === 'en' ? 'Keep tapping to raise the hall temperature!' : 'Chạm liên tục để đẩy nhiệt độ khán phòng!'}
+                {localLanguage !== 'vi' ? 'Keep tapping to raise the hall temperature!' : 'Chạm liên tục để đẩy nhiệt độ khán phòng!'}
               </p>
             </div>
           </div>
@@ -231,7 +231,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
             </span>
             {intensityData.totalCheers > 0 && (
               <span className="text-[9px] font-mono text-white/70 mt-0.5">
-                {intensityData.totalCheers.toLocaleString('vi-VN')} {localLanguage === 'en' ? 'taps' : 'lượt'}
+                {intensityData.totalCheers.toLocaleString('vi-VN')} {localLanguage !== 'vi' ? 'taps' : 'lượt'}
               </span>
             )}
           </div>

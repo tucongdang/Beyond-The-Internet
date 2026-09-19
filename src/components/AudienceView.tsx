@@ -122,13 +122,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   isWakeLockSupported,
   onToggleWakeLock
 }) => {
-  const [localLanguage, setLocalLanguage] = useState<'vi' | 'en'>(() => {
-    return (localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi';
+  const [localLanguage, setLocalLanguage] = useState<string>(() => {
+    return localStorage.getItem('bti_lang') || 'vi';
   });
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setLocalLanguage((localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi');
+      setLocalLanguage(localStorage.getItem('bti_lang') || 'vi');
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -237,6 +237,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const activeExplanation = (localLanguage !== 'vi' && localTranslation?.explanation)
     ? localTranslation.explanation
     : gameState.explanation;
+
+  // Helper to detect CJK / East Asian characters (Hangul, Hanzi, Kanji, Kana) for typography breathing room
+  const isCjk = (text?: string, lang?: string): boolean => {
+    if (lang && ['ko', 'zh', 'ja', 'th'].includes(lang)) return true;
+    if (!text) return false;
+    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(text);
+  };
+  const isCjkQuestion = isCjk(activeQuestionText, localLanguage);
 
   const hasAnnouncer = Boolean(gameState?.announcer_overlay?.active && gameState?.announcer_overlay?.text?.trim());
   
@@ -1061,7 +1069,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </button>
             </div>
             <div className="p-6 md:p-8 overflow-y-auto">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-relaxed tracking-tight">
+              <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'}`}>
                 {activeQuestionText}
               </h2>
             </div>
@@ -1273,7 +1281,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center font-bold text-xs shrink-0 ${
                         isOpen ? 'bg-[#F7CAC9]/20 text-[#F7CAC9]' : 'fluent-box-nested text-[#B6A6D8]/50 border border-white/10'
                       }`}>
-                        {isOpen ? (localLanguage === 'en' ? 'OPEN' : 'MỞ') : '?'}
+                        {isOpen ? (localLanguage !== 'vi' ? 'OPEN' : 'MỞ') : '?'}
                       </div>
                     </div>
                   );
@@ -1298,7 +1306,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center font-bold text-xs shrink-0 ${
                     gameState.vcnv_center_status ? 'bg-amber-500/20 text-amber-300' : 'fluent-box-nested text-white/20'
                   }`}>
-                    {gameState.vcnv_center_status ? (localLanguage === 'en' ? 'OPEN' : 'MỞ') : '?'}
+                    {gameState.vcnv_center_status ? (localLanguage !== 'vi' ? 'OPEN' : 'MỞ') : '?'}
                   </div>
                 </div>
               )}
@@ -1472,7 +1480,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <Lock className="w-4 h-4" /> {t("view_risk_frozen", localLanguage)}
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-blue-300 rounded-[2px] border border-[#E39A96]/30 font-bold">
-                {localLanguage === 'en' ? 'BRANCH 2 • REVEAL AT END OF ROUND' : 'NHÁNH 2 • CHỜ CÔNG BỐ CUỐI VÒNG'}
+                {localLanguage !== 'vi' ? 'BRANCH 2 • REVEAL AT END OF ROUND' : 'NHÁNH 2 • CHỜ CÔNG BỐ CUỐI VÒNG'}
               </span>
             </div>
 
@@ -1501,7 +1509,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <div className="fluent-box border-2 border-emerald-500/50 rounded-[2px] p-5 sm:p-6 shadow-2xl space-y-4 animate-fadeIn">
             <div className="flex items-center justify-between pb-3 border-b border-emerald-500/30">
               <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase">
-                <Sparkles className="w-4 h-4" /> {localLanguage === 'en' ? 'RISK BOX RESULT' : 'KẾT QUẢ Ô MẠO HIỂM'}
+                <Sparkles className="w-4 h-4" /> {localLanguage !== 'vi' ? 'RISK BOX RESULT' : 'KẾT QUẢ Ô MẠO HIỂM'}
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 fluent-box-nested text-emerald-300 rounded-[2px] border border-emerald-500/30 font-bold">{t("view_announced", localLanguage)}</span>
             </div>
@@ -1933,7 +1941,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     ⚠️ {seqToast.title}
                   </h4>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-white/10 text-amber-300 border border-amber-500/30">
-                    {localLanguage === 'en' ? 'WARNING' : 'CẢNH BÁO'}
+                    {localLanguage !== 'vi' ? 'WARNING' : 'CẢNH BÁO'}
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm font-semibold leading-relaxed text-white/95">
@@ -2097,7 +2105,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         />
                       </div>
                     </div>
-                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-white leading-relaxed tracking-tight">
+                    <h2 className={`text-base sm:text-lg md:text-xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'}`}>
                       {activeQuestionText}
                     </h2>
                     {gameState.media_type === 'IMAGE' && gameState.media_url && (
@@ -2156,7 +2164,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </div>
 
                       <div className={`grid grid-cols-1 ${isLongQuestion ? 'md:grid-cols-2' : ''} gap-3`}>
-                        {Object.entries(gameState.options || {}).map(([key, label]) => {
+                        {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                           const currentChoice = tfChoices[key]; // no default 'Đ'
 
                         return (
@@ -2168,7 +2176,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <span className="w-6 h-6 rounded-[2px] bg-[#F7CAC9]/20 text-[#FCEEEC] font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-[#F7CAC9]/30">
                                 {key}
                               </span>
-                              <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed">
+                              <p className={`text-xs sm:text-sm font-medium text-slate-200 ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}>
                                 {label}
                               </p>
                             </div>
@@ -2231,13 +2239,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           <ArrowUpDown className="w-4 h-4 text-[#F7CAC9]" /> {t("view_drag_drop", localLanguage)}
                         </span>
                         <span className="bg-[#F7CAC9]/20 px-2 py-0.5 rounded-[2px] text-[10px]">
-                          {seqItems.length} {localLanguage === 'en' ? 'ITEMS' : 'MỤC'}
+                          {seqItems.length} {localLanguage !== 'vi' ? 'ITEMS' : 'MỤC'}
                         </span>
                       </div>
 
                       <div className="space-y-2">
                         {seqItems.map((optKey, idx) => {
-                          const itemText = gameState.options?.[optKey] || '';
+                          const itemText = activeOptions?.[optKey] || gameState.options?.[optKey] || '';
                           return (
                             <div
                               key={optKey}
@@ -2259,7 +2267,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <span className="w-6 h-6 rounded-[2px] bg-white/10 text-[#FCEEEC] font-mono font-bold text-xs flex items-center justify-center shrink-0">
                                 {optKey}
                               </span>
-                              <p className="text-xs sm:text-sm font-semibold text-white leading-tight break-words">
+                              <p className={`text-xs sm:text-sm font-semibold text-white break-words ${isCjk(itemText, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-tight'}`}>
                                 {itemText}
                               </p>
                             </div>
@@ -2312,7 +2320,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4" /> {localLanguage === 'en' ? 'CONFIRM ORDER' : 'XÁC NHẬN SẮP XẾP'} ({seqItems.join('-')})
+                          <Send className="w-4 h-4" /> {localLanguage !== 'vi' ? 'CONFIRM ORDER' : 'XÁC NHẬN SẮP XẾP'} ({seqItems.join('-')})
                         </>
                       )}
                     </button>
@@ -2394,7 +2402,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isTrueFalse ? (
                   /* Toggle cho Đúng/Sai */
                   <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center">
-                    {Object.entries(gameState.options || {}).map(([key, label]) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2419,7 +2427,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                              <div className={`absolute inset-0 opacity-20 pointer-events-none animate-pulse ${isOptionA ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                           )}
                           <div className="flex flex-col items-center gap-3 relative z-10">
-                            <span className={`text-3xl sm:text-4xl md:text-5xl font-black tracking-tight ${isSelected ? (isOptionA ? 'text-emerald-400' : 'text-rose-400') : 'text-white'}`}>
+                            <span className={`text-3xl sm:text-4xl md:text-5xl font-black ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'tracking-tight'} ${isSelected ? (isOptionA ? 'text-emerald-400' : 'text-rose-400') : 'text-white'}`}>
                               {label}
                             </span>
                           </div>
@@ -2438,7 +2446,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isImagePoll ? (
                   /* Grid ảnh cho Poll hình ảnh */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
-                    {Object.entries(gameState.options || {}).map(([key, label], idx) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2488,9 +2496,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                             
                             <div className="flex-1 pt-1 relative z-10">
                               <div
-                                className={`text-sm sm:text-base font-bold leading-snug ${
+                                className={`text-sm sm:text-base font-bold ${
                                   isSelected ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'text-slate-200'
-                                }`}
+                                } ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-snug'}`}
                               >
                                 {label}
                               </div>
@@ -2510,7 +2518,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : (
                   /* Options Grid */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
-                    {Object.entries(gameState.options || {}).map(([key, label], idx) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2601,9 +2609,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full h-32 object-cover rounded-[2px] shadow-sm border border-white/10" />
                             )}
                             <div
-                              className={`text-sm sm:text-base font-bold leading-snug ${
+                              className={`text-sm sm:text-base font-bold ${
                                 isSelected ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'text-slate-200'
-                              }`}
+                              } ${isCjk(displayText, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-snug'}`}
                             >
                               {displayText}
                             </div>
@@ -2804,7 +2812,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     const tfSubResults: { key: string; label: string; userAns: string; officialAns: string; isItemCorrect: boolean }[] = [];
 
     if (isTf4) {
-      Object.entries(gameState.options || {}).forEach(([k, label]) => {
+      Object.entries(activeOptions || gameState.options || {}).forEach(([k, label]) => {
         let official = '';
         const match = gameState.correct_key.match(new RegExp(`${k}\\s*:\\s*([ĐSđsTFtf])`, 'i'));
         if (match) {
@@ -2929,11 +2937,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         </div>
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}
         <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl mb-6">
-          <h3 className="text-lg sm:text-xl font-black text-white leading-relaxed mb-4">
+          <h3 className={`text-lg sm:text-xl font-black text-white mb-4 ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}>
             {activeQuestionText}
           </h3>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
-            {Object.entries(activeOptions || {}).map(([key, label]) => {
+            {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
               const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
               const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
               const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
@@ -2960,7 +2968,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   }`}>
                     {key}
                   </div>
-                  <span className={`text-sm sm:text-base font-medium leading-snug flex-1 ${isSelected || isCorrectAnswer ? 'text-white' : 'text-slate-300'}`}>
+                  <span className={`text-sm sm:text-base font-medium flex-1 ${isSelected || isCorrectAnswer ? 'text-white' : 'text-slate-300'} ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-snug'}`}>
                     {label}
                   </span>
                 </div>
@@ -3022,7 +3030,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <div className="flex items-center gap-2 text-[#F7CAC9] text-xs font-bold uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" /> {t("view_theory", localLanguage)}
             </div>
-            <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
+            <p className={`text-sm sm:text-base text-slate-200 ${isCjk(activeExplanation, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}>
               {activeExplanation}
             </p>
           </div>
@@ -3042,7 +3050,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
           <div className="space-y-3">
             {gameState.round_type === 'TRUE_FALSE_4' && tfStats ? (
-              Object.entries(gameState.options || {}).map(([key, label]) => {
+              Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                 const stat = tfStats[key] || { D: 0, S: 0, total: 0 };
                 const totalStatementVotes = stat.total;
                 const percentD = totalStatementVotes > 0 ? Math.round((stat.D / totalStatementVotes) * 100) : 0;
@@ -3052,7 +3060,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   <div key={key} className="space-y-2 p-3 bg-black/40 rounded-[2px] border border-white/5">
                     <div className="text-xs text-[#B6A6D8] font-medium leading-relaxed break-words">
                       <span className="font-mono font-bold text-white px-1.5 py-0.5 rounded-[2px] bg-white/10 mr-1.5">{key}</span>
-                      {label}
+                      <span className={isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : ''}>{label}</span>
                     </div>
                     
                     <div className="flex gap-2 w-full h-4 rounded-[2px] overflow-hidden bg-[#0D0420]/50 border border-white/10 p-0.5">
@@ -3116,7 +3124,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 </div>
               )
             ) : (
-              Object.entries(gameState.options || {}).map(([key, label]) => {
+              Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
               const count = voteStats.counts[key] || 0;
               const percent = voteStats.totalVotes > 0
                 ? Math.round((count / voteStats.totalVotes) * 100)
@@ -3137,7 +3145,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       >
                         {key}
                       </span>
-                      <span className="text-[#B6A6D8] font-medium leading-relaxed break-words">
+                      <span className={`text-[#B6A6D8] font-medium break-words ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}>
                         {label}
                       </span>
                       {isUserPick && (

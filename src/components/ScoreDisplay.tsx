@@ -33,7 +33,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
   },
   {
     key: 'round2' as const,
-    name: lang === 'en' ? 'Obstacle' : 'VCNV',
+    name: lang !== 'vi' ? 'Obstacle' : 'VCNV',
     shortName: 'R2',
     description: t("view_score_obs_desc", lang),
     icon: Shield,

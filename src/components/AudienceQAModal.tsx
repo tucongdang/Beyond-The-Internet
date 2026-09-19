@@ -187,11 +187,11 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                 {settings.is_open ? (
                   <span className="fluent-badge fluent-badge-success">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    {localLanguage === 'en' ? 'OPEN' : 'ĐANG MỞ'}
+                    {localLanguage !== 'vi' ? 'OPEN' : 'ĐANG MỞ'}
                   </span>
                 ) : (
                   <span className="fluent-badge fluent-badge-danger">
-                    {localLanguage === 'en' ? 'CLOSED' : 'TẠM ĐÓNG'}
+                    {localLanguage !== 'vi' ? 'CLOSED' : 'TẠM ĐÓNG'}
                   </span>
                 )}
               </div>
@@ -228,7 +228,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             }`}
           >
             <Send className="w-3.5 h-3.5" />
-            <span>{localLanguage === 'en' ? 'New Question' : 'Gửi câu hỏi mới'}</span>
+            <span>{localLanguage !== 'vi' ? 'New Question' : 'Gửi câu hỏi mới'}</span>
           </button>
 
           <button
@@ -244,7 +244,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span>{localLanguage === 'en' ? 'My Questions' : 'Câu hỏi của tôi'}</span>
+            <span>{localLanguage !== 'vi' ? 'My Questions' : 'Câu hỏi của tôi'}</span>
             {myQuestions.length > 0 && (
               <span className="ml-1 px-1.5 py-0.2 rounded-[2px] text-[10px] bg-purple-500/30 text-purple-200 border border-purple-500/40 font-mono font-black">
                 {myQuestions.length}
@@ -265,7 +265,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{localLanguage === 'en' ? 'Auditorium Discussion' : 'Khán phòng thảo luận'}</span>
+            <span>{localLanguage !== 'vi' ? 'Auditorium Discussion' : 'Khán phòng thảo luận'}</span>
             {communityQuestions.length > 0 && (
               <span className="ml-1 px-1.5 py-0.2 rounded-[2px] text-[10px] bg-pink-500/30 text-pink-200 border border-pink-500/40 font-mono">
                 {communityQuestions.length}
@@ -378,7 +378,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           : 'fluent-box-nested text-white/70 hover:text-white'
                       }`}
                     >
-                      {isAnonymous ? (localLanguage === 'en' ? 'Anonymous: ON' : 'Ẩn danh: BẬT') : (localLanguage === 'en' ? 'Anonymous: OFF' : 'Ẩn danh: TẮT')}
+                      {isAnonymous ? (localLanguage !== 'vi' ? 'Anonymous: ON' : 'Ẩn danh: BẬT') : (localLanguage !== 'vi' ? 'Anonymous: OFF' : 'Ẩn danh: TẮT')}
                     </button>
                   </div>
 
@@ -414,7 +414,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>{localLanguage === 'en' ? 'Send Question to Screen' : 'Gửi Câu Hỏi Lên Màn Chiếu'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Send Question to Screen' : 'Gửi Câu Hỏi Lên Màn Chiếu'}</span>
                       </>
                     )}
                   </button>
@@ -466,30 +466,30 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           {q.status === 'FEATURED' && (
                             <span className="fluent-badge fluent-badge-danger animate-pulse">
                               <Radio className="w-3 h-3" />
-                              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
+                              {localLanguage !== 'vi' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
                             </span>
                           )}
                           {q.status === 'APPROVED' && (
                             <span className="fluent-badge fluent-badge-accent">
                               <CheckCircle2 className="w-3 h-3" />
-                              {localLanguage === 'en' ? 'Approved' : 'Đã duyệt'}
+                              {localLanguage !== 'vi' ? 'Approved' : 'Đã duyệt'}
                             </span>
                           )}
                           {q.status === 'PENDING' && (
                             <span className="fluent-badge fluent-badge-warning">
                               <Clock className="w-3 h-3" />
-                              {localLanguage === 'en' ? 'Pending Approval' : 'Đang chờ duyệt'}
+                              {localLanguage !== 'vi' ? 'Pending Approval' : 'Đang chờ duyệt'}
                             </span>
                           )}
                           {q.status === 'ANSWERED' && (
                             <span className="fluent-badge fluent-badge-success">
                               <Sparkles className="w-3 h-3" />
-                              {localLanguage === 'en' ? 'Answered' : 'Đã giải đáp'}
+                              {localLanguage !== 'vi' ? 'Answered' : 'Đã giải đáp'}
                             </span>
                           )}
                           {q.status === 'REJECTED' && (
                             <span className="fluent-badge fluent-badge-danger">
-                              {localLanguage === 'en' ? 'Declined' : 'Chưa phù hợp'}
+                              {localLanguage !== 'vi' ? 'Declined' : 'Chưa phù hợp'}
                             </span>
                           )}
                         </div>
@@ -503,7 +503,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         </span>
                         <div className="flex items-center gap-1 text-pink-400 font-mono font-bold text-xs">
                           <Heart className="w-3.5 h-3.5 fill-current" />
-                          <span>{q.upvotes || 0} {localLanguage === "en" ? "likes" : "lượt thích"}</span>
+                          <span>{q.upvotes || 0} {localLanguage !== 'vi' ? "likes" : "lượt thích"}</span>
                         </div>
                       </div>
                     </div>
@@ -527,7 +527,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                         : 'text-white/60 hover:bg-white/10'
                     }`}
                   >
-                    {localLanguage === 'en' ? 'All' : 'Tất cả'}
+                    {localLanguage !== 'vi' ? 'All' : 'Tất cả'}
                   </button>
                   {QA_CATEGORIES.map((cat) => (
                     <button
@@ -561,7 +561,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     }`}
                   >
                     <Clock className="w-3 h-3" />
-                    {localLanguage === 'en' ? 'Latest' : 'Mới nhất'}
+                    {localLanguage !== 'vi' ? 'Latest' : 'Mới nhất'}
                   </button>
                 </div>
               </div>
@@ -595,18 +595,18 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                           {isFeatured && (
                             <span className="fluent-badge fluent-badge-danger animate-pulse">
                               <Radio className="w-3 h-3" />
-                              {localLanguage === 'en' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
+                              {localLanguage !== 'vi' ? 'BROADCASTING ON STAGE' : 'ĐANG CHIẾU TRÊN SÂN KHẤU'}
                             </span>
                           )}
                           {q.status === 'ANSWERED' && (
                             <span className="fluent-badge fluent-badge-success">
-                              {localLanguage === 'en' ? 'Answered' : 'Đã giải đáp'}
+                              {localLanguage !== 'vi' ? 'Answered' : 'Đã giải đáp'}
                             </span>
                           )}
                         </div>
 
                         <span className="text-[10px] font-mono text-white/40">
-                          {new Date(q.created_at).toLocaleTimeString(localLanguage === 'en' ? 'en-US' : 'vi-VN', {
+                          {new Date(q.created_at).toLocaleTimeString(localLanguage !== 'vi' ? 'en-US' : 'vi-VN', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
@@ -655,7 +655,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             onClick={onClose}
             className="fluent-btn px-3 py-1 rounded-[2px] fluent-box-nested text-white/80 hover:text-white cursor-pointer"
           >
-            {localLanguage === 'en' ? 'Close' : 'Đóng'}
+            {localLanguage !== 'vi' ? 'Close' : 'Đóng'}
           </button>
         </div>
       </div>

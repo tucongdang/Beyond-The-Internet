@@ -244,8 +244,8 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
             <Radio className="w-3 h-3 animate-pulse text-[#F7CAC9]" />
             <span>
               {displayMode === 'fullscreen'
-                ? (localLanguage === 'en' ? 'Fullscreen Broadcast • Live' : 'Toàn Màn Hình • Trực Tiếp')
-                : (localLanguage === 'en' ? 'Invite Audience • Live' : 'Mời Khán Giả • Trực Tiếp')}
+                ? (localLanguage !== 'vi' ? 'Fullscreen Broadcast • Live' : 'Toàn Màn Hình • Trực Tiếp')
+                : (localLanguage !== 'vi' ? 'Invite Audience • Live' : 'Mời Khán Giả • Trực Tiếp')}
             </span>
           </div>
 
@@ -267,10 +267,10 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                   ? 'bg-rose-500/25 text-rose-300 border-rose-500/50 animate-pulse'
                   : 'bg-white/10 hover:bg-white/20 text-sky-300 border-sky-400/30'
               }`}
-              title={localLanguage === 'en' ? 'Toggle diagnostics & QR status (Key D)' : 'Mở bảng kiểm tra chẩn đoán & trạng thái dịch vụ tạo QR (Phím D)'}
+              title={localLanguage !== 'vi' ? 'Toggle diagnostics & QR status (Key D)' : 'Mở bảng kiểm tra chẩn đoán & trạng thái dịch vụ tạo QR (Phím D)'}
             >
               <Activity className={`w-3.5 h-3.5 ${showDiagnostics ? 'text-black animate-pulse' : 'text-sky-300'}`} />
-              <span className="hidden sm:inline">{localLanguage === 'en' ? 'Diagnostics (D)' : 'Chẩn Đoán (D)'}</span>
+              <span className="hidden sm:inline">{localLanguage !== 'vi' ? 'Diagnostics (D)' : 'Chẩn Đoán (D)'}</span>
               <span className="sm:hidden">Debug</span>
             </button>
 
@@ -290,19 +290,19 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               }`}
               title={
                 displayMode === 'fullscreen'
-                  ? (localLanguage === 'en' ? 'Compact mode (Key F)' : 'Thu gọn (Phím F)')
-                  : (localLanguage === 'en' ? 'Fullscreen mode (Key F)' : 'Toàn màn hình máy chiếu (Phím F)')
+                  ? (localLanguage !== 'vi' ? 'Compact mode (Key F)' : 'Thu gọn (Phím F)')
+                  : (localLanguage !== 'vi' ? 'Fullscreen mode (Key F)' : 'Toàn màn hình máy chiếu (Phím F)')
               }
             >
               {displayMode === 'fullscreen' ? (
                 <>
                   <Minimize2 className="w-3.5 h-3.5 text-amber-300" />
-                  <span className="text-[10px] hidden sm:inline">{localLanguage === 'en' ? 'Compact' : 'Thu Gọn'}</span>
+                  <span className="text-[10px] hidden sm:inline">{localLanguage !== 'vi' ? 'Compact' : 'Thu Gọn'}</span>
                 </>
               ) : (
                 <>
                   <Maximize2 className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                  <span className="text-[10px] hidden sm:inline">{localLanguage === 'en' ? 'Fullscreen' : 'Phóng To'}</span>
+                  <span className="text-[10px] hidden sm:inline">{localLanguage !== 'vi' ? 'Fullscreen' : 'Phóng To'}</span>
                 </>
               )}
             </button>
@@ -315,7 +315,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                   ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
                   : 'bg-white/10 text-white/70 border-white/15'
               }`}
-              title={localLanguage === 'en' ? `Auto-closing in ${secondsRemaining}s of inactivity` : `Tự động đóng sau ${secondsRemaining}s không hoạt động`}
+              title={localLanguage !== 'vi' ? `Auto-closing in ${secondsRemaining}s of inactivity` : `Tự động đóng sau ${secondsRemaining}s không hoạt động`}
             >
               <Clock className="w-3 h-3 text-[#F7CAC9]" />
               <span>{secondsRemaining}s</span>
@@ -331,8 +331,8 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 onClose();
               }}
               className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
-              aria-label={localLanguage === 'en' ? 'Close (ESC)' : 'Đóng (ESC)'}
-              title={localLanguage === 'en' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
+              aria-label={localLanguage !== 'vi' ? 'Close (ESC)' : 'Đóng (ESC)'}
+              title={localLanguage !== 'vi' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
             >
               <X className="w-4 h-4" />
             </button>
@@ -344,11 +344,11 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           <h3 className={`font-black tracking-tight text-white flex items-center justify-center gap-2 ${
             displayMode === 'fullscreen' ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl'
           }`}>
-            <span>{localLanguage === 'en' ? 'Scan Code to Join Arena' : 'Quét Mã Tham Gia Đấu Trường'}</span>
+            <span>{localLanguage !== 'vi' ? 'Scan Code to Join Arena' : 'Quét Mã Tham Gia Đấu Trường'}</span>
           </h3>
           {roundName && (
             <p className="text-xs sm:text-sm text-[#F7CAC9]/80 font-mono mt-0.5 truncate max-w-md mx-auto">
-              {localLanguage === 'en' ? 'Round:' : 'Vòng thi:'} {roundName}
+              {localLanguage !== 'vi' ? 'Round:' : 'Vòng thi:'} {roundName}
             </p>
           )}
         </div>
@@ -361,7 +361,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           >
             <div className="min-w-0">
               <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
-                {localLanguage === 'en' ? 'Reviewing previous broadcast QR' : 'Đang xem lại mã từ lịch sử broadcast'}
+                {localLanguage !== 'vi' ? 'Reviewing previous broadcast QR' : 'Đang xem lại mã từ lịch sử broadcast'}
               </span>
               <span className="font-bold truncate text-white block text-[11px]">
                 {previewRecentQr.caption || previewRecentQr.roundName || previewRecentQr.url}
@@ -378,7 +378,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               className="px-2.5 py-1 rounded-[2px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>{localLanguage === 'en' ? 'Live QR' : 'Về Mã Live'}</span>
+              <span>{localLanguage !== 'vi' ? 'Live QR' : 'Về Mã Live'}</span>
             </button>
           </div>
         )}
@@ -405,7 +405,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 } flex flex-col items-center justify-center text-slate-800 gap-2`}>
                   <div className="w-8 h-8 border-4 border-[#F7CAC9] border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs font-mono font-bold">
-                    {localLanguage === 'en' ? 'Generating QR...' : 'Đang tạo mã QR...'}
+                    {localLanguage !== 'vi' ? 'Generating QR...' : 'Đang tạo mã QR...'}
                   </span>
                 </div>
               }
@@ -429,11 +429,11 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           <div 
             id="badge-share-modal-scans"
             className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
-            title={localLanguage === 'en' ? 'Total audience scans joining the arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
+            title={localLanguage !== 'vi' ? 'Total audience scans joining the arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
           >
             <ScanLine className="w-3 h-3 text-sky-400" />
             <span>
-              {localLanguage === 'en' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{estimatedScans}</strong> {localLanguage === 'en' ? 'scans' : 'lượt'}
+              {localLanguage !== 'vi' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{estimatedScans}</strong> {localLanguage !== 'vi' ? 'scans' : 'lượt'}
             </span>
           </div>
 
@@ -441,22 +441,22 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
             <div 
               id="badge-share-modal-firebase-online"
               className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
-              title={localLanguage === 'en' ? 'Live arena is online and real-time sync is active' : 'Đấu trường trực tuyến và đồng bộ dữ liệu thời gian thực đang hoạt động ổn định'}
+              title={localLanguage !== 'vi' ? 'Live arena is online and real-time sync is active' : 'Đấu trường trực tuyến và đồng bộ dữ liệu thời gian thực đang hoạt động ổn định'}
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span>{localLanguage === 'en' ? 'Firebase: Online' : 'Firebase: Trực Tuyến'}</span>
+              <span>{localLanguage !== 'vi' ? 'Firebase: Online' : 'Firebase: Trực Tuyến'}</span>
             </div>
           ) : (
             <div 
               id="badge-share-modal-firebase-offline"
               className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
-              title={localLanguage === 'en' ? 'Reconnecting with Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
+              title={localLanguage !== 'vi' ? 'Reconnecting with Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
             >
               <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
-              <span>{localLanguage === 'en' ? 'Firebase: Offline' : 'Firebase: Ngoại Tuyến'}</span>
+              <span>{localLanguage !== 'vi' ? 'Firebase: Offline' : 'Firebase: Ngoại Tuyến'}</span>
             </div>
           )}
         </div>
@@ -465,12 +465,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         <div className="w-full fluent-box-nested border border-white/10 rounded-[2px] p-2.5 sm:p-3 my-2 text-left text-xs space-y-1 shrink-0">
           <div className="flex items-center gap-2 text-[#F7CAC9] font-bold">
             <Smartphone className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
-            <span>{localLanguage === 'en' ? 'Instructions for new audience:' : 'Hướng dẫn cho khán giả mới:'}</span>
+            <span>{localLanguage !== 'vi' ? 'Instructions for new audience:' : 'Hướng dẫn cho khán giả mới:'}</span>
           </div>
           <ol className="text-[11px] text-white/70 space-y-0.5 pl-5 list-decimal leading-relaxed font-sans">
-            <li>{localLanguage === 'en' ? 'Open Phone Camera or Scanner app to scan the QR code.' : 'Mở Camera điện thoại hoặc Zalo để quét mã QR.'}</li>
-            <li>{localLanguage === 'en' ? 'Enter your Name & Student ID to receive a personal identifier.' : 'Nhập Họ tên & MSSV để nhận mã định danh cá nhân.'}</li>
-            <li>{localLanguage === 'en' ? 'Start voting and interacting live with the MC!' : 'Bắt đầu bình chọn và tương tác trực tiếp cùng MC!'}</li>
+            <li>{localLanguage !== 'vi' ? 'Open Phone Camera or Scanner app to scan the QR code.' : 'Mở Camera điện thoại hoặc Zalo để quét mã QR.'}</li>
+            <li>{localLanguage !== 'vi' ? 'Enter your Name & Student ID to receive a personal identifier.' : 'Nhập Họ tên & MSSV để nhận mã định danh cá nhân.'}</li>
+            <li>{localLanguage !== 'vi' ? 'Start voting and interacting live with the MC!' : 'Bắt đầu bình chọn và tương tác trực tiếp cùng MC!'}</li>
           </ol>
         </div>
 
@@ -490,12 +490,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                   ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
                   : 'bg-white/10 hover:bg-white/20 text-[#F7CAC9] border border-[#F7CAC9]/30'
               }`}
-              title={localLanguage === 'en' ? 'Copy link to clipboard' : 'Sao chép liên kết vào bộ nhớ tạm'}
+              title={localLanguage !== 'vi' ? 'Copy link to clipboard' : 'Sao chép liên kết vào bộ nhớ tạm'}
             >
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  <span>{localLanguage === 'en' ? 'Copied!' : 'Đã chép!'}</span>
+                  <span>{localLanguage !== 'vi' ? 'Copied!' : 'Đã chép!'}</span>
                 </>
               ) : (
                 <>
@@ -514,10 +514,10 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 type="button"
                 onClick={handleNativeShare}
                 className="w-full py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition active:scale-95 cursor-pointer"
-                title={localLanguage === 'en' ? 'Share via system apps' : 'Chia sẻ link qua các ứng dụng hệ thống trên thiết bị di động'}
+                title={localLanguage !== 'vi' ? 'Share via system apps' : 'Chia sẻ link qua các ứng dụng hệ thống trên thiết bị di động'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" />
-                <span>{localLanguage === 'en' ? 'Share via App (SMS / AirDrop)' : 'Chia sẻ qua ứng dụng (Zalo / SMS / AirDrop)'}</span>
+                <span>{localLanguage !== 'vi' ? 'Share via App (SMS / AirDrop)' : 'Chia sẻ qua ứng dụng (Zalo / SMS / AirDrop)'}</span>
               </button>
             )}
 
@@ -535,12 +535,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 {copied ? (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>{localLanguage === 'en' ? 'Copied!' : 'Đã sao chép!'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Copied!' : 'Đã sao chép!'}</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    <span>{localLanguage === 'en' ? 'Copy Audience URL' : 'Copy URL Khán Giả'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Copy Audience URL' : 'Copy URL Khán Giả'}</span>
                   </>
                 )}
               </button>
@@ -553,7 +553,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 className="py-2.5 px-3 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition active:scale-95 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>{localLanguage === 'en' ? 'Download QR' : 'Tải ảnh QR'}</span>
+                <span>{localLanguage !== 'vi' ? 'Download QR' : 'Tải ảnh QR'}</span>
               </button>
             </div>
           </div>

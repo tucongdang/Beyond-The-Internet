@@ -99,19 +99,19 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
 
     const trimmed = inputText.trim();
     if (!trimmed) {
-      setErrorMessage(localLanguage === 'en' ? 'Please enter a shout message!' : 'Vui lòng nhập nội dung tiếng hô!');
+      setErrorMessage(localLanguage !== 'vi' ? 'Please enter a shout message!' : 'Vui lòng nhập nội dung tiếng hô!');
       vibrateWarning();
       return;
     }
 
     if (trimmed.length > maxChars) {
-      setErrorMessage(localLanguage === 'en' ? `Maximum ${maxChars} characters!` : `Nội dung tối đa ${maxChars} ký tự!`);
+      setErrorMessage(localLanguage !== 'vi' ? `Maximum ${maxChars} characters!` : `Nội dung tối đa ${maxChars} ký tự!`);
       vibrateWarning();
       return;
     }
 
     if (cooldownRemaining > 0) {
-      setErrorMessage(localLanguage === 'en' ? `Please wait ${cooldownRemaining}s to send again` : `Vui lòng chờ ${cooldownRemaining}s để gửi tiếp`);
+      setErrorMessage(localLanguage !== 'vi' ? `Please wait ${cooldownRemaining}s to send again` : `Vui lòng chờ ${cooldownRemaining}s để gửi tiếp`);
       vibrateWarning();
       return;
     }
@@ -122,7 +122,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
     try {
       const result = await shoutService.sendShout({
         uid: user.uid,
-        sender_name: user.name || (localLanguage === 'en' ? 'Audience' : 'Khán giả'),
+        sender_name: user.name || (localLanguage !== 'vi' ? 'Audience' : 'Khán giả'),
         sender_mssv: user.mssv || '',
         sender_avatar: user.avatarSeed,
         text: trimmed,
@@ -148,11 +148,11 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
         // Switch to feed or close
         setActiveTab('feed');
       } else {
-        setErrorMessage(result.error || (localLanguage === 'en' ? 'Cannot send shout. Please try again.' : 'Không thể gửi tiếng hô. Vui lòng thử lại.'));
+        setErrorMessage(result.error || (localLanguage !== 'vi' ? 'Cannot send shout. Please try again.' : 'Không thể gửi tiếng hô. Vui lòng thử lại.'));
         vibrateWarning();
       }
     } catch (err) {
-      setErrorMessage(localLanguage === 'en' ? 'System error when sending shout.' : 'Lỗi hệ thống khi gửi tiếng hô.');
+      setErrorMessage(localLanguage !== 'vi' ? 'System error when sending shout.' : 'Lỗi hệ thống khi gửi tiếng hô.');
       vibrateWarning();
     } finally {
       setIsSending(false);
@@ -200,10 +200,10 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm sm:text-base text-white flex items-center gap-1.5">
-                {localLanguage === "en" ? "Audience Shout" : "Hô To Khán Giả"} <span className="text-[11px] font-mono text-[#F7CAC9] font-normal">Audience Shout</span>
+                {localLanguage !== 'vi' ? "Audience Shout" : "Hô To Khán Giả"} <span className="text-[11px] font-mono text-[#F7CAC9] font-normal">Audience Shout</span>
               </h3>
               <p className="text-[11px] text-white/60">
-                {localLanguage === 'en' ? 'Appears live on stage & audience screens' : 'Xuất hiện trực tiếp trên màn hình sân khấu & khán phòng'}
+                {localLanguage !== 'vi' ? 'Appears live on stage & audience screens' : 'Xuất hiện trực tiếp trên màn hình sân khấu & khán phòng'}
               </p>
             </div>
           </div>
@@ -231,7 +231,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Megaphone className="w-3.5 h-3.5" /> {localLanguage === 'en' ? 'Send New Shout' : 'Gửi Tiếng Hô Mới'}
+            <Megaphone className="w-3.5 h-3.5" /> {localLanguage !== 'vi' ? 'Send New Shout' : 'Gửi Tiếng Hô Mới'}
           </button>
           <button
             onClick={() => {
@@ -244,7 +244,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <History className="w-3.5 h-3.5" /> {localLanguage === 'en' ? 'Shout Wall' : 'Tường Tiếng Hô'} ({shouts.length})
+            <History className="w-3.5 h-3.5" /> {localLanguage !== 'vi' ? 'Shout Wall' : 'Tường Tiếng Hô'} ({shouts.length})
           </button>
         </div>
 
@@ -254,16 +254,16 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             {/* Live Preview Card */}
             <div>
               <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage === 'en' ? 'Preview on Marquee:' : 'Xem trước hiển thị trên Marquee:'}
+                <Sparkles className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage !== 'vi' ? 'Preview on Marquee:' : 'Xem trước hiển thị trên Marquee:'}
               </label>
               <div className={`p-3 rounded-[2px] border ${currentColorConfig.bg} ${currentColorConfig.border} flex items-center gap-2.5 transition-all shadow-inner`}>
                 <span className="text-xl select-none">{selectedEmoji}</span>
                 <div className="min-w-0 flex-1">
                   <div className="text-[11px] font-mono font-bold text-white/80 truncate">
-                    {user?.name || (localLanguage === 'en' ? 'You' : 'Bạn')} {user?.mssv ? `(${user.mssv})` : ''}:
+                    {user?.name || (localLanguage !== 'vi' ? 'You' : 'Bạn')} {user?.mssv ? `(${user.mssv})` : ''}:
                   </div>
                   <div className="text-sm font-semibold text-white truncate">
-                    {inputText.trim() || (localLanguage === 'en' ? 'Enter your shout message...' : 'Nhập nội dung tiếng hô của bạn...')} 
+                    {inputText.trim() || (localLanguage !== 'vi' ? 'Enter your shout message...' : 'Nhập nội dung tiếng hô của bạn...')} 
                   </div>
                 </div>
                 <div className="text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded-[2px] text-white/50 shrink-0">
@@ -277,7 +277,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-bold text-white/90">
-                    {localLanguage === 'en' ? `Shout content (Max ${maxChars} chars):` : `Nội dung tiếng hô (Giới hạn ${maxChars} ký tự):`}
+                    {localLanguage !== 'vi' ? `Shout content (Max ${maxChars} chars):` : `Nội dung tiếng hô (Giới hạn ${maxChars} ký tự):`}
                   </label>
                   <span className={`text-xs font-mono font-bold ${
                     inputText.length > maxChars ? 'text-rose-400' : 'text-[#F7CAC9]'
@@ -294,7 +294,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       setInputText(e.target.value.substring(0, maxChars));
                       if (errorMessage) setErrorMessage(null);
                     }}
-                    placeholder={localLanguage === "en" ? "Ex: Go Team A! You guys rock 🔥" : "VD: Cố lên đội A ơi! Đỉnh chóp quá 🔥"}
+                    placeholder={localLanguage !== 'vi' ? "Ex: Go Team A! You guys rock 🔥" : "VD: Cố lên đội A ơi! Đỉnh chóp quá 🔥"}
                     maxLength={maxChars}
                     className="w-full px-3.5 py-2.5 rounded-[2px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
                   />
@@ -313,7 +313,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               {/* Emoji Selector */}
               <div>
                 <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
-                  <Smile className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage === 'en' ? 'Select Emoji:' : 'Chọn Biểu Tượng Cảm Xúc:'}
+                  <Smile className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage !== 'vi' ? 'Select Emoji:' : 'Chọn Biểu Tượng Cảm Xúc:'}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {SHOUT_EMOJIS.map((emoji) => (
@@ -339,7 +339,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               {/* Color Theme Selector */}
               <div>
                 <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
-                  <Palette className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage === 'en' ? 'Select Highlight Color:' : 'Chọn Màu Sắc Nổi Bật:'}
+                  <Palette className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage !== 'vi' ? 'Select Highlight Color:' : 'Chọn Màu Sắc Nổi Bật:'}
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                   {Object.entries(SHOUT_BADGE_COLORS).map(([key, config]) => {
@@ -371,7 +371,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               {/* Quick Preset Chips */}
               <div>
                 <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
-                  <Flame className="w-3 h-3 text-pink-400" /> {localLanguage === 'en' ? '1-Tap Quick Shouts:' : 'Mẫu Hô Nhanh 1-Chạm:'}
+                  <Flame className="w-3 h-3 text-pink-400" /> {localLanguage !== 'vi' ? '1-Tap Quick Shouts:' : 'Mẫu Hô Nhanh 1-Chạm:'}
                 </label>
                 <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
                   {POPULAR_SHOUT_PRESETS.map((preset, idx) => (
@@ -406,7 +406,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     }}
                     className="w-full py-3 rounded-[2px] bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2"
                   >
-                    {localLanguage === 'en' ? 'Register To Shout' : 'Đăng Ký Tham Gia Để Hô To'}
+                    {localLanguage !== 'vi' ? 'Register To Shout' : 'Đăng Ký Tham Gia Để Hô To'}
                   </button>
                 ) : (
                   <button
@@ -422,7 +422,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                   >
                     {isSending ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin" /> {localLanguage === 'en' ? 'Sending...' : 'Đang gửi...'}
+                        <RefreshCw className="w-4 h-4 animate-spin" /> {localLanguage !== 'vi' ? 'Sending...' : 'Đang gửi...'}
                       </>
                     ) : cooldownRemaining > 0 ? (
                       <>
@@ -457,7 +457,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  {localLanguage === 'en' ? 'All' : 'Tất cả'} ({shouts.length})
+                  {localLanguage !== 'vi' ? 'All' : 'Tất cả'} ({shouts.length})
                 </button>
                 <button
                   onClick={() => setFeedFilter('mine')}
@@ -467,7 +467,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  {localLanguage === 'en' ? 'Mine' : 'Của tôi'}
+                  {localLanguage !== 'vi' ? 'Mine' : 'Của tôi'}
                 </button>
                 <button
                   onClick={() => setFeedFilter('top')}
@@ -477,7 +477,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  {localLanguage === 'en' ? 'Top Hearts ❤️' : 'Nhiều Tim ❤️'}
+                  {localLanguage !== 'vi' ? 'Top Hearts ❤️' : 'Nhiều Tim ❤️'}
                 </button>
               </div>
 
@@ -488,7 +488,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                 }}
                 className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-pink-600 to-purple-600 text-xs font-bold text-white shadow hover:opacity-90 flex items-center gap-1"
               >
-                <Megaphone className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô mới'}
+                <Megaphone className="w-3 h-3" /> {localLanguage !== 'vi' ? 'Shout' : 'Hô mới'}
               </button>
             </div>
 
@@ -496,12 +496,12 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             {filteredShouts.length === 0 ? (
               <div className="text-center py-10 text-white/50 text-xs space-y-2">
                 <Megaphone className="w-8 h-8 mx-auto text-white/30" />
-                <p>{localLanguage === 'en' ? 'No shouts in this category.' : 'Chưa có tiếng hô nào trong danh mục này.'}</p>
+                <p>{localLanguage !== 'vi' ? 'No shouts in this category.' : 'Chưa có tiếng hô nào trong danh mục này.'}</p>
                 <button
                   onClick={() => setActiveTab('create')}
                   className="px-3 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-medium text-xs inline-block"
                 >
-                  {localLanguage === 'en' ? 'Be the first to Shout!' : 'Hãy là người đầu tiên Hô To!'}
+                  {localLanguage !== 'vi' ? 'Be the first to Shout!' : 'Hãy là người đầu tiên Hô To!'}
                 </button>
               </div>
             ) : (
@@ -557,7 +557,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                               ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold'
                               : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'
                           }`}
-                          title={localLanguage === "en" ? "Heart" : "Thả tim"}
+                          title={localLanguage !== 'vi' ? "Heart" : "Thả tim"}
                         >
                           <Heart className={`w-3 h-3 ${isUserLiked ? 'fill-rose-400 text-rose-400' : 'text-white/60'}`} />
                           <span>{shout.likes || 0}</span>
@@ -567,12 +567,12 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                           <button
                             type="button"
                             onClick={async () => {
-                              if (confirm(localLanguage === 'en' ? 'Hide this shout from screen?' : 'Ẩn tiếng hô này khỏi màn hình?')) {
+                              if (confirm(localLanguage !== 'vi' ? 'Hide this shout from screen?' : 'Ẩn tiếng hô này khỏi màn hình?')) {
                                 await shoutService.hideShout(shout.id);
                               }
                             }}
                             className="p-1 rounded-[2px] text-white/40 hover:text-rose-400 transition-colors"
-                            title={localLanguage === "en" ? "Delete / Hide shout (Admin)" : "Xóa / Ẩn tiếng hô (Admin)"}
+                            title={localLanguage !== 'vi' ? "Delete / Hide shout (Admin)" : "Xóa / Ẩn tiếng hô (Admin)"}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -599,7 +599,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             }}
             className="px-3 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
-            {localLanguage === 'en' ? 'Close' : 'Đóng'}
+            {localLanguage !== 'vi' ? 'Close' : 'Đóng'}
           </button>
         </div>
       </div>

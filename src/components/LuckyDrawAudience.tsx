@@ -32,9 +32,9 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
               <Sparkles className="w-6 h-6" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wider uppercase font-mono">
-              {localLanguage === 'en' ? 'LUCKY DRAW' : 'QUAY SỐ MAY MẮN'}
+              {localLanguage !== 'vi' ? 'LUCKY DRAW' : 'QUAY SỐ MAY MẮN'}
             </h2>
-            <p className="text-white/60 text-xs sm:text-sm">{localLanguage === 'en' ? 'System is preparing the draw. Please wait...' : 'Hệ thống đang chuẩn bị quay số. Xin vui lòng chờ đợi...'}</p>
+            <p className="text-white/60 text-xs sm:text-sm">{localLanguage !== 'vi' ? 'System is preparing the draw. Please wait...' : 'Hệ thống đang chuẩn bị quay số. Xin vui lòng chờ đợi...'}</p>
           </div>
         )}
 
@@ -44,7 +44,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
               <Dices className="w-7 h-7 text-[#F7CAC9] animate-bounce" />
             </div>
             <h2 className="text-sm sm:text-base font-bold text-white/80 tracking-[0.2em] font-mono">
-              {localLanguage === 'en' ? 'DRAWING NUMBER...' : 'ĐANG QUAY SỐ...'}
+              {localLanguage !== 'vi' ? 'DRAWING NUMBER...' : 'ĐANG QUAY SỐ...'}
             </h2>
           </div>
         )}
@@ -57,21 +57,21 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
             
             <div className="space-y-2">
               <h2 className="text-xs font-bold text-amber-300 uppercase font-mono tracking-widest">
-                {localLanguage === 'en' ? 'Winning Identifier' : 'Mã Định Danh Trúng Giải'}
+                {localLanguage !== 'vi' ? 'Winning Identifier' : 'Mã Định Danh Trúng Giải'}
               </h2>
               <div className={`text-xl sm:text-2xl font-bold font-mono tracking-wider py-2.5 px-4 rounded-[2px] inline-block mt-1 ${isWinner ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-lg' : 'fluent-box-nested text-white'}`}>
                 UID: {getUserDisplayUid(luckyDraw.winner)}
               </div>
               <p className="text-[11px] text-white/50 font-mono italic mt-2">
-                {localLanguage === 'en' ? '🔒 Student personal information is kept private' : '🔒 Thông tin cá nhân sinh viên được bảo mật công khai'}
+                {localLanguage !== 'vi' ? '🔒 Student personal information is kept private' : '🔒 Thông tin cá nhân sinh viên được bảo mật công khai'}
               </p>
             </div>
             
             {isWinner && (
               <div className="bg-amber-400 text-slate-950 font-bold text-base py-3 px-5 rounded-[2px] mt-6 shadow-xl animate-bounce font-mono">
-                {localLanguage === 'en' ? '🎉 CONGRATULATIONS!' : '🎉 XIN CHÚC MỪNG BẠN!'}
+                {localLanguage !== 'vi' ? '🎉 CONGRATULATIONS!' : '🎉 XIN CHÚC MỪNG BẠN!'}
                 <div className="text-xs font-normal mt-0.5">
-                  {localLanguage === 'en' ? `Your identifier (${getUserDisplayUid(currentUserInfo)}) has won!` : `Mã định danh của bạn (${getUserDisplayUid(currentUserInfo)}) đã trúng thưởng!`}
+                  {localLanguage !== 'vi' ? `Your identifier (${getUserDisplayUid(currentUserInfo)}) has won!` : `Mã định danh của bạn (${getUserDisplayUid(currentUserInfo)}) đã trúng thưởng!`}
                 </div>
               </div>
             )}
@@ -80,7 +80,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
 
         {currentUserInfo && (
           <div className="pt-4 mt-4 border-t border-white/10">
-            <p className="text-white/40 text-[11px] uppercase font-mono tracking-wider mb-2">{localLanguage === "en" ? "Your Identifier" : "Mã định danh của bạn"}</p>
+            <p className="text-white/40 text-[11px] uppercase font-mono tracking-wider mb-2">{localLanguage !== 'vi' ? "Your Identifier" : "Mã định danh của bạn"}</p>
             <p className="font-mono font-bold text-amber-300 text-xs fluent-box-nested px-3 py-1.5 rounded-[2px] inline-block">
               {getUserDisplayUid(currentUserInfo)}
             </p>

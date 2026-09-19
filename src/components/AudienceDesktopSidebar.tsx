@@ -331,7 +331,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   }`}
                 >
                   <User className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{localLanguage === 'en' ? 'Profile' : 'Hồ Sơ'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Profile' : 'Hồ Sơ'}</span>
                 </button>
 
                 <button
@@ -344,7 +344,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   }`}
                 >
                   <Keyboard className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{localLanguage === 'en' ? 'Keys' : 'Phím Tắt'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Keys' : 'Phím Tắt'}</span>
                   {isQuestionActive && (
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute top-1 right-1" />
                   )}
@@ -360,7 +360,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   }`}
                 >
                   <Wrench className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{localLanguage === 'en' ? 'Tools' : 'Công Cụ'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Tools' : 'Công Cụ'}</span>
                 </button>
 
                 <button
@@ -373,7 +373,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                   }`}
                 >
                   <Heart className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{localLanguage === 'en' ? 'Interact' : 'Giao Lưu'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Interact' : 'Giao Lưu'}</span>
                 </button>
               </div>
             </div>
@@ -404,7 +404,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <h4 className="font-extrabold text-sm text-white truncate max-w-[150px]">
-                              {user?.name || (localLanguage === 'en' ? 'Audience' : 'Khán Giả')}
+                              {user?.name || (localLanguage !== 'vi' ? 'Audience' : 'Khán Giả')}
                             </h4>
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title={t("sidebar_connecting", localLanguage)} />
                           </div>
@@ -417,7 +417,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       {userPerformance && (
                         <div className="px-3 py-1.5 rounded-[2px] fluent-acrylic-surface border border-amber-400/40 text-amber-300 flex flex-col items-end">
                           <span className="text-[9px] font-mono uppercase font-bold text-amber-400/90 tracking-wider">
-                            {localLanguage === 'en' ? 'RANK' : 'HẠNG'}
+                            {localLanguage !== 'vi' ? 'RANK' : 'HẠNG'}
                           </span>
                           <span className="text-base font-black font-mono leading-none">#{userPerformance.rank}</span>
                         </div>
@@ -433,7 +433,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                           </span>
                           <span className="text-xl font-black font-mono text-white tracking-tight mt-1 block">
                             {userPerformance.totalScore.toLocaleString('vi-VN')}
-                            <span className="text-[10px] font-sans font-normal text-amber-300 ml-1">{localLanguage === 'en' ? 'p' : 'đ'}</span>
+                            <span className="text-[10px] font-sans font-normal text-amber-300 ml-1">{localLanguage !== 'vi' ? 'p' : 'đ'}</span>
                           </span>
                         </div>
 
@@ -524,21 +524,21 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                 <div className="space-y-3.5 animate-fadeIn">
                   <div className="flex items-center justify-between pb-1 border-b border-white/10">
                     <span className="text-xs font-bold text-white/80">
-                      {localLanguage === 'en' ? 'DIRECT ANSWER' : 'TRẢ LỜI CÂU HỎI TRỰC TIẾP'}
+                      {localLanguage !== 'vi' ? 'DIRECT ANSWER' : 'TRẢ LỜI CÂU HỎI TRỰC TIẾP'}
                     </span>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${
                       isQuestionActive ? 'bg-white/10 text-emerald-300 border border-emerald-500/40 animate-pulse' : 'bg-white/10 text-white/50'
                     }`}>
-                      {isQuestionActive ? (localLanguage === 'en' ? 'KEY PRESS' : 'NHẬN PHÍM') : (localLanguage === 'en' ? 'READY' : 'SẴN SÀNG')}
+                      {isQuestionActive ? (localLanguage !== 'vi' ? 'KEY PRESS' : 'NHẬN PHÍM') : (localLanguage !== 'vi' ? 'READY' : 'SẴN SÀNG')}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                     {[
-                      { num: '1', letter: 'A', label: localLanguage === 'en' ? 'Option A' : 'Đáp án A' },
-                      { num: '2', letter: 'B', label: localLanguage === 'en' ? 'Option B' : 'Đáp án B' },
-                      { num: '3', letter: 'C', label: localLanguage === 'en' ? 'Option C' : 'Đáp án C' },
-                      { num: '4', letter: 'D', label: localLanguage === 'en' ? 'Option D' : 'Đáp án D' }
+                      { num: '1', letter: 'A', label: localLanguage !== 'vi' ? 'Option A' : 'Đáp án A' },
+                      { num: '2', letter: 'B', label: localLanguage !== 'vi' ? 'Option B' : 'Đáp án B' },
+                      { num: '3', letter: 'C', label: localLanguage !== 'vi' ? 'Option C' : 'Đáp án C' },
+                      { num: '4', letter: 'D', label: localLanguage !== 'vi' ? 'Option D' : 'Đáp án D' }
                     ].map((keyItem) => {
                       const isPressed = lastKeyPressed === keyItem.num || lastKeyPressed === keyItem.letter;
                       const isOptSelected = selectedChoice.toUpperCase() === keyItem.letter;
@@ -583,7 +583,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                       <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white border border-white/20 font-bold">F</kbd>
-                        <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'Fullscreen' : 'Toàn màn hình'}</span>
+                        <span className="text-white/80 text-[11px]">{localLanguage !== 'vi' ? 'Fullscreen' : 'Toàn màn hình'}</span>
                       </div>
                       <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white border border-white/20 font-bold">M</kbd>
@@ -595,11 +595,11 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       </div>
                       <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-purple-300 border border-purple-500/40 font-bold">L</kbd>
-                        <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'Question Logs' : 'Nhật ký câu hỏi'}</span>
+                        <span className="text-white/80 text-[11px]">{localLanguage !== 'vi' ? 'Question Logs' : 'Nhật ký câu hỏi'}</span>
                       </div>
                       <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-amber-300 border border-amber-400/40 font-bold">T</kbd>
-                        <span className="text-white/80 text-[11px]">{localLanguage === 'en' ? 'High Contrast Mode' : 'Nền đen tương phản'}</span>
+                        <span className="text-white/80 text-[11px]">{localLanguage !== 'vi' ? 'High Contrast Mode' : 'Nền đen tương phản'}</span>
                       </div>
                       <div className="p-2 rounded-[2px] fluent-box-nested border-white/10 flex items-center gap-2">
                         <kbd className="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-pink-300 border border-pink-500/40 font-bold">H</kbd>
@@ -629,7 +629,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       {isFullscreen ? <Minimize className="w-4 h-4 text-indigo-300" /> : <Maximize className="w-4 h-4 text-indigo-300" />}
                       <span>{t("sidebar_full_mode", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "F Key" : "Phím F"}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage !== 'vi' ? "F Key" : "Phím F"}</span>
                   </button>
 
                   {/* Sound FX Toggle */}
@@ -647,7 +647,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       <span>{t("sidebar_sound_fx", localLanguage)}</span>
                     </div>
                     <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
-                      {soundEnabled ? (localLanguage === 'en' ? 'ON (M)' : 'BẬT (M)') : (localLanguage === 'en' ? 'OFF (M)' : 'TẮT (M)')}
+                      {soundEnabled ? (localLanguage !== 'vi' ? 'ON (M)' : 'BẬT (M)') : (localLanguage !== 'vi' ? 'OFF (M)' : 'TẮT (M)')}
                     </span>
                   </button>
 
@@ -671,7 +671,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         <span>{t("sidebar_keep_awake", localLanguage)}</span>
                       </div>
                       <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
-                        {isWakeLockLocked ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Off' : 'Tắt')}
+                        {isWakeLockLocked ? (localLanguage !== 'vi' ? 'Active' : 'Đang Bật') : (localLanguage !== 'vi' ? 'Off' : 'Tắt')}
                       </span>
                     </button>
                   )}
@@ -693,9 +693,9 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     >
                       <div className="flex items-center gap-2.5">
                         <Contrast className="w-4 h-4" />
-                        <span>{localLanguage === 'en' ? 'High Contrast Black' : 'Nền Đen Tương Phản Cao'}</span>
+                        <span>{localLanguage !== 'vi' ? 'High Contrast Black' : 'Nền Đen Tương Phản Cao'}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "T Key" : "Phím T"}</span>
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage !== 'vi' ? "T Key" : "Phím T"}</span>
                     </button>
                   )}
 
@@ -718,7 +718,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       <span>{t("sidebar_battery_saver_set", localLanguage)}</span>
                     </div>
                     <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
-                      {isBatterySaver ? (localLanguage === 'en' ? 'Active' : 'Đang Bật') : (localLanguage === 'en' ? 'Details' : 'Chi Tiết')}
+                      {isBatterySaver ? (localLanguage !== 'vi' ? 'Active' : 'Đang Bật') : (localLanguage !== 'vi' ? 'Details' : 'Chi Tiết')}
                     </span>
                   </button>
 
@@ -736,7 +736,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       <QrCode className="w-4 h-4 text-[#F7CAC9]" />
                       <span>{t("sidebar_invite_qr", localLanguage)}</span>
                     </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage === "en" ? "S Key" : "Phím S"}</span>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage !== 'vi' ? "S Key" : "Phím S"}</span>
                   </button>
                 </div>
               )}

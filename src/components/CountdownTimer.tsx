@@ -18,7 +18,7 @@ export interface CountdownTimerProps {
   variant?: CountdownTimerVariant;
   /** Whether the current question is from a speed/tang-toc round */
   isTTRound?: boolean;
-  /** Custom label to show beside timer (e.g. Round name or localLanguage === 'en' ? 'Answer time' : 'Thời gian trả lời') */
+  /** Custom label to show beside timer (e.g. Round name or localLanguage !== 'vi' ? 'Answer time' : 'Thời gian trả lời') */
   label?: string;
   /** Sub-label or extra status text */
   subLabel?: string;
@@ -233,7 +233,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             )}
             <div className="min-w-0">
               <p className="text-xs font-bold text-[#FCEEEC] truncate">
-                {label || (gameState ? gameState.category || gameState.round_name : localLanguage === 'en' ? 'Answer time' : 'Thời gian trả lời')}
+                {label || (gameState ? gameState.category || gameState.round_name : localLanguage !== 'vi' ? 'Answer time' : 'Thời gian trả lời')}
               </p>
               {subLabel && <p className="text-[10px] text-white/50 truncate">{subLabel}</p>}
             </div>
@@ -282,7 +282,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           {isTTRound && (
             <span className="px-2.5 py-0.5 rounded-[2px] text-[11px] font-black uppercase tracking-wider bg-white/10 text-amber-300 border border-amber-500/40 flex items-center gap-1 shrink-0">
               <Flame className="w-3 h-3 animate-pulse text-amber-400" />
-              {localLanguage === 'en' ? 'Acceleration' : 'Tăng Tốc'}
+              {localLanguage !== 'vi' ? 'Acceleration' : 'Tăng Tốc'}
             </span>
           )}
 

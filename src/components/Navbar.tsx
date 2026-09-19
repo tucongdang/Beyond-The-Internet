@@ -430,14 +430,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 toggleLanguage();
               }}
               data-tooltip={
-                localLanguage === 'en'
+                localLanguage !== 'vi'
                   ? 'Chuyển sang Tiếng Việt (Switch to Vietnamese)'
                   : 'Switch to English (Chuyển sang Tiếng Anh)'
               }
-              data-tooltip-title={localLanguage === 'en' ? 'Language / Ngôn Ngữ' : 'Ngôn Ngữ / Language'}
+              data-tooltip-title={localLanguage !== 'vi' ? 'Language / Ngôn Ngữ' : 'Ngôn Ngữ / Language'}
               data-tooltip-placement="bottom"
               className="has-tooltip fluent-action-btn text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border-white/10 flex items-center gap-1.5 px-2 font-mono cursor-pointer"
-              aria-label={localLanguage === 'en' ? 'Switch to Vietnamese' : 'Switch to English'}
+              aria-label={localLanguage !== 'vi' ? 'Switch to Vietnamese' : 'Switch to English'}
             >
               <Globe className="w-3.5 h-3.5 text-sky-300" />
               <span className="text-[11px] font-black text-sky-200 uppercase tracking-wide">
@@ -729,7 +729,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
                     VI
                   </span>
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'en' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage !== 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
                     EN
                   </span>
                 </div>
@@ -805,7 +805,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
                     VI
                   </span>
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'en' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage !== 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
                     EN
                   </span>
                 </div>

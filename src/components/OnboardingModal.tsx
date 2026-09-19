@@ -111,7 +111,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      setName(user.displayName || (localLanguage === 'en' ? 'Audience' : 'Khán Giả'));
+      setName(user.displayName || (localLanguage !== 'vi' ? 'Audience' : 'Khán Giả'));
       setMssv(_mssv);
       setMode('register');
       vibrateTap();

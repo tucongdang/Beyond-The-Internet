@@ -58,8 +58,8 @@
 }
 
 @theme {
-  --font-sans: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'SVN-Gilroy', 'Lexend', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-primary-bg: #190839;
   --color-primary-highlight: #F7CAC9;
   --color-tim-vu-tru: #0D0420;
@@ -85,7 +85,7 @@
 
 /* Base typography and smooth touch experience */
 html {
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scrollbar-width: thin;
@@ -93,12 +93,58 @@ html {
 }
 
 body, input, button, select, textarea {
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+/* CJK & Non-Latin Typography Engine - Breathing room & anti-cramping */
+html[lang="ko"],
+html[lang="zh"],
+html[lang="ja"],
+html[lang="th"],
+html[lang="lo"],
+html[lang="km"],
+.cjk-text {
+  letter-spacing: 0.035em !important;
+  line-height: 1.75 !important;
+  text-rendering: optimizeLegibility;
+}
+
+/* Neutralize negative tracking (tracking-tight / tracking-tighter) for CJK */
+html[lang="ko"] [class*="tracking-tight"],
+html[lang="zh"] [class*="tracking-tight"],
+html[lang="ja"] [class*="tracking-tight"],
+html[lang="th"] [class*="tracking-tight"],
+html[lang="ko"] [class*="tracking-tighter"],
+html[lang="zh"] [class*="tracking-tighter"],
+html[lang="ja"] [class*="tracking-tighter"],
+html[lang="th"] [class*="tracking-tighter"],
+.cjk-text[class*="tracking-tight"],
+.cjk-text [class*="tracking-tight"],
+.cjk-text[class*="tracking-tighter"],
+.cjk-text [class*="tracking-tighter"] {
+  letter-spacing: 0.035em !important;
+}
+
+/* Korean Hangul word chunking rules */
+html[lang="ko"],
+.cjk-text-ko {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Chinese and Japanese character breaking rules */
+html[lang="zh"],
+html[lang="ja"],
+.cjk-text-zh,
+.cjk-text-ja {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
 
 button, a, [role="button"] {
   touch-action: manipulation;

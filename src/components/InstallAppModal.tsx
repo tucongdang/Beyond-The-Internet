@@ -49,7 +49,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             onClose();
           }}
           className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-[2px] bg-white/10 hover:bg-white/20 transition"
-          aria-label={localLanguage === 'en' ? 'Close' : 'Đóng'}
+          aria-label={localLanguage !== 'vi' ? 'Close' : 'Đóng'}
         >
           <X className="w-4 h-4" />
         </button>
@@ -62,14 +62,14 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">
-                {localLanguage === 'en' ? 'Install Web App' : 'Cài Đặt Ứng Dụng'}
+                {localLanguage !== 'vi' ? 'Install Web App' : 'Cài Đặt Ứng Dụng'}
               </h3>
               <span className="text-[10px] px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] font-bold border border-[#F7CAC9]/30">
                 PWA
               </span>
             </div>
             <p className="text-xs text-white/60 mt-0.5">
-              {localLanguage === 'en'
+              {localLanguage !== 'vi'
                 ? 'Add to Home Screen for a smooth, native app experience.'
                 : 'Thêm vào Màn hình chính để trải nghiệm mượt mà như app gốc.'}
             </p>
@@ -81,7 +81,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-[#F7CAC9] shrink-0" />
             <span>
-              {localLanguage === 'en'
+              {localLanguage !== 'vi'
                 ? 'Quick launch directly from your Home Screen'
                 : 'Mở nhanh ngay từ Màn hình chính (Home Screen)'}
             </span>
@@ -89,7 +89,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div className="flex items-center gap-2.5">
             <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              {localLanguage === 'en'
+              {localLanguage !== 'vi'
                 ? 'Full screen without browser URL bar obstruction'
                 : 'Toàn màn hình không bị thanh địa chỉ trình duyệt che khuất'}
             </span>
@@ -97,7 +97,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div className="flex items-center gap-2.5">
             <Monitor className="w-4 h-4 text-sky-400 shrink-0" />
             <span>
-              {localLanguage === 'en'
+              {localLanguage !== 'vi'
                 ? 'Ultra-fast response and battery optimized during gameplay'
                 : 'Phản hồi cực nhanh và tối ưu pin khi thi đấu'}
             </span>
@@ -110,10 +110,10 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[2px] text-center">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm mb-1">
                 <Check className="w-5 h-5" />{' '}
-                {localLanguage === 'en' ? 'Application is already installed!' : 'Ứng dụng đã được cài đặt!'}
+                {localLanguage !== 'vi' ? 'Application is already installed!' : 'Ứng dụng đã được cài đặt!'}
               </div>
               <p className="text-xs text-emerald-200/80">
-                {localLanguage === 'en'
+                {localLanguage !== 'vi'
                   ? 'You can launch the app directly from your device Home Screen.'
                   : 'Bạn có thể mở ứng dụng trực tiếp từ Màn hình chính của thiết bị.'}
               </p>
@@ -125,7 +125,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               }}
               className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition cursor-pointer"
             >
-              {localLanguage === 'en' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
+              {localLanguage !== 'vi' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
             </button>
           </div>
         ) : installSuccess ? (
@@ -133,7 +133,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[2px] text-center animate-bounce">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
                 <Check className="w-5 h-5" />{' '}
-                {localLanguage === 'en' ? 'Installation Successful!' : 'Cài đặt thành công!'}
+                {localLanguage !== 'vi' ? 'Installation Successful!' : 'Cài đặt thành công!'}
               </div>
             </div>
             <button
@@ -143,7 +143,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               }}
               className="fluent-btn w-full py-3 px-4 fluent-box-nested border border-white/15 hover:border-white/30 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition cursor-pointer"
             >
-              {localLanguage === 'en' ? 'Done' : 'Hoàn Tất'}
+              {localLanguage !== 'vi' ? 'Done' : 'Hoàn Tất'}
             </button>
           </div>
         ) : isInstallable ? (
@@ -154,10 +154,10 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               className="fluent-btn w-full py-3.5 px-4 bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black rounded-[2px] transition shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-xs uppercase tracking-wider border border-white/40 cursor-pointer"
             >
               <Download className="w-4 h-4 animate-bounce" />
-              {localLanguage === 'en' ? 'Install Now (1-Click Install)' : 'Cài Đặt Ngay (1-Click Install)'}
+              {localLanguage !== 'vi' ? 'Install Now (1-Click Install)' : 'Cài Đặt Ngay (1-Click Install)'}
             </button>
             <p className="text-[11px] text-center text-white/50">
-              {localLanguage === 'en'
+              {localLanguage !== 'vi'
                 ? 'Click "Install" on the system prompt to complete.'
                 : 'Nhấn "Cài đặt" trên hộp thoại xuất hiện để hoàn tất.'}
             </p>
@@ -169,7 +169,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                 }}
                 className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                {localLanguage === 'en' ? 'Maybe Later / Close' : 'Để Sau / Đóng Cửa Sổ'}
+                {localLanguage !== 'vi' ? 'Maybe Later / Close' : 'Để Sau / Đóng Cửa Sổ'}
               </button>
             </div>
           </div>
@@ -178,7 +178,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div className="space-y-3">
             <div className="fluent-box-nested p-4 rounded-[2px] border border-white/10 space-y-3">
               <h4 className="text-xs font-bold text-[#F7CAC9] uppercase tracking-wider mb-2">
-                {localLanguage === 'en'
+                {localLanguage !== 'vi'
                   ? 'Installation Guide for iPhone / iPad (Safari):'
                   : 'Hướng dẫn cài đặt trên iPhone / iPad (Safari):'}
               </h4>
@@ -188,7 +188,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                     1
                   </span>
                   <span className="flex items-center gap-1.5">
-                    {localLanguage === 'en' ? (
+                    {localLanguage !== 'vi' ? (
                       <>
                         Tap the <Share2 className="w-4 h-4 text-sky-400 inline" /> <strong>Share</strong> button at the bottom of Safari.
                       </>
@@ -204,7 +204,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                     2
                   </span>
                   <span className="flex items-center gap-1.5">
-                    {localLanguage === 'en' ? (
+                    {localLanguage !== 'vi' ? (
                       <>
                         Scroll down and select <PlusSquare className="w-4 h-4 text-emerald-400 inline" /> <strong>Add to Home Screen</strong>.
                       </>
@@ -220,7 +220,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                     3
                   </span>
                   <span>
-                    {localLanguage === 'en' ? (
+                    {localLanguage !== 'vi' ? (
                       <>
                         Tap <strong>Add</strong> in the top-right corner to complete.
                       </>
@@ -241,7 +241,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               }}
               className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              {localLanguage === 'en' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
+              {localLanguage !== 'vi' ? 'Got It & Close' : 'Đã Hiểu & Đóng'}
             </button>
           </div>
         ) : (
@@ -249,7 +249,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           <div className="space-y-3">
             <div className="fluent-box-nested p-4 rounded-[2px] border border-white/10 text-center">
               <p className="text-xs text-white/80">
-                {localLanguage === 'en' ? (
+                {localLanguage !== 'vi' ? (
                   <>
                     You can install by clicking the <strong>Install</strong> icon{' '}
                     <Download className="w-3.5 h-3.5 inline mx-1 text-[#F7CAC9]" /> on the Chrome / Edge address bar, or choose{' '}
@@ -271,7 +271,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               }}
               className="fluent-btn w-full py-2.5 px-4 fluent-box-nested border border-white/10 hover:border-white/20 text-white/70 hover:text-white rounded-[2px] text-xs font-semibold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              {localLanguage === 'en' ? 'Close Window' : 'Đóng Cửa Sổ'}
+              {localLanguage !== 'vi' ? 'Close Window' : 'Đóng Cửa Sổ'}
             </button>
           </div>
         )}

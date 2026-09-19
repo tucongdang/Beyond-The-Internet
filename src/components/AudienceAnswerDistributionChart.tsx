@@ -309,7 +309,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             <Flame className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] text-white/40 font-mono block uppercase">{localLanguage === 'en' ? 'Leading Trend' : 'Xu Hướng Dẫn Đầu'}</span>
+            <span className="text-[10px] text-white/40 font-mono block uppercase">{localLanguage !== 'vi' ? 'Leading Trend' : 'Xu Hướng Dẫn Đầu'}</span>
             {leadingOption && leadingOption.value > 0 ? (
               <div className="flex items-center gap-1 font-bold truncate">
                 <span className="text-amber-300 font-mono text-xs sm:text-sm">
@@ -331,7 +331,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] text-white/40 font-mono block uppercase">{localLanguage === 'en' ? 'Audience Consensus' : 'Độ Đồng Thuận Khán Giả'}</span>
+            <span className="text-[10px] text-white/40 font-mono block uppercase">{localLanguage !== 'vi' ? 'Audience Consensus' : 'Độ Đồng Thuận Khán Giả'}</span>
             <span className={`font-mono font-bold text-[11px] sm:text-xs truncate block ${consensusLevel.color}`}>
               {consensusLevel.text}
             </span>
@@ -365,7 +365,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
                 <span className="text-purple-300 font-mono text-xs sm:text-sm">
                   {participationRate}%
                 </span>
-                <span className="text-[10px] text-white/40 font-mono font-normal">{localLanguage === 'en' ? 'audiences submitted' : 'khán giả đã nộp'}</span>
+                <span className="text-[10px] text-white/40 font-mono font-normal">{localLanguage !== 'vi' ? 'audiences submitted' : 'khán giả đã nộp'}</span>
               </div>
             )}
           </div>
@@ -378,7 +378,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
           <div className="w-10 h-10 rounded-[2px] bg-white/5 flex items-center justify-center text-white/30 mb-2">
             <Radio className="w-5 h-5 animate-pulse text-sky-400/60" />
           </div>
-          <p className="text-xs font-semibold text-white/70">{localLanguage === 'en' ? 'No answers received yet' : 'Chưa nhận được câu trả lời nào'}</p>
+          <p className="text-xs font-semibold text-white/70">{localLanguage !== 'vi' ? 'No answers received yet' : 'Chưa nhận được câu trả lời nào'}</p>
           <p className="text-[10px] text-white/40 max-w-xs mt-0.5">
             Biểu đồ tròn sẽ tự động vẽ và cập nhật tức thì khi có khán giả gửi lựa chọn trên thiết bị
           </p>
@@ -514,7 +514,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             {/* Static Center Badge when no sector is hovered in Donut mode */}
             {chartMode === 'DONUT' && activeIndex === null && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                <span className="text-[10px] font-mono text-white/40 uppercase">{localLanguage === 'en' ? 'Total Votes' : 'Tổng Vote'}</span>
+                <span className="text-[10px] font-mono text-white/40 uppercase">{localLanguage !== 'vi' ? 'Total Votes' : 'Tổng Vote'}</span>
                 <span className="text-lg sm:text-xl font-black font-mono text-white leading-tight">
                   {totalVotes}
                 </span>

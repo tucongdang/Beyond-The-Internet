@@ -69,7 +69,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
   // Formatting time relative
   const formatRelativeTime = (timestamp: number) => {
     const diffSec = Math.floor((Date.now() - timestamp) / 1000);
-    if (diffSec < 10) return localLanguage === 'en' ? 'Just now' : 'Vừa xong';
+    if (diffSec < 10) return localLanguage !== 'vi' ? 'Just now' : 'Vừa xong';
     if (diffSec < 60) return `${diffSec}s`;
     const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}p`;
@@ -82,7 +82,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
       <div className={`w-full flex items-center justify-between px-3 py-1.5 bg-black/40 backdrop-blur-md border-y border-white/10 ${className}`}>
         <div className="flex items-center gap-2 text-xs text-white/70">
           <Megaphone className="w-3.5 h-3.5 text-[#F7CAC9]" />
-          <span className="font-medium">{localLanguage === 'en' ? 'Audience Shouts' : 'Tiếng hô khán giả'} ({shouts.length})</span>
+          <span className="font-medium">{localLanguage !== 'vi' ? 'Audience Shouts' : 'Tiếng hô khán giả'} ({shouts.length})</span>
         </div>
         <div className="flex items-center gap-2">
           {onOpenShoutModal && (
@@ -93,13 +93,13 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
               }}
               className="px-2.5 py-1 rounded-[2px] bg-[#B6A6D8]/20 hover:bg-[#B6A6D8]/30 border border-[#B6A6D8]/40 text-xs text-white font-medium flex items-center gap-1 transition-all"
             >
-              <Plus className="w-3 h-3" /> {localLanguage === 'en' ? 'Shout' : 'Hô to'}
+              <Plus className="w-3 h-3" /> {localLanguage !== 'vi' ? 'Shout' : 'Hô to'}
             </button>
           )}
           <button
             onClick={() => setIsCollapsed(false)}
             className="p-1 text-white/50 hover:text-white transition-colors"
-            title={localLanguage === "en" ? "Open shout bar" : "Mở thanh tiếng hô"}
+            title={localLanguage !== 'vi' ? "Open shout bar" : "Mở thanh tiếng hô"}
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
@@ -132,7 +132,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
               ? 'bg-gradient-to-r from-[#3E1D74] to-[#B6A6D8]/40 text-white border border-[#B6A6D8]/50'
               : 'bg-gradient-to-r from-pink-600/90 to-purple-600/90 hover:from-pink-500 hover:to-purple-500 text-white border border-pink-400/40 active:scale-95'
           }`}
-          title={localLanguage === "en" ? "Send your shout to the screen" : "Gửi tiếng hô cổ vũ của bạn lên màn hình"}
+          title={localLanguage !== 'vi' ? "Send your shout to the screen" : "Gửi tiếng hô cổ vũ của bạn lên màn hình"}
         >
           <Megaphone className="w-3.5 h-3.5 text-[#F7CAC9] group-hover:rotate-12 transition-transform" />
           <span className="hidden sm:inline font-mono uppercase tracking-wider text-[11px]">{t("shout_btn", localLanguage)}</span>
@@ -206,7 +206,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                       ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold' 
                       : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'
                   } ${activeLikeAnimId === shout.id ? 'scale-125' : ''}`}
-                  title={localLanguage === "en" ? "Heart this shout" : "Thả tim cho tiếng hô này"}
+                  title={localLanguage !== 'vi' ? "Heart this shout" : "Thả tim cho tiếng hô này"}
                 >
                   <Heart className={`w-2.5 h-2.5 ${isUserLiked ? 'fill-rose-400 text-rose-400' : 'text-white/60'}`} />
                   <span>{shout.likes || 0}</span>
@@ -226,7 +226,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
               onOpenShoutModal();
             }}
             className="p-1 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition-all"
-            title={localLanguage === "en" ? "View all shouts / Open chat board" : "Xem tất cả tiếng hô / Mở bảng chat"}
+            title={localLanguage !== 'vi' ? "View all shouts / Open chat board" : "Xem tất cả tiếng hô / Mở bảng chat"}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -235,7 +235,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
           <button
             onClick={() => setIsCollapsed(true)}
             className="p-1 rounded-[2px] text-white/40 hover:text-white/80 transition-colors"
-            title={localLanguage === "en" ? "Minimize shout bar" : "Thu nhỏ thanh tiếng hô"}
+            title={localLanguage !== 'vi' ? "Minimize shout bar" : "Thu nhỏ thanh tiếng hô"}
           >
             <EyeOff className="w-3 h-3" />
           </button>
