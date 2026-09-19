@@ -1,4 +1,4 @@
-import { UserResponse, QuestionItem, GameState } from '../types';
+import { UserResponse, QuestionItem, GameState, SurvivalStats } from '../types';
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import {
   evaluateUserChoice,
@@ -163,4 +163,60 @@ export function calculateLeaderboard(
   });
 
   return summaries;
+}
+
+/**
+ * Battle Royale / Survival Mode Statistics
+ * Determines how many participants are undefeated (0 wrong answers so far)
+ */
+export function calculateSurvivalStats(
+  allResponses?: Record<string, Record<string, UserResponse>>,
+  customQuestionBank?: QuestionItem[],
+  gameState?: GameState,
+  targetUid?: string,
+  targetMssv?: string
+): SurvivalStats {
+  if (!allResponses || Object.keys(allResponses).length === 0) {
+    return {
+      survivorsCount: 0,
+      totalContestants: 0,
+      isUserAlive: true,
+      survivalRate: 100
+    };
+  }
+
+  const board = calculateLeaderboard(allResponses, customQuestionBank, gameState);
+  const totalContestants = board.length;
+  
+  if (totalContestants === 0) {
+    return {
+      survivorsCount: 0,
+      totalContestants: 0,
+      isUserAlive: true,
+      survivalRate: 100
+    };
+  }
+
+  // Undefeated contestants: answered at least 1 question and has 100% accuracy (0 wrong answers)
+  const survivors = board.filter(u => u.totalAnswered > 0 && u.correctAnswersCount === u.totalAnswered);
+  const survivorsCount = survivors.length;
+  const survivalRate = Math.round((survivorsCount / totalContestants) * 100);
+
+  let isUserAlive = true;
+  if (targetUid || targetMssv) {
+    const userSummary = board.find(u => 
+      (targetUid && (u.uid === targetUid || u.anonymizedUid === targetUid)) ||
+      (targetMssv && u.mssv === targetMssv)
+    );
+    if (userSummary) {
+      isUserAlive = userSummary.totalAnswered === 0 || userSummary.correctAnswersCount === userSummary.totalAnswered;
+    }
+  }
+
+  return {
+    survivorsCount,
+    totalContestants,
+    isUserAlive,
+    survivalRate
+  };
 }

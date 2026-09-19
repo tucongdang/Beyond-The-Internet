@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import confetti from 'canvas-confetti';
 import { GameState, UserResponse, QR_PALETTES, QrPaletteId } from '../types';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
+import { calculateSurvivalStats } from '../utils/leaderboardUtils';
 import { getProjectorTheme } from '../utils/themeUtils';
 import { Leaderboard } from './Leaderboard';
 import { LuckyDrawProjector } from './LuckyDrawProjector';
@@ -286,6 +287,10 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const riskSubmissionsCount = useMemo(() => {
     return Object.keys(allResponses?.['VCNV_RISK'] || {}).length;
   }, [allResponses]);
+
+  const survivalStats = useMemo(() => {
+    return calculateSurvivalStats(allResponses, undefined, gameState);
+  }, [allResponses, gameState]);
 
   // Keyboard shortcut: 'L' for Leaderboard, 'B' for Bar Chart, 'H' for Heatmap, 'R'/'S' for Response List, 'W' for Word Cloud
   useEffect(() => {
@@ -1221,6 +1226,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   <span className="px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider fluent-box-nested text-amber-300 border border-amber-500/40 font-black flex items-center gap-1.5">
                     <Flame className="w-3.5 h-3.5 animate-pulse" />
                     TĂNG TỐC
+                  </span>
+                )}
+                {survivalStats.totalContestants > 0 && (
+                  <span className="px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-emerald-950/70 text-emerald-300 border border-emerald-500/50 font-black flex items-center gap-1.5 shadow-sm shadow-emerald-950/40 animate-fadeIn">
+                    <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                    SINH TỒN: {survivalStats.survivorsCount} / {survivalStats.totalContestants} BẤT BẠI ({survivalStats.survivalRate}%)
                   </span>
                 )}
               </div>

@@ -35,6 +35,7 @@ export interface ScoringResult {
   timeLimit?: number; // Total time limit of the question in seconds (e.g. 20s or 30s)
   isRiskBox?: boolean; // For Round 2 Ô Mạo Hiểm (+120)
   isCnvKeyword?: boolean; // For Round 2 Dự đoán CNV (+80)
+  isDoubleDown?: boolean; // For Round 4 Về Đích All-In (+80 or -40 / -100% penalty)
   subType?: 'RISK_BOX' | 'CNV_KEYWORD' | 'STANDARD' | 'SAFE_CHOICE';
 }
 
@@ -251,6 +252,17 @@ export interface UserResponse {
     anonymizedUid?: string;
     teamId?: string;
   };
+  isDoubleDown?: boolean; // Vòng 4 Về Đích - Cược nhân đôi All-In
+  tabSwitchCount?: number; // Phát hiện rời màn hình / đổi tab
+  isOfflineSync?: boolean; // Đánh dấu câu trả lời được gửi từ hàng đợi ngoại tuyến
+}
+
+export interface SurvivalStats {
+  survivorsCount: number;
+  totalContestants: number;
+  isUserAlive: boolean;
+  survivalRate: number; // Tỉ lệ % sống sót (0 - 100)
+  eliminatedThisQuestion?: number;
 }
 
 export interface SPSSRow {

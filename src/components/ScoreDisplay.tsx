@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { ScoreBreakdown, GameState, UserInfo, UserResponse } from '../types';
-import { Trophy, Zap, Shield, Target, Flame, Star, ChevronDown, ChevronUp, Contrast, Sun, SunMedium, Smartphone, History, Maximize, Minimize } from 'lucide-react';
+import { Trophy, Zap, Shield, Target, Flame, Star, ChevronDown, ChevronUp, Contrast, Sun, SunMedium, Smartphone, History, Maximize, Minimize, Sparkles } from 'lucide-react';
 import { computeAudienceScoreFromResponses, getAudienceTotalScore, getAudienceScoreBreakdown } from '../services/audienceScoringService';
 import { t } from '../utils/i18n';
-import { calculateLeaderboard } from '../utils/leaderboardUtils';
+import { calculateLeaderboard, calculateSurvivalStats } from '../utils/leaderboardUtils';
 import { vibrateTap } from '../utils/hapticUtils';
 import { soundFx } from '../services/audioEffects';
 import { BatteryIndicator } from './BatteryIndicator';
@@ -20,6 +20,7 @@ interface ScoreDisplayProps {
   isWakeLockSupported?: boolean;
   onToggleWakeLock?: () => void;
   onOpenLogModal?: () => void;
+  onOpenPostMatchModal?: () => void;
 }
 
 const getRoundDetails = (lang: 'vi' | 'en') => [
@@ -67,7 +68,8 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   isWakeLockLocked = false,
   isWakeLockSupported = true,
   onToggleWakeLock,
-  onOpenLogModal
+  onOpenLogModal,
+  onOpenPostMatchModal
 }) => {
   const { localLanguage } = useLanguage();
   const ROUND_DETAILS = getRoundDetails(localLanguage);
@@ -115,6 +117,10 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
       totalPlayers: board.length
     };
   }, [allResponses, user, gameState]);
+
+  const survivalStats = useMemo(() => {
+    return calculateSurvivalStats(allResponses, undefined, gameState, user?.uid, user?.mssv);
+  }, [allResponses, gameState, user]);
 
 
 
@@ -284,6 +290,24 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               </button>
             )}
 
+            {onOpenPostMatchModal && (
+              <button
+                type="button"
+                id="btn-audience-open-postmatch-modal"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  soundFx.playClick();
+                  vibrateTap();
+                  onOpenPostMatchModal();
+                }}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
+                title="Xuất thẻ thành tích Infographic (Post-Match Card)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span className="text-[11px]">Thẻ</span>
+              </button>
+            )}
+
             {/* Desktop Fullscreen Button */}
             <button
               type="button"
@@ -303,6 +327,19 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               )}
               <span className="text-[11px]">{isFullscreen ? (t("view_score_full_exit_short", localLanguage)) : (t("view_score_full_enter_short", localLanguage))}</span>
             </button>
+
+            {/* Battle Royale Survival Status Pill */}
+            {survivalStats.totalContestants > 0 && (
+              <div 
+                className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold"
+                title={`Đấu trường sinh tử: ${survivalStats.survivorsCount}/${survivalStats.totalContestants} bất bại (${survivalStats.survivalRate}%)`}
+              >
+                <Shield className={`w-3.5 h-3.5 ${survivalStats.isUserAlive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <span className="text-[11px] uppercase">
+                  {survivalStats.isUserAlive ? 'Bất Bại' : 'Đã Hạ'} ({survivalStats.survivorsCount})
+                </span>
+              </div>
+            )}
 
             <div className="hidden sm:flex px-3 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
               <Star className="w-3.5 h-3.5 text-purple-400 fill-purple-400/50" />

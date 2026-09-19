@@ -397,6 +397,133 @@ Return strictly JSON with the translated options.`;
     }
   });
 
+  // API route for instant question explanation on demand
+  app.post("/api/explain-question", async (req, res) => {
+    try {
+      const { question_text, correct_key, correct_option_text, explanation, target_lang = 'vi', apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(500).json({ error: "API key is not configured on the server." });
+      }
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      const langMap: Record<string, string> = {
+        vi: 'Tiếng Việt',
+        en: 'English',
+        ko: 'Korean (한국어)',
+        ja: 'Japanese (日本語)',
+        zh: 'Chinese (中文)',
+        fr: 'French (Français)',
+        es: 'Spanish (Español)',
+        de: 'German (Deutsch)',
+        th: 'Thai (ไทย)',
+        lo: 'Lao (ພາສາລາວ)',
+        km: 'Khmer (ភាសាខ្មែរ)',
+        ru: 'Russian (Русский)'
+      };
+
+      const langName = langMap[target_lang] || 'Tiếng Việt';
+      const prompt = `Bạn là chuyên gia học thuật trong gameshow công nghệ "Beyond The Internet 2026".
+Hãy giải thích ngắn gọn, súc tích (khoảng 2-3 câu, tối đa 60 từ) vì sao đáp án đúng là phương án ${correct_key}: "${correct_option_text || ''}".
+Nội dung câu hỏi: "${question_text}"
+Giải thích gốc: "${explanation || ''}"
+
+YÊU CẦU QUAN TRỌNG:
+1. Viết giải thích hoàn toàn bằng ngôn ngữ: ${langName}.
+2. Phong cách cuốn hút, dễ hiểu, cung cấp bản chất cốt lõi của kiến thức.
+3. Không thêm lời mở đầu hay kết bài rườm rà.`;
+
+      const response = await generateWithFallback(ai, {
+        contents: prompt,
+      });
+
+      if (!response.text) {
+        throw new Error("No explanation returned from Gemini");
+      }
+
+      res.json({ explanation: response.text.trim() });
+    } catch (error: any) {
+      console.error("Gemini Explain Question Error:", error);
+      res.status(500).json({ error: error.message || "Lỗi khi gọi AI giải thích câu hỏi." });
+    }
+  });
+
+  // API route for MC Co-Pilot real-time audience commentary
+  app.post("/api/mc-copilot", async (req, res) => {
+    try {
+      const { question_text, correct_key, counts = {}, percentages = {}, totalVotes = 0, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(500).json({ error: "API key is not configured on the server." });
+      }
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      const statsDesc = Object.entries(percentages)
+        .map(([opt, pct]) => `Phương án ${opt}: ${pct}% (${counts[opt] || 0} phiếu)`)
+        .join(', ');
+
+      const prompt = `Bạn là Trợ lý Co-pilot cho MC trên sân khấu Gameshow trực tiếp "Beyond The Internet 2026".
+Dữ liệu câu hỏi vừa kết thúc:
+- Câu hỏi: "${question_text}"
+- Đáp án đúng: ${correct_key}
+- Phân phối bình chọn khán giả (${totalVotes} người chơi): ${statsDesc || 'Chưa có phân phối'}
+
+Hãy tạo ra một gợi ý lời dẫn nhanh cho MC (bằng Tiếng Việt):
+1. 'headline': Tiêu đề giật gân ngắn (dưới 8 từ, ví dụ: 'Hội trường sập bẫy phương án C!' hoặc 'Đại đa số đồng lòng xuất sắc!').
+2. 'mcLine': 1-2 câu ngắn để MC đọc ngay trên micro tương tác với khán phòng tạo không khí sôi động, hài hước và kịch tính.
+
+Trả về duy nhất định dạng JSON thuần túy:
+{
+  "headline": "...",
+  "mcLine": "..."
+}`;
+
+      const response = await generateWithFallback(ai, {
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+
+      if (!response.text) {
+        throw new Error("No text returned from Gemini");
+      }
+
+      let parsed: any;
+      try {
+        parsed = JSON.parse(response.text.trim());
+      } catch {
+        parsed = {
+          headline: "Hội trường phân tích kịch tính!",
+          mcLine: response.text.trim()
+        };
+      }
+
+      res.json(parsed);
+    } catch (error: any) {
+      console.error("Gemini MC Co-pilot Error:", error);
+      res.status(500).json({ error: error.message || "Lỗi khi gọi AI MC Co-pilot." });
+    }
+  });
+
   const isProduction = process.env.NODE_ENV === "production";
 
   if (!isProduction) {

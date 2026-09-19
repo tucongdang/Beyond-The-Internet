@@ -616,6 +616,59 @@ class SoundEffectsService {
       osc3.stop(now + 0.25);
     } catch {}
   }
+
+  /**
+   * Ascending synthesizer arpeggio celebrating combo streak count (2x, 3x, 5x, 7x+)
+   */
+  public playStreakCombo(streak: number = 2) {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const baseFreq = Math.min(1046.5, 440 * Math.pow(1.1, Math.min(streak, 10)));
+      const notes = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 1.875];
+      const step = 0.065;
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = streak >= 5 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * step);
+        gain.gain.setValueAtTime(0.2, now + idx * step);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (idx + 1) * step + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * step);
+        osc.stop(now + (idx + 1) * step + 0.12);
+      });
+    } catch {}
+  }
+
+  /**
+   * Dramatic energetic chord whoosh when toggling Double Down / All-In Risk
+   */
+  public playAllInActivation() {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const freqs = [523.25, 659.25, 783.99, 1046.5];
+      freqs.forEach(freq => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq / 2, now);
+        osc.frequency.exponentialRampToValueAtTime(freq, now + 0.15);
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.16, now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.32);
+      });
+    } catch {}
+  }
 }
 
 export const soundFx = new SoundEffectsService();

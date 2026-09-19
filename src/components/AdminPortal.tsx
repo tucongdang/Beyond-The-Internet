@@ -25,6 +25,7 @@ import { NetworkStabilityChart } from './NetworkStabilityChart';
 import { EmergencyPollControl } from './EmergencyPollControl';
 import { AdminPollManager } from './AdminPollManager';
 import { AnnouncerControlModal } from './AnnouncerControlModal';
+import { AiMcCoPilotModal } from './AiMcCoPilotModal';
 import { PollHistoryTab } from './PollHistoryTab';
 import { LuckyDrawAdmin } from './LuckyDrawAdmin';
 import { LivePollDashboard } from './LivePollDashboard';
@@ -69,6 +70,7 @@ import { Timer,  Shield,
   AlertTriangle,
   AlertCircle,
   Flame,
+  Mic,
 
   FileSpreadsheet,
   Layers,
@@ -386,6 +388,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showEmergencyPollModal, setShowEmergencyPollModal] = useState(false);
   const [showAnnouncerModal, setShowAnnouncerModal] = useState(false);
+  const [showMcCoPilotModal, setShowMcCoPilotModal] = useState(false);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
 
   // Fluent UI 2 Context Menu State
@@ -2711,6 +2714,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               ) : (
                 <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-cyan-500/30 text-cyan-200">O</kbd>
               )}
+            </button>
+
+            {/* AI MC Co-pilot Trigger */}
+            <button
+              type="button"
+              id="btn-admin-header-mc-copilot"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowMcCoPilotModal(true);
+              }}
+              data-tooltip="AI gợi ý lời dẫn trực tiếp cho MC dựa trên phân phối đáp án khán giả"
+              data-tooltip-title="AI MC Co-pilot"
+              data-tooltip-variant="accent"
+              className="has-tooltip fluent-action-btn text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border-amber-500/40"
+            >
+              <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <span>AI MC Co-pilot</span>
             </button>
           </div>
 
@@ -7454,6 +7475,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={showAnnouncerModal}
         onClose={() => setShowAnnouncerModal(false)}
         gameState={gameState}
+      />
+
+      {/* AI MC Co-pilot Live Advice Modal */}
+      <AiMcCoPilotModal
+        isOpen={showMcCoPilotModal}
+        onClose={() => setShowMcCoPilotModal(false)}
+        gameState={gameState}
+        responses={responses}
       />
 
       {/* Floating Host Pacing Toaster Notifications */}

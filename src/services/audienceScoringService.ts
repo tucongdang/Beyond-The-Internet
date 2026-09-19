@@ -94,6 +94,7 @@ export function normalizeRoundKey(roundId: string): keyof ScoreBreakdown {
  * - Round 4 (Về đích - Kịch tương tác / Thực hành / Đúng Sai 4 ý):
  *     * Trắc nghiệm / Kịch tương tác / Thực hành: +40 points.
  *     * Đúng / Sai 4 ý: 10 points per correct sub-item (4/4 = 40đ, 3/4 = 30đ, 2/4 = 20đ, 1/4 = 10đ).
+ *     * Cược Nhân Đôi All-In (Double Down): Đúng +80 points, Sai trừ 100% (-40 points).
  */
 export function calculatePointsForRound(
   roundId: string,
@@ -103,6 +104,13 @@ export function calculatePointsForRound(
 
   // If explicit partialPoints is provided (e.g. for TRUE_FALSE_4)
   if (result.partialPoints !== undefined) {
+    if (category === 'round4' && result.isDoubleDown) {
+      if (result.partialPoints === 40) {
+        return { pointsEarned: 80, category, notice: '⚡ XUẤT SẮC: ĐÚNG 4/4 Ý CƯỢC ALL-IN VỀ ĐÍCH (+80đ)' };
+      } else {
+        return { pointsEarned: -40, category, notice: '⚠️ RỦI RO: KHÔNG ĐẠT 4/4 Ý ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)' };
+      }
+    }
     const pts = Math.max(0, result.partialPoints);
     let notice = pts > 0 ? `Đạt ${pts}đ (Đúng từng phần)` : 'Chưa chính xác (0 điểm)';
     if (pts === 40) notice = 'Chính xác hoàn hảo 4/4 ý (+40đ)';
@@ -110,6 +118,9 @@ export function calculatePointsForRound(
   }
 
   if (!result.isCorrect) {
+    if (category === 'round4' && result.isDoubleDown) {
+      return { pointsEarned: -40, category, notice: '⚠️ RỦI RO: SAI CƯỢC ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)' };
+    }
     return { pointsEarned: 0, category, notice: 'Chưa chính xác (0 điểm)' };
   }
 
@@ -186,9 +197,14 @@ export function calculatePointsForRound(
     }
 
     case 'round4': {
-      // Round 4 (Về đích - Kịch tương tác / Câu hỏi thực hành / Trắc nghiệm): +40 points
-      pointsEarned = 40;
-      notice = 'Đúng Về Đích - Kịch Tương Tác / Thực Hành (+40đ)';
+      // Round 4 (Về đích - Kịch tương tác / Câu hỏi thực hành / Trắc nghiệm): +40 points (hoặc +80 nếu All-In)
+      if (result.isDoubleDown) {
+        pointsEarned = 80;
+        notice = '⚡ XUẤT SẮC: ĐÚNG CƯỢC ALL-IN VỀ ĐÍCH (+80đ)';
+      } else {
+        pointsEarned = 40;
+        notice = 'Đúng Về Đích - Kịch Tương Tác / Thực Hành (+40đ)';
+      }
       break;
     }
 
@@ -478,6 +494,7 @@ export function computeAudienceScoreFromResponses(
       latencySec: userResp.latency_sec,
       speedRank,
       timeLimit,
+      isDoubleDown: userResp.isDoubleDown,
       subType: 'STANDARD'
     };
 

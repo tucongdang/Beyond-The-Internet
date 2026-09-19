@@ -12,7 +12,8 @@ import { interpolateTimerColor } from '../utils/colorUtils';
 import {
   computeAudienceScoreFromResponses,
   getAudienceTotalScore,
-  getAudienceScoreBreakdown
+  getAudienceScoreBreakdown,
+  normalizeRoundKey
 } from '../services/audienceScoringService';
 import {
   vibrateSubmit,
@@ -71,8 +72,12 @@ import {
   Heart,
   MessageSquare,
   Megaphone,
-  RefreshCw, Globe, Languages, ChevronDown, Check
+  RefreshCw, Globe, Languages, ChevronDown, Check,
+  Volume2, VolumeX, Shield
 } from 'lucide-react';
+import { aiExplanationService } from '../services/aiExplanationService';
+import { calculateSurvivalStats } from '../utils/leaderboardUtils';
+import { PostMatchCardModal } from './PostMatchCardModal';
 import { useScreenWakeLock } from '../hooks/useScreenWakeLock';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { BatteryIndicator } from './BatteryIndicator';
@@ -99,6 +104,7 @@ interface AudienceViewProps {
   onOpenLogModal?: () => void;
   onOpenShareModal?: () => void;
   onOpenQAModal?: () => void;
+  onOpenPostMatchModal?: () => void;
   isHighContrast?: boolean;
   onToggleHighContrast?: () => void;
   isWakeLockLocked?: boolean;
@@ -116,6 +122,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   onOpenLogModal,
   onOpenShareModal,
   onOpenQAModal,
+  onOpenPostMatchModal,
   isHighContrast,
   onToggleHighContrast,
   isWakeLockLocked,
@@ -190,6 +197,27 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     // Mini-Tip Quick Guide state
   const [showMiniTip, setShowMiniTip] = useState<boolean>(false);
   const [tipQuestionId, setTipQuestionId] = useState<string>('');
+
+  // Round 4 Double Down / All-In Risk state
+  const [isDoubleDownActive, setIsDoubleDownActive] = useState<boolean>(false);
+
+  // AI Voice TTS state
+  const [isSpeakingQuestion, setIsSpeakingQuestion] = useState<boolean>(false);
+
+  // AI Instant Explanation state ("Hỏi Nhanh Vì Sao")
+  const [aiExplanation, setAiExplanation] = useState<string>('');
+  const [isAiExplaining, setIsAiExplaining] = useState<boolean>(false);
+
+  // Tab switch / focus departure detection state
+  const [tabSwitchCount, setTabSwitchCount] = useState<number>(0);
+  const tabSwitchCountRef = useRef<number>(0);
+  const [showTabSwitchWarning, setShowTabSwitchWarning] = useState<boolean>(false);
+
+  // Offline queue notice
+  const [offlineNotice, setOfflineNotice] = useState<string | null>(null);
+
+  // Post-match infographic card modal state
+  const [isPostMatchModalOpen, setIsPostMatchModalOpen] = useState<boolean>(false);
 
   // Multilingual Question Translation State & Resolver
   const [localTranslation, setLocalTranslation] = useState<QuestionTranslation | null>(null);
@@ -551,17 +579,30 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       ? Math.max(0.1, (now - gameState.server_start_time) / 1000)
       : 1.0;
 
-    syncService.submitResponse(gameState.question_id, user.uid, {
+    const payload: UserResponse = {
       choice: formatted,
       timestamp: now,
       latency_sec: Number(latency.toFixed(2)),
+      isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
+      tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
       user_info: {
         name: user.name,
         mssv: user.mssv,
         uid: user.uid,
         anonymizedUid: user.anonymizedUid || user.uid
       }
-    });
+    };
+
+    if (!navigator.onLine) {
+      queueOfflineResponse(payload);
+    }
+
+    try {
+      await syncService.submitResponse(gameState.question_id, user.uid, payload);
+    } catch (err) {
+      console.warn('TF submit failed, queued offline:', err);
+      queueOfflineResponse(payload);
+    }
   };
 
   const audienceMediaRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
@@ -619,6 +660,181 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
     setIsPendingSync(false);
   };
+
+  // Compute live user stats and score breakdown across all rounds
+  const userPerformance = useMemo(() => {
+    if (!user?.uid || !allResponses) return null;
+    const board = calculateLeaderboard(allResponses, undefined, gameState);
+    const myData = board.find(u => u.uid === user.uid || (user.mssv && u.mssv === user.mssv));
+    const audienceScoreState = computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
+
+    return {
+      totalScore: getAudienceTotalScore(audienceScoreState),
+      scoreBreakdown: getAudienceScoreBreakdown(audienceScoreState),
+      audienceScoreState,
+      rank: myData?.rank || '-',
+      accuracyRate: myData?.accuracyRate || 0,
+      correctCount: audienceScoreState.correctAnswersCount,
+      totalAnswered: audienceScoreState.totalAnswered,
+      avgLatency: myData?.avgLatency || 0,
+      totalPlayers: board.length
+    };
+  }, [allResponses, user?.uid, user?.mssv, gameState]);
+
+  // Round 4 (Về đích) detection for Double Down / All-In Risk
+  const isVeDichRound = useMemo(() => {
+    const roundKey = normalizeRoundKey(gameState.round_name || gameState.question_id || '');
+    return roundKey === 'round4';
+  }, [gameState.round_name, gameState.question_id]);
+
+  // Battle Royale survival statistics (undefeated players with 100% accuracy)
+  const survivalStats = useMemo(() => {
+    return calculateSurvivalStats(allResponses, undefined, gameState, user?.uid, user?.mssv);
+  }, [allResponses, gameState, user?.uid, user?.mssv]);
+
+  // Streak calculations (strictly NO point multiplier, purely gamification & combo sound)
+  const streakStats = useMemo(() => {
+    const history = userPerformance?.audienceScoreState?.history || [];
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let temp = 0;
+    for (const item of history) {
+      if (item.is_correct) {
+        temp++;
+        if (temp > maxStreak) maxStreak = temp;
+      } else {
+        temp = 0;
+      }
+    }
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].is_correct) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+    return { currentStreak, maxStreak };
+  }, [userPerformance?.audienceScoreState?.history]);
+
+  // Offline queue storage key
+  const OFFLINE_QUEUE_KEY = 'bti_offline_queue';
+
+  const queueOfflineResponse = (payload: UserResponse) => {
+    try {
+      const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+      const queue: any[] = raw ? JSON.parse(raw) : [];
+      queue.push({
+        id: `${gameState.question_id}_${user?.uid}_${Date.now()}`,
+        questionId: gameState.question_id,
+        uid: user?.uid,
+        payload: { ...payload, isOfflineSync: true },
+        savedAt: Date.now()
+      });
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      setOfflineNotice('📶 Mạng gián đoạn! Đáp án đã được lưu ngoại tuyến, sẽ tự động đồng bộ khi có kết nối.');
+    } catch (err) {
+      console.warn('Queue offline response error:', err);
+    }
+  };
+
+  // Auto-sync queued offline answers when browser regains network
+  useEffect(() => {
+    const syncOfflineQueue = async () => {
+      try {
+        const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+        if (!raw) return;
+        const queue: any[] = JSON.parse(raw);
+        if (queue.length === 0) return;
+        let syncedCount = 0;
+        for (const item of queue) {
+          await syncService.submitResponse(item.questionId, item.uid, item.payload);
+          syncedCount++;
+        }
+        localStorage.removeItem(OFFLINE_QUEUE_KEY);
+        if (syncedCount > 0) {
+          setOfflineNotice(`✅ Đã tự động đồng bộ ${syncedCount} câu trả lời ngoại tuyến!`);
+          soundFx.playTing();
+          setTimeout(() => setOfflineNotice(null), 4000);
+        }
+      } catch (err) {
+        console.warn('Sync offline queue error:', err);
+      }
+    };
+
+    window.addEventListener('online', syncOfflineQueue);
+    if (navigator.onLine) {
+      syncOfflineQueue();
+    }
+    return () => window.removeEventListener('online', syncOfflineQueue);
+  }, []);
+
+  // Tab-switch / focus departure detection during active question
+  useEffect(() => {
+    if (gameState.status !== 'ACTIVE' || hasVotedThisQuestion) return;
+
+    const handleVisibilityOrBlur = () => {
+      if (document.hidden && gameState.status === 'ACTIVE' && !hasVotedThisQuestion) {
+        tabSwitchCountRef.current += 1;
+        setTabSwitchCount(tabSwitchCountRef.current);
+        setShowTabSwitchWarning(true);
+        soundFx.playAlarm();
+        vibrateWarning();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrBlur);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityOrBlur);
+    };
+  }, [gameState.status, hasVotedThisQuestion]);
+
+  useEffect(() => {
+    if (!showTabSwitchWarning) return;
+    const timer = setTimeout(() => {
+      setShowTabSwitchWarning(false);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [showTabSwitchWarning]);
+
+  // AI Voice TTS toggle
+  const handleToggleSpeakQuestion = () => {
+    if (isSpeakingQuestion) {
+      aiExplanationService.stopSpeech();
+      setIsSpeakingQuestion(false);
+    } else {
+      setIsSpeakingQuestion(true);
+      aiExplanationService.speakQuestionText(
+        activeQuestionText,
+        localLanguage,
+        () => setIsSpeakingQuestion(false),
+        () => setIsSpeakingQuestion(false)
+      );
+    }
+  };
+
+  // AI Instant Explanation trigger
+  const handleRequestAiExplanation = async () => {
+    if (isAiExplaining) return;
+    setIsAiExplaining(true);
+    try {
+      const text = await aiExplanationService.getInstantExplanation({
+        id: gameState.question_id,
+        question_text: gameState.question_text,
+        options: gameState.options,
+        correct_key: gameState.correct_key,
+        explanation: gameState.explanation
+      }, localLanguage);
+      setAiExplanation(text);
+      soundFx.playTing();
+      vibrateTap();
+    } catch (err: any) {
+      setAiExplanation(err?.message || 'Không thể tạo giải thích AI lúc này.');
+      soundFx.playAlarm();
+    } finally {
+      setIsAiExplaining(false);
+    }
+  };
+
   // Derive user's current response for this question
   const userResponse = user ? responses[user.uid] : undefined;
 
@@ -641,9 +857,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       setIsEditingVcnv(false);
       setHasVotedThisQuestion(false);
       setTfChoices({});
+      setIsDoubleDownActive(false);
+      aiExplanationService.stopSpeech();
+      setIsSpeakingQuestion(false);
+      setAiExplanation('');
+      setTabSwitchCount(0);
+      tabSwitchCountRef.current = 0;
+      setShowTabSwitchWarning(false);
       prevQuestionIdRef.current = gameState.question_id;
     }
   }, [gameState.question_id, responses, user?.uid]);
+
+  // Clean up speech synthesis on component unmount
+  useEffect(() => {
+    return () => {
+      aiExplanationService.stopSpeech();
+    };
+  }, []);
 
   // Tactile feedback on 50:50 option elimination
   useEffect(() => {
@@ -723,6 +953,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         soundFx.playReveal(Boolean(isUserCorrect));
         if (isUserCorrect) {
           vibrateCorrect();
+          // Combo FX audio when on a winning streak (strictly NO point multiplier)
+          if (streakStats.currentStreak >= 2) {
+            soundFx.playStreakCombo(streakStats.currentStreak);
+          }
           try {
             confetti({
               particleCount: 80,
@@ -768,6 +1002,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       choice: optionKey,
       timestamp: now,
       latency_sec: Number(latency.toFixed(2)),
+      isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
+      tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
       user_info: {
         name: user.name,
         mssv: user.mssv,
@@ -776,9 +1012,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       }
     };
 
+    if (!navigator.onLine) {
+      queueOfflineResponse(responsePayload);
+    }
+
     setIsPendingSync(true);
     try {
       await syncService.submitResponse(gameState.question_id, user.uid, responsePayload);
+    } catch (err) {
+      console.warn('Submit response failed, saving to offline queue:', err);
+      queueOfflineResponse(responsePayload);
     } finally {
       setIsPendingSync(false);
     }
@@ -907,25 +1150,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return { total, percentages };
   }, [allResponses, gameState.question_id, gameState.options]);
 
-  // Compute live user stats and score breakdown across all rounds
-  const userPerformance = useMemo(() => {
-    if (!user?.uid || !allResponses) return null;
-    const board = calculateLeaderboard(allResponses, undefined, gameState);
-    const myData = board.find(u => u.uid === user.uid || (user.mssv && u.mssv === user.mssv));
-    const audienceScoreState = computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
 
-    return {
-      totalScore: getAudienceTotalScore(audienceScoreState),
-      scoreBreakdown: getAudienceScoreBreakdown(audienceScoreState),
-      audienceScoreState,
-      rank: myData?.rank || '-',
-      accuracyRate: myData?.accuracyRate || 0,
-      correctCount: audienceScoreState.correctAnswersCount,
-      totalAnswered: audienceScoreState.totalAnswered,
-      avgLatency: myData?.avgLatency || 0,
-      totalPlayers: board.length
-    };
-  }, [allResponses, user?.uid, user?.mssv, gameState]);
 
   // Keyboard shortcut support for rapid voting and global PC desktop hotkeys
   useEffect(() => {
@@ -2054,6 +2279,44 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
           </div>
         )}
+        {/* Tab switch / focus departure warning toast */}
+        {showTabSwitchWarning && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl">
+            <div className="p-4 rounded-[2px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-rose-950/80">
+              <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0">
+                <AlertTriangle className="w-5 h-5 animate-bounce" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm text-rose-300">CẢNH BÁO: RỜI KHỎI TAB MÀN HÌNH</h4>
+                  <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-rose-500/30 text-rose-200 rounded-[2px]">
+                    LẦN {tabSwitchCount}
+                  </span>
+                </div>
+                <p className="text-xs text-rose-200/90 mt-1 leading-relaxed">
+                  Hệ thống phát hiện bạn đã chuyển tab hoặc rời màn hình khi câu hỏi đang diễn ra. Thông số này được ghi nhận vào hệ thống.
+                </p>
+              </div>
+              <button onClick={() => setShowTabSwitchWarning(false)} className="p-1 text-rose-400 hover:text-white cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Offline sync status notice */}
+        {offlineNotice && (
+          <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn pointer-events-auto">
+            <div className="flex items-center gap-2 bg-slate-900/95 border border-amber-400/50 text-amber-200 px-4 py-2.5 rounded-[2px] shadow-2xl text-xs font-semibold backdrop-blur-md">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>{offlineNotice}</span>
+              <button onClick={() => setOfflineNotice(null)} className="ml-2 text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Reusable CountdownTimer Header: Category, Badges, Timer & Progress Bar */}
         <CountdownTimer
           timeLeft={timeLeft}
@@ -2061,6 +2324,38 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isTTRound={isTTRound}
           label={gameState.category || gameState.round_name}
         >
+          {/* Battle Royale Survival Badge */}
+          <div 
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold bg-purple-500/15 text-purple-200 border border-purple-400/30"
+            title={`Đấu trường Sinh tử: ${survivalStats.survivorsCount} / ${survivalStats.totalContestants} người bất bại (${survivalStats.survivalRate}%)`}
+          >
+            <Shield className="w-3.5 h-3.5 text-purple-300" />
+            <span className="hidden md:inline text-[11px]">SINH TỒN:</span>
+            <span className="text-white font-black">{survivalStats.survivorsCount}</span>
+          </div>
+
+          {/* Streak Combo Badge (NO point multiplier) */}
+          {streakStats.currentStreak >= 2 && (
+            <div 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-[2px] text-xs font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 animate-pulse"
+              title={`Chuỗi thắng: ${streakStats.currentStreak} câu liên tiếp!`}
+            >
+              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span>x{streakStats.currentStreak}</span>
+            </div>
+          )}
+
+          {/* Post-match card trigger button */}
+          <button
+            type="button"
+            onClick={() => setIsPostMatchModalOpen(true)}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border border-purple-400/30 flex items-center gap-1.5 transition hover-effect cursor-pointer"
+            title="Xuất thẻ thành tích Infographic"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline text-[11px] font-bold">Thẻ</span>
+          </button>
+
           <button
             id="btn-audience-share-active"
             type="button"
@@ -2223,6 +2518,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           gameState={gameState}
                           variant="compact"
                         />
+
+                        {/* AI Voice TTS Button (Web Speech API - Nhóm 2) */}
+                        <button
+                          type="button"
+                          onClick={handleToggleSpeakQuestion}
+                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer ${
+                            isSpeakingQuestion
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
+                              : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
+                          }`}
+                          title={isSpeakingQuestion ? 'Dừng đọc AI Voice' : 'Đọc câu hỏi bằng AI Voice'}
+                        >
+                          {isSpeakingQuestion ? (
+                            <VolumeX className="w-4 h-4 text-emerald-400 animate-pulse" />
+                          ) : (
+                            <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
+                          )}
+                        </button>
                       </div>
                     </div>
                     <h2 className={`text-base sm:text-lg md:text-xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
@@ -2276,6 +2589,61 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               {/* RIGHT Column: Input Controls & Choice Confirmation */}
               <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col justify-between gap-4" : "lg:col-span-7 flex flex-col justify-between gap-4"}>
                 <div className="flex-1">
+                  {/* Round 4 (Về đích) Double Down / All-In Risk Mode Toggle */}
+                  {isVeDichRound && (
+                    <div className={`p-3 sm:p-3.5 rounded-[2px] border transition-all mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      isDoubleDownActive
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-amber-400/30'
+                    }`}>
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-[2px] shrink-0 ${isDoubleDownActive ? 'bg-amber-400 text-black font-black animate-pulse' : 'bg-white/10 text-amber-400'}`}>
+                          <Flame className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-xs sm:text-sm text-white tracking-wide">
+                              🔥 NHÂN ĐÔI ĐIỂM (ALL-IN RISK)
+                            </span>
+                            {isDoubleDownActive && (
+                              <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-amber-400 text-black rounded-[2px]">
+                                ĐANG BẬT (+80 / -40)
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-amber-200/90 leading-tight mt-0.5">
+                            {isDoubleDownActive 
+                              ? 'Chế độ mạo hiểm Về Đích: Trả lời đúng nhận +80 điểm, trả lời sai bị trừ 100% (-40 điểm)!'
+                              : 'Vòng Về Đích: Kích hoạt để mạo hiểm (+80 điểm khi đúng, trừ 100% -40 điểm khi sai).'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={hasVotedThisQuestion}
+                        onClick={() => {
+                          if (hasVotedThisQuestion) return;
+                          const nextState = !isDoubleDownActive;
+                          setIsDoubleDownActive(nextState);
+                          if (nextState) {
+                            soundFx.playAllInActivation();
+                            vibrateLifeline();
+                          } else {
+                            soundFx.playClick();
+                            vibrateTap();
+                          }
+                        }}
+                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border cursor-pointer shrink-0 text-center ${
+                          isDoubleDownActive
+                            ? 'bg-amber-400 text-black border-amber-300 shadow-md hover:bg-amber-300'
+                            : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                        } ${hasVotedThisQuestion ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {isDoubleDownActive ? 'TẮT RỦI RO' : 'BẬT RỦI RO'}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Input Controls */}
                   {isTrueFalse4 ? (
                     <div className="space-y-3 pt-1">
@@ -3195,6 +3563,54 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
         )}
 
+        {/* AI Instant Explanation Module (Hỏi Nhanh Vì Sao - Nhóm 2) */}
+        <div className="fluent-box rounded-[2px] p-4 sm:p-5 shadow-xl border-purple-500/30 bg-purple-950/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-[2px] bg-purple-500/20 text-purple-300 shrink-0">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                  <span>AI Trợ Lý Học Tập</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[2px] bg-purple-500/30 text-purple-200 border border-purple-400/40">
+                    HỎI NHANH VÌ SAO
+                  </span>
+                </h4>
+                <p className="text-xs text-purple-200/80 mt-0.5">
+                  Chưa hiểu rõ vì sao đáp án này đúng? Bấm để nhận phân tích tức thì từ Gemini AI.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleRequestAiExplanation}
+              disabled={isAiExplaining}
+              className="px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition shrink-0 cursor-pointer"
+            >
+              {isAiExplaining ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
+                  <span>Đang giải thích...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-purple-200" />
+                  <span>{aiExplanation ? 'Giải thích lại' : 'Hỏi AI vì sao đúng'}</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {aiExplanation && (
+            <div className="mt-3.5 pt-3 border-t border-purple-500/20 animate-fadeIn">
+              <div className="p-3.5 rounded-[2px] bg-black/40 border border-purple-500/30 text-xs sm:text-sm text-purple-100 leading-relaxed whitespace-pre-wrap">
+                {aiExplanation}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Audience Voting Percentage Bar Chart */}
         <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
@@ -3394,6 +3810,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     <>
       {renderContent()}
 
+      {/* Post-Match Infographic Achievement Card (Nhóm 4) */}
+      <PostMatchCardModal
+        isOpen={isPostMatchModalOpen}
+        onClose={() => setIsPostMatchModalOpen(false)}
+        user={user}
+        totalScore={userPerformance?.totalScore || 0}
+        rank={typeof userPerformance?.rank === 'number' ? userPerformance.rank : 1}
+        totalContestants={survivalStats.totalContestants || userPerformance?.totalPlayers || 1}
+        accuracyRate={userPerformance?.accuracyRate || 0}
+        maxStreak={streakStats.maxStreak}
+        isSurvivor={survivalStats.isUserAlive}
+      />
     </>
   );
 };
@@ -3407,11 +3835,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const [isCheerModalOpen, setIsCheerModalOpen] = useState(false);
   const [isQAModalOpen, setIsQAModalOpen] = useState(false);
   const [isShoutModalOpen, setIsShoutModalOpen] = useState(false);
+  const [isPostMatchModalOpen, setIsPostMatchModalOpen] = useState(false);
   const [qaModalInitialTab, setQaModalInitialTab] = useState<'ASK' | 'MY_QUESTIONS' | 'COMMUNITY'>('ASK');
   const handleOpenLogModal = props.onOpenLogModal || (() => setIsLogModalOpen(true));
   const handleOpenShareModal = props.onOpenShareModal || (() => setIsShareModalOpen(true));
   const handleOpenCheerModal = () => setIsCheerModalOpen(true);
   const handleOpenShoutModal = () => setIsShoutModalOpen(true);
+  const handleOpenPostMatchModal = () => setIsPostMatchModalOpen(true);
   const handleOpenQAModal = (tab: 'ASK' | 'MY_QUESTIONS' | 'COMMUNITY' = 'ASK') => {
     setQaModalInitialTab(tab);
     setIsQAModalOpen(true);
@@ -3425,6 +3855,46 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const isHighContrast = Boolean(props.isHighContrast);
   const { isSupported: isWakeLockSupported, isLocked: isWakeLockLocked, toggleLock: toggleWakeLock } = useScreenWakeLock(true);
 
+  // Compute live user score & stats for post-match card generator
+  const audienceScoreState = useMemo(() => {
+    return computeAudienceScoreFromResponses(props.allResponses || {}, props.user?.uid, props.user?.mssv, undefined, props.gameState);
+  }, [props.allResponses, props.user?.uid, props.user?.mssv, props.gameState]);
+
+  const survivalStats = useMemo(() => {
+    return calculateSurvivalStats(props.allResponses, undefined, props.gameState, props.user?.uid, props.user?.mssv);
+  }, [props.allResponses, props.gameState, props.user?.uid, props.user?.mssv]);
+
+  const streakStats = useMemo(() => {
+    const history = audienceScoreState.history || [];
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let temp = 0;
+    for (const item of history) {
+      if (item.is_correct) {
+        temp++;
+        if (temp > maxStreak) maxStreak = temp;
+      } else {
+        temp = 0;
+      }
+    }
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].is_correct) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+    return { currentStreak, maxStreak };
+  }, [audienceScoreState.history]);
+
+  const leaderboard = useMemo(() => {
+    return calculateLeaderboard(props.allResponses || {}, undefined, props.gameState);
+  }, [props.allResponses, props.gameState]);
+
+  const myData = useMemo(() => {
+    return leaderboard.find(u => u.uid === props.user?.uid || (props.user?.mssv && u.mssv === props.user.mssv));
+  }, [leaderboard, props.user?.uid, props.user?.mssv]);
+
   return (
     <div className={`flex flex-col h-full relative transition-all duration-300 ${isHighContrast ? 'audience-high-contrast bg-black/50 backdrop-blur-[24px] saturate-150' : ''}`}>
       <ScoreDisplay 
@@ -3437,6 +3907,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         isWakeLockSupported={isWakeLockSupported}
         onToggleWakeLock={toggleWakeLock}
         onOpenLogModal={handleOpenLogModal}
+        onOpenPostMatchModal={handleOpenPostMatchModal}
       />
 
       {/* Real-time Audience Shout Marquee Bar */}
@@ -3456,6 +3927,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onOpenLogModal={handleOpenLogModal}
           onOpenShareModal={handleOpenShareModal}
           onOpenQAModal={handleOpenQAModal}
+          onOpenPostMatchModal={handleOpenPostMatchModal}
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={toggleWakeLock}
@@ -3507,6 +3979,21 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         >
           <MessageSquare className="w-[14px] h-[14px] text-sky-400" />
           <span className="font-bold tracking-wide">{t("view_qna", localLanguage)}</span>
+        </button>
+
+        <button
+          id="btn-audience-postmatch-floating"
+          type="button"
+          onClick={() => {
+            vibrateSelection();
+            soundFx.playTing();
+            handleOpenPostMatchModal();
+          }}
+          className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30"
+          title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
+        >
+          <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />
+          <span className="font-bold tracking-wide">Thẻ</span>
         </button>
       </div>
 
@@ -3662,6 +4149,19 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         onClose={() => setIsShareModalOpen(false)}
         gameTitle="Beyond The Internet 2026"
         roundName={props.gameState.round_name || props.gameState.category}
+      />
+
+      {/* Post-Match Infographic Achievement Card Modal (Nhóm 4) */}
+      <PostMatchCardModal
+        isOpen={isPostMatchModalOpen}
+        onClose={() => setIsPostMatchModalOpen(false)}
+        user={props.user}
+        totalScore={getAudienceTotalScore(audienceScoreState)}
+        rank={typeof myData?.rank === 'number' ? myData.rank : 1}
+        totalContestants={survivalStats.totalContestants || leaderboard.length || 1}
+        accuracyRate={myData?.accuracyRate || 0}
+        maxStreak={streakStats.maxStreak}
+        isSurvivor={survivalStats.isUserAlive}
       />
 
       {/* Live Highlighted Question Toast Notification from Admin */}
