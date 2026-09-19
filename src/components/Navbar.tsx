@@ -38,9 +38,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleSound,
   onAdminLogout,
   onOpenQrCode,
-  onOpenInstallModal
-}) => {
   const { localLanguage } = useLanguage();
+  // Admin Portal strictly retains Vietnamese navigation bar
+  const effectiveLanguage = currentView === 'admin' ? 'vi' : localLanguage;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Fullscreen State & Change Listeners
@@ -139,8 +139,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         dot: 'bg-zinc-500',
         icon: 'text-zinc-400',
         label: 'Offline',
-        qualityText: localLanguage === 'en' ? 'Offline' : 'Mất kết nối',
-        description: localLanguage === 'en' ? 'Firebase Disconnected' : 'Mất kết nối Firebase'
+        qualityText: effectiveLanguage === 'en' ? 'Offline' : 'Mất kết nối',
+        description: effectiveLanguage === 'en' ? 'Firebase Disconnected' : 'Mất kết nối Firebase'
       };
     }
     if (pingInfo.quality === 'excellent') {
@@ -149,8 +149,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         dot: 'bg-emerald-400',
         icon: 'text-emerald-400',
         label: `${pingInfo.latencyMs}ms`,
-        qualityText: localLanguage === 'en' ? 'Excellent' : 'Cực tốt',
-        description: localLanguage === 'en' ? 'Ultra-low latency (< 100ms)' : 'Độ trễ cực tốt (< 100ms)'
+        qualityText: effectiveLanguage === 'en' ? 'Excellent' : 'Cực tốt',
+        description: effectiveLanguage === 'en' ? 'Ultra-low latency (< 100ms)' : 'Độ trễ cực tốt (< 100ms)'
       };
     }
     if (pingInfo.quality === 'good') {
@@ -159,8 +159,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         dot: 'bg-sky-400',
         icon: 'text-sky-400',
         label: `${pingInfo.latencyMs}ms`,
-        qualityText: localLanguage === 'en' ? 'Good' : 'Tốt',
-        description: localLanguage === 'en' ? 'Stable latency (< 250ms)' : 'Độ trễ ổn định (< 250ms)'
+        qualityText: effectiveLanguage === 'en' ? 'Good' : 'Tốt',
+        description: effectiveLanguage === 'en' ? 'Stable latency (< 250ms)' : 'Độ trễ ổn định (< 250ms)'
       };
     }
     if (pingInfo.quality === 'fair') {
@@ -169,8 +169,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         dot: 'bg-amber-400',
         icon: 'text-amber-400',
         label: `${pingInfo.latencyMs}ms`,
-        qualityText: localLanguage === 'en' ? 'Fair' : 'Trung bình',
-        description: localLanguage === 'en' ? 'Moderate latency (< 500ms)' : 'Độ trễ trung bình (< 500ms)'
+        qualityText: effectiveLanguage === 'en' ? 'Fair' : 'Trung bình',
+        description: effectiveLanguage === 'en' ? 'Moderate latency (< 500ms)' : 'Độ trễ trung bình (< 500ms)'
       };
     }
     return {
@@ -178,8 +178,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       dot: 'bg-rose-400 animate-ping',
       icon: 'text-rose-400',
       label: `${pingInfo.latencyMs}ms`,
-      qualityText: localLanguage === 'en' ? 'Poor' : 'Chậm',
-      description: localLanguage === 'en' ? 'High latency (> 500ms)' : 'Độ trễ cao (> 500ms)'
+      qualityText: effectiveLanguage === 'en' ? 'Poor' : 'Chậm',
+      description: effectiveLanguage === 'en' ? 'High latency (> 500ms)' : 'Độ trễ cao (> 500ms)'
     };
   };
 
@@ -190,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="px-2.5 py-1 bg-emerald-950/50 border border-emerald-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_#34d399]" />
             <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
-              {localLanguage === 'en' ? 'In Progress' : 'Đang Diễn Ra'}
+              {effectiveLanguage === 'en' ? 'In Progress' : 'Đang Diễn Ra'}
             </span>
           </div>
         );
@@ -199,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="px-2.5 py-1 bg-amber-950/50 border border-amber-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-amber-400 rounded-full" />
             <span className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
-              {localLanguage === 'en' ? 'Locked' : 'Đã Khóa'}
+              {effectiveLanguage === 'en' ? 'Locked' : 'Đã Khóa'}
             </span>
           </div>
         );
@@ -208,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="px-2.5 py-1 bg-purple-950/50 border border-purple-500/40 rounded-[4px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse shadow-[0_0_8px_#c084fc]" />
             <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
-              {localLanguage === 'en' ? 'Result Revealed' : 'Công Bố Kết Quả'}
+              {effectiveLanguage === 'en' ? 'Result Revealed' : 'Công Bố Kết Quả'}
             </span>
           </div>
         );
@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-[4px] flex items-center gap-2 shadow-sm">
             <div className="w-2 h-2 bg-white/40 rounded-full" />
             <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-wider">
-              {localLanguage === 'en' ? 'Waiting for Stage' : 'Chờ Sân Khấu'}
+              {effectiveLanguage === 'en' ? 'Waiting for Stage' : 'Chờ Sân Khấu'}
             </span>
           </div>
         );
@@ -356,17 +356,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               disabled={isMeasuringPing}
               data-tooltip={
                 pingInfo.latencyMs !== null
-                  ? (localLanguage === 'en'
+                  ? (effectiveLanguage === 'en'
                       ? `Firebase latency: ${pingInfo.latencyMs}ms (${pingBadge.description}). Click to check again.`
                       : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để kiểm tra lại ngay.`)
-                  : (localLanguage === 'en'
+                  : (effectiveLanguage === 'en'
                       ? 'Realtime sync offline. Click to reconnect.'
                       : 'Mất kết nối thời gian thực. Bấm để thử đồng bộ lại.')
               }
-              data-tooltip-title={localLanguage === 'en' ? 'Network Latency (RTT)' : 'Độ Trễ Mạng (Ping RTT)'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Network Latency (RTT)' : 'Độ Trễ Mạng (Ping RTT)'}
               data-tooltip-placement="bottom"
               className={`hidden sm:flex has-tooltip fluent-action-btn ${pingBadge.container}`}
-              aria-label={localLanguage === 'en' ? `Firebase latency: ${pingBadge.label}` : `Độ trễ Firebase: ${pingBadge.label}`}
+              aria-label={effectiveLanguage === 'en' ? `Firebase latency: ${pingBadge.label}` : `Độ trễ Firebase: ${pingBadge.label}`}
             >
               <div className="flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
@@ -395,21 +395,23 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Battery Status Indicator */}
             <div>
-              <BatteryIndicator />
+              <BatteryIndicator forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
             </div>
 
             {/* Connected Audience Metric */}
             <div
               data-tooltip={
-                localLanguage === 'en'
+                effectiveLanguage === 'en'
                   ? 'Total online users currently in the game room'
                   : 'Tổng số người dùng đang trực tuyến trong phòng thi'
               }
-              data-tooltip-title={localLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
               data-tooltip-placement="bottom"
               className="has-tooltip flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[4px] shrink-0 whitespace-nowrap"
             >
-              <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">Connected</span>
+              <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
+                {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}
+              </span>
               <span className="text-xs sm:text-sm font-mono font-extrabold text-emerald-400 leading-none">
                 {activeCount}
               </span>
@@ -427,10 +429,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               data-tooltip={
                 soundEnabled
-                  ? (localLanguage === 'en' ? 'Mute all sound effects' : 'Tắt toàn bộ hiệu ứng âm thanh')
-                  : (localLanguage === 'en' ? 'Enable arena sound effects' : 'Bật hiệu ứng âm thanh sàn đấu')
+                  ? (effectiveLanguage === 'en' ? 'Mute all sound effects' : 'Tắt toàn bộ hiệu ứng âm thanh')
+                  : (effectiveLanguage === 'en' ? 'Enable arena sound effects' : 'Bật hiệu ứng âm thanh sàn đấu')
               }
-              data-tooltip-title={localLanguage === 'en' ? 'System Sound' : 'Âm Thanh Hệ Thống'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'System Sound' : 'Âm Thanh Hệ Thống'}
               data-tooltip-hotkey="M"
               data-tooltip-placement="bottom"
               className="has-tooltip fluent-action-btn text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border-white/10"
@@ -448,10 +450,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={handleToggleFullscreen}
               data-tooltip={
                 isFullscreen
-                  ? (localLanguage === 'en' ? 'Exit fullscreen mode' : 'Thoát chế độ toàn màn hình')
-                  : (localLanguage === 'en' ? 'Enter fullscreen for optimal experience' : 'Mở rộng toàn màn hình để tối ưu trải nghiệm')
+                  ? (effectiveLanguage === 'en' ? 'Exit fullscreen mode' : 'Thoát chế độ toàn màn hình')
+                  : (effectiveLanguage === 'en' ? 'Enter fullscreen for optimal experience' : 'Mở rộng toàn màn hình để tối ưu trải nghiệm')
               }
-              data-tooltip-title={localLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}
               data-tooltip-hotkey="F11"
               data-tooltip-placement="bottom"
               className={`hidden sm:flex has-tooltip fluent-action-btn ${
@@ -461,8 +463,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
               aria-label={
                 isFullscreen
-                  ? (localLanguage === 'en' ? 'Exit fullscreen' : 'Thoát toàn màn hình')
-                  : (localLanguage === 'en' ? 'Enter fullscreen' : 'Bật toàn màn hình')
+                  ? (effectiveLanguage === 'en' ? 'Exit fullscreen' : 'Thoát toàn màn hình')
+                  : (effectiveLanguage === 'en' ? 'Enter fullscreen' : 'Bật toàn màn hình')
               }
             >
               {isFullscreen ? (
@@ -482,16 +484,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onOpenInstallModal();
                 }}
                 data-tooltip={
-                  localLanguage === 'en'
+                  effectiveLanguage === 'en'
                     ? 'Install app to Home Screen (PWA) for smoother experience'
                     : 'Cài đặt ứng dụng về Màn hình chính (PWA) để dùng mượt mà hơn'
                 }
-                data-tooltip-title={localLanguage === 'en' ? 'Install App' : 'Cài Đặt Ứng Dụng'}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Install App' : 'Cài Đặt Ứng Dụng'}
                 data-tooltip-placement="bottom"
                 className="hidden sm:flex has-tooltip fluent-action-btn text-sky-300 bg-sky-950/30 hover:bg-sky-900/40 border-sky-500/30"
               >
                 <Download className="w-3.5 h-3.5 text-sky-300" />
-                <span className="hidden xl:inline text-[11px]">{localLanguage === 'en' ? 'Install' : 'Cài App'}</span>
+                <span className="hidden xl:inline text-[11px]">{effectiveLanguage === 'en' ? 'Install' : 'Cài App'}</span>
               </button>
             )}
           </div>
@@ -533,7 +535,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onLogout();
                   }}
                   className="p-1.5 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[4px]"
-                  title={localLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                  title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -547,7 +549,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="hidden sm:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[4px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
             >
-              {localLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
+              {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
             </button>
           )}
 
@@ -592,10 +594,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
                 <div className="text-[11px] font-mono text-white/70 flex items-center gap-1.5 mt-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
-                  <span>RTT: <strong className="text-white font-bold">{pingInfo.latencyMs !== null ? `${pingInfo.latencyMs} ms` : (localLanguage === 'en' ? 'Disconnected' : 'Mất kết nối')}</strong></span>
+                  <span>RTT: <strong className="text-white font-bold">{pingInfo.latencyMs !== null ? `${pingInfo.latencyMs} ms` : (effectiveLanguage === 'en' ? 'Disconnected' : 'Mất kết nối')}</strong></span>
                   {pingInfo.lastChecked > 0 && (
                     <span className="text-white/40 text-[9px]">
-                      • {new Date(pingInfo.lastChecked).toLocaleTimeString(localLanguage === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      • {new Date(pingInfo.lastChecked).toLocaleTimeString(effectiveLanguage === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   )}
                 </div>
@@ -605,15 +607,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={handleManualPing}
               disabled={isMeasuringPing}
               className="px-2.5 py-1.5 fluent-action-btn text-xs font-mono font-bold border border-white/10 shrink-0"
-              title={localLanguage === 'en' ? 'Re-check latency now' : 'Đo lại độ trễ ngay'}
+              title={effectiveLanguage === 'en' ? 'Re-check latency now' : 'Đo lại độ trễ ngay'}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin' : ''}`} />
-              <span className="text-[11px]">{isMeasuringPing ? (localLanguage === 'en' ? 'Testing' : 'Đang đo') : (localLanguage === 'en' ? 'Re-test' : 'Đo lại')}</span>
+              <span className="text-[11px]">{isMeasuringPing ? (effectiveLanguage === 'en' ? 'Testing' : 'Đang đo') : (effectiveLanguage === 'en' ? 'Re-test' : 'Đo lại')}</span>
             </button>
           </div>
 
           {/* Mobile Battery Status Card */}
-          <BatteryIndicator showDetails className="w-full" />
+          <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
 
           {currentView === 'admin' && (
             <div className="flex flex-col gap-2">
@@ -734,7 +736,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentView !== 'admin' && (
             <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
               <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">
-                {localLanguage === 'en' ? 'System' : 'Hệ thống'}
+                {effectiveLanguage === 'en' ? 'System' : 'Hệ thống'}
               </span>
 
               {/* Fullscreen Quick Toggle */}
@@ -754,8 +756,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {isFullscreen ? <Minimize className="w-4 h-4 text-sky-300" /> : <Maximize className="w-4 h-4 text-white/70" />}
                   <span>
                     {isFullscreen
-                      ? (localLanguage === 'en' ? 'Exit Fullscreen' : 'Thoát Toàn Màn Hình')
-                      : (localLanguage === 'en' ? 'Fullscreen Mode' : 'Toàn Màn Hình (Fullscreen)')}
+                      ? (effectiveLanguage === 'en' ? 'Exit Fullscreen' : 'Thoát Toàn Màn Hình')
+                      : (effectiveLanguage === 'en' ? 'Fullscreen Mode' : 'Toàn Màn Hình (Fullscreen)')}
                   </span>
                 </div>
                 <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-white/10 text-white/70">
@@ -777,7 +779,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <div className="flex items-center gap-2.5">
                     <Download className="w-4 h-4 text-sky-300" />
-                    <span>{localLanguage === 'en' ? 'Install Application (PWA)' : 'Cài Đặt Ứng Dụng (PWA)'}</span>
+                    <span>{effectiveLanguage === 'en' ? 'Install Application (PWA)' : 'Cài Đặt Ứng Dụng (PWA)'}</span>
                   </div>
                   <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/50 text-sky-200 border border-sky-500/30">
                     Install
@@ -812,7 +814,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsMobileMenuOpen(false);
                       }}
                       className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[4px]"
-                      title={localLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                      title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
                     >
                       <LogOut className="w-3.5 h-3.5" />
                     </button>
@@ -827,7 +829,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[4px] flex items-center justify-center font-bold text-xs shadow-md"
                 >
-                  {localLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
+                  {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
                 </button>
               )}
             </div>

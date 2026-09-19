@@ -46,15 +46,18 @@ interface BatteryIndicatorProps {
   className?: string;
   showDetails?: boolean;
   onOpenBatterySaverModal?: () => void;
+  forceLanguage?: 'vi' | 'en';
 }
 
 export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
   compact = false,
   className = '',
   showDetails = false,
-  onOpenBatterySaverModal
+  onOpenBatterySaverModal,
+  forceLanguage
 }) => {
   const { localLanguage } = useLanguage();
+  const effectiveLanguage = forceLanguage || localLanguage;
 
   const { isBatterySaver } = useBatterySaver();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -167,7 +170,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         borderColor: 'border-emerald-500/50',
         bgColor: 'bg-emerald-950/50',
         barColor: 'bg-emerald-400',
-        statusText: localLanguage === 'en' ? '⚡ Eco Mode' : '⚡ {t("view_battery_save", localLanguage)}'
+        statusText: effectiveLanguage === 'en' ? '⚡ Eco Mode' : `⚡ ${t("view_battery_save", effectiveLanguage)}`
       };
     }
     if (isCharging) {
@@ -178,7 +181,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         borderColor: 'border-emerald-500/40',
         bgColor: 'bg-white/5',
         barColor: 'bg-emerald-400',
-        statusText: localLanguage === 'en' ? 'Charging' : 'Đang sạc pin'
+        statusText: effectiveLanguage === 'en' ? 'Charging' : 'Đang sạc pin'
       };
     }
     if (percent <= 15) {
@@ -189,7 +192,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         borderColor: 'border-rose-500/50',
         bgColor: 'bg-rose-950/40',
         barColor: 'bg-rose-500',
-        statusText: localLanguage === 'en' ? 'Low battery' : 'Pin yếu'
+        statusText: effectiveLanguage === 'en' ? 'Low battery' : 'Pin yếu'
       };
     }
     if (percent <= 30) {
@@ -200,7 +203,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         borderColor: 'border-amber-500/40',
         bgColor: 'bg-amber-950/30',
         barColor: 'bg-amber-400',
-        statusText: localLanguage === 'en' ? 'Battery critical' : 'Pin sắp hết'
+        statusText: effectiveLanguage === 'en' ? 'Battery critical' : 'Pin sắp hết'
       };
     }
     if (percent <= 70) {
@@ -211,7 +214,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         borderColor: 'border-sky-500/30',
         bgColor: 'bg-white/5',
         barColor: 'bg-sky-400',
-        statusText: localLanguage === 'en' ? 'Battery stable' : 'Pin ổn định'
+        statusText: effectiveLanguage === 'en' ? 'Battery stable' : 'Pin ổn định'
       };
     }
     return {
@@ -221,14 +224,14 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
       borderColor: 'border-emerald-500/30',
       bgColor: 'bg-white/5',
       barColor: 'bg-emerald-400',
-      statusText: localLanguage === 'en' ? 'Battery full' : 'Pin đầy đủ'
+      statusText: effectiveLanguage === 'en' ? 'Battery full' : 'Pin đầy đủ'
     };
   };
 
   const visuals = getBatteryVisuals();
   const BatteryIcon = visuals.icon;
 
-  const tooltipText = localLanguage === 'en' ? `Device battery: ${percent}% • ${visuals.statusText}${
+  const tooltipText = effectiveLanguage === 'en' ? `Device battery: ${percent}% • ${visuals.statusText}${
     remainingTimeStr ? ` (${isCharging ? 'Full in' : 'Remaining'}: ~${remainingTimeStr})` : ''
   } (Click to settings)` : `Pin thiết bị: ${percent}% • ${visuals.statusText}${remainingTimeStr ? ` (${isCharging ? 'Đầy sau' : 'Còn lại'}: ~${remainingTimeStr})` : ''} (Bấm để cài đặt)`;
 
@@ -238,7 +241,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
         <div
           id="battery-indicator-detailed"
           data-tooltip={tooltipText}
-          data-tooltip-title={localLanguage === "en" ? "Power Status" : "Tình Trạng Nguồn Pin"}
+          data-tooltip-title={effectiveLanguage === "en" ? "Power Status" : "Tình Trạng Nguồn Pin"}
           data-tooltip-variant="success"
           onClick={handleOpenModal}
           className={`has-tooltip p-3 fluent-box-nested border border-white/10 hover:border-emerald-500/40 rounded-[4px] flex items-center justify-between shadow-inner cursor-pointer transition ${className}`}
@@ -249,21 +252,21 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
             </div>
             <div>
               <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
-                <span>{t("view_battery_dev", localLanguage)}</span>
+                <span>{t("view_battery_dev", effectiveLanguage)}</span>
                 <span className={`text-[9px] px-1.5 py-0.2 rounded-[2px] font-mono font-bold uppercase tracking-wider ${visuals.bgColor} ${visuals.textColor} border border-white/10`}>
                   {visuals.statusText}
                 </span>
               </div>
               <div className="text-[11px] font-mono text-white/70 flex items-center gap-1.5 mt-0.5">
-                <span>{t("view_battery_level", localLanguage)} <strong className={`font-bold ${visuals.textColor}`}>{percent}%</strong></span>
+                <span>{t("view_battery_level", effectiveLanguage)} <strong className={`font-bold ${visuals.textColor}`}>{percent}%</strong></span>
                 {isBatterySaver && (
                   <span className="text-emerald-400 text-[10px] flex items-center gap-0.5 font-bold">
-                    <Leaf className="w-3 h-3 text-emerald-400 fill-emerald-400/30" /> {t("view_battery_save", localLanguage)}
+                    <Leaf className="w-3 h-3 text-emerald-400 fill-emerald-400/30" /> {t("view_battery_save", effectiveLanguage)}
                   </span>
                 )}
                 {isCharging && !isBatterySaver && (
                   <span className="text-emerald-400 text-[10px] flex items-center gap-0.5">
-                    <Zap className="w-3 h-3 fill-emerald-400" /> {t("view_battery_charge", localLanguage)}
+                    <Zap className="w-3 h-3 fill-emerald-400" /> {t("view_battery_charge", effectiveLanguage)}
                   </span>
                 )}
               </div>
@@ -285,12 +288,12 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
           type="button"
           id="battery-indicator-navbar"
           data-tooltip={tooltipText}
-          data-tooltip-title={t("view_battery_status", localLanguage)}
+          data-tooltip-title={t("view_battery_status", effectiveLanguage)}
           data-tooltip-placement="bottom"
           data-tooltip-variant="success"
           onClick={handleOpenModal}
           className={`has-tooltip fluent-nav-btn ${visuals.bgColor} ${visuals.borderColor} hover:border-emerald-400/50 ${className}`}
-          aria-label={t("view_battery_label_dev", localLanguage).replace("{percent}", String(percent))}
+          aria-label={t("view_battery_label_dev", effectiveLanguage).replace("{percent}", String(percent))}
         >
           <div className="flex items-center gap-1 relative">
             <BatteryIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${visuals.iconColor}`} />
@@ -309,11 +312,11 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
           <div className="flex flex-col items-start leading-none">
             <span className="text-[8px] uppercase tracking-wider font-bold opacity-75 text-white/60 flex items-center gap-0.5 font-mono">
               {isBatterySaver ? (
-                <span className="text-emerald-300">⚡ {t("battery_eco_short", localLanguage)}</span>
+                <span className="text-emerald-300">⚡ {t("battery_eco_short", effectiveLanguage)}</span>
               ) : isCharging ? (
                 <>
                   <Zap className="w-2 h-2 text-emerald-400 fill-emerald-400 inline" />
-                  <span>{t("view_battery_chg", localLanguage)}</span>
+                  <span>{t("view_battery_chg", effectiveLanguage)}</span>
                 </>
               ) : (
                 <span>Pin</span>
@@ -328,7 +331,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
 
       {/* Render BatterySaverModal internally if state managed locally */}
       {!onOpenBatterySaverModal && (
-        <BatterySaverModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <BatterySaverModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} forceLanguage={forceLanguage} />
       )}
     </>
   );
