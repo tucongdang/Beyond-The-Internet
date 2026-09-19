@@ -333,6 +333,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   };
   const isCjkQuestion = isCjk(activeQuestionText, localLanguage);
 
+  // Helper to detect Korean (Hangul) specifically for NEXON Lv1 Gothic question font
+  const isKorean = (text?: string, lang?: string): boolean => {
+    if (lang === 'ko') return true;
+    if (!text) return false;
+    return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(text);
+  };
+  const isKoreanQuestion = isKorean(activeQuestionText, localLanguage);
+
   const hasAnnouncer = Boolean(gameState?.announcer_overlay?.active && gameState?.announcer_overlay?.text?.trim());
   
 
@@ -1156,7 +1164,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </button>
             </div>
             <div className="p-6 md:p-8 overflow-y-auto">
-              <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'}`}>
+              <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
                 {activeQuestionText}
               </h2>
             </div>
@@ -2217,7 +2225,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         />
                       </div>
                     </div>
-                    <h2 className={`text-base sm:text-lg md:text-xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'}`}>
+                    <h2 className={`text-base sm:text-lg md:text-xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
                       {activeQuestionText}
                     </h2>
                     {gameState.media_type === 'IMAGE' && gameState.media_url && (
@@ -3088,7 +3096,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         </div>
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}
         <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl mb-6">
-          <h3 className={`text-lg sm:text-xl font-black text-white mb-4 ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}>
+          <h3 className={`text-lg sm:text-xl font-black text-white mb-4 ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
             {activeQuestionText}
           </h3>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3`}>

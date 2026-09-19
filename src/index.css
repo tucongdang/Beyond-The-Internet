@@ -159,7 +159,7 @@
 
 /* Base typography and smooth touch experience */
 html {
-  font-family: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scrollbar-width: thin;
@@ -167,43 +167,20 @@ html {
 }
 
 body, input, button, select, textarea {
-  font-family: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Korean (ko) Typography - NEXON Lv1 Gothic Priority */
-html[lang="ko"] {
-  --font-sans: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-monospace, monospace;
-  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
-}
-
-html[lang="ko"] body,
-html[lang="ko"] input,
-html[lang="ko"] button,
-html[lang="ko"] select,
-html[lang="ko"] textarea,
-html[lang="ko"] h1,
-html[lang="ko"] h2,
-html[lang="ko"] h3,
-html[lang="ko"] h4,
-html[lang="ko"] h5,
-html[lang="ko"] h6,
-html[lang="ko"] p,
-html[lang="ko"] span,
-html[lang="ko"] div,
-html[lang="ko"] [class*="font-sans"],
-html[lang="ko"] [class*="font-mono"],
-html[lang="ko"] [class*="font-"] {
-  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
-}
-
-.cjk-text-ko,
-.font-korean {
-  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', ui-sans-serif, system-ui, sans-serif !important;
+/* Korean Question Typography - NEXON Lv1 Gothic applies ONLY to the question text */
+.korean-question-font,
+.font-korean-question,
+.cjk-text-ko-question,
+html[lang="ko"] .audience-question-text,
+html[lang="ko"] [data-question-text="true"] {
+  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
 }
 
 /* CJK & Non-Latin Typography Engine - Breathing room & anti-cramping */
