@@ -17,11 +17,36 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Lightweight Gemini models prioritized for speed, high-volume free tier and broad project availability
+  const LIGHTWEIGHT_MODELS = [
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite"
+  ];
+
+  async function generateWithFallback(ai: GoogleGenAI, callParams: any) {
+    let lastError: any = null;
+    for (const model of LIGHTWEIGHT_MODELS) {
+      try {
+        const res = await ai.models.generateContent({
+          ...callParams,
+          model
+        });
+        return res;
+      } catch (err: any) {
+        console.warn(`[Gemini Fallback] Model ${model} encountered error: ${err?.message || err}. Trying next fallback...`);
+        lastError = err;
+      }
+    }
+    throw lastError;
+  }
+
   // API route for generating questions
   app.post("/api/generate-question", async (req, res) => {
     try {
-      const { prompt } = req.body;
-      const apiKey = process.env.GEMINI_API_KEY;
+      const { prompt, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
       
       if (!apiKey) {
         return res.status(500).json({ error: "API key is not configured on the server." });
@@ -36,8 +61,7 @@ async function startServer() {
         }
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+      const response = await generateWithFallback(ai, {
         contents: prompt || "Tạo 1 câu hỏi trắc nghiệm ngẫu nhiên, vui nhộn.",
         config: {
           responseMimeType: "application/json",
@@ -78,11 +102,111 @@ async function startServer() {
     }
   });
 
+  // API route for multilingual live question translation
+  app.post("/api/translate-question", async (req, res) => {
+    try {
+      const { question_text, options, explanation, target_lang, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
+      
+      if (!apiKey) {
+        return res.status(400).json({ 
+          error: "Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm key vào .env hoặc truyền qua request." 
+        });
+      }
+
+      if (!question_text || !target_lang) {
+        return res.status(400).json({ error: "Thiếu trường question_text hoặc target_lang bắt buộc." });
+      }
+
+      const targetLangNames: Record<string, string> = {
+        en: "English",
+        zh: "Chinese (Simplified)",
+        ja: "Japanese",
+        ko: "Korean",
+        fr: "French",
+        es: "Spanish",
+        de: "German",
+        th: "Thai",
+        lo: "Lao",
+        km: "Khmer",
+        ru: "Russian"
+      };
+
+      const langName = targetLangNames[target_lang] || target_lang;
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      });
+
+      const prompt = `Translate this live cybersecurity/technology gameshow quiz from Vietnamese into ${langName} (${target_lang}).
+Keep cybersecurity terms accurate (e.g., OTP, HTTPS, Phishing, Deepfake, DDoS, Firewall, Zero Trust).
+Keep option keys identical (A, B, C, D).
+Return strictly JSON.
+
+Source payload:
+${JSON.stringify({
+  question_text,
+  options: options || {},
+  explanation: explanation || ""
+})}`;
+
+      const response = await generateWithFallback(ai, {
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          systemInstruction: "You are a specialized translator for an academic live gameshow. Provide precise, professional translations. Maintain concise wording suited for rapid live countdown display.",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              question_text: {
+                type: Type.STRING,
+                description: `Question translated into ${langName}`
+              },
+              options: {
+                type: Type.OBJECT,
+                description: "Map of translated options with original keys intact",
+                properties: {
+                  A: { type: Type.STRING },
+                  B: { type: Type.STRING },
+                  C: { type: Type.STRING },
+                  D: { type: Type.STRING },
+                  E: { type: Type.STRING },
+                  F: { type: Type.STRING }
+                }
+              },
+              explanation: {
+                type: Type.STRING,
+                description: `Explanation translated into ${langName}`
+              }
+            },
+            required: ["question_text", "options"]
+          }
+        }
+      });
+
+      if (!response.text) {
+        throw new Error("No response text returned from translation model");
+      }
+
+      const translation = JSON.parse(response.text.trim());
+      res.json({
+        target_lang,
+        translation
+      });
+    } catch (error: any) {
+      console.error("Gemini Translation Error:", error);
+      res.status(500).json({ error: error.message || "Đã có lỗi xảy ra khi dịch câu hỏi." });
+    }
+  });
+
   // API route for summarizing audience interactions (Shouts or Q&A)
   app.post("/api/summarize-audience", async (req, res) => {
     try {
-      const { type, data } = req.body;
-      const apiKey = process.env.GEMINI_API_KEY;
+      const { type, data, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
       
       if (!apiKey) {
         return res.status(500).json({ error: "API key is not configured on the server." });
@@ -104,8 +228,7 @@ async function startServer() {
         return res.status(400).json({ error: "Loại dữ liệu không hợp lệ." });
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+      const response = await generateWithFallback(ai, {
         contents: prompt,
         config: {
           systemInstruction: "Bạn là trợ lý ảo phân tích tương tác trực tiếp cho MC sự kiện. Trả lời ngắn gọn, súc tích, văn phong tự nhiên, chuyên nghiệp.",

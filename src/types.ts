@@ -51,6 +51,12 @@ export interface UserInfo {
   teamName?: string;
 }
 
+export interface QuestionTranslation {
+  question_text: string;
+  options: Record<string, string>;
+  explanation?: string;
+}
+
 export interface QuestionItem {
   id: string;
   round_name: string;
@@ -69,6 +75,7 @@ export interface QuestionItem {
   blind_prompt?: string;
   likes?: number;
   liked_by?: string[];
+  translations?: Record<string, QuestionTranslation>;
 }
 
 export type EmergencyPollSourceType = 'ADVISOR' | 'CONTESTANT' | 'JURY' | 'AUDIENCE' | 'HOST';
@@ -160,6 +167,7 @@ export interface GameState {
   status: GameStatus;
   correct_key: string;
   explanation: string;
+  translations?: Record<string, QuestionTranslation>;
   media_type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'NONE';
   media_url?: string;
   media_autoplay?: boolean;

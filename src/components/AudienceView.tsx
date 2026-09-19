@@ -1,6 +1,7 @@
 import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { GameState, UserInfo, UserResponse, OptionKey } from '../types';
+import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
+import { translationService } from '../services/translationService';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
@@ -70,7 +71,7 @@ import {
   Heart,
   MessageSquare,
   Megaphone,
-  RefreshCw, Globe
+  RefreshCw, Globe, Languages
 } from 'lucide-react';
 import { useScreenWakeLock } from '../hooks/useScreenWakeLock';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
@@ -176,6 +177,65 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     // Mini-Tip Quick Guide state
   const [showMiniTip, setShowMiniTip] = useState<boolean>(false);
   const [tipQuestionId, setTipQuestionId] = useState<string>('');
+
+  // Multilingual Question Translation State & Resolver
+  const [localTranslation, setLocalTranslation] = useState<QuestionTranslation | null>(null);
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
+
+  // Synchronize translation from broadcast or local storage cache
+  useEffect(() => {
+    if (localLanguage === 'vi') {
+      setLocalTranslation(null);
+      return;
+    }
+    const fromBroadcast = gameState.translations?.[localLanguage];
+    if (fromBroadcast) {
+      setLocalTranslation(fromBroadcast);
+      return;
+    }
+    const cached = translationService.getCachedTranslation(gameState.question_id, localLanguage);
+    if (cached) {
+      setLocalTranslation(cached);
+      return;
+    }
+    setLocalTranslation(null);
+  }, [gameState.question_id, gameState.translations, localLanguage]);
+
+  const handleRequestTranslate = async () => {
+    if (isTranslating || localLanguage === 'vi') return;
+    setIsTranslating(true);
+    setTranslationError(null);
+    try {
+      const trans = await translationService.translateQuestion(
+        {
+          id: gameState.question_id,
+          question_text: gameState.question_text,
+          options: gameState.options,
+          explanation: gameState.explanation
+        },
+        localLanguage
+      );
+      setLocalTranslation(trans);
+      soundFx.playTing();
+      vibrateTap();
+    } catch (err: any) {
+      setTranslationError(err?.message || 'Không thể dịch');
+      soundFx.playAlarm();
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const activeQuestionText = (localLanguage !== 'vi' && localTranslation?.question_text)
+    ? localTranslation.question_text
+    : gameState.question_text;
+  const activeOptions = (localLanguage !== 'vi' && localTranslation?.options)
+    ? localTranslation.options
+    : gameState.options;
+  const activeExplanation = (localLanguage !== 'vi' && localTranslation?.explanation)
+    ? localTranslation.explanation
+    : gameState.explanation;
 
   const hasAnnouncer = Boolean(gameState?.announcer_overlay?.active && gameState?.announcer_overlay?.text?.trim());
   
@@ -1001,7 +1061,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
             <div className="p-6 md:p-8 overflow-y-auto">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-relaxed tracking-tight">
-                {gameState.question_text}
+                {activeQuestionText}
               </h2>
             </div>
             <div className="p-4 border-t border-white/10 bg-white/5 text-center">
@@ -1931,6 +1991,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         {gameState.round_name} • {t("view_code", localLanguage)}: {gameState.question_id}
                       </span>
                       <div className="flex items-center gap-2">
+                        {localLanguage !== 'vi' && (
+                          localTranslation ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                              <Languages className="w-3 h-3" />
+                              {localLanguage.toUpperCase()}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={handleRequestTranslate}
+                              disabled={isTranslating}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-bold bg-[#F7CAC9]/20 hover:bg-[#F7CAC9]/30 text-[#FCEEEC] border border-[#F7CAC9]/30 shadow-sm transition active:scale-95 cursor-pointer disabled:opacity-50"
+                              title="Dịch câu hỏi sang ngôn ngữ của bạn bằng Gemini AI"
+                            >
+                              <Sparkles className={`w-3 h-3 ${isTranslating ? 'animate-spin text-amber-300' : 'text-[#F7CAC9]'}`} />
+                              <span>{isTranslating ? '...' : `Dịch (${localLanguage.toUpperCase()})`}</span>
+                            </button>
+                          )
+                        )}
                         {isLongQuestion && (
                           <button
                             onClick={() => setIsQuestionZoomed(true)}
@@ -1949,7 +2027,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </div>
                     </div>
                     <h2 className="text-base sm:text-lg md:text-xl font-bold text-white leading-relaxed tracking-tight">
-                      {gameState.question_text}
+                      {activeQuestionText}
                     </h2>
                     {gameState.media_type === 'IMAGE' && gameState.media_url && (
                       <div className="mt-4 flex justify-center">
@@ -2781,10 +2859,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}
         <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl mb-6">
           <h3 className="text-lg sm:text-xl font-black text-white leading-relaxed mb-4">
-            {gameState.question_text}
+            {activeQuestionText}
           </h3>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
-            {Object.entries(gameState.options || {}).map(([key, label]) => {
+            {Object.entries(activeOptions || {}).map(([key, label]) => {
               const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
               const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
               const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
@@ -2868,13 +2946,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
 
         {/* Theoretical Explanation (Bóc tách bẫy tâm lý / Chuẩn Thông tư 02) */}
-        {gameState.explanation && (
+        {activeExplanation && (
           <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl border-[#F7CAC9]/30">
             <div className="flex items-center gap-2 text-[#F7CAC9] text-xs font-bold uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" /> {t("view_theory", localLanguage)}
             </div>
             <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
-              {gameState.explanation}
+              {activeExplanation}
             </p>
           </div>
         )}

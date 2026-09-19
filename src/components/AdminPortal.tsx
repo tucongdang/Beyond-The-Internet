@@ -1385,6 +1385,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       media_url: item.media_url || "",
       media_type: item.media_type || "NONE",
       media_autoplay: item.media_autoplay || false,
+      translations: item.translations || {},
       server_start_time: 0
     });
 
@@ -2334,7 +2335,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       time_limit: Number(customTimeLimit) || 15,
       media_type: customRoundType === 'VCNV' ? 'NONE' : customMediaType,
       media_url: customRoundType === 'VCNV' ? '' : customMediaUrl,
-      media_autoplay: customRoundType === 'VCNV' ? false : (customMediaType !== 'NONE' && customMediaAutoplay)
+      media_autoplay: customRoundType === 'VCNV' ? false : (customMediaType !== 'NONE' && customMediaAutoplay),
+      translations: editingQuestionId ? (questionBank.find(q => q.id === editingQuestionId)?.translations) : undefined
     };
 
     let updatedBank: QuestionItem[];
