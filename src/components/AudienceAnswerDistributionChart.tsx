@@ -124,7 +124,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
     const counts: Record<string, number> = {};
     availableKeys.forEach(k => { counts[k] = 0; });
 
-    const votesList = Object.values(responses || {});
+    const votesList = Object.values(responses || {}) as UserResponse[];
     votesList.forEach((r) => {
       if (r && r.choice) {
         const c = r.choice.toUpperCase();

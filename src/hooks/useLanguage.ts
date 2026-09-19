@@ -33,15 +33,19 @@ export function useLanguage() {
     };
   }, []);
 
-  const toggleLanguage = () => {
-    const nextVal = localLanguage === 'vi' ? 'en' : 'vi';
-    setLocalLanguage(nextVal);
+  const selectLanguage = (code: string) => {
+    setLocalLanguage(code);
     try {
-      localStorage.setItem('bti_lang', nextVal);
+      localStorage.setItem('bti_lang', code);
       window.dispatchEvent(new Event('storage'));
-      window.dispatchEvent(new CustomEvent('languageChange', { detail: nextVal }));
+      window.dispatchEvent(new CustomEvent('languageChange', { detail: code }));
     } catch {}
   };
 
-  return { localLanguage, toggleLanguage, setLocalLanguage, isNonVi: isNonVi(localLanguage) };
+  const toggleLanguage = () => {
+    const nextVal = localLanguage === 'vi' ? 'en' : 'vi';
+    selectLanguage(nextVal);
+  };
+
+  return { localLanguage, toggleLanguage, selectLanguage, setLocalLanguage, isNonVi: isNonVi(localLanguage) };
 }

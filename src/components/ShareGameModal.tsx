@@ -14,7 +14,9 @@ import {
   Clock,
   ScanLine,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Activity,
+  RotateCcw
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { syncService } from '../services/syncService';
@@ -48,6 +50,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const [estimatedScans, setEstimatedScans] = useState<number>(0);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
   const [displayMode, setDisplayMode] = useState<'compact' | 'fullscreen'>('compact');
+  const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
+  const [previewRecentQr, setPreviewRecentQr] = useState<{ caption?: string; roundName?: string; url?: string } | null>(null);
+
+  const diagnosticData = {
+    status: isFirebaseConnected ? 'ok' : 'error'
+  };
 
   // Inactivity auto-close timer (60s default for broadcast protection)
   useEffect(() => {
@@ -157,6 +165,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         vibrateTap();
         soundFx.playClick();
         setDisplayMode((prev) => (prev === 'compact' ? 'fullscreen' : 'compact'));
+      } else if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Toggle diagnostics
+        e.preventDefault();
+        vibrateTap();
+        soundFx.playClick();
+        setShowDiagnostics((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -352,6 +366,27 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
             </p>
           )}
         </div>
+
+        {/* Diagnostics Panel */}
+        {showDiagnostics && (
+          <div 
+            id="panel-share-modal-diagnostics"
+            className="w-full my-2 p-2.5 rounded-[2px] bg-black/60 border border-sky-400/40 text-left font-mono text-[11px] space-y-1 text-sky-200 animate-fadeIn shrink-0"
+          >
+            <div className="flex items-center justify-between text-xs font-bold text-sky-300 border-b border-sky-400/20 pb-1">
+              <span>{localLanguage === 'en' ? 'Diagnostics & Broadcast Telemetry' : 'Bảng Kiểm Tra Chẩn Đoán'}</span>
+              <span className={isFirebaseConnected ? 'text-emerald-400' : 'text-rose-400'}>
+                {isFirebaseConnected ? 'Firebase OK' : 'Firebase Disconnected'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-0.5 text-[10px]">
+              <div className="truncate"><span className="text-white/60">Target:</span> {shareUrl}</div>
+              <div><span className="text-white/60">Palette:</span> {qrPaletteId}</div>
+              <div><span className="text-white/60">Mode:</span> {displayMode}</div>
+              <div><span className="text-white/60">Scans:</span> {estimatedScans}</div>
+            </div>
+          </div>
+        )}
 
         {/* Replay Banner when viewing a Recent QR from localStorage */}
         {previewRecentQr && (

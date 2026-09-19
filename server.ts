@@ -17,12 +17,12 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Lightweight Gemini models prioritized for speed, high-volume free tier and broad project availability
+  // Modern lightweight Gemini models prioritized for sub-second latency, structured JSON reliability, and high throughput
   const LIGHTWEIGHT_MODELS = [
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-flash",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite"
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.8-flash"
   ];
 
   async function generateWithFallback(ai: GoogleGenAI, callParams: any) {
@@ -141,10 +141,14 @@ async function startServer() {
         }
       });
 
-      const prompt = `Translate this live cybersecurity/technology gameshow quiz from Vietnamese into ${langName} (${target_lang}).
-Keep cybersecurity terms accurate (e.g., OTP, HTTPS, Phishing, Deepfake, DDoS, Firewall, Zero Trust).
-Keep option keys identical (A, B, C, D).
-Return strictly JSON.
+      const prompt = `You are a professional academic quiz translator for a live cybersecurity gameshow.
+Task: Translate this entire quiz payload from Vietnamese into ${langName} (${target_lang}).
+Guidelines:
+1. Translate the question text into natural, idiomatic ${langName}.
+2. Translate ALL answer choices/options in "options" from Vietnamese into ${langName}. Preserve the keys (A, B, C, D, E, F) exactly. Every option string must be fully translated so players can read all answers in ${langName}.
+3. If explanation is provided, translate it accurately into ${langName}.
+4. Keep standard acronyms and terms precise (e.g., OTP, HTTPS, Phishing, Deepfake, DDoS, Firewall, Zero Trust, Ransomware, Malware, SQL Injection).
+5. Return strictly JSON matching the specified schema.
 
 Source payload:
 ${JSON.stringify({
@@ -157,7 +161,7 @@ ${JSON.stringify({
         contents: prompt,
         config: {
           responseMimeType: "application/json",
-          systemInstruction: "You are a specialized translator for an academic live gameshow. Provide precise, professional translations. Maintain concise wording suited for rapid live countdown display.",
+          systemInstruction: "You are a specialized translator for an academic cybersecurity live gameshow. Translate question text, all option answers, and explanation precisely into the target foreign language. Maintain concise wording suited for rapid live countdown display.",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
@@ -167,7 +171,7 @@ ${JSON.stringify({
               },
               options: {
                 type: Type.OBJECT,
-                description: "Map of translated options with original keys intact",
+                description: `Map of all answer options translated from Vietnamese into ${langName} with original keys intact`,
                 properties: {
                   A: { type: Type.STRING },
                   B: { type: Type.STRING },
@@ -199,6 +203,153 @@ ${JSON.stringify({
     } catch (error: any) {
       console.error("Gemini Translation Error:", error);
       res.status(500).json({ error: error.message || "Đã có lỗi xảy ra khi dịch câu hỏi." });
+    }
+  });
+
+  // API route for translating short answers or terms into Vietnamese (Tiếng Việt)
+  app.post("/api/translate-short-answer", async (req, res) => {
+    try {
+      const { text, target_lang = 'vi', context, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(400).json({ 
+          error: "Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm key vào .env hoặc truyền qua request." 
+        });
+      }
+
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ error: "Thiếu trường 'text' bắt buộc." });
+      }
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      });
+
+      const isToVietnamese = target_lang === 'vi';
+      const prompt = isToVietnamese
+        ? `Translate this short answer, response, phrase, or cybersecurity term into natural, precise Vietnamese (Tiếng Việt).
+Original text: "${text.trim()}"
+${context ? `Context: ${context}` : ''}
+Guidelines:
+- If it is already Vietnamese, return it cleaned up.
+- If it is an English / foreign term or sentence, translate it accurately into Vietnamese.
+- Preserve standard acronyms if widely used in Vietnamese IT (e.g. OTP, DDoS, HTTPS, API, SQL), but explain or translate the concept naturally.
+- Keep the translation concise, direct, and ideal for short-answer gameshow scoring.
+Return strictly JSON.`
+        : `Translate this short answer or term into the target language "${target_lang}".
+Original text: "${text.trim()}"
+${context ? `Context: ${context}` : ''}
+Return strictly JSON.`;
+
+      const response = await generateWithFallback(ai, {
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          systemInstruction: "You are a specialized linguistic translator for a live cybersecurity gameshow. Translate short answers, terms, and responses concisely and accurately.",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              translated_text: {
+                type: Type.STRING,
+                description: "The translated short answer text"
+              },
+              detected_lang: {
+                type: Type.STRING,
+                description: "Detected source language code"
+              }
+            },
+            required: ["translated_text"]
+          }
+        }
+      });
+
+      if (!response.text) {
+        throw new Error("No translation returned");
+      }
+
+      const result = JSON.parse(response.text.trim());
+      res.json({
+        original_text: text.trim(),
+        translated_text: result.translated_text,
+        target_lang,
+        detected_lang: result.detected_lang || 'unknown'
+      });
+    } catch (error: any) {
+      console.error("Short Answer Translation Error:", error);
+      res.status(500).json({ error: error.message || "Đã có lỗi xảy ra khi dịch câu trả lời ngắn." });
+    }
+  });
+
+  // API route for batch translating answer options from Vietnamese into foreign languages
+  app.post("/api/translate-answers", async (req, res) => {
+    try {
+      const { options, target_lang, apiKey: clientApiKey } = req.body;
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(400).json({ 
+          error: "Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm key vào .env hoặc truyền qua request." 
+        });
+      }
+
+      if (!options || typeof options !== 'object' || !target_lang) {
+        return res.status(400).json({ error: "Thiếu trường 'options' hoặc 'target_lang' bắt buộc." });
+      }
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      });
+
+      const prompt = `Translate these quiz answer choices from Vietnamese into target language "${target_lang}".
+Preserve all original keys (e.g., A, B, C, D, E, F).
+Options:
+${JSON.stringify(options, null, 2)}
+Return strictly JSON with the translated options.`;
+
+      const response = await generateWithFallback(ai, {
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          systemInstruction: "You are a specialized translator for quiz options. Translate all option values from Vietnamese into the specified target language while preserving the keys.",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              options: {
+                type: Type.OBJECT,
+                properties: {
+                  A: { type: Type.STRING },
+                  B: { type: Type.STRING },
+                  C: { type: Type.STRING },
+                  D: { type: Type.STRING },
+                  E: { type: Type.STRING },
+                  F: { type: Type.STRING }
+                }
+              }
+            },
+            required: ["options"]
+          }
+        }
+      });
+
+      if (!response.text) {
+        throw new Error("No response returned");
+      }
+
+      const result = JSON.parse(response.text.trim());
+      res.json({
+        translated_options: result.options || {},
+        target_lang
+      });
+    } catch (error: any) {
+      console.error("Answer Translation Error:", error);
+      res.status(500).json({ error: error.message || "Đã có lỗi xảy ra khi dịch đáp án." });
     }
   });
 
