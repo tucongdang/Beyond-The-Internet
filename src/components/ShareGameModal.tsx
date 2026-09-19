@@ -19,7 +19,9 @@ import {
   Maximize2,
   Minimize2,
   Activity,
-  Terminal
+  Terminal,
+  ArrowLeft,
+  RotateCcw
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { syncService } from '../services/syncService';
@@ -27,6 +29,8 @@ import { vibrateTap, vibrateCopy, vibrateShare, vibrateSuccess } from '../utils/
 import { QR_PALETTES, QrPaletteId } from '../types';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { QrDiagnosticOverlay, QrDiagnosticData } from './QrDiagnosticOverlay';
+import { RecentQrsSection } from './RecentQrsSection';
+import { recentQrUtils, RecentQrRecord } from '../utils/recentQrUtils';
 
 interface ShareGameModalProps {
   isOpen: boolean;
@@ -55,6 +59,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
   const [displayMode, setDisplayMode] = useState<'compact' | 'fullscreen'>('compact');
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
+  const [previewRecentQr, setPreviewRecentQr] = useState<RecentQrRecord | null>(null);
   const [diagnosticData, setDiagnosticData] = useState<QrDiagnosticData>({
     status: 'idle',
     errorCode: 'ERR_NONE',
@@ -185,6 +190,14 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
       .then((dataUrl) => {
         const renderTime = Math.round(performance.now() - startTime);
         setQrDataUrl(dataUrl);
+        recentQrUtils.saveRecentQr({
+          url: targetQrUrl,
+          dataUrl,
+          caption: qrCustomCaption || roundName || gameTitle,
+          roundName,
+          paletteId: qrPaletteId,
+          paletteName: palette.labelVi
+        });
         setIsGenerating(false);
         setDiagnosticData({
           status: 'success',
@@ -266,46 +279,49 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   }, [isOpen, onClose, showDiagnostics]);
 
   const handleCopyLink = useCallback(async () => {
-    if (!shareUrl) return;
+    const urlToCopy = previewRecentQr ? previewRecentQr.url : shareUrl;
+    if (!urlToCopy) return;
     try {
       soundFx.playClick();
       vibrateCopy();
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(urlToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch (err) {
       console.error('Could not copy text: ', err);
     }
-  }, [shareUrl]);
+  }, [shareUrl, previewRecentQr]);
 
   const handleNativeShare = useCallback(async () => {
     if (typeof navigator === 'undefined' || !navigator.share) return;
+    const urlToShare = previewRecentQr ? previewRecentQr.url : shareUrl;
     try {
       soundFx.playClick();
       vibrateShare();
       await navigator.share({
         title: gameTitle || 'BTI 2026 - Đấu Trường Trực Tiếp',
         text: `Tham gia trực tiếp đấu trường tương tác ${gameTitle || 'BTI 2026'} ngay bây giờ!`,
-        url: shareUrl
+        url: urlToShare
       });
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
         console.error('Lỗi khi chia sẻ qua Web Share API:', err);
       }
     }
-  }, [gameTitle, shareUrl]);
+  }, [gameTitle, shareUrl, previewRecentQr]);
 
   const handleDownloadQr = useCallback(() => {
-    if (!qrDataUrl) return;
+    const activeDataUrl = previewRecentQr?.dataUrl || qrDataUrl;
+    if (!activeDataUrl) return;
     soundFx.playClick();
     vibrateSuccess();
     const link = document.createElement('a');
-    link.href = qrDataUrl;
+    link.href = activeDataUrl;
     link.download = `BTI2026_Join_QRCode_${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [qrDataUrl]);
+  }, [qrDataUrl, previewRecentQr]);
 
   if (!isOpen) return null;
 
@@ -446,6 +462,36 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           )}
         </div>
 
+        {/* Replay Banner when viewing a Recent QR from localStorage */}
+        {previewRecentQr && (
+          <div 
+            id="banner-share-modal-recent-qr-replay"
+            className="w-full my-2 p-2.5 rounded-[6px] bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-2 text-left animate-fadeIn shrink-0"
+          >
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
+                Đang xem lại mã từ lịch sử broadcast
+              </span>
+              <span className="font-bold truncate text-white block text-[11px]">
+                {previewRecentQr.caption || previewRecentQr.roundName || previewRecentQr.url}
+              </span>
+            </div>
+            <button
+              type="button"
+              id="btn-share-modal-return-live-qr"
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                setPreviewRecentQr(null);
+              }}
+              className="px-2.5 py-1 rounded-[4px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Về Mã Live</span>
+            </button>
+          </div>
+        )}
+
         {/* QR Code Container */}
         <div className="relative group my-1 shrink-0 animate-qr-entrance">
           <div className={`p-3 sm:p-4 rounded-[8px] shadow-2xl border-2 border-[#F7CAC9]/40 relative transition-all duration-300 ${
@@ -454,7 +500,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               : 'bg-white'
           }`}>
             <CrossFadeQrCode
-              dataUrl={qrDataUrl}
+              dataUrl={previewRecentQr ? (previewRecentQr.dataUrl || qrDataUrl) : qrDataUrl}
               alt="QR Code to Join Game"
               sizeClass={
                 displayMode === 'fullscreen'
@@ -539,7 +585,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           {/* Link Box */}
           <div className="flex items-center gap-2 p-1.5 rounded-[6px] bg-black/40 border border-white/15">
             <div className="flex-1 min-w-0 px-2 font-mono text-xs text-sky-300 truncate select-all">
-              {shareUrl}
+              {previewRecentQr ? previewRecentQr.url : shareUrl}
             </div>
             <button
               id="btn-copy-game-url"
@@ -617,6 +663,13 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Recent QRs Section (localStorage) */}
+          <RecentQrsSection
+            onSelectQr={(qr) => setPreviewRecentQr(qr)}
+            selectedQrId={previewRecentQr?.id}
+            className="w-full mt-2"
+          />
         </div>
 
         {/* Diagnostic Overlay for QR Generator Telemetry & Debugging */}

@@ -31,6 +31,8 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { InstallAppModal } from './components/InstallAppModal';
 import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
+import { RecentQrsSection } from './components/RecentQrsSection';
+import { recentQrUtils, RecentQrRecord } from './utils/recentQrUtils';
 import { applyBatterySaverClasses, getBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
 
 export default function App() {
@@ -49,6 +51,7 @@ export default function App() {
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isAudienceQrDismissed, setIsAudienceQrDismissed] = useState(false);
   const [isLocalAudienceQrOpen, setIsLocalAudienceQrOpen] = useState(false);
+  const [previewRecentQr, setPreviewRecentQr] = useState<RecentQrRecord | null>(null);
 
   // When admin broadcasts a new live QR, un-dismiss local audience modal
   useEffect(() => {
@@ -62,6 +65,7 @@ export default function App() {
     vibrateTap();
     setIsAudienceQrDismissed(true);
     setIsLocalAudienceQrOpen(false);
+    setPreviewRecentQr(null);
   }, []);
 
   const generateQrCode = useCallback((urlToEncode: string, paletteId?: string, transparentBg?: boolean) => {
@@ -85,6 +89,14 @@ export default function App() {
       .then(url => {
         setQrDataUrl(url);
         setQrError(null);
+        recentQrUtils.saveRecentQr({
+          url: qrTargetUrl,
+          dataUrl: url,
+          caption: gameState.qr_custom_caption || 'Đấu Trường Live BTI 2026',
+          roundName: gameState.round,
+          paletteId: activePaletteId,
+          paletteName: palette.labelVi
+        });
         setTimeout(() => {
           setIsQrFading(false);
         }, 50);
@@ -94,7 +106,7 @@ export default function App() {
         setQrError('Lỗi tạo mã QR. Vui lòng thử lại.');
         setIsQrFading(false);
       });
-  }, [gameState.qr_color_palette, gameState.qr_transparent_bg]);
+  }, [gameState.qr_color_palette, gameState.qr_transparent_bg, gameState.qr_custom_caption, gameState.round]);
 
   // Track Estimated Scans when audience enters via QR scan (?src=qr or ?ref=qr)
   useEffect(() => {
@@ -104,47 +116,42 @@ export default function App() {
         const isFromQr = urlParams.get('src') === 'qr' || urlParams.get('ref') === 'qr' || urlParams.get('source') === 'qr';
         const scanSessionKey = 'BTI2026_QR_SCAN_RECORDED';
         if (isFromQr && !sessionStorage.getItem(scanSessionKey)) {
-          sessionStorage.setItem(scanSessionKey, 'true');
+          sessionStorage.setItem(scanSessionKey, '1');
           syncService.recordQrScan('mobile_qr');
         }
-      } catch (e) {
-        console.error('Scan tracking error:', e);
+      } catch (err) {
+        console.warn('Could not record QR scan event:', err);
       }
     }
   }, []);
 
-  // Initialize and compute audienceJoinUrl from window location
+  // Compute audience join URL dynamically
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      let audienceUrl = window.location.origin + window.location.pathname;
-      if (audienceUrl.includes('ais-dev-')) {
-        audienceUrl = audienceUrl.replace('ais-dev-', 'ais-pre-');
+      let origin = window.location.origin;
+      let pathname = window.location.pathname;
+      let fullUrl = origin + pathname;
+      if (fullUrl.includes('ais-dev-')) {
+        fullUrl = fullUrl.replace('ais-dev-', 'ais-pre-');
       }
-      setAudienceJoinUrl(audienceUrl);
+      setAudienceJoinUrl(fullUrl);
     }
   }, []);
 
   // Automatically refresh the QR code whenever audienceJoinUrl, qr_color_palette, or qr_transparent_bg changes dynamically
   useEffect(() => {
-    if (!audienceJoinUrl) return;
-    const timer = setTimeout(() => {
+    if (audienceJoinUrl) {
       generateQrCode(audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg);
-    }, 150);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    }
   }, [audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg, generateQrCode]);
 
   const handleRetryQr = useCallback(() => {
-    vibrateTap();
-    soundFx.playClick();
-    const targetUrl = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    const targetUrl = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app');
     generateQrCode(targetUrl);
   }, [audienceJoinUrl, generateQrCode]);
 
   const handleCopyQrLink = useCallback(() => {
-    const urlToCopy = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    const urlToCopy = previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : ''));
     if (!urlToCopy) return;
     vibrateCopy();
     soundFx.playClick();
@@ -155,10 +162,10 @@ export default function App() {
       setIsCopiedQrUrl(true);
       setTimeout(() => setIsCopiedQrUrl(false), 2000);
     });
-  }, [audienceJoinUrl]);
+  }, [audienceJoinUrl, previewRecentQr]);
 
   const handleShareQrLink = useCallback(async () => {
-    const urlToShare = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    const urlToShare = previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : ''));
     vibrateTap();
     soundFx.playClick();
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -176,7 +183,7 @@ export default function App() {
     } else {
       handleCopyQrLink();
     }
-  }, [audienceJoinUrl, handleCopyQrLink]);
+  }, [audienceJoinUrl, previewRecentQr, handleCopyQrLink]);
 
   // Determine initial view from URL path or query parameter
   const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector'>(() => {
@@ -706,7 +713,7 @@ export default function App() {
         >
           <div 
             id="app-global-qr-modal-content"
-            className="w-full max-w-sm bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] p-5 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto"
+            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar"
           >
             {/* Top Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#F7CAC9] to-transparent pointer-events-none" />
@@ -732,11 +739,41 @@ export default function App() {
               </button>
             </div>
 
+            {/* Replay Banner when viewing a Recent QR from localStorage */}
+            {previewRecentQr && (
+              <div 
+                id="banner-recent-qr-replay"
+                className="my-2 p-2.5 rounded-[6px] bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-2 text-left animate-fadeIn"
+              >
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
+                    Đang xem lại mã từ lịch sử broadcast
+                  </span>
+                  <span className="font-bold truncate text-white block text-[11px]">
+                    {previewRecentQr.caption || previewRecentQr.roundName || previewRecentQr.url}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  id="btn-return-live-qr"
+                  onClick={() => {
+                    soundFx.playClick();
+                    vibrateTap();
+                    setPreviewRecentQr(null);
+                  }}
+                  className="px-2.5 py-1 rounded-[4px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Về Mã Live</span>
+                </button>
+              </div>
+            )}
+
             {/* QR Code Container with Spring Entrance Animation and Smooth Optical Cross-Fade */}
             <div className="my-2.5 inline-block shrink-0 animate-qr-entrance">
               <div className={`p-3 rounded-[8px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
                 gameState.qr_transparent_bg
-                  ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%),linear-gradient(-45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
+                  ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
                   : 'bg-white'
               }`}>
                 {qrError ? (
@@ -755,7 +792,7 @@ export default function App() {
                   </div>
                 ) : (
                   <CrossFadeQrCode
-                    dataUrl={qrDataUrl}
+                    dataUrl={previewRecentQr ? (previewRecentQr.dataUrl || qrDataUrl) : qrDataUrl}
                     alt="QR Code Khán Giả"
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
@@ -769,7 +806,7 @@ export default function App() {
             </div>
 
             {/* Custom Short Caption below QR Code */}
-            {gameState.qr_custom_caption && (
+            {gameState.qr_custom_caption && !previewRecentQr && (
               <div 
                 id="landing-qr-custom-caption"
                 className="mb-2.5 px-3 py-1 rounded-[4px] bg-sky-950/80 border border-sky-400/50 text-sky-200 font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
@@ -829,7 +866,7 @@ export default function App() {
             {/* Direct URL text display */}
             <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[6px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
               <span className="text-[11px] font-mono text-sky-300 truncate select-all">
-                {audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app')}
+                {previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app'))}
               </span>
             </div>
 
@@ -870,6 +907,13 @@ export default function App() {
                 <span className="truncate">Share</span>
               </button>
             </div>
+
+            {/* Recent QRs Section (localStorage) */}
+            <RecentQrsSection
+              onSelectQr={(qr) => setPreviewRecentQr(qr)}
+              selectedQrId={previewRecentQr?.id}
+              className="mt-2.5 mb-2.5 w-full"
+            />
 
             <button
               type="button"

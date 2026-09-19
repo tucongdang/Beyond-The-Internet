@@ -692,7 +692,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   const [activeAdminTab, setActiveAdminTab] = useState<'DASHBOARD' | 'KDC' | 'VCNV' | 'TT' | 'VD' | 'QUESTIONS' | 'STATS' | 'POLL_HISTORY' | 'LUCKY_DRAW' | 'POLL_MANAGER' | 'QA_MANAGER' | 'CHAT_MANAGER' | 'WORD_CLOUD' | 'SNAPSHOTS' | 'ACTIVITY_LOG' | 'GUIDE'>('DASHBOARD');
-  const [statsSubTab, setStatsSubTab] = useState<'LEADERBOARD' | 'SPSS' | 'NETWORK'>('LEADERBOARD');
+  const [statsSubTab, setStatsSubTab] = useState<'LEADERBOARD' | 'SPSS' | 'NETWORK' | 'QR_TRENDS'>('LEADERBOARD');
   const [relaunchDraft, setRelaunchDraft] = useState<any>(null);
   const [showQuickNetworkMonitor, setShowQuickNetworkMonitor] = useState(false);
   const [vcnvInputKeyword, setVcnvInputKeyword] = useState('DEEPFAKE');
@@ -4101,6 +4101,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 <Activity className="w-3.5 h-3.5 text-sky-300" />
                 <span>3. Độ Trễ & Ping</span>
               </button>
+
+              <button
+                type="button"
+                id="btn-subtab-qr-trends"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  setStatsSubTab('QR_TRENDS');
+                }}
+                className={`fluent-subtab-btn ${
+                  statsSubTab === 'QR_TRENDS'
+                    ? 'active bg-[#F7CAC9] text-[#190839] font-black shadow-md border-[#F7CAC9]'
+                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
+                <span>4. Xu Hướng Quét QR</span>
+              </button>
             </div>
           </div>
 
@@ -4383,6 +4401,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Sub-view 4: QR Scan Count Trends (Recharts) */}
+            {statsSubTab === 'QR_TRENDS' && (
+              <div className="space-y-4">
+                <section className="fluent-box p-3 sm:p-4 md:p-6 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                    <div>
+                      <h2 className="text-[10px] uppercase text-white/40 font-bold tracking-widest flex items-center gap-1.5">
+                        <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Biểu Đồ Xu Hướng Lượt Quét Mã QR (Recharts Analysis)</span>
+                      </h2>
+                      <p className="text-xs text-white/60">
+                        Theo dõi lưu lượng truy cập và thời điểm khán giả quét mã QR tham gia đột biến theo từng khung giờ
+                      </p>
+                    </div>
+                  </div>
+                  <QrScanTrendsChart gameState={gameState} />
+                </section>
               </div>
             )}
           </div>
