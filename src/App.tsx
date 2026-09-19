@@ -93,7 +93,7 @@ export default function App() {
           url: qrTargetUrl,
           dataUrl: url,
           caption: gameState.qr_custom_caption || 'Đấu Trường Live BTI 2026',
-          roundName: gameState.round,
+          roundName: gameState.round_name,
           paletteId: activePaletteId,
           paletteName: palette.labelVi
         });
@@ -106,7 +106,7 @@ export default function App() {
         setQrError('Lỗi tạo mã QR. Vui lòng thử lại.');
         setIsQrFading(false);
       });
-  }, [gameState.qr_color_palette, gameState.qr_transparent_bg, gameState.qr_custom_caption, gameState.round]);
+  }, [gameState.qr_color_palette, gameState.qr_transparent_bg, gameState.qr_custom_caption, gameState.round_name]);
 
   // Track Estimated Scans when audience enters via QR scan (?src=qr or ?ref=qr)
   useEffect(() => {
