@@ -88,7 +88,7 @@ export const translationService = {
       return cached;
     }
 
-    // 2. Call backend translation endpoint (which uses gemini-1.5-flash-8b / gemini-1.5-flash)
+    // 2. Call backend translation endpoint (powered by Gemini Flash models)
     try {
       const resp = await fetch('/api/translate-question', {
         method: 'POST',
@@ -119,6 +119,91 @@ export const translationService = {
     } catch (err: any) {
       console.error(`[TranslationService] Error translating question ${question.id} to ${targetLang}:`, err);
       throw err;
+    }
+  },
+
+  /**
+   * Translates a short answer or term into natural, accurate Vietnamese (Tiếng Việt).
+   * Checks local memory and localStorage cache first for 0ms lookup.
+   */
+  async translateShortAnswerToVietnamese(text: string, apiKey?: string): Promise<string> {
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return '';
+    }
+
+    const trimmed = text.trim();
+    const cacheKey = `bti_trans_short_vi_${trimmed.toLowerCase()}`;
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return cached;
+    } catch {}
+
+    try {
+      const resp = await fetch('/api/translate-short-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: trimmed,
+          target_lang: 'vi',
+          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+        })
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const translated = data.translated_text || trimmed;
+
+      try {
+        localStorage.setItem(cacheKey, translated);
+      } catch {}
+
+      return translated;
+    } catch (err) {
+      console.warn(`[TranslationService] Failed to translate short answer "${trimmed}" to vi:`, err);
+      return trimmed;
+    }
+  },
+
+  /**
+   * Translates answer options from Vietnamese into a foreign language
+   */
+  async translateOptions(
+    options: Record<string, string>,
+    targetLang: string,
+    apiKey?: string
+  ): Promise<Record<string, string>> {
+    if (!targetLang || targetLang === 'vi' || !options || Object.keys(options).length === 0) {
+      return options;
+    }
+
+    try {
+      const resp = await fetch('/api/translate-answers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          options,
+          target_lang: targetLang,
+          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+        })
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      return data.translated_options || options;
+    } catch (err) {
+      console.warn(`[TranslationService] Failed to translate options to ${targetLang}:`, err);
+      return options;
     }
   },
 

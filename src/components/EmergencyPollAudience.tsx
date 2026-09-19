@@ -515,12 +515,15 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
           <div className="p-4 fluent-box-nested border border-purple-500/40 rounded-[2px] text-center space-y-1 animate-fadeIn">
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#F7CAC9] font-bold flex items-center justify-center gap-1">
               <Award className="w-3.5 h-3.5 text-amber-400" />
-              {t("view_poll_majority", localLanguage)}
+              {localLanguage === 'en' ? 'MAJORITY VOTE' : 'ĐA SỐ LỰA CHỌN'}
             </span>
             <p className="text-base sm:text-lg font-black text-white">
               {isDominantTie
-                ? (t("view_poll_balanced", localLanguage))
-                : (t("view_poll_choice", localLanguage).replace("{key}", dominantOption.key).replace("{text}", dominantOption.text).replace("{percent}", String(dominantOption.percent)))}
+                ? (localLanguage === 'en' ? 'Tie between leading options' : 'Cân bằng giữa các phương án dẫn đầu')
+                : (localLanguage === 'en'
+                    ? `Option ${dominantOption.key}: ${dominantOption.text} (${dominantOption.percent}%)`
+                    : `Phương án ${dominantOption.key}: ${dominantOption.text} (${dominantOption.percent}%)`
+                  )}
             </p>
           </div>
         )}

@@ -1063,6 +1063,7 @@ export const translations = {
 
 export type I18nKey = keyof typeof translations.vi;
 
-export function t(key: I18nKey, lang: 'vi' | 'en' = 'vi'): string {
-  return translations[lang]?.[key] || translations.vi[key] || key;
+export function t(key: I18nKey, lang: string = 'vi'): string {
+  const targetLang = lang as 'vi' | 'en';
+  return translations[targetLang]?.[key] || (translations as any)[lang]?.[key] || translations.vi[key] || key;
 }

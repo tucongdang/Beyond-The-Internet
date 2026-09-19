@@ -7,6 +7,7 @@ import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getApp, getApps } from 'firebase/app';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { soundFx } from '../services/audioEffects';
+import { SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { t } from '../utils/i18n';
 import { generate12DigitUID, getUserDisplayUid } from '../utils/uidUtils';
 import {
@@ -39,7 +40,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   allResponses,
   gameState
 }) => {
-  const { localLanguage, toggleLanguage } = useLanguage();
+  const { localLanguage, toggleLanguage, selectLanguage } = useLanguage();
   const [tab, setTab] = useState<'stats' | 'edit' | 'settings'>('stats');
   
   // Edit state
@@ -405,33 +406,39 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {tab === 'settings' && (
             <div className="space-y-4">
               {/* Language Settings Card */}
-              <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[2px] bg-white/10 text-blue-300 border border-blue-500/30 flex items-center justify-center">
-                <Globe className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>{t("profile_language_settings", localLanguage)}</span>
-                </h4>
-                <p className="text-[10px] text-[#B6A6D8]">
-                  {localLanguage === "en" ? t("profile_language_en", localLanguage) : t("profile_language_vi", localLanguage)}
-                </p>
-              </div>
-            </div>
+              <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-[2px] bg-white/10 text-blue-300 border border-blue-500/30 flex items-center justify-center shrink-0">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>{t("profile_language_settings", localLanguage)}</span>
+                    </h4>
+                    <p className="text-[10px] text-[#B6A6D8]">
+                      {localLanguage === "vi" ? "Tiếng Việt (Gốc)" : (SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === localLanguage)?.nativeLabel || localLanguage.toUpperCase())}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Toggle Switch */}
-            <button
-              type="button"
-              onClick={handleToggleLanguage}
-              className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
-                localLanguage === 'en' ? 'bg-blue-500 justify-end' : 'bg-gray-700 justify-start'
-              }`}
-              title={t("prof_lang", localLanguage)}
-            >
-              <div className="w-4 h-4 rounded-[2px] bg-white shadow-md transform transition" />
-            </button>
-          </div>
+                {/* Language Select Dropdown */}
+                <select
+                  value={localLanguage}
+                  onChange={(e) => {
+                    selectLanguage(e.target.value);
+                    soundFx.playClick();
+                    vibrateTap();
+                  }}
+                  className="fluent-input text-xs font-mono py-1.5 px-2.5 rounded-[2px] bg-[#190839] text-white border border-white/20 cursor-pointer focus:outline-none focus:border-sky-400"
+                >
+                  <option value="vi">🇻🇳 Tiếng Việt (Gốc)</option>
+                  {SUPPORTED_TRANSLATION_LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.flag} {l.nativeLabel} ({l.code.toUpperCase()})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
           {/* High Contrast / Pure Black Mode Settings Card */}
           <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-3">

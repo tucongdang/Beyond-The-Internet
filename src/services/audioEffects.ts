@@ -133,6 +133,11 @@ class SoundEffectsService {
     }, 450);
   }
 
+  /** Urgent alarm alias */
+  public playAlarm() {
+    this.playWarning();
+  }
+
   /** Tap / selection feedback click */
   public playClick() {
     const ctx = this.getAudioContext();

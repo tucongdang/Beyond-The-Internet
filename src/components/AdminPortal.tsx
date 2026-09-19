@@ -209,6 +209,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [customTimeLimit, setCustomTimeLimit] = useState(15);
   const [customExplanation, setCustomExplanation] = useState('');
 
+  // Side panel question list controls in Round Tabs (KDC, TT, VD)
+  const [sidePanelShowAll, setSidePanelShowAll] = useState<boolean>(false);
+  const [sidePanelSearch, setSidePanelSearch] = useState<string>('');
+
   // Fluent UI Confirm Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -839,7 +843,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, [riskSubmissions, gameState.vcnv_risk_status, gameState.vcnv_risk_answer, activeAdminTab]);
 
   // --- KDC Rapid Fire List ---
-  const kdcQuestions = useMemo(() => questionBank.filter(q => q.round_name.includes('Khởi động') || q.id.startsWith('KDC')), [questionBank]);
+  const kdcQuestions = useMemo(() => questionBank.filter(q => q.round_name.includes('Khởi động') || q.id.startsWith('KDC') || q.id.startsWith('KD')), [questionBank]);
   
   // --- VCNV (Audience Prediction Module & Risk Box) ---
   const handleToggleClue = async (idx: number) => {
@@ -5288,22 +5292,95 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
           {activeAdminTab !== 'VCNV' && (
             <section className="fluent-box-nested border border-white/10 rounded-[2px] p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <div>
-                  <h2 className="text-[10px] uppercase text-white/40 font-bold tracking-widest">
-                    Question Bank Filtered
-                  </h2>
+              <div className="flex flex-col gap-2.5 pb-3 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xs uppercase text-white/70 font-bold tracking-wider font-mono">
+                      Ngân Hàng Câu Hỏi
+                    </h2>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] fluent-box-nested text-blue-400 font-bold">
+                      {questionBank.filter(q => {
+                        if (!sidePanelShowAll) {
+                          if (activeAdminTab === 'KDC') return q.round_name.includes('Khởi động') || q.id.startsWith('KDC') || q.id.startsWith('KD');
+                          if (activeAdminTab === 'TT') return q.round_name.includes('Tăng tốc') || q.id.startsWith('TT');
+                          if (activeAdminTab === 'VD') return q.round_name.includes('Về đích') || q.id.startsWith('VD');
+                        }
+                        return true;
+                      }).length} / {questionBank.length} câu
+                    </span>
+                  </div>
+
+                  {/* Filter scope toggle: Round vs All 55 */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setSidePanelShowAll(false)}
+                      className={`px-2 py-1 rounded-[2px] text-[10px] font-mono font-bold transition ${
+                        !sidePanelShowAll
+                          ? 'bg-blue-600 text-white'
+                          : 'fluent-box-nested text-white/50 hover:text-white'
+                      }`}
+                      title="Chỉ hiển thị câu hỏi thuộc vòng thi đang chọn"
+                    >
+                      Theo Vòng
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSidePanelShowAll(true)}
+                      className={`px-2 py-1 rounded-[2px] text-[10px] font-mono font-bold transition ${
+                        sidePanelShowAll
+                          ? 'bg-blue-600 text-white'
+                          : 'fluent-box-nested text-white/50 hover:text-white'
+                      }`}
+                      title="Hiển thị tất cả 55 câu hỏi trong toàn bộ ngân hàng đề"
+                    >
+                      Tất Cả ({questionBank.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Search */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-white/40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Tìm theo ID, từ khóa, đáp án..."
+                    value={sidePanelSearch}
+                    onChange={(e) => setSidePanelSearch(e.target.value)}
+                    className="w-full fluent-box-nested border border-white/10 focus:border-blue-500 pl-8 pr-7 py-1 rounded-[2px] text-xs text-white outline-none placeholder:text-white/30 font-sans"
+                  />
+                  {sidePanelSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setSidePanelSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-2 max-h-[380px] sm:max-h-[500px] overflow-y-auto pr-1">
                 {questionBank
                   .filter(q => {
-                    if (activeAdminTab === 'KDC') return q.round_name.includes('Khởi động') || q.id.startsWith('KDC');
-                    
-                    if (activeAdminTab === 'TT') return q.round_name.includes('Tăng tốc') || q.id.startsWith('TT');
-                    if (activeAdminTab === 'VD') return q.round_name.includes('Về đích') || q.id.startsWith('VD');
+                    if (!sidePanelShowAll) {
+                      if (activeAdminTab === 'KDC') return q.round_name.includes('Khởi động') || q.id.startsWith('KDC') || q.id.startsWith('KD');
+                      if (activeAdminTab === 'TT') return q.round_name.includes('Tăng tốc') || q.id.startsWith('TT');
+                      if (activeAdminTab === 'VD') return q.round_name.includes('Về đích') || q.id.startsWith('VD');
+                    }
                     return true;
+                  })
+                  .filter(q => {
+                    if (!sidePanelSearch.trim()) return true;
+                    const s = sidePanelSearch.trim().toLowerCase();
+                    return (
+                      q.id.toLowerCase().includes(s) ||
+                      q.question_text.toLowerCase().includes(s) ||
+                      (q.correct_key && q.correct_key.toLowerCase().includes(s)) ||
+                      (q.category && q.category.toLowerCase().includes(s)) ||
+                      (q.round_name && q.round_name.toLowerCase().includes(s))
+                    );
                   })
                   .map((q) => {
                   const isCurrent = gameState.question_id === q.id;
@@ -5317,10 +5394,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-mono font-bold text-blue-400">
-                          {q.id}
-                        </span>
-                        <span className="text-[10px] text-white/40 font-mono">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="font-mono font-bold text-blue-400 shrink-0">
+                            {q.id}
+                          </span>
+                          {sidePanelShowAll && (
+                            <span className="text-[9px] text-white/50 truncate font-mono fluent-box-nested px-1.5 py-0.5 rounded-[2px]">
+                              {q.round_name}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-white/40 font-mono shrink-0">
                           {q.time_limit}s
                         </span>
                       </div>

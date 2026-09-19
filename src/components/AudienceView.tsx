@@ -122,16 +122,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   isWakeLockSupported,
   onToggleWakeLock
 }) => {
-  const [localLanguage, setLocalLanguage] = useState<'vi' | 'en'>(() => {
-    return (localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi';
+  const [localLanguage, setLocalLanguage] = useState<string>(() => {
+    return localStorage.getItem('bti_lang') || 'vi';
   });
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setLocalLanguage((localStorage.getItem('bti_lang') as 'vi' | 'en') || 'vi');
+      setLocalLanguage(localStorage.getItem('bti_lang') || 'vi');
+    };
+    const handleCustomChange = (e: any) => {
+      if (e.detail) setLocalLanguage(e.detail);
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('languageChange', handleCustomChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('languageChange', handleCustomChange);
+    };
   }, []);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
@@ -183,25 +190,99 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
+  const [shortAnswerTranslationVi, setShortAnswerTranslationVi] = useState<string>('');
+  const [isTranslatingShortAnswer, setIsTranslatingShortAnswer] = useState<boolean>(false);
+  const [revealShortAnswerTranslationVi, setRevealShortAnswerTranslationVi] = useState<string>('');
 
-  // Synchronize translation from broadcast or local storage cache
+  // Synchronize translation:
+  // When in Vietnamese ('vi'), clear translation and never translate
+  // When in any foreign language (en, zh, ja, ko, fr, es, de, th, lo, km, ru, etc.), resolve translation
   useEffect(() => {
     if (localLanguage === 'vi') {
       setLocalTranslation(null);
       return;
     }
-    const fromBroadcast = gameState.translations?.[localLanguage];
+
+    const targetLang = localLanguage;
+    const fromBroadcast = gameState.translations?.[targetLang];
     if (fromBroadcast) {
       setLocalTranslation(fromBroadcast);
       return;
     }
-    const cached = translationService.getCachedTranslation(gameState.question_id, localLanguage);
+    const cached = translationService.getCachedTranslation(gameState.question_id, targetLang);
     if (cached) {
       setLocalTranslation(cached);
       return;
     }
+
+    // Automatically translate question & answer options to target language
+    if (gameState.question_text && gameState.question_id) {
+      let isCancelled = false;
+      setIsTranslating(true);
+      setTranslationError(null);
+      translationService.translateQuestion(
+        {
+          id: gameState.question_id,
+          question_text: gameState.question_text,
+          options: gameState.options,
+          explanation: gameState.explanation
+        },
+        targetLang
+      ).then((trans) => {
+        if (!isCancelled) {
+          setLocalTranslation(trans);
+          setIsTranslating(false);
+        }
+      }).catch((err) => {
+        if (!isCancelled) {
+          console.warn(`Auto translate question to ${targetLang} error:`, err);
+          setTranslationError(err?.message || 'Không thể dịch');
+          setIsTranslating(false);
+        }
+      });
+
+      return () => {
+        isCancelled = true;
+      };
+    }
+
     setLocalTranslation(null);
-  }, [gameState.question_id, gameState.translations, localLanguage]);
+  }, [gameState.question_id, gameState.question_text, gameState.options, gameState.explanation, gameState.translations, localLanguage]);
+
+  // Auto translate correct short answer to Vietnamese during REVEAL
+  useEffect(() => {
+    const isShort = gameState.round_type === 'SHORT_ANSWER' || gameState.round_type === 'FILL_IN_BLANK' || gameState.round_type === 'VCNV';
+    if (gameState.status === 'REVEAL' && isShort && gameState.correct_key) {
+      let isCancelled = false;
+      translationService.translateShortAnswerToVietnamese(gameState.correct_key)
+        .then((translated) => {
+          if (!isCancelled && translated && translated.trim().toLowerCase() !== gameState.correct_key.trim().toLowerCase()) {
+            setRevealShortAnswerTranslationVi(translated);
+          }
+        })
+        .catch(() => {});
+      return () => {
+        isCancelled = true;
+      };
+    } else {
+      setRevealShortAnswerTranslationVi('');
+    }
+  }, [gameState.status, gameState.round_type, gameState.correct_key]);
+
+  const handleTranslateShortAnswerToVi = async () => {
+    if (!shortAnswerText.trim() || isTranslatingShortAnswer) return;
+    setIsTranslatingShortAnswer(true);
+    try {
+      const translated = await translationService.translateShortAnswerToVietnamese(shortAnswerText.trim());
+      setShortAnswerTranslationVi(translated);
+      soundFx.playTing();
+      vibrateTap();
+    } catch (err) {
+      console.warn('Translate short answer error:', err);
+    } finally {
+      setIsTranslatingShortAnswer(false);
+    }
+  };
 
   const handleRequestTranslate = async () => {
     if (isTranslating || localLanguage === 'vi') return;
@@ -793,7 +874,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     const responsesForQ = allResponses[gameState.question_id] || {};
     const total = Object.keys(responsesForQ).length;
     const counts: Record<string, number> = {};
-    Object.values(responsesForQ).forEach(r => {
+    Object.values(responsesForQ).forEach((r: any) => {
       const val = (r.choice || '').trim().toUpperCase();
       if (val) counts[val] = (counts[val] || 0) + 1;
     });
@@ -1992,92 +2073,117 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         {gameState.round_name} • {t("view_code", localLanguage)}: {gameState.question_id}
                       </span>
                       <div className="flex items-center gap-2">
-                        {/* Always visible AI Translation & Language Switcher Dropdown */}
+                        {/* Translation status indicator & language switcher */}
                         <div className="relative">
                           <button
                             type="button"
                             onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-bold border transition shadow-sm cursor-pointer ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-[11px] font-bold border transition shadow-sm cursor-pointer ${
                               localLanguage !== 'vi'
                                 ? 'bg-sky-500/20 text-sky-200 border-sky-400/40 hover:bg-sky-500/30'
-                                : 'bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/25 text-[#FCEEEC] border-[#F7CAC9]/30'
+                                : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/15'
                             }`}
-                            title="Dịch câu hỏi sang ngôn ngữ khác bằng AI (Gemini Flash)"
+                            title={localLanguage === 'vi' ? 'Chọn ngôn ngữ hiển thị' : `Đang hiển thị: ${localLanguage.toUpperCase()}`}
                           >
-                            <Globe className="w-3 h-3 text-sky-300" />
-                            <span>{localLanguage === 'vi' ? 'Dịch AI' : localLanguage.toUpperCase()}</span>
+                            <Globe className="w-3.5 h-3.5 text-sky-300" />
+                            <span>
+                              {localLanguage === 'vi' 
+                                ? '🇻🇳 VI' 
+                                : `${SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === localLanguage)?.flag || '🌐'} ${localLanguage.toUpperCase()}`
+                              }
+                            </span>
                             {isTranslating ? (
-                              <Sparkles className="w-3 h-3 text-amber-300 animate-spin" />
+                              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
                             ) : (
-                              <ChevronDown className="w-3 h-3 opacity-60" />
+                              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
                             )}
                           </button>
 
                           {isLanguageMenuOpen && (
-                            <div className="absolute right-0 top-full mt-1.5 w-48 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-60 overflow-y-auto">
-                              <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-[#F7CAC9] border-b border-white/10 uppercase tracking-wider flex items-center justify-between">
-                                <span>Chọn ngôn ngữ dịch</span>
-                                <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLocalLanguage('vi');
-                                  localStorage.setItem('bti_lang', 'vi');
-                                  window.dispatchEvent(new Event('storage'));
-                                  setIsLanguageMenuOpen(false);
-                                }}
-                                className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
-                                  localLanguage === 'vi' ? 'text-sky-300 font-bold bg-white/5' : 'text-white/80'
-                                }`}
-                              >
-                                <span>🇻🇳 Tiếng Việt (Gốc)</span>
-                                {localLanguage === 'vi' && <Check className="w-3.5 h-3.5 text-sky-400" />}
-                              </button>
+                            <>
+                              <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setIsLanguageMenuOpen(false)} 
+                              />
+                              <div className="absolute right-0 top-full mt-1.5 w-60 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-72 overflow-y-auto">
+                                <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-[#F7CAC9] border-b border-white/10 uppercase tracking-wider flex items-center justify-between sticky top-0 bg-[#190839] z-10">
+                                  <span>Ngôn ngữ hiển thị</span>
+                                  <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
+                                </div>
 
-                              {SUPPORTED_TRANSLATION_LANGUAGES.map(lang => (
+                                {/* Tiếng Việt (Gốc) */}
                                 <button
-                                  key={lang.code}
                                   type="button"
-                                  onClick={async () => {
-                                    setLocalLanguage(lang.code);
-                                    localStorage.setItem('bti_lang', lang.code);
+                                  onClick={() => {
+                                    setLocalLanguage('vi');
+                                    localStorage.setItem('bti_lang', 'vi');
                                     window.dispatchEvent(new Event('storage'));
+                                    window.dispatchEvent(new CustomEvent('languageChange', { detail: 'vi' }));
                                     setIsLanguageMenuOpen(false);
-
-                                    // Check if translation is available; if not, translate with AI
-                                    const hasTrans = gameState.translations?.[lang.code] || translationService.getCachedTranslation(gameState.question_id, lang.code);
-                                    if (!hasTrans) {
-                                      setIsTranslating(true);
-                                      try {
-                                        const res = await translationService.translateQuestion(
-                                          {
-                                            id: gameState.question_id,
-                                            question_text: gameState.question_text,
-                                            options: gameState.options,
-                                            explanation: gameState.explanation
-                                          },
-                                          lang.code
-                                        );
-                                        setLocalTranslation(res);
-                                        soundFx.playTing();
-                                        vibrateTap();
-                                      } catch (err) {
-                                        console.warn('Auto translate error:', err);
-                                      } finally {
-                                        setIsTranslating(false);
-                                      }
-                                    }
                                   }}
                                   className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
-                                    localLanguage === lang.code ? 'text-sky-300 font-bold bg-white/5' : 'text-white/80'
+                                    localLanguage === 'vi' ? 'bg-sky-500/25 text-white font-bold border-l-2 border-sky-400' : 'text-white/80'
                                   }`}
                                 >
-                                  <span className="truncate">{lang.flag} {lang.nativeLabel}</span>
-                                  {localLanguage === lang.code && <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
+                                  <span className="flex items-center gap-2">
+                                    <span className="text-base">🇻🇳</span>
+                                    <span>Tiếng Việt (Gốc)</span>
+                                  </span>
+                                  {localLanguage === 'vi' && (
+                                    <span className="text-sky-300 font-bold text-xs">✓</span>
+                                  )}
                                 </button>
-                              ))}
-                            </div>
+
+                                {/* Foreign Languages (English, Chinese, Japanese, Korean, etc.) */}
+                                {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => {
+                                  const isSelected = localLanguage === lang.code;
+                                  return (
+                                    <button
+                                      key={lang.code}
+                                      type="button"
+                                      onClick={() => {
+                                        setLocalLanguage(lang.code);
+                                        localStorage.setItem('bti_lang', lang.code);
+                                        window.dispatchEvent(new Event('storage'));
+                                        window.dispatchEvent(new CustomEvent('languageChange', { detail: lang.code }));
+                                        setIsLanguageMenuOpen(false);
+                                      }}
+                                      className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
+                                        isSelected ? 'bg-sky-500/25 text-white font-bold border-l-2 border-sky-400' : 'text-white/80'
+                                      }`}
+                                    >
+                                      <span className="flex items-center gap-2 truncate">
+                                        <span className="text-base">{lang.flag}</span>
+                                        <span className="truncate">{lang.nativeLabel}</span>
+                                        <span className="text-[10px] font-mono text-white/40">({lang.code.toUpperCase()})</span>
+                                      </span>
+                                      {isSelected && (
+                                        <span className="text-sky-300 font-bold text-xs">✓</span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+
+                                {/* AI Re-translate Button: ONLY displayed when viewing in a foreign language */}
+                                {localLanguage !== 'vi' && (
+                                  <div className="border-t border-white/10 mt-1 pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleRequestTranslate();
+                                        setIsLanguageMenuOpen(false);
+                                      }}
+                                      className="w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer text-sky-300 font-bold bg-white/5"
+                                    >
+                                      <span className="flex items-center gap-1.5">
+                                        <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isTranslating ? 'animate-spin' : ''}`} />
+                                        {isTranslating ? 'Đang dịch AI...' : 'Dịch lại câu hỏi bằng AI'}
+                                      </span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </>
                           )}
                         </div>
                         {isLongQuestion && (
@@ -2156,7 +2262,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </div>
 
                       <div className={`grid grid-cols-1 ${isLongQuestion ? 'md:grid-cols-2' : ''} gap-3`}>
-                        {Object.entries(gameState.options || {}).map(([key, label]) => {
+                        {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                           const currentChoice = tfChoices[key]; // no default 'Đ'
 
                         return (
@@ -2237,7 +2343,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
                       <div className="space-y-2">
                         {seqItems.map((optKey, idx) => {
-                          const itemText = gameState.options?.[optKey] || '';
+                          const itemText = activeOptions?.[optKey] || gameState.options?.[optKey] || '';
                           return (
                             <div
                               key={optKey}
@@ -2320,15 +2426,20 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isShortAnswer ? (
                   <>
                     <form onSubmit={handleShortAnswerSubmit} className="space-y-3">
-                      <label className="block text-xs font-semibold text-[#B6A6D8]">
-                        {gameState.round_type === 'FILL_IN_BLANK' ? t("view_enter_blank", localLanguage) : t("view_enter_short", localLanguage)}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-[#B6A6D8]">
+                          {gameState.round_type === 'FILL_IN_BLANK' ? t("view_enter_blank", localLanguage) : t("view_enter_short", localLanguage)}
+                        </label>
+                      </div>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           placeholder={gameState.round_type === 'FILL_IN_BLANK' ? t("view_ph_blank", localLanguage) : t("view_ph_short", localLanguage)}
                           value={shortAnswerText}
-                          onChange={(e) => setShortAnswerText(e.target.value)}
+                          onChange={(e) => {
+                            setShortAnswerText(e.target.value);
+                            if (shortAnswerTranslationVi) setShortAnswerTranslationVi('');
+                          }}
                           disabled={hasVotedThisQuestion}
                           className={`flex-1 fluent-box-nested text-white px-4 py-3.5 rounded-[2px] font-mono text-base outline-none uppercase transition-all ${
                             hasVotedThisQuestion
@@ -2356,6 +2467,35 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           )}
                         </button>
                       </div>
+
+                      {/* AI Short Answer Translation to Vietnamese helper */}
+                      {shortAnswerText.trim() && !hasVotedThisQuestion && (
+                        <div className="flex items-center flex-wrap gap-2 text-xs pt-0.5 animate-fadeIn">
+                          <button
+                            type="button"
+                            onClick={handleTranslateShortAnswerToVi}
+                            disabled={isTranslatingShortAnswer}
+                            className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-200 flex items-center gap-1.5 transition cursor-pointer"
+                            title="Dịch câu trả lời ngắn sang Tiếng Việt bằng Gemini AI"
+                          >
+                            <Sparkles className="w-3 h-3 text-sky-300" />
+                            <span>{isTranslatingShortAnswer ? 'Đang dịch AI...' : 'Dịch câu trả lời sang Tiếng Việt'}</span>
+                          </button>
+                          {shortAnswerTranslationVi && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-mono bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1 rounded-[2px]">
+                              <span>🇻🇳 Dịch: <strong>{shortAnswerTranslationVi}</strong></span>
+                              <button
+                                type="button"
+                                onClick={() => setShortAnswerText(shortAnswerTranslationVi)}
+                                className="ml-1 underline text-[10px] text-emerald-200 hover:text-white cursor-pointer"
+                                title="Điền từ này vào ô trả lời"
+                              >
+                                (Dùng từ này)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </form>
                     
                     {/* Short Answer Confirm Modal */}
@@ -2394,7 +2534,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isTrueFalse ? (
                   /* Toggle cho Đúng/Sai */
                   <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center">
-                    {Object.entries(gameState.options || {}).map(([key, label]) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2438,7 +2578,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isImagePoll ? (
                   /* Grid ảnh cho Poll hình ảnh */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
-                    {Object.entries(gameState.options || {}).map(([key, label], idx) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2510,7 +2650,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : (
                   /* Options Grid */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
-                    {Object.entries(gameState.options || {}).map(([key, label], idx) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -2912,6 +3052,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <strong className="font-mono text-base font-black text-emerald-300">
                   [{correctKey}]
                 </strong>
+                {revealShortAnswerTranslationVi && (
+                  <span className="block text-[11px] text-emerald-200 mt-1 font-sans">
+                    🇻🇳 Dịch: <strong>{revealShortAnswerTranslationVi}</strong>
+                  </span>
+                )}
               </div>
             </div>
           )}

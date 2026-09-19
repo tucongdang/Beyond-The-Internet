@@ -15,6 +15,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
   className = '',
   compact = false
 }) => {
+  const { localLanguage } = useLanguage();
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   const limit = gameState?.next_question_wait_limit || 0;
@@ -52,12 +53,11 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
 
   const progressPercent = Math.min(100, Math.max(0, (timeLeft / limit) * 100));
   const isUrgent = timeLeft <= 3;
-  const { localLanguage } = useLanguage();
   const displayMsg = gameState?.next_question_wait_message || (localLanguage === 'en' ? 'Prepare for the next question' : 'Chuẩn bị cho câu hỏi tiếp theo');
 
   if (compact) {
     return (
-      <div className={`w-full bg-[#26134B]/95 border border-amber-400/40 rounded-[4px] p-3 shadow-xl backdrop-blur-md text-white animate-fadeIn ${className}`}>
+      <div className={`w-full bg-[#26134B]/95 border border-amber-400/40 rounded-[2px] p-3 shadow-xl backdrop-blur-md text-white animate-fadeIn ${className}`}>
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
             <Timer className={`w-4 h-4 text-amber-300 shrink-0 ${isUrgent ? 'animate-bounce text-rose-400' : 'animate-pulse'}`} />
@@ -92,7 +92,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
   return (
     <div className={`w-full max-w-xl mx-auto fluent-acrylic-surface border-2 ${
       isUrgent ? 'border-rose-400 shadow-rose-500/30 animate-pulse' : 'border-amber-400/60 shadow-amber-500/20'
-    } shadow-2xl rounded-[4px] p-4 sm:p-5 text-white backdrop-blur-lg animate-slideInDown transition-all ${className}`}>
+    } shadow-2xl rounded-[2px] p-4 sm:p-5 text-white backdrop-blur-lg animate-slideInDown transition-all ${className}`}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`p-2 rounded-[2px] shrink-0 ${
