@@ -195,7 +195,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         background: 'rgba(21, 7, 44, 0.95)',
         backdropFilter: 'blur(28px) saturate(180%)',
         WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-        borderRadius: '4px',
+        borderRadius: '8px',
         border: '1px solid rgba(255, 255, 255, 0.15)',
         boxShadow: '0 16px 40px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
         padding: '6px'
@@ -225,7 +225,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onStartQuestion)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-emerald-600/30 hover:text-emerald-200 text-left cursor-pointer group"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-emerald-600/30 hover:text-emerald-200 text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2">
               <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/40" />
@@ -241,7 +241,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onLockVoting)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-amber-600/30 hover:text-amber-200 text-left cursor-pointer group"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-amber-600/30 hover:text-amber-200 text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-amber-400" />
@@ -257,7 +257,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onRevealResults)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-purple-600/30 hover:text-purple-200 text-left cursor-pointer group"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-purple-600/30 hover:text-purple-200 text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2">
               <Eye className="w-3.5 h-3.5 text-purple-400" />
@@ -273,7 +273,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onReturnToStandby)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-blue-600/30 hover:text-blue-200 text-left cursor-pointer group"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-blue-600/30 hover:text-blue-200 text-left cursor-pointer group"
           >
             <div className="flex items-center gap-2">
               <RotateCcw className="w-3.5 h-3.5 text-blue-400" />
@@ -289,7 +289,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onNavigatePrev)}
-            className="px-2 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="px-2 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <span className="truncate">← Câu trước</span>
             <kbd className="text-[9px] font-mono text-white/50 bg-white/5 px-1 py-0.2 border border-white/10 rounded-[2px]">
@@ -300,7 +300,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onNavigateNext)}
-            className="px-2 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="px-2 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <span className="truncate">Câu tiếp →</span>
             <kbd className="text-[9px] font-mono text-white/50 bg-white/5 px-1 py-0.2 border border-white/10 rounded-[2px]">
@@ -320,7 +320,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         <button
           type="button"
           onClick={() => handleItemClick(onSnapSnapshot)}
-          className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+          className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Camera className="w-3.5 h-3.5 text-pink-400" />
@@ -334,7 +334,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         <button
           type="button"
           onClick={() => handleItemClick(onToggleLiveQr)}
-          className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+          className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <QrCode className="w-3.5 h-3.5 text-sky-400" />
@@ -348,7 +348,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         <button
           type="button"
           onClick={() => handleItemClick(onOpenAnnouncer)}
-          className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+          className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Megaphone className="w-3.5 h-3.5 text-cyan-400" />
@@ -362,7 +362,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         <button
           type="button"
           onClick={() => handleItemClick(onOpenEmergencyPoll)}
-          className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+          className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
@@ -392,7 +392,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
               soundFx.playClick();
               setActiveSubmenu(prev => prev === 'tabs' ? null : 'tabs');
             }}
-            className={`w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
+            className={`w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
               activeSubmenu === 'tabs' ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-400/40' : ''
             }`}
           >
@@ -428,7 +428,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onSwitchTab(tab.id));
                   }}
-                  className={`w-full px-2 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between text-left cursor-pointer ${
+                  className={`w-full px-2 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between text-left cursor-pointer ${
                     activeAdminTab === tab.id
                       ? 'text-amber-300 font-bold bg-amber-400/20 border border-amber-400/30'
                       : 'text-white/80 hover:bg-white/10 hover:text-white'
@@ -454,7 +454,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                 soundFx.playClick();
                 setActiveSubmenu(prev => prev === 'views' ? null : 'views');
               }}
-              className={`w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
+              className={`w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
                 activeSubmenu === 'views' ? 'bg-blue-500/20 text-blue-300 font-bold border border-blue-400/40' : ''
               }`}
             >
@@ -476,7 +476,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onViewChange('projector'));
                   }}
-                  className="w-full px-2 py-1.5 rounded-[3px] text-xs transition flex items-center gap-2 hover:bg-blue-500/20 text-white/80 hover:text-blue-200 text-left cursor-pointer"
+                  className="w-full px-2 py-1.5 rounded-[4px] text-xs transition flex items-center gap-2 hover:bg-blue-500/20 text-white/80 hover:text-blue-200 text-left cursor-pointer"
                 >
                   <Tv className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                   <span>Màn Chiếu (Projector)</span>
@@ -487,7 +487,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onViewChange('audience'));
                   }}
-                  className="w-full px-2 py-1.5 rounded-[3px] text-xs transition flex items-center gap-2 hover:bg-emerald-500/20 text-white/80 hover:text-emerald-200 text-left cursor-pointer"
+                  className="w-full px-2 py-1.5 rounded-[4px] text-xs transition flex items-center gap-2 hover:bg-emerald-500/20 text-white/80 hover:text-emerald-200 text-left cursor-pointer"
                 >
                   <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Giao Diện Khán Giả</span>
@@ -498,7 +498,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onViewChange('landing'));
                   }}
-                  className="w-full px-2 py-1.5 rounded-[3px] text-xs transition flex items-center gap-2 hover:bg-amber-500/20 text-white/80 hover:text-amber-200 text-left cursor-pointer"
+                  className="w-full px-2 py-1.5 rounded-[4px] text-xs transition flex items-center gap-2 hover:bg-amber-500/20 text-white/80 hover:text-amber-200 text-left cursor-pointer"
                 >
                   <Home className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                   <span>Trang Chủ (Landing)</span>
@@ -520,7 +520,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                 soundFx.playClick();
                 setActiveSubmenu(prev => prev === 'sound' ? null : 'sound');
               }}
-              className={`w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
+              className={`w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 cursor-pointer ${
                 activeSubmenu === 'sound' ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-400/40' : ''
               }`}
             >
@@ -542,7 +542,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('correct'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-left cursor-pointer border border-emerald-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-left cursor-pointer border border-emerald-500/30"
                 >
                   <span className="truncate">✨ Đúng (Ding)</span>
                 </button>
@@ -552,7 +552,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('wrong'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-left cursor-pointer border border-rose-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-left cursor-pointer border border-rose-500/30"
                 >
                   <span className="truncate">❌ Sai (Buzzer)</span>
                 </button>
@@ -562,7 +562,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('reveal'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-left cursor-pointer border border-purple-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-left cursor-pointer border border-purple-500/30"
                 >
                   <span className="truncate">🎉 Công Bố</span>
                 </button>
@@ -572,7 +572,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('applause'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-left cursor-pointer border border-amber-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-left cursor-pointer border border-amber-500/30"
                 >
                   <span className="truncate">👏 Vỗ Tay</span>
                 </button>
@@ -582,7 +582,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('start'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-left cursor-pointer border border-cyan-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 text-left cursor-pointer border border-cyan-500/30"
                 >
                   <span className="truncate">🏁 Bắt Đầu</span>
                 </button>
@@ -592,7 +592,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
                     e.stopPropagation();
                     handleItemClick(() => onPlaySoundEffect('pacing'));
                   }}
-                  className="px-2 py-1.5 rounded-[3px] text-[11px] transition flex items-center justify-between bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-left cursor-pointer border border-indigo-500/30"
+                  className="px-2 py-1.5 rounded-[4px] text-[11px] transition flex items-center justify-between bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-left cursor-pointer border border-indigo-500/30"
                 >
                   <span className="truncate">⏱️ Đếm Nhịp</span>
                 </button>
@@ -613,7 +613,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleCopy('question', onCopyQuestionText)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <div className="flex items-center gap-2">
               {copiedType === 'question' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
@@ -627,7 +627,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleCopy('link', onCopyAudienceLink)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <div className="flex items-center gap-2">
               {copiedType === 'link' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
@@ -641,7 +641,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onExportCsv)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
@@ -655,7 +655,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
           <button
             type="button"
             onClick={() => handleItemClick(onForceResync)}
-            className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+            className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <RefreshCw className="w-3.5 h-3.5 text-indigo-400" />
@@ -668,7 +668,7 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
         <button
           type="button"
           onClick={() => handleItemClick(onOpenShortcuts)}
-          className="w-full px-2.5 py-1.5 rounded-[3px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
+          className="w-full px-2.5 py-1.5 rounded-[4px] text-xs transition flex items-center justify-between hover:bg-white/10 text-white/90 text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Keyboard className="w-3.5 h-3.5 text-purple-400" />

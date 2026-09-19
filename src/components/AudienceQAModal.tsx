@@ -521,7 +521,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                 <div className="flex items-center gap-1 overflow-x-auto max-w-full custom-scrollbar">
                   <button
                     onClick={() => setCommunityFilter('ALL')}
-                    className={`px-2.5 py-1 rounded-[3px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
                       communityFilter === 'ALL'
                         ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm'
                         : 'text-white/60 hover:bg-white/10'
@@ -533,7 +533,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                     <button
                       key={cat.id}
                       onClick={() => setCommunityFilter(cat.id)}
-                      className={`px-2.5 py-1 rounded-[3px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition whitespace-nowrap cursor-pointer ${
                         communityFilter === cat.id
                           ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm'
                           : 'text-white/60 hover:bg-white/10'
@@ -547,7 +547,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                 <div className="flex items-center gap-1 fluent-box-nested p-0.5 rounded-[4px]">
                   <button
                     onClick={() => setCommunitySort('HOT')}
-                    className={`px-2.5 py-1 rounded-[3px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
                       communitySort === 'HOT' ? 'fluent-acrylic-surface bg-pink-500/20 text-pink-200 border-pink-500/40 shadow-sm' : 'text-white/50 hover:text-white border border-transparent'
                     }`}
                   >
@@ -556,7 +556,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
                   </button>
                   <button
                     onClick={() => setCommunitySort('NEW')}
-                    className={`px-2.5 py-1 rounded-[3px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-[4px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
                       communitySort === 'NEW' ? 'fluent-acrylic-surface bg-purple-500/20 text-purple-200 border-purple-500/40 shadow-sm' : 'text-white/50 hover:text-white border border-transparent'
                     }`}
                   >

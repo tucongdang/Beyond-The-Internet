@@ -420,7 +420,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Utility Group: Language, Sound, Fullscreen, Install App */}
           <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[4px]">
             {/* Quick Language Toggle */}
             <button
@@ -526,7 +525,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* User Profile / Admin Role Badge */}
           {currentView === 'admin' ? (
             <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[4px] text-xs select-none shadow-sm">
-              <div className="w-5 h-5 rounded-[3px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
+              <div className="w-5 h-5 rounded-[4px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
                 A
               </div>
               <div className="flex flex-col items-start font-mono">
@@ -544,7 +543,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className="flex items-center gap-2 px-2.5 py-1 fluent-box-nested border border-white/10 hover:border-sky-500/40 rounded-[4px] text-xs transition cursor-pointer"
               >
-                <div className="w-5 h-5 rounded-[3px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
+                <div className="w-5 h-5 rounded-[4px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
                   {user.name.slice(0, 1).toUpperCase()}
                 </div>
                 <div className="flex flex-col items-start font-mono">
@@ -645,7 +644,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentView === 'admin' && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3 p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[4px]">
-                <div className="w-7 h-7 rounded-[3px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+                <div className="w-7 h-7 rounded-[4px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
                   A
                 </div>
                 <div>
@@ -870,7 +869,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="flex items-center gap-2.5 text-left"
                   >
-                    <div className="w-7 h-7 rounded-[3px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
+                    <div className="w-7 h-7 rounded-[4px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
                       {user.name.slice(0, 1).toUpperCase()}
                     </div>
                     <div>

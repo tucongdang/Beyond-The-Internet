@@ -96,7 +96,7 @@ export const QrDiagnosticOverlay: React.FC<QrDiagnosticOverlayProps> = ({
   return (
     <div
       id="qr-diagnostic-overlay"
-      className="absolute inset-0 bg-[#0c0418]/95 backdrop-blur-md rounded-[10px] z-50 p-4 sm:p-5 flex flex-col justify-between overflow-y-auto animate-fadeIn select-none border-2 border-sky-400/40 text-left font-sans"
+      className="absolute inset-0 bg-[#0c0418]/95 backdrop-blur-md rounded-[12px] z-50 p-4 sm:p-5 flex flex-col justify-between overflow-y-auto animate-fadeIn select-none border-2 border-sky-400/40 text-left font-sans"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header Bar */}
@@ -134,7 +134,7 @@ export const QrDiagnosticOverlay: React.FC<QrDiagnosticOverlayProps> = ({
         {/* Status & Error Code Banner */}
         <div
           id="diagnostic-status-banner"
-          className={`p-3 rounded-[6px] border flex items-start justify-between gap-3 ${
+          className={`p-3 rounded-[4px] border flex items-start justify-between gap-3 ${
             isHealthy
               ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
               : 'bg-rose-950/50 border-rose-500/50 text-rose-200'
@@ -184,7 +184,7 @@ export const QrDiagnosticOverlay: React.FC<QrDiagnosticOverlayProps> = ({
         {/* Connectivity & Services Matrix */}
         <div className="grid grid-cols-2 gap-2">
           {/* Internet Connectivity */}
-          <div className="p-2.5 rounded-[6px] bg-black/30 border border-white/10 flex items-center justify-between">
+          <div className="p-2.5 rounded-[4px] bg-black/30 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               {data.isOnline ? (
                 <Wifi className="w-4 h-4 text-emerald-400" />
@@ -206,7 +206,7 @@ export const QrDiagnosticOverlay: React.FC<QrDiagnosticOverlayProps> = ({
           </div>
 
           {/* Firebase Realtime Sync */}
-          <div className="p-2.5 rounded-[6px] bg-black/30 border border-white/10 flex items-center justify-between">
+          <div className="p-2.5 rounded-[4px] bg-black/30 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Server className="w-4 h-4 text-sky-400" />
               <div>
@@ -225,7 +225,7 @@ export const QrDiagnosticOverlay: React.FC<QrDiagnosticOverlayProps> = ({
         </div>
 
         {/* Technical Specs Bento Grid */}
-        <div className="fluent-box-nested p-3 rounded-[6px] border border-white/10 space-y-2">
+        <div className="fluent-box-nested p-3 rounded-[4px] border border-white/10 space-y-2">
           <div className="text-[11px] font-mono font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5 border-b border-white/10 pb-1">
             <Cpu className="w-3.5 h-3.5 text-sky-400" />
             <span>Thông Số Kỹ Thuật Mã Hóa QR (Encoding Specs)</span>

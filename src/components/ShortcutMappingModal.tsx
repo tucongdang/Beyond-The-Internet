@@ -247,12 +247,12 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[8px] shadow-2xl shadow-purple-950/80 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[12px] shadow-2xl shadow-purple-950/80 overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* ================= HEADER RIBBON ================= */}
         <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-purple-950/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[6px] bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-purple-300 shadow-md shadow-purple-950/50 shrink-0">
+            <div className="w-10 h-10 rounded-[4px] bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-purple-300 shadow-md shadow-purple-950/50 shrink-0">
               <Keyboard className="w-5 h-5 animate-pulse" />
             </div>
             <div>
@@ -260,7 +260,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
                 <h3 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
                   Trung Tâm Ánh Xạ Phím Tắt Sân Khấu BTI 2026
                 </h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-purple-950 text-purple-300 border border-purple-500/40">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-purple-950 text-purple-300 border border-purple-500/40">
                   v2.0
                 </span>
               </div>
@@ -411,7 +411,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedCategory(tab.id as any)}
-                className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium whitespace-nowrap transition cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[4px] text-[11px] font-medium whitespace-nowrap transition cursor-pointer ${
                   selectedCategory === tab.id
                     ? 'bg-purple-600 text-white font-bold shadow'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -464,7 +464,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
                 return (
                   <div
                     key={shortcut.id}
-                    className={`p-3 rounded-[6px] border transition-all duration-200 flex items-center justify-between gap-3 ${
+                    className={`p-3 rounded-[4px] border transition-all duration-200 flex items-center justify-between gap-3 ${
                       isActivated
                         ? 'border-purple-400 bg-purple-950/80 shadow-lg shadow-purple-900/60 ring-2 ring-purple-400 scale-[1.01]'
                         : isHost
@@ -508,7 +508,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleStartEditing(shortcut)}
-                        className="p-1 rounded-[3px] text-white/40 hover:text-white hover:bg-white/10 transition"
+                        className="p-1 rounded-[4px] text-white/40 hover:text-white hover:bg-white/10 transition"
                         title="Đổi phím tắt này"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -524,7 +524,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
         {/* ================= KEY RECORDER MODAL OVERLAY ================= */}
         {editingShortcut && (
           <div className="fixed inset-0 z-[100050] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-            <div className="fluent-box border border-purple-500/60 bg-gradient-to-b from-slate-950 via-[#101736] to-[#080d22] w-full max-w-md rounded-[8px] p-5 text-white shadow-2xl shadow-purple-950/90 space-y-4">
+            <div className="fluent-box border border-purple-500/60 bg-gradient-to-b from-slate-950 via-[#101736] to-[#080d22] w-full max-w-md rounded-[12px] p-5 text-white shadow-2xl shadow-purple-950/90 space-y-4">
               
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
@@ -553,14 +553,14 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
               </div>
 
               {/* Key capture area */}
-              <div className="p-6 rounded-[6px] border-2 border-dashed border-purple-400/60 bg-purple-950/30 text-center space-y-2">
+              <div className="p-6 rounded-[4px] border-2 border-dashed border-purple-400/60 bg-purple-950/30 text-center space-y-2">
                 <p className="text-xs text-white/60">
                   Hãy nhấn tổ hợp phím mong muốn trên bàn phím của bạn:
                 </p>
                 
                 <div className="py-2">
                   {recordedCombo ? (
-                    <kbd className="px-4 py-2 rounded-[6px] bg-purple-600 text-white font-mono text-lg font-bold border border-white/40 shadow-lg inline-block animate-bounce">
+                    <kbd className="px-4 py-2 rounded-[4px] bg-purple-600 text-white font-mono text-lg font-bold border border-white/40 shadow-lg inline-block animate-bounce">
                       {recordedCombo.label}
                     </kbd>
                   ) : (

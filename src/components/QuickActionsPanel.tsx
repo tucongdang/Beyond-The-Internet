@@ -339,7 +339,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       {/* Quick Actions Bar Container with Fluent UI v2 styling */}
       <div 
         id="admin-quick-actions-panel"
-        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[6px] overflow-hidden transition-all duration-300 ${className}`}
+        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[12px] overflow-hidden transition-all duration-300 ${className}`}
       >
         {/* Header Ribbon */}
         <div className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2 border-b border-white/10 bg-white/5">
@@ -351,21 +351,21 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               <span className="text-xs font-bold font-mono uppercase tracking-wider text-white">
                 Quick Actions • Tác Vụ Nhanh
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-sky-950/80 text-sky-300 border border-sky-500/30">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-sky-950/80 text-sky-300 border border-sky-500/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Câu: <strong>{gameState.question_id || 'Chưa nạp'}</strong>
               </span>
 
               {/* Status Chips */}
               {isTimerPaused && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-amber-950/90 text-amber-300 border border-amber-500/50 animate-pulse">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-amber-950/90 text-amber-300 border border-amber-500/50 animate-pulse">
                   <Pause className="w-2.5 h-2.5" />
                   <span>ĐÃ TẠM DỪNG ĐỒNG HỒ ({gameState.paused_remaining_seconds || 0}s)</span>
                 </span>
               )}
 
               {isLobbyLocked && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-rose-950/90 text-rose-300 border border-rose-500/50">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-rose-950/90 text-rose-300 border border-rose-500/50">
                   <Lock className="w-2.5 h-2.5" />
                   <span>LOBBY LOCKED</span>
                 </span>
@@ -377,7 +377,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   onClick={handleRecallNotification}
                   disabled={isRecalling}
                   title="Đang phát thông báo khẩn - Bấm để thu hồi ngay"
-                  className="hidden md:inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-rose-950 text-rose-300 border border-rose-500/60 hover:bg-rose-900 transition active:scale-95 cursor-pointer animate-pulse"
+                  className="hidden md:inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] bg-rose-950 text-rose-300 border border-rose-500/60 hover:bg-rose-900 transition active:scale-95 cursor-pointer animate-pulse"
                 >
                   <BellOff className="w-3 h-3 text-rose-400" />
                   <span>ĐANG PHÁT TIN • THU HỒI</span>
@@ -388,13 +388,13 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
           <div className="flex items-center gap-2 shrink-0">
             {lastActionFeedback && (
-              <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-[3px] animate-fadeIn flex items-center gap-1">
+              <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-[4px] animate-fadeIn flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 {lastActionFeedback}
               </span>
             )}
 
-            <div className="flex items-center gap-1 text-[10px] font-mono text-white/50 px-2 py-0.5 bg-black/40 rounded-[3px] border border-white/10">
+            <div className="flex items-center gap-1 text-[10px] font-mono text-white/50 px-2 py-0.5 bg-black/40 rounded-[4px] border border-white/10">
               <Users className="w-3 h-3 text-sky-400" />
               <strong className="text-sky-300 font-bold">{activeCount}</strong>
               <span className="hidden md:inline">thiết bị</span>
@@ -403,7 +403,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1 rounded-[3px] text-white/50 hover:text-white hover:bg-white/10 transition"
+              className="p-1 rounded-[4px] text-white/50 hover:text-white hover:bg-white/10 transition"
               title={isCollapsed ? 'Mở rộng Quick Actions' : 'Thu gọn Quick Actions'}
             >
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
@@ -650,11 +650,11 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       {/* ================= URGENT BROADCAST CENTER MODAL ================= */}
       {showBroadcastModal && (
         <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[8px] shadow-2xl shadow-cyan-950/80 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[12px] shadow-2xl shadow-cyan-950/80 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-cyan-950/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[6px] bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-950/50">
+                <div className="w-10 h-10 rounded-[4px] bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-950/50">
                   <Megaphone className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
@@ -775,7 +775,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                         key={t}
                         type="button"
                         onClick={() => setBroadcastType(t)}
-                        className={`py-1.5 px-2 rounded-[3px] text-[10px] font-mono font-bold transition text-center cursor-pointer border ${
+                        className={`py-1.5 px-2 rounded-[4px] text-[10px] font-mono font-bold transition text-center cursor-pointer border ${
                           broadcastType === t
                             ? t === 'URGENT'
                               ? 'bg-rose-600 text-white border-rose-400'

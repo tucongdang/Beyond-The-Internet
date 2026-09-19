@@ -196,7 +196,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       {/* Show strictly ONLY 1 notification toast at a time with Fluent UI v2 motion */}
       <div
         key={activeToast.id}
-        className={`w-full p-3.5 sm:p-4 rounded-[6px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
+        className={`w-full p-3.5 sm:p-4 rounded-[12px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
           isExiting ? 'animate-fluent-toast-exit' : 'animate-fluent-toast-enter'
         } ${
           isUrgent
@@ -213,7 +213,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
               ? 'bg-gradient-to-r from-rose-500 via-[#F7CAC9] to-amber-400 shadow-[0_0_10px_#f43f5e]'
               : isLuckyDraw
               ? 'bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 shadow-[0_0_10px_#fbbf24]'
-              : 'bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 shadow-[0_0_10px_#22d3ee]'
+              : 'bg-gradient-to-r from-cyan-400 via-white/50 to-indigo-400 shadow-[0_0_10px_#06b6d4]'
           }`}
         />
 
@@ -241,7 +241,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span
-                className={`font-mono font-bold uppercase tracking-wider text-[9px] sm:text-[10px] px-2 py-0.5 rounded-[3px] border flex items-center gap-1.5 ${
+                className={`font-mono font-bold uppercase tracking-wider text-[9px] sm:text-[10px] px-2 py-0.5 rounded-[4px] border flex items-center gap-1.5 ${
                   isUrgent
                     ? 'bg-rose-500/30 text-rose-200 border-rose-400/60 shadow-sm'
                     : isLuckyDraw
@@ -277,7 +277,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
         </div>
 
         {/* Fluent UI v2 Auto-dismiss Progress Bar */}
-        <div className="w-full bg-white/10 rounded-full h-[2px] overflow-hidden">
+        <div className="w-full bg-white/10 rounded-[2px] h-[2px] overflow-hidden">
           <div
             className={`h-full ${
               isUrgent

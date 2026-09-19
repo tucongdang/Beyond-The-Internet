@@ -31,8 +31,6 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { InstallAppModal } from './components/InstallAppModal';
 import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
-import { RecentQrsSection } from './components/RecentQrsSection';
-import { recentQrUtils, RecentQrRecord } from './utils/recentQrUtils';
 import { applyBatterySaverClasses, getBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 
@@ -53,7 +51,6 @@ export default function App() {
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isAudienceQrDismissed, setIsAudienceQrDismissed] = useState(false);
   const [isLocalAudienceQrOpen, setIsLocalAudienceQrOpen] = useState(false);
-  const [previewRecentQr, setPreviewRecentQr] = useState<RecentQrRecord | null>(null);
 
   // When admin broadcasts a new live QR, un-dismiss local audience modal
   useEffect(() => {
@@ -67,7 +64,6 @@ export default function App() {
     vibrateTap();
     setIsAudienceQrDismissed(true);
     setIsLocalAudienceQrOpen(false);
-    setPreviewRecentQr(null);
   }, []);
 
   const generateQrCode = useCallback((urlToEncode: string, paletteId?: string, transparentBg?: boolean) => {
@@ -91,14 +87,6 @@ export default function App() {
       .then(url => {
         setQrDataUrl(url);
         setQrError(null);
-        recentQrUtils.saveRecentQr({
-          url: qrTargetUrl,
-          dataUrl: url,
-          caption: gameState.qr_custom_caption || (localLanguage === 'en' ? 'BTI 2026 Live Arena' : 'Đấu Trường Live BTI 2026'),
-          roundName: gameState.round_name,
-          paletteId: activePaletteId,
-          paletteName: localLanguage === 'en' ? palette.name : palette.labelVi
-        });
         setTimeout(() => {
           setIsQrFading(false);
         }, 50);
@@ -153,7 +141,7 @@ export default function App() {
   }, [audienceJoinUrl, generateQrCode]);
 
   const handleCopyQrLink = useCallback(() => {
-    const urlToCopy = previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : ''));
+    const urlToCopy = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : '');
     if (!urlToCopy) return;
     vibrateCopy();
     soundFx.playClick();
@@ -164,10 +152,10 @@ export default function App() {
       setIsCopiedQrUrl(true);
       setTimeout(() => setIsCopiedQrUrl(false), 2000);
     });
-  }, [audienceJoinUrl, previewRecentQr]);
+  }, [audienceJoinUrl]);
 
   const handleShareQrLink = useCallback(async () => {
-    const urlToShare = previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : ''));
+    const urlToShare = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : '');
     vibrateTap();
     soundFx.playClick();
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -185,7 +173,7 @@ export default function App() {
     } else {
       handleCopyQrLink();
     }
-  }, [audienceJoinUrl, previewRecentQr, handleCopyQrLink]);
+  }, [audienceJoinUrl, handleCopyQrLink]);
 
   // Determine initial view from URL path or query parameter
   const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector'>(() => {
@@ -744,52 +732,22 @@ export default function App() {
               </button>
             </div>
 
-            {/* Replay Banner when viewing a Recent QR from localStorage */}
-            {previewRecentQr && (
-              <div 
-                id="banner-recent-qr-replay"
-                className="my-2 p-2.5 rounded-[6px] bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-2 text-left animate-fadeIn"
-              >
-                <div className="min-w-0">
-                  <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
-                    {localLanguage === 'en' ? 'Reviewing broadcast history code' : 'Đang xem lại mã từ lịch sử broadcast'}
-                  </span>
-                  <span className="font-bold truncate text-white block text-[11px]">
-                    {previewRecentQr.caption || previewRecentQr.roundName || previewRecentQr.url}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  id="btn-return-live-qr"
-                  onClick={() => {
-                    soundFx.playClick();
-                    vibrateTap();
-                    setPreviewRecentQr(null);
-                  }}
-                  className="px-2.5 py-1 rounded-[4px] bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] shrink-0 transition active:scale-95 cursor-pointer shadow flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>{localLanguage === 'en' ? 'Live QR' : 'Về Mã Live'}</span>
-                </button>
-              </div>
-            )}
-
             {/* QR Code Container with Spring Entrance Animation and Smooth Optical Cross-Fade */}
             <div className="my-2.5 inline-block shrink-0 animate-qr-entrance">
-              <div className={`p-3 rounded-[8px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
+              <div className={`p-3 rounded-[4px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
                 gameState.qr_transparent_bg
                   ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
                   : 'bg-white'
               }`}>
                 {qrError ? (
-                  <div className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[6px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900">
+                  <div className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[4px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900">
                     <AlertTriangle className="w-8 h-8 text-rose-500 shrink-0" />
                     <p className="text-xs font-semibold leading-snug">{qrError}</p>
                     <button
                       type="button"
                       id="btn-retry-qr-generation"
                       onClick={handleRetryQr}
-                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[6px] shadow flex items-center gap-1.5 transition cursor-pointer"
+                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[4px] shadow flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>{localLanguage === 'en' ? 'Retry' : 'Thử lại (Retry)'}</span>
@@ -797,7 +755,7 @@ export default function App() {
                   </div>
                 ) : (
                   <CrossFadeQrCode
-                    dataUrl={previewRecentQr ? (previewRecentQr.dataUrl || qrDataUrl) : qrDataUrl}
+                    dataUrl={qrDataUrl}
                     alt={localLanguage === 'en' ? 'Audience QR Code' : 'QR Code Khán Giả'}
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
@@ -811,7 +769,7 @@ export default function App() {
             </div>
 
             {/* Custom Short Caption below QR Code */}
-            {gameState.qr_custom_caption && !previewRecentQr && (
+            {gameState.qr_custom_caption && (
               <div 
                 id="landing-qr-custom-caption"
                 className="mb-2.5 px-3 py-1 rounded-[4px] bg-sky-950/80 border border-sky-400/50 text-sky-200 font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
@@ -873,9 +831,9 @@ export default function App() {
             </div>
 
             {/* Direct URL text display */}
-            <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[6px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
+            <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[4px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
               <span className="text-[11px] font-mono text-sky-300 truncate select-all">
-                {previewRecentQr ? previewRecentQr.url : (audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app'))}
+                {audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app')}
               </span>
             </div>
 
@@ -885,7 +843,7 @@ export default function App() {
                 type="button"
                 id="btn-qr-copy-link"
                 onClick={handleCopyQrLink}
-                className={`py-2.5 px-3 rounded-[6px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md ${
+                className={`py-2.5 px-3 rounded-[4px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md ${
                   isCopiedQrUrl
                     ? 'bg-emerald-500 text-black shadow-emerald-500/30'
                     : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839]'
@@ -909,7 +867,7 @@ export default function App() {
                 type="button"
                 id="btn-qr-share-link"
                 onClick={handleShareQrLink}
-                className="py-2.5 px-3 rounded-[6px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
+                className="py-2.5 px-3 rounded-[4px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
                 title={localLanguage === 'en' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" />
@@ -917,18 +875,11 @@ export default function App() {
               </button>
             </div>
 
-            {/* Recent QRs Section (localStorage) */}
-            <RecentQrsSection
-              onSelectQr={(qr) => setPreviewRecentQr(qr)}
-              selectedQrId={previewRecentQr?.id}
-              className="mt-2.5 mb-2.5 w-full"
-            />
-
             <button
               type="button"
               id="btn-dismiss-app-qr-modal"
               onClick={handleCloseAudienceQrModal}
-              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[6px] transition border border-white/10 cursor-pointer"
+              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[4px] transition border border-white/10 cursor-pointer"
             >
               {localLanguage === 'en' ? 'Close' : 'Đóng'}
             </button>

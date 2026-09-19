@@ -221,7 +221,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
   return (
     <section 
       id="audience-answer-distribution-chart"
-      className={`fluent-box-nested border border-white/15 rounded-[6px] p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 bg-gradient-to-b from-slate-950/90 via-[#070d1e]/85 to-slate-950/95 shadow-xl select-none ${className}`}
+      className={`fluent-box-nested border border-white/15 rounded-[12px] p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 bg-gradient-to-b from-slate-950/90 via-[#070d1e]/85 to-slate-950/95 shadow-xl select-none ${className}`}
     >
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-white/10">
@@ -253,7 +253,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             <button
               type="button"
               onClick={() => setChartMode('DONUT')}
-              className={`px-2 py-1 rounded-[3px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
+              className={`px-2 py-1 rounded-[4px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
                 chartMode === 'DONUT'
                   ? 'bg-sky-500/30 text-sky-200 border border-sky-400/40'
                   : 'text-white/40 hover:text-white'
@@ -267,7 +267,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             <button
               type="button"
               onClick={() => setChartMode('PIE')}
-              className={`px-2 py-1 rounded-[3px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
+              className={`px-2 py-1 rounded-[4px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
                 chartMode === 'PIE'
                   ? 'bg-sky-500/30 text-sky-200 border border-sky-400/40'
                   : 'text-white/40 hover:text-white'
@@ -281,7 +281,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             <button
               type="button"
               onClick={() => setChartMode('BAR')}
-              className={`px-2 py-1 rounded-[3px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
+              className={`px-2 py-1 rounded-[4px] text-[10px] font-mono font-bold flex items-center gap-1 transition ${
                 chartMode === 'BAR'
                   ? 'bg-sky-500/30 text-sky-200 border border-sky-400/40'
                   : 'text-white/40 hover:text-white'
@@ -304,8 +304,8 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
       {/* MC Key Insights Ribbon (Tóm tắt nhanh cho người dẫn chương trình) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 rounded-[4px] fluent-box-nested border border-white/10 text-xs">
         {/* Metric 1: Leading Option Trend */}
-        <div className="flex items-center gap-2.5 p-1.5 rounded-[3px] bg-white/[0.02]">
-          <div className="w-7 h-7 rounded-[3px] bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+        <div className="flex items-center gap-2.5 p-1.5 rounded-[4px] bg-white/[0.02]">
+          <div className="w-7 h-7 rounded-[4px] bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
             <Flame className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
@@ -326,8 +326,8 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
         </div>
 
         {/* Metric 2: Consensus Level */}
-        <div className="flex items-center gap-2.5 p-1.5 rounded-[3px] bg-white/[0.02]">
-          <div className="w-7 h-7 rounded-[3px] bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-300 shrink-0">
+        <div className="flex items-center gap-2.5 p-1.5 rounded-[4px] bg-white/[0.02]">
+          <div className="w-7 h-7 rounded-[4px] bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-300 shrink-0">
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
@@ -339,8 +339,8 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
         </div>
 
         {/* Metric 3: Answer Accuracy when Revealed or Participation */}
-        <div className="flex items-center gap-2.5 p-1.5 rounded-[3px] bg-white/[0.02]">
-          <div className={`w-7 h-7 rounded-[3px] flex items-center justify-center shrink-0 ${
+        <div className="flex items-center gap-2.5 p-1.5 rounded-[4px] bg-white/[0.02]">
+          <div className={`w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 ${
             isRevealed && correctStats
               ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
               : 'bg-purple-500/20 border border-purple-400/30 text-purple-300'
@@ -427,7 +427,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
               </div>
 
               {/* Progress Track */}
-              <div className="h-2.5 w-full fluent-box-nested rounded-[3px] overflow-hidden p-0.5 border border-white/10 bg-black/40">
+              <div className="h-2.5 w-full fluent-box-nested rounded-[4px] overflow-hidden p-0.5 border border-white/10 bg-black/40">
                 <div
                   className="h-full rounded-[2px] transition-all duration-500"
                   style={{

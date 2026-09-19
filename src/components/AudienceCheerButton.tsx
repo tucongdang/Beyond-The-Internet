@@ -174,7 +174,7 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
                   setSelectedType(item.type as CheerType);
                   setShowEmojiPicker(false);
                 }}
-                className={`py-1.5 flex flex-col items-center justify-center rounded-[3px] transition text-xs ${
+                className={`py-1.5 flex flex-col items-center justify-center rounded-[4px] transition text-xs ${
                   selectedType === item.type
                     ? 'bg-white/10 border border-white/40 scale-105 shadow-md'
                     : 'hover:bg-white/5 border border-transparent'

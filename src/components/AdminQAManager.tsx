@@ -377,7 +377,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 type="button"
                 onClick={() => setSortBy('NEWEST')}
-                className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                   sortBy === 'NEWEST' ? 'bg-purple-600 text-white' : 'text-white/50 hover:text-white'
                 }`}
               >
@@ -387,7 +387,7 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               <button
                 type="button"
                 onClick={() => setSortBy('HOT')}
-                className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                   sortBy === 'HOT' ? 'bg-pink-600 text-white' : 'text-white/50 hover:text-white'
                 }`}
               >

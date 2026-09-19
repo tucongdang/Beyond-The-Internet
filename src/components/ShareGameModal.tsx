@@ -3,34 +3,24 @@ import { useLanguage } from '../hooks/useLanguage';
 import { createPortal } from 'react-dom';
 import QRCode from 'qrcode';
 import {
-  QrCode,
   Share2,
   Copy,
   Check,
   Download,
   X,
   Smartphone,
-  ExternalLink,
   Sparkles,
   Radio,
-  Layers,
   Clock,
   ScanLine,
   Maximize2,
-  Minimize2,
-  Activity,
-  Terminal,
-  ArrowLeft,
-  RotateCcw
+  Minimize2
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { syncService } from '../services/syncService';
 import { vibrateTap, vibrateCopy, vibrateShare, vibrateSuccess } from '../utils/hapticUtils';
 import { QR_PALETTES, QrPaletteId } from '../types';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
-import { QrDiagnosticOverlay, QrDiagnosticData } from './QrDiagnosticOverlay';
-import { RecentQrsSection } from './RecentQrsSection';
-import { recentQrUtils, RecentQrRecord } from '../utils/recentQrUtils';
 
 interface ShareGameModalProps {
   isOpen: boolean;
@@ -50,7 +40,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [shareUrl, setShareUrl] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState<boolean>(true);
+  const [, setIsGenerating] = useState<boolean>(true);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [qrPaletteId, setQrPaletteId] = useState<QrPaletteId>('purple_gold');
   const [isTransparentBg, setIsTransparentBg] = useState<boolean>(false);
@@ -58,26 +48,6 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const [estimatedScans, setEstimatedScans] = useState<number>(0);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
   const [displayMode, setDisplayMode] = useState<'compact' | 'fullscreen'>('compact');
-  const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
-  const [previewRecentQr, setPreviewRecentQr] = useState<RecentQrRecord | null>(null);
-  const [diagnosticData, setDiagnosticData] = useState<QrDiagnosticData>({
-    status: 'idle',
-    errorCode: 'ERR_NONE',
-    errorMessage: null,
-    targetUrl: '',
-    generationLatencyMs: null,
-    errorCorrectionLevel: 'H',
-    resolutionPx: 360,
-    paletteId: 'purple_gold',
-    paletteDarkHex: '#1e1b4b',
-    paletteLightHex: '#ffffff',
-    isTransparent: false,
-    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-    isFirebaseConnected: true,
-    timestamp: Date.now(),
-    urlByteLength: 0,
-    qrVersionEstimate: 4
-  });
 
   // Inactivity auto-close timer (60s default for broadcast protection)
   useEffect(() => {
@@ -128,7 +98,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     };
   }, []);
 
-  // Diagnostic QR generator function with benchmark telemetry
+  // Fast, responsive QR generator function
   const runQrGenerationPass = useCallback((overrideMode?: 'compact' | 'fullscreen') => {
     if (typeof window === 'undefined' || !isOpen) return;
 
@@ -139,41 +109,13 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     }
     setShareUrl(url);
 
-    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     const targetQrUrl = url + (url.includes('?') ? '&' : '?') + 'src=qr';
     const palette = QR_PALETTES[qrPaletteId] || QR_PALETTES.purple_gold;
     const qrWidth = activeMode === 'fullscreen' ? 600 : 360;
-    const urlByteLen = new TextEncoder().encode(targetQrUrl).length;
-
-    // QR version estimation (byte capacity with ECL Level H)
-    let versionEst = 3;
-    if (urlByteLen > 150) versionEst = 7;
-    else if (urlByteLen > 100) versionEst = 5;
-    else if (urlByteLen > 60) versionEst = 4;
 
     setIsGenerating(true);
-    const startTime = performance.now();
 
     if (!targetQrUrl || targetQrUrl.trim() === '') {
-      const errCode = 'ERR_PAYLOAD_EMPTY';
-      setDiagnosticData({
-        status: 'error',
-        errorCode: errCode,
-        errorMessage: 'Chuỗi địa chỉ URL đích rỗng hoặc không hợp lệ.',
-        targetUrl: '',
-        generationLatencyMs: 0,
-        errorCorrectionLevel: 'H',
-        resolutionPx: qrWidth,
-        paletteId: qrPaletteId,
-        paletteDarkHex: palette.dark,
-        paletteLightHex: isTransparentBg ? '#00000000' : palette.light,
-        isTransparent: isTransparentBg,
-        isOnline,
-        isFirebaseConnected,
-        timestamp: Date.now(),
-        urlByteLength: 0,
-        qrVersionEstimate: versionEst
-      });
       setIsGenerating(false);
       return;
     }
@@ -188,140 +130,80 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
       errorCorrectionLevel: 'H'
     })
       .then((dataUrl) => {
-        const renderTime = Math.round(performance.now() - startTime);
         setQrDataUrl(dataUrl);
-        recentQrUtils.saveRecentQr({
-          url: targetQrUrl,
-          dataUrl,
-          caption: qrCustomCaption || roundName || gameTitle,
-          roundName,
-          paletteId: qrPaletteId,
-          paletteName: palette.labelVi
-        });
         setIsGenerating(false);
-        setDiagnosticData({
-          status: 'success',
-          errorCode: 'ERR_NONE',
-          errorMessage: null,
-          targetUrl: targetQrUrl,
-          generationLatencyMs: renderTime,
-          errorCorrectionLevel: 'H',
-          resolutionPx: qrWidth,
-          paletteId: qrPaletteId,
-          paletteDarkHex: palette.dark,
-          paletteLightHex: isTransparentBg ? '#00000000' : palette.light,
-          isTransparent: isTransparentBg,
-          isOnline,
-          isFirebaseConnected,
-          timestamp: Date.now(),
-          urlByteLength: urlByteLen,
-          qrVersionEstimate: versionEst
-        });
       })
       .catch((err: any) => {
-        const renderTime = Math.round(performance.now() - startTime);
         console.error('Failed to generate QR code:', err);
         setIsGenerating(false);
-        const errCode = !isOnline ? 'ERR_NETWORK_OFFLINE' : 'ERR_QR_RENDER_FAILED';
-        setDiagnosticData({
-          status: 'error',
-          errorCode: errCode,
-          errorMessage: err?.message || 'Lỗi xử lý render canvas mã QR.',
-          targetUrl: targetQrUrl,
-          generationLatencyMs: renderTime,
-          errorCorrectionLevel: 'H',
-          resolutionPx: qrWidth,
-          paletteId: qrPaletteId,
-          paletteDarkHex: palette.dark,
-          paletteLightHex: isTransparentBg ? '#00000000' : palette.light,
-          isTransparent: isTransparentBg,
-          isOnline,
-          isFirebaseConnected,
-          timestamp: Date.now(),
-          urlByteLength: urlByteLen,
-          qrVersionEstimate: versionEst
-        });
       });
-  }, [isOpen, displayMode, qrPaletteId, isTransparentBg, isFirebaseConnected]);
+  }, [isOpen, displayMode, qrPaletteId, isTransparentBg]);
 
   // Compute join URL and generate QR code
   useEffect(() => {
     runQrGenerationPass();
   }, [runQrGenerationPass]);
 
-  // Handle escape key to close or 'f' to toggle fullscreen, 'd' for diagnostics
+  // Handle escape key to close or 'f' to toggle fullscreen
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         vibrateTap();
-        if (showDiagnostics) {
-          setShowDiagnostics(false);
-        } else {
-          onClose();
-        }
+        onClose();
       } else if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         // Toggle compact / fullscreen mode
         e.preventDefault();
         vibrateTap();
         soundFx.playClick();
         setDisplayMode((prev) => (prev === 'compact' ? 'fullscreen' : 'compact'));
-      } else if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        // Toggle diagnostic overlay
-        e.preventDefault();
-        vibrateTap();
-        soundFx.playClick();
-        setShowDiagnostics((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, showDiagnostics]);
+  }, [isOpen, onClose]);
 
   const handleCopyLink = useCallback(async () => {
-    const urlToCopy = previewRecentQr ? previewRecentQr.url : shareUrl;
-    if (!urlToCopy) return;
+    if (!shareUrl) return;
     try {
       soundFx.playClick();
       vibrateCopy();
-      await navigator.clipboard.writeText(urlToCopy);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch (err) {
       console.error('Could not copy text: ', err);
     }
-  }, [shareUrl, previewRecentQr]);
+  }, [shareUrl]);
 
   const handleNativeShare = useCallback(async () => {
     if (typeof navigator === 'undefined' || !navigator.share) return;
-    const urlToShare = previewRecentQr ? previewRecentQr.url : shareUrl;
     try {
       soundFx.playClick();
       vibrateShare();
       await navigator.share({
         title: gameTitle || 'BTI 2026 - Đấu Trường Trực Tiếp',
         text: `Tham gia trực tiếp đấu trường tương tác ${gameTitle || 'BTI 2026'} ngay bây giờ!`,
-        url: urlToShare
+        url: shareUrl
       });
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
         console.error('Lỗi khi chia sẻ qua Web Share API:', err);
       }
     }
-  }, [gameTitle, shareUrl, previewRecentQr]);
+  }, [gameTitle, shareUrl]);
 
   const handleDownloadQr = useCallback(() => {
-    const activeDataUrl = previewRecentQr?.dataUrl || qrDataUrl;
-    if (!activeDataUrl) return;
+    if (!qrDataUrl) return;
     soundFx.playClick();
     vibrateSuccess();
     const link = document.createElement('a');
-    link.href = activeDataUrl;
+    link.href = qrDataUrl;
     link.download = `BTI2026_Join_QRCode_${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [qrDataUrl, previewRecentQr]);
+  }, [qrDataUrl]);
 
   if (!isOpen) return null;
 
@@ -344,10 +226,10 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     >
       <div
         id="share-game-modal-content"
-        className={`w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] p-4 sm:p-6 shadow-2xl shadow-purple-950/90 relative overflow-y-auto my-auto flex flex-col items-center select-none transition-all duration-300 ${
+        className={`w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[12px] shadow-2xl shadow-purple-950/90 relative overflow-y-auto my-auto flex flex-col items-center select-none transition-all duration-300 ${
           displayMode === 'fullscreen'
             ? 'max-w-4xl min-h-[88vh] md:min-h-[92vh] justify-between p-6 sm:p-8'
-            : 'max-w-md max-h-[90vh]'
+            : 'max-w-md max-h-[90vh] p-4 sm:p-6'
         }`}
         onMouseMove={handleUserActivity}
         onTouchStart={handleUserActivity}
@@ -355,105 +237,110 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         {/* Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#F7CAC9] to-transparent pointer-events-none" />
 
-        {/* Timeout Indicator, Diagnostic Toggle, FullScreen Toggle & Close Button */}
-        <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10 flex-wrap sm:flex-nowrap justify-end">
-          {/* Diagnostic Overlay Trigger */}
-          <button
-            id="btn-toggle-share-diagnostics"
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              soundFx.playClick();
-              setShowDiagnostics((prev) => !prev);
-            }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
-              showDiagnostics
-                ? 'bg-sky-500 text-black border-sky-300 shadow-md shadow-sky-500/30 ring-1 ring-sky-300'
-                : diagnosticData.status === 'error'
-                ? 'bg-rose-500/25 text-rose-300 border-rose-500/50 animate-pulse'
-                : 'bg-white/10 hover:bg-white/20 text-sky-300 border-sky-400/30'
-            }`}
-            title="Mở bảng kiểm tra chẩn đoán & trạng thái dịch vụ tạo QR (Phím D)"
-          >
-            <Activity className={`w-3.5 h-3.5 ${showDiagnostics ? 'text-black animate-pulse' : 'text-sky-300'}`} />
-            <span className="hidden sm:inline">Chẩn Đoán (Phím D)</span>
-            <span className="sm:hidden">Debug</span>
-          </button>
-
-          {/* Responsive Toggle Button: Compact vs Full Screen */}
-          <button
-            id="btn-toggle-share-display-mode"
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              soundFx.playClick();
-              setDisplayMode((prev) => (prev === 'compact' ? 'fullscreen' : 'compact'));
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
-              displayMode === 'fullscreen'
-                ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 shadow-sm'
-                : 'bg-white/10 hover:bg-white/20 text-[#F7CAC9] border-[#F7CAC9]/30'
-            }`}
-            title={
-              displayMode === 'fullscreen'
-                ? (localLanguage === 'en' ? 'Switch to compact view (Key F)' : 'Chuyển về chế độ thu gọn (Compact - Phím F)')
-                : (localLanguage === 'en' ? 'Switch to fullscreen projector view (Key F)' : 'Chuyển sang chế độ toàn màn hình máy chiếu (Full Screen - Phím F)')
-            }
-          >
-            {displayMode === 'fullscreen' ? (
-              <>
-                <Minimize2 className="w-3.5 h-3.5 text-amber-300" />
-                <span className="hidden sm:inline">{localLanguage === 'en' ? 'Compact' : 'Thu Gọn (Compact)'}</span>
-                <span className="sm:hidden">{localLanguage === 'en' ? 'Compact' : 'Thu Gọn'}</span>
-              </>
-            ) : (
-              <>
-                <Maximize2 className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                <span className="hidden sm:inline">{localLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình (Full Screen)'}</span>
-                <span className="sm:hidden">{localLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}</span>
-              </>
-            )}
-          </button>
-
-          <div 
-            id="badge-share-modal-timeout"
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold border transition ${
-              secondsRemaining <= 10
-                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
-                : 'bg-white/10 text-white/70 border-white/15'
-            }`}
-            title={localLanguage === 'en' ? `Auto-closing in ${secondsRemaining}s of inactivity` : `Tự động đóng sau ${secondsRemaining}s không hoạt động`}
-          >
-            <Clock className="w-3 h-3 text-[#F7CAC9]" />
-            <span>{secondsRemaining}s</span>
-          </div>
-
-          <button
-            id="btn-close-share-modal"
-            type="button"
-            onClick={() => {
-              soundFx.playClick();
-              vibrateTap();
-              onClose();
-            }}
-            className="w-7 h-7 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
-            aria-label={localLanguage === 'en' ? 'Close (ESC)' : 'Đóng (ESC)'}
-            title={localLanguage === 'en' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-3 pr-6 pl-6 shrink-0">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-widest bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30 mb-1.5">
+        {/* Structured Header Row */}
+        <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 mb-3 shrink-0">
+          {/* Live indicator badge */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-widest bg-[#F7CAC9]/15 text-[#F7CAC9] border border-[#F7CAC9]/30">
             <Radio className="w-3 h-3 animate-pulse text-[#F7CAC9]" />
             <span>
               {displayMode === 'fullscreen'
-                ? (localLanguage === 'en' ? 'Fullscreen Broadcast Mode • Live' : 'Chế Độ Trình Chiếu Toàn Màn Hình • Live Broadcast')
-                : (localLanguage === 'en' ? 'Invite Audience • Live Broadcast' : 'Mời Người Chơi • Live Broadcast')}
+                ? (localLanguage === 'en' ? 'Fullscreen Broadcast • Live' : 'Toàn Màn Hình • Trực Tiếp')
+                : (localLanguage === 'en' ? 'Invite Audience • Live' : 'Mời Khán Giả • Trực Tiếp')}
             </span>
           </div>
+
+          {/* Action controls on right: Diagnostics, Fullscreen Toggle, Inactivity Timer & Close */}
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap justify-end">
+            {/* Diagnostic Overlay Trigger */}
+            <button
+              id="btn-toggle-share-diagnostics"
+              type="button"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowDiagnostics((prev) => !prev);
+              }}
+              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
+                showDiagnostics
+                  ? 'bg-sky-500 text-black border-sky-300 shadow-md shadow-sky-500/30 ring-1 ring-sky-300'
+                  : diagnosticData.status === 'error'
+                  ? 'bg-rose-500/25 text-rose-300 border-rose-500/50 animate-pulse'
+                  : 'bg-white/10 hover:bg-white/20 text-sky-300 border-sky-400/30'
+              }`}
+              title={localLanguage === 'en' ? 'Toggle diagnostics & QR status (Key D)' : 'Mở bảng kiểm tra chẩn đoán & trạng thái dịch vụ tạo QR (Phím D)'}
+            >
+              <Activity className={`w-3.5 h-3.5 ${showDiagnostics ? 'text-black animate-pulse' : 'text-sky-300'}`} />
+              <span className="hidden sm:inline">{localLanguage === 'en' ? 'Diagnostics (D)' : 'Chẩn Đoán (D)'}</span>
+              <span className="sm:hidden">Debug</span>
+            </button>
+
+            {/* Responsive Toggle Button: Compact vs Full Screen */}
+            <button
+              id="btn-toggle-share-display-mode"
+              type="button"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setDisplayMode((prev) => (prev === 'compact' ? 'fullscreen' : 'compact'));
+              }}
+              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] font-mono text-[11px] font-bold transition active:scale-95 cursor-pointer border ${
+                displayMode === 'fullscreen'
+                  ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 shadow-sm'
+                  : 'bg-white/10 hover:bg-white/20 text-[#F7CAC9] border-[#F7CAC9]/30'
+              }`}
+              title={
+                displayMode === 'fullscreen'
+                  ? (localLanguage === 'en' ? 'Compact mode (Key F)' : 'Thu gọn (Phím F)')
+                  : (localLanguage === 'en' ? 'Fullscreen mode (Key F)' : 'Toàn màn hình máy chiếu (Phím F)')
+              }
+            >
+              {displayMode === 'fullscreen' ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-amber-300" />
+                  <span className="text-[10px] hidden sm:inline">{localLanguage === 'en' ? 'Compact' : 'Thu Gọn'}</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                  <span className="text-[10px] hidden sm:inline">{localLanguage === 'en' ? 'Fullscreen' : 'Phóng To'}</span>
+                </>
+              )}
+            </button>
+
+            {/* Countdown Badge */}
+            <div
+              id="badge-share-modal-timeout"
+              className={`flex items-center gap-1 px-2 py-1 rounded-[4px] text-[10px] font-mono font-bold border transition ${
+                secondsRemaining <= 10
+                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
+                  : 'bg-white/10 text-white/70 border-white/15'
+              }`}
+              title={localLanguage === 'en' ? `Auto-closing in ${secondsRemaining}s of inactivity` : `Tự động đóng sau ${secondsRemaining}s không hoạt động`}
+            >
+              <Clock className="w-3 h-3 text-[#F7CAC9]" />
+              <span>{secondsRemaining}s</span>
+            </div>
+
+            {/* Modal Close Button */}
+            <button
+              id="btn-close-share-modal"
+              type="button"
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                onClose();
+              }}
+              className="w-7 h-7 rounded-[4px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
+              aria-label={localLanguage === 'en' ? 'Close (ESC)' : 'Đóng (ESC)'}
+              title={localLanguage === 'en' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Title & Round Info */}
+        <div className="text-center mb-3 px-2 shrink-0">
           <h3 className={`font-black tracking-tight text-white flex items-center justify-center gap-2 ${
             displayMode === 'fullscreen' ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl'
           }`}>
@@ -495,7 +382,6 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
             </button>
           </div>
         )}
-
         {/* QR Code Container */}
         <div className="relative group my-1 shrink-0 animate-qr-entrance">
           <div className={`p-3 sm:p-4 rounded-[4px] shadow-2xl border-2 border-[#F7CAC9]/40 relative transition-all duration-300 ${
@@ -504,7 +390,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               : 'bg-white'
           }`}>
             <CrossFadeQrCode
-              dataUrl={previewRecentQr ? (previewRecentQr.dataUrl || qrDataUrl) : qrDataUrl}
+              dataUrl={qrDataUrl}
               alt="QR Code to Join Game"
               sizeClass={
                 displayMode === 'fullscreen'
@@ -576,7 +462,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         </div>
 
         {/* Quick Instructions */}
-        <div className="w-full fluent-box-nested border border-white/10 rounded-[4px] p-2.5 sm:p-3 my-2.5 text-left text-xs space-y-1 shrink-0">
+        <div className="w-full fluent-box-nested border border-white/10 rounded-[4px] p-2.5 sm:p-3 my-2 text-left text-xs space-y-1 shrink-0">
           <div className="flex items-center gap-2 text-[#F7CAC9] font-bold">
             <Smartphone className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
             <span>{localLanguage === 'en' ? 'Instructions for new audience:' : 'Hướng dẫn cho khán giả mới:'}</span>
@@ -593,7 +479,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
           {/* Link Box */}
           <div className="flex items-center gap-2 p-1.5 rounded-[4px] bg-black/40 border border-white/15">
             <div className="flex-1 min-w-0 px-2 font-mono text-xs text-sky-300 truncate select-all">
-              {previewRecentQr ? previewRecentQr.url : shareUrl}
+              {shareUrl}
             </div>
             <button
               id="btn-copy-game-url"
@@ -671,22 +557,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Recent QRs Section (localStorage) */}
-          <RecentQrsSection
-            onSelectQr={(qr) => setPreviewRecentQr(qr)}
-            selectedQrId={previewRecentQr?.id}
-            className="w-full mt-2"
-          />
         </div>
-
-        {/* Diagnostic Overlay for QR Generator Telemetry & Debugging */}
-        <QrDiagnosticOverlay
-          isOpen={showDiagnostics}
-          onClose={() => setShowDiagnostics(false)}
-          data={diagnosticData}
-          onRetest={() => runQrGenerationPass()}
-        />
       </div>
     </div>
   );

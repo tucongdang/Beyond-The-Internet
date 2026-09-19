@@ -71,7 +71,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
   };
 
   return (
-    <div className={`w-full rounded-[8px] bg-black/40 border border-white/15 p-3 text-left font-mono ${className}`}>
+    <div className={`w-full rounded-[12px] bg-black/40 border border-white/15 p-3 text-left font-mono ${className}`}>
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/10">
         <button
@@ -144,7 +144,7 @@ export const RecentQrsSection: React.FC<RecentQrsSectionProps> = ({
                     <div
                       key={item.id}
                       onClick={() => handleSelect(item)}
-                      className={`p-2 rounded-[6px] transition cursor-pointer flex items-center justify-between gap-2.5 border ${
+                      className={`p-2 rounded-[4px] transition cursor-pointer flex items-center justify-between gap-2.5 border ${
                         isSelected
                           ? 'bg-sky-500/20 border-sky-400 text-white shadow-md shadow-sky-950/50'
                           : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/80'

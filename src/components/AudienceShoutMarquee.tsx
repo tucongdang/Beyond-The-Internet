@@ -201,7 +201,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                 <button
                   type="button"
                   onClick={(e) => handleLike(e, shout.id)}
-                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono transition-all ml-0.5 ${
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono transition-all ml-0.5 ${
                     isUserLiked 
                       ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold' 
                       : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'

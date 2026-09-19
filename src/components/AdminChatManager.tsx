@@ -238,7 +238,7 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
                 <h2 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
                   Quản Lý Chat & Tiếng Hô Khán Giả (Audience Shout)
                 </h2>
-                <span className={`px-2 py-0.5 rounded-[3px] text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold uppercase tracking-wider border ${
                   settings.is_open
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse'
                     : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
