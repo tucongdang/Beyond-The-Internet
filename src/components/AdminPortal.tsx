@@ -2572,7 +2572,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <h1 className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white truncate sm:overflow-visible">
                 ADMIN CONTROL CENTER
               </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[8px] sm:text-[9px] font-mono font-bold bg-blue-600/80 text-blue-100 uppercase tracking-wider whitespace-nowrap border border-blue-400/40 shadow-sm">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[8px] sm:text-[9px] font-mono font-bold bg-blue-600/80 text-blue-100 uppercase tracking-wider whitespace-nowrap border border-blue-400/40 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-[4px] bg-emerald-400 animate-pulse" />
                 NODE 07 • MASTER
               </span>
@@ -3000,7 +3000,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <span className="flex items-center gap-1.5 select-none font-mono text-[11px]">
                     <span>{tab.label}</span>
                     {tab.badge && (
-                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-[3px] border ${
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-[4px] border ${
                         activeAdminTab === tab.id
                           ? 'bg-white/20 text-white border-white/30'
                           : 'bg-white/10 text-white/70 border-white/10'
@@ -3062,7 +3062,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <h2 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
                     Live Access QR • Cổng Tham Gia Khán Giả
                   </h2>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] flex items-center gap-1.5 transition ${
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[4px] flex items-center gap-1.5 transition ${
                     gameState.show_qr
                       ? 'fluent-box-nested text-emerald-300 border border-emerald-500/40 animate-pulse'
                       : 'fluent-box-nested text-white/50 border border-white/10'
@@ -3263,7 +3263,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         key={preset}
                         type="button"
                         onClick={() => handleUpdateQrCaption(preset)}
-                        className={`px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border transition cursor-pointer ${
+                        className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono border transition cursor-pointer ${
                           adminQrCaption === preset
                             ? 'bg-sky-500/30 text-sky-200 border-sky-400 font-bold shadow-sm'
                             : 'bg-white/5 hover:bg-sky-500/20 text-white/60 hover:text-sky-300 border-white/10'
@@ -3286,7 +3286,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleQrTransparentBg(false)}
-                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[3px] transition flex items-center gap-1 cursor-pointer ${
+                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[4px] transition flex items-center gap-1 cursor-pointer ${
                         !gameState.qr_transparent_bg
                           ? 'bg-sky-500 text-white font-bold shadow-sm'
                           : 'text-white/60 hover:text-white'
@@ -3298,7 +3298,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleQrTransparentBg(true)}
-                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[3px] transition flex items-center gap-1 cursor-pointer ${
+                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[4px] transition flex items-center gap-1 cursor-pointer ${
                         gameState.qr_transparent_bg
                           ? 'bg-emerald-500 text-white font-bold shadow-sm'
                           : 'text-white/60 hover:text-white'
@@ -3330,7 +3330,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         type="button"
                         id={`btn-dash-qr-timeout-${opt.seconds}`}
                         onClick={() => handleSetQrTimeout(opt.seconds)}
-                        className={`px-2 py-1 text-[11px] font-mono font-semibold rounded-[3px] transition cursor-pointer ${
+                        className={`px-2 py-1 text-[11px] font-mono font-semibold rounded-[4px] transition cursor-pointer ${
                           qrAutoCloseSeconds === opt.seconds
                             ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
                             : 'text-white/60 hover:text-white'
@@ -3361,7 +3361,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <RotateCcw className="w-3 h-3 text-amber-400" />
                         <span>Mặc định (Reset)</span>
                       </button>
-                      <span className="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                      <span className="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded-[4px] border border-amber-500/20">
                         Tự động đồng bộ toàn hệ thống
                       </span>
                     </div>
@@ -3377,7 +3377,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           type="button"
                           id={`btn-qr-palette-${paletteKey}`}
                           onClick={() => handleSetQrPalette(paletteKey)}
-                          className={`p-2.5 rounded-[6px] border text-left transition relative cursor-pointer group flex flex-col justify-between overflow-hidden min-w-0 ${
+                          className={`p-2.5 rounded-[4px] border text-left transition relative cursor-pointer group flex flex-col justify-between overflow-hidden min-w-0 ${
                             isSelected
                               ? `bg-white/10 ${pal.borderClass} ring-1 ring-white/30 shadow-lg`
                               : 'bg-black/30 border-white/10 hover:border-white/25 hover:bg-white/5'
@@ -3395,7 +3395,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               </span>
                             </div>
                             {isSelected && (
-                              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-amber-400 text-slate-950 rounded-[3px] flex items-center gap-0.5 shrink-0 whitespace-nowrap shadow-sm">
+                              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-amber-400 text-slate-950 rounded-[4px] flex items-center gap-0.5 shrink-0 whitespace-nowrap shadow-sm">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" /> Chọn
                               </span>
                             )}
@@ -3925,7 +3925,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               return (
                                 <div
                                   key={optKey}
-                                  className={`p-2 rounded-[3px] border flex items-center gap-2 ${
+                                  className={`p-2 rounded-[4px] border flex items-center gap-2 ${
                                     isKey
                                       ? 'fluent-box-nested border-emerald-500/40 text-emerald-200 font-semibold'
                                       : 'fluent-box-nested text-white/70'
@@ -4707,7 +4707,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         {top5Vcnv.map((r, i) => (
                           <div key={r.user_info.uid || i} className="flex items-center justify-between p-2.5 sm:p-3 rounded-[4px] fluent-box-nested border border-emerald-500/30">
                             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-[3px] fluent-box-nested text-emerald-400 font-bold font-mono flex items-center justify-center text-xs shrink-0">
+                              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-[4px] fluent-box-nested text-emerald-400 font-bold font-mono flex items-center justify-center text-xs shrink-0">
                                 #{i + 1}
                               </span>
                               <div className="min-w-0">
@@ -4966,7 +4966,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <button
                         type="button"
                         onClick={handleNavigatePrevQuestion}
-                        className="px-2 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-[3px] text-xs font-medium flex items-center gap-1 transition"
+                        className="px-2 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-[4px] text-xs font-medium flex items-center gap-1 transition"
                         title="Nạp câu hỏi trước đó (Phím tắt: ← hoặc P)"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
@@ -4979,7 +4979,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       <button
                         type="button"
                         onClick={handleNavigateNextQuestion}
-                        className="px-2 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-[3px] text-xs font-medium flex items-center gap-1 transition"
+                        className="px-2 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-[4px] text-xs font-medium flex items-center gap-1 transition"
                         title="Nạp câu hỏi tiếp theo (Phím tắt: → hoặc N)"
                       >
                         <span className="hidden sm:inline text-[11px]">Câu tiếp</span>
@@ -5051,7 +5051,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             {gameState.round_type === 'ELIMINATION_6' && (
                               <button
                                 onClick={() => handleToggleEliminateOption(k)}
-                                className={`text-[9px] px-1.5 py-0.5 rounded-[3px] font-mono ${
+                                className={`text-[9px] px-1.5 py-0.5 rounded-[4px] font-mono ${
                                   isElim
                                     ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40'
                                     : 'bg-rose-950/60 text-rose-400 border border-rose-500/40'
@@ -5365,7 +5365,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           }}
         >
           <div 
-            className="w-full fluent-box border rounded-[8px] text-center text-[#e5e5e5] shadow-2xl shadow-sky-950/80 relative overflow-y-auto transition-all duration-300 max-w-4xl lg:max-w-5xl max-h-[92vh] border-sky-500/40 p-4 sm:p-6 my-auto"
+            className="w-full fluent-box border rounded-[12px] text-center text-[#e5e5e5] shadow-2xl shadow-sky-950/80 relative overflow-y-auto transition-all duration-300 max-w-4xl lg:max-w-5xl max-h-[92vh] border-sky-500/40 p-4 sm:p-6 my-auto"
             onMouseMove={handleQrUserActivity}
             onTouchStart={handleQrUserActivity}
             onClick={(e) => {
@@ -5413,7 +5413,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 {qrAutoCloseSeconds > 0 && (
                   <div 
                     id="badge-qr-auto-close-countdown"
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition ${
+                    className={`flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold border transition ${
                       isQrTimeoutPaused
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                         : qrRemainingTime <= 10
@@ -5446,7 +5446,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </p>
 
             {/* Mode Switcher Tabs: Active QR vs QR History (Last 5 Generated Versions) vs Scan Trends */}
-            <div className="flex items-center justify-center gap-1.5 p-1 mb-3.5 bg-black/40 border border-white/10 rounded-[6px]">
+            <div className="flex items-center justify-center gap-1.5 p-1 mb-3.5 bg-black/40 border border-white/10 rounded-[4px]">
               <button
                 type="button"
                 id="btn-tab-active-qr"
@@ -5523,7 +5523,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             ) : (showQrHistoryTab || qrModalTab === 'history') ? (
               <div className="animate-fadeIn space-y-3">
                 {/* History Header & Summary */}
-                <div className="p-3 rounded-[6px] bg-gradient-to-br from-amber-950/40 via-purple-950/30 to-black/50 border border-amber-500/40 text-left shadow-lg shadow-amber-950/30">
+                <div className="p-3 rounded-[4px] bg-gradient-to-br from-amber-950/40 via-purple-950/30 to-black/50 border border-amber-500/40 text-left shadow-lg shadow-amber-950/30">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 rounded-[4px] bg-amber-500/20 border border-amber-400/40 text-amber-300">
@@ -5555,7 +5555,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                 {/* History Items List */}
                 {(!Array.isArray(gameState.qr_history) || gameState.qr_history.length === 0) ? (
-                  <div className="p-8 text-center border border-white/10 rounded-[6px] bg-black/30 fluent-box">
+                  <div className="p-8 text-center border border-white/10 rounded-[4px] bg-black/30 fluent-box">
                     <History className="w-8 h-8 text-white/20 mx-auto mb-2" />
                     <p className="text-xs text-white/60 font-mono">Chưa có lịch sử mã QR nào được lưu trữ.</p>
                     <p className="text-[10px] text-white/40 mt-1">
@@ -5587,7 +5587,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       return (
                         <div
                           key={item.id || `qr_hist_${idx}`}
-                          className={`p-2.5 rounded-[6px] border transition-all duration-150 relative overflow-hidden ${
+                          className={`p-2.5 rounded-[4px] border transition-all duration-150 relative overflow-hidden ${
                             isCurrentActive
                               ? 'bg-gradient-to-r from-sky-950/70 via-purple-950/50 to-black/70 border-sky-400/60 ring-1 ring-sky-400/40 shadow-md shadow-sky-950/40'
                               : 'bg-black/40 border-white/10 hover:border-white/25 hover:bg-white/5'
@@ -5721,10 +5721,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 {/* Standard / Expanded Modal View (Spacious 2-column layout on md+) */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start text-left">
                   {/* LEFT COLUMN: Dynamic QR Code Presentation & Primary Actions */}
-                  <div className="md:col-span-5 flex flex-col items-center justify-start p-4 rounded-[6px] bg-black/40 border border-white/10 shadow-inner space-y-3">
+                  <div className="md:col-span-5 flex flex-col items-center justify-start p-4 rounded-[4px] bg-black/40 border border-white/10 shadow-inner space-y-3">
                       {/* Dynamic QR Code Container with Sizing Preview & Broadcast Transparency Checkerboard */}
                       <div 
-                        className={`p-3.5 sm:p-4 rounded-[8px] inline-block shadow-2xl border-2 border-sky-400/50 animate-qr-entrance transition-all duration-300 ease-out max-w-full overflow-hidden relative ${
+                        className={`p-3.5 sm:p-4 rounded-[4px] inline-block shadow-2xl border-2 border-sky-400/50 animate-qr-entrance transition-all duration-300 ease-out max-w-full overflow-hidden relative ${
                           gameState.qr_transparent_bg 
                             ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30' 
                             : 'bg-white'
@@ -5820,7 +5820,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         {isFirebaseConnected ? (
                           <div 
                             id="badge-admin-qr-firebase-online"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
                             title="Hệ thống cơ sở dữ liệu thời gian thực đang kết nối ổn định"
                           >
                             <span className="relative flex h-2 w-2">
@@ -5832,7 +5832,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         ) : (
                           <div 
                             id="badge-admin-qr-firebase-offline"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30"
                             title="Đang kết nối lại với Firebase..."
                           >
                             <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
@@ -5841,9 +5841,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         )}
                         <div className="text-[10px] font-mono text-white/30 flex items-center justify-center gap-1">
                           <span>Phím tắt:</span>
-                          <kbd className="px-1 py-0.2 fluent-box-nested rounded text-white/60">Q</kbd>
+                          <kbd className="px-1 py-0.2 fluent-box-nested rounded-[4px] text-white/60">Q</kbd>
                           <span>/</span>
-                          <kbd className="px-1 py-0.2 fluent-box-nested rounded text-white/60">ESC</kbd>
+                          <kbd className="px-1 py-0.2 fluent-box-nested rounded-[4px] text-white/60">ESC</kbd>
                           <span>đóng/mở</span>
                         </div>
                       </div>
@@ -5854,7 +5854,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       {/* Estimated Scans Engagement Counter & Live Metrics Card */}
                       <div 
                         id="qr-modal-estimated-scans-card"
-                        className="p-3 rounded-[6px] bg-gradient-to-br from-cyan-950/70 via-sky-950/50 to-indigo-950/70 border border-sky-500/40 shadow-lg shadow-sky-950/50 text-left"
+                        className="p-3 rounded-[4px] bg-gradient-to-br from-cyan-950/70 via-sky-950/50 to-indigo-950/70 border border-sky-500/40 shadow-lg shadow-sky-950/50 text-left"
                       >
                         <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
                           <div className="flex items-center gap-2">
@@ -5980,7 +5980,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </div>
 
                       {/* Custom Short Caption Input Field */}
-                      <div className="p-2.5 fluent-box rounded-[6px] border border-white/10 text-left space-y-2">
+                      <div className="p-2.5 fluent-box rounded-[4px] border border-white/10 text-left space-y-2">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <label htmlFor="input-modal-qr-custom-caption" className="flex items-center gap-1.5 text-xs font-mono font-bold text-white/90">
                             <Type className="w-3.5 h-3.5 text-sky-400" />
@@ -6027,7 +6027,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               key={preset}
                               type="button"
                               onClick={() => handleUpdateQrCaption(preset)}
-                              className={`px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border transition cursor-pointer ${
+                              className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono border transition cursor-pointer ${
                                 adminQrCaption === preset
                                   ? 'bg-sky-500/30 text-sky-200 border-sky-400 font-bold shadow-sm'
                                   : 'bg-white/5 hover:bg-sky-500/20 text-white/60 hover:text-sky-300 border-white/10'
@@ -6040,7 +6040,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </div>
 
                       {/* Inactivity Auto-Close Timeout Setting */}
-                      <div className="p-2.5 fluent-box rounded-[6px] border border-white/10 text-left space-y-2">
+                      <div className="p-2.5 fluent-box rounded-[4px] border border-white/10 text-left space-y-2">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white/90">
                             <Clock className="w-3.5 h-3.5 text-amber-400" />
@@ -6048,7 +6048,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-1.5">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1 ${
+                            <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold flex items-center gap-1 ${
                               qrAutoCloseSeconds === 0
                                 ? 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
                                 : isQrTimeoutPaused
@@ -6077,7 +6077,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                                 type="button"
                                 id="btn-toggle-qr-timeout-pause"
                                 onClick={handleToggleQrTimeoutPause}
-                                className="p-1 rounded-[3px] border border-white/15 bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer text-[10px]"
+                                className="p-1 rounded-[4px] border border-white/15 bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer text-[10px]"
                                 title={isQrTimeoutPaused ? 'Tiếp tục đếm ngược tự đóng' : 'Tạm dừng đếm ngược tự đóng'}
                               >
                                 {isQrTimeoutPaused ? <Play className="w-3 h-3 text-emerald-400" /> : <Pause className="w-3 h-3 text-amber-400" />}
@@ -6088,9 +6088,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                         {/* Countdown Progress Bar */}
                         {qrAutoCloseSeconds > 0 && (
-                          <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/10 relative">
+                          <div className="w-full bg-black/40 h-1.5 rounded-[4px] overflow-hidden border border-white/10 relative">
                             <div
-                              className={`h-full transition-all duration-1000 ease-linear rounded-full ${
+                              className={`h-full transition-all duration-1000 ease-linear rounded-[2px] ${
                                 isQrTimeoutPaused
                                   ? 'bg-amber-400'
                                   : qrRemainingTime <= 10
@@ -6139,7 +6139,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       {/* Background Mode & QR Size Setting Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {/* Background Mode Toggle Switch */}
-                        <div className="p-2.5 fluent-box rounded-[6px] border border-white/10 text-left space-y-1.5">
+                        <div className="p-2.5 fluent-box rounded-[4px] border border-white/10 text-left space-y-1.5">
                           <div className="flex items-center justify-between gap-1">
                             <div className="flex items-center gap-1 text-xs font-mono font-bold text-white/90">
                               <Layers className="w-3.5 h-3.5 text-amber-400" />
@@ -6162,7 +6162,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               }`}
                               title="Nền màu đặc theo bảng màu"
                             >
-                              <div className="w-4 h-4 rounded border border-white/30 bg-white shadow-inner shrink-0 flex items-center justify-center">
+                              <div className="w-4 h-4 rounded-[4px] border border-white/30 bg-white shadow-inner shrink-0 flex items-center justify-center">
                                 {!gameState.qr_transparent_bg && <Check className="w-3 h-3 text-slate-900 stroke-[3]" />}
                               </div>
                               <span className="text-[10px] font-mono font-bold truncate">Nền Đặc</span>
@@ -6179,7 +6179,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               }`}
                               title="Nền rỗng trong suốt cho OBS overlay"
                             >
-                              <div className="w-4 h-4 rounded border border-white/30 bg-[linear-gradient(45deg,#555_25%,transparent_25%),linear-gradient(-45deg,#555_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#555_75%),linear-gradient(-45deg,transparent_75%,#555_75%)] bg-[size:4px_4px] bg-[#222] shrink-0 flex items-center justify-center">
+                              <div className="w-4 h-4 rounded-[4px] border border-white/30 bg-[linear-gradient(45deg,#555_25%,transparent_25%),linear-gradient(-45deg,#555_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#555_75%),linear-gradient(-45deg,transparent_75%,#555_75%)] bg-[size:4px_4px] bg-[#222] shrink-0 flex items-center justify-center">
                                 {gameState.qr_transparent_bg && <Check className="w-3 h-3 text-emerald-400 stroke-[3]" />}
                               </div>
                               <span className="text-[10px] font-mono font-bold truncate">Trong Suốt</span>
@@ -6188,7 +6188,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         </div>
 
                         {/* QR Size Slider */}
-                        <div className="p-2.5 fluent-box rounded-[6px] border border-white/10 text-left space-y-1.5">
+                        <div className="p-2.5 fluent-box rounded-[4px] border border-white/10 text-left space-y-1.5">
                           <div className="flex items-center justify-between gap-1">
                             <div className="flex items-center gap-1 text-xs font-mono font-bold text-white/90">
                               <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
@@ -6210,7 +6210,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                                 const newSize = Number(e.target.value);
                                 handleQrSizeChange(newSize);
                               }}
-                              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-400 hover:accent-sky-300 transition"
+                              className="w-full h-1.5 bg-slate-700 rounded-[4px] appearance-none cursor-pointer accent-sky-400 hover:accent-sky-300 transition"
                               title={`Kéo để thay đổi kích thước hiển thị mã QR (${adminQrSize}px)`}
                             />
                             <ZoomIn className="w-3 h-3 text-white/40 shrink-0" />
@@ -6233,7 +6233,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                                     soundFx.playClick();
                                     handleQrSizeChange(preset.size);
                                   }}
-                                  className={`px-1 py-0.5 rounded-[3px] border text-center transition font-mono text-[10px] cursor-pointer ${
+                                  className={`px-1 py-0.5 rounded-[4px] border text-center transition font-mono text-[10px] cursor-pointer ${
                                     isPresetActive
                                       ? 'bg-sky-500/25 border-sky-400 text-sky-200 font-bold shadow-sm'
                                       : 'bg-black/30 border-white/10 hover:border-white/25 text-white/70 hover:text-white'
@@ -6248,7 +6248,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </div>
 
                       {/* Quick Palette Picker in Modal */}
-                      <div className="p-2.5 fluent-box rounded-[6px] border border-white/10 text-left">
+                      <div className="p-2.5 fluent-box rounded-[4px] border border-white/10 text-left">
                         <div className="text-[11px] font-mono font-bold text-white/80 mb-1.5 flex items-center justify-between">
                           <span className="flex items-center gap-1">
                             <Palette className="w-3.5 h-3.5 text-amber-400" /> Bảng màu hiển thị:
@@ -6305,7 +6305,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           onClick={() => setInspectHistoryItem(null)}
         >
           <div 
-            className="max-w-sm w-full fluent-box border border-sky-400/60 rounded-[6px] p-5 text-center shadow-2xl relative"
+            className="max-w-sm w-full fluent-box border border-sky-400/60 rounded-[12px] p-5 text-center shadow-2xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
@@ -6315,14 +6315,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <button
                 type="button"
                 onClick={() => setInspectHistoryItem(null)}
-                className="p-1 text-white/60 hover:text-white rounded cursor-pointer"
+                className="p-1 text-white/60 hover:text-white rounded-[4px] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div 
-              className={`p-3 rounded-[6px] inline-block shadow-2xl mb-3 border-2 border-sky-400/50 ${
+              className={`p-3 rounded-[4px] inline-block shadow-2xl mb-3 border-2 border-sky-400/50 ${
                 inspectHistoryItem.transparentBg
                   ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:12px_12px] bg-[#141414]'
                   : 'bg-white'

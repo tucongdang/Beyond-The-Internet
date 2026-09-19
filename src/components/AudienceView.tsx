@@ -986,7 +986,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       {/* Auto-Zoom Long Text Question Modal */}
       {isQuestionZoomed && isLongQuestion && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-lg animate-in fade-in duration-200" onClick={() => setIsQuestionZoomed(false)}>
-          <div className="w-full max-w-2xl bg-[#0f172a] border border-[#F7CAC9]/30 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-2xl bg-[#0f172a] border border-[#F7CAC9]/30 rounded-[12px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
               <h3 className="text-[#F7CAC9] font-mono font-bold text-sm tracking-widest uppercase flex items-center gap-2">
                 <ZoomIn className="w-4 h-4" />
@@ -994,7 +994,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </h3>
               <button
                 onClick={() => setIsQuestionZoomed(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                className="w-8 h-8 rounded-[4px] bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
               >
                 <X className="w-4 h-4 text-white" />
               </button>
@@ -2212,7 +2212,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     {/* Short Answer Confirm Modal */}
                     {isConfirmingShortAnswer && (
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[8px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp">
+                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[12px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp">
                           <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
                             <AlertCircle className="w-6 h-6 text-amber-400" />
                           </div>
@@ -2258,7 +2258,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           key={key}
                           onClick={() => !hasVotedThisQuestion && handleOptionSelect(key)}
                           disabled={hasVotedThisQuestion}
-                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[8px] border-2 transition-all overflow-hidden shadow-lg ${
+                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[12px] border-2 transition-all overflow-hidden shadow-lg ${
                             isSelected 
                               ? isOptionA ? 'border-emerald-400 bg-emerald-500/20' : 'border-rose-400 bg-rose-500/20'
                               : 'border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/5'
@@ -2276,7 +2276,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           </div>
                           {isSelected && (
                              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                              <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[3px] animate-pulse flex items-center gap-1 shadow-md ${
+                              <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[4px] animate-pulse flex items-center gap-1 shadow-md ${
                                 isOptionA ? 'bg-emerald-400 text-emerald-950' : 'bg-rose-400 text-rose-950'
                               }`}>
                                 <CheckCircle2 className="w-3 h-3" />{t("view_selected", localLanguage)}</span>
@@ -2350,7 +2350,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           
                           {isSelected && (
                             <div className="absolute top-3 right-3 text-[#F7CAC9] flex items-center gap-1.5 relative z-10">
-                              <span className="text-[10px] font-mono font-black bg-[#F7CAC9] text-[#0D0420] px-2 py-0.5 rounded-[3px] shadow-[0_0_10px_rgba(247,202,201,0.6)] animate-pulse flex items-center gap-1">
+                              <span className="text-[10px] font-mono font-black bg-[#F7CAC9] text-[#0D0420] px-2 py-0.5 rounded-[4px] shadow-[0_0_10px_rgba(247,202,201,0.6)] animate-pulse flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3" />{t("view_selected", localLanguage)}</span>
                             </div>
                           )}
@@ -2462,7 +2462,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
                           {isSelected && (
                             <div className="absolute top-3 right-3 flex items-center gap-1.5 relative z-10">
-                              <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[3px] flex items-center gap-1 ${
+                              <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[4px] flex items-center gap-1 ${
                                 isPendingSync
                                   ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50'
                                   : 'bg-[#F7CAC9] text-[#0D0420] shadow-[0_0_10px_rgba(247,202,201,0.6)] animate-pulse'

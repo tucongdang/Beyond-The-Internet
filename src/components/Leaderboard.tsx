@@ -171,7 +171,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 text-[#e5e5e5] animate-fadeIn select-none">
       {/* Leaderboard Stage Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 fluent-box rounded-[4px] p-5 shadow-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 fluent-box rounded-[12px] p-5 shadow-2xl">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-[4px] bg-amber-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-amber-500/20">
             <Trophy className="w-5 h-5 animate-bounce" />
@@ -196,18 +196,18 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
         {/* Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
           {gameState.team_mode_active && gameState.teams && gameState.teams.length > 0 && (
-            <div className="flex items-center gap-1 bg-black/40 p-1 rounded border border-white/10 mr-2">
+            <div className="flex items-center gap-1 bg-black/40 p-1 rounded-[4px] border border-white/10 mr-2">
               <button
                 type="button"
                 onClick={() => setTabFilter('INDIVIDUAL')}
-                className={`px-3 py-1.5 rounded text-xs font-bold transition ${tabFilter === 'INDIVIDUAL' ? 'bg-purple-600 text-white' : 'text-white/60 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition ${tabFilter === 'INDIVIDUAL' ? 'bg-purple-600 text-white' : 'text-white/60 hover:text-white'}`}
               >
                 {localLanguage === 'en' ? 'Individual' : 'Cá Nhân'}
               </button>
               <button
                 type="button"
                 onClick={() => setTabFilter('TEAM')}
-                className={`px-3 py-1.5 rounded text-xs font-bold transition ${tabFilter === 'TEAM' ? 'bg-rose-600 text-white' : 'text-white/60 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition ${tabFilter === 'TEAM' ? 'bg-rose-600 text-white' : 'text-white/60 hover:text-white'}`}
               >
                 {localLanguage === 'en' ? 'Team (Average)' : 'Đội (Trung bình)'}
               </button>
@@ -288,7 +288,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
 
       {/* Round Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 fluent-box rounded-[4px] p-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 fluent-box rounded-[12px] p-2.5">
         <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
           <span className="text-white/40 px-2 flex items-center gap-1">
             <Filter className="w-3 h-3" /> {localLanguage === 'en' ? 'Round:' : 'Vòng thi:'}
@@ -328,7 +328,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       <div key={`${roundFilter}_${viewMode}`} className="fluent-tab-panel">
       {/* Empty State when no response data exists yet */}
       {allRankedUsers.length === 0 ? (
-        <div className="fluent-box rounded-[4px] p-12 text-center space-y-4">
+        <div className="fluent-box rounded-[12px] p-12 text-center space-y-4">
           <div className="w-14 h-14 rounded-[4px] bg-white/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
             <Trophy className="w-7 h-7 opacity-60" />
           </div>
@@ -346,7 +346,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end pt-6">
             {/* Rank 2 - Silver (Left Pedestal) */}
             {rank2 ? (
-              <div className="order-2 md:order-1 fluent-box border-2 border-slate-400/40 rounded-[4px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[300px] hover:border-[#F7CAC9]/50 transition-all group">
+              <div className="order-2 md:order-1 fluent-box border-2 border-slate-400/40 rounded-[12px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[300px] hover:border-[#F7CAC9]/50 transition-all group">
                 <div className="absolute top-0 right-0 p-3 opacity-15 pointer-events-none">
                   <Medal className="w-24 h-24 text-slate-300" />
                 </div>
@@ -395,14 +395,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="order-2 md:order-1 fluent-box border border-dashed border-white/10 rounded-[4px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
+              <div className="order-2 md:order-1 fluent-box border border-dashed border-white/10 rounded-[12px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
                 {localLanguage === 'en' ? '[Runner-Up #2 spot waiting]' : '[Vị trí Á Quân #2 đang chờ]'}
               </div>
             )}
 
             {/* Rank 1 - Gold Champion (Center Highest Pedestal) */}
             {rank1 ? (
-              <div className="order-1 md:order-2 fluent-box border-2 border-amber-400/80 rounded-[4px] p-7 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[360px] transform md:-translate-y-4 hover:scale-[1.01] transition-all group">
+              <div className="order-1 md:order-2 fluent-box border-2 border-amber-400/80 rounded-[12px] p-7 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[360px] transform md:-translate-y-4 hover:scale-[1.01] transition-all group">
                 <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
                   <Crown className="w-32 h-32 text-amber-300 animate-pulse" />
                 </div>
@@ -460,14 +460,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="order-1 md:order-2 fluent-box border border-dashed border-amber-500/30 rounded-[4px] p-6 min-h-[300px] flex items-center justify-center text-xs text-amber-300/40 font-mono">
+              <div className="order-1 md:order-2 fluent-box border border-dashed border-amber-500/30 rounded-[12px] p-6 min-h-[300px] flex items-center justify-center text-xs text-amber-300/40 font-mono">
                 {localLanguage === 'en' ? '[Champion #1 spot waiting]' : '[Vị trí Quán Quân #1 đang chờ]'}
               </div>
             )}
 
             {/* Rank 3 - Bronze (Right Pedestal) */}
             {rank3 ? (
-              <div className="order-3 fluent-box border-2 border-amber-600/40 rounded-[4px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[280px] hover:border-amber-500 transition-all group">
+              <div className="order-3 fluent-box border-2 border-amber-600/40 rounded-[12px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[280px] hover:border-amber-500 transition-all group">
                 <div className="absolute top-0 right-0 p-3 opacity-15 pointer-events-none">
                   <Medal className="w-24 h-24 text-amber-600" />
                 </div>
@@ -516,7 +516,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="order-3 fluent-box border border-dashed border-white/10 rounded-[4px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
+              <div className="order-3 fluent-box border border-dashed border-white/10 rounded-[12px] p-6 min-h-[260px] flex items-center justify-center text-xs text-white/30 font-mono">
                 {localLanguage === 'en' ? '[Runner-Up #3 spot waiting]' : '[Vị trí Á Quân #3 đang chờ]'}
               </div>
             )}
@@ -527,7 +527,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Rank 4 */}
               {rank4 && (
-                <div className="p-4 fluent-box rounded-[4px] flex items-center justify-between transition shadow-lg">
+                <div className="p-4 fluent-box rounded-[12px] flex items-center justify-between transition shadow-lg">
                   <div className="flex items-center gap-3">
                     <span className="w-9 h-9 rounded-[4px] bg-[#F7CAC9]/20 border border-[#E39A96]/40 text-[#EBC7D6] font-mono font-black text-sm flex items-center justify-center shadow">
                       #4
@@ -549,7 +549,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
               {/* Rank 5 */}
               {rank5 && (
-                <div className="p-4 fluent-box rounded-[4px] flex items-center justify-between transition shadow-lg">
+                <div className="p-4 fluent-box rounded-[12px] flex items-center justify-between transition shadow-lg">
                   <div className="flex items-center gap-3">
                     <span className="w-9 h-9 rounded-[4px] bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 font-mono font-black text-sm flex items-center justify-center shadow">
                       #5
@@ -573,7 +573,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
         </div>
       ) : (
         /* FULL DETAILED TABLE LIST VIEW WITH AUTO-SCROLL */
-        <div className="fluent-box rounded-[4px] overflow-hidden shadow-2xl space-y-0">
+        <div className="fluent-box rounded-[12px] overflow-hidden shadow-2xl space-y-0">
           {/* Auto-scroll status & control toolbar */}
           <div className="fluent-box-nested border-b border-white/10 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
             <div className="flex items-center gap-2">
@@ -609,7 +609,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       key={spd}
                       type="button"
                       onClick={() => setListScrollSpeed(spd)}
-                      className={`px-2 py-0.5 rounded-[3px] font-bold transition uppercase cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-[4px] font-bold transition uppercase cursor-pointer ${
                         listScrollSpeed === spd
                           ? 'bg-[#F7CAC9] text-[#190839]'
                           : 'text-white/60 hover:text-white'
@@ -695,7 +695,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     >
                       <td className="p-3.5 text-center">
                         <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-[3px] font-black text-xs ${
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded-[4px] font-black text-xs ${
                             isTop1
                               ? 'bg-amber-400 text-[#0D0420] ring-1 ring-amber-300'
                               : isTop2
@@ -720,7 +720,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       </td>
                       <td className="p-3.5 text-white/60">{user.mssv}</td>
                       <td className="p-3.5">
-                        <span className="text-purple-300 font-mono text-xs bg-purple-950/40 border border-purple-500/20 px-2 py-0.5 rounded-[3px]">
+                        <span className="text-purple-300 font-mono text-xs bg-purple-950/40 border border-purple-500/20 px-2 py-0.5 rounded-[4px]">
                           {getUserDisplayUid(user)}
                         </span>
                       </td>
@@ -731,7 +731,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                         <span className="text-white/40"> / {user.totalAnswered}</span>
                       </td>
                       <td className="p-3.5 text-center">
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] fluent-box-nested border border-white/5">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] fluent-box-nested border border-white/5">
                           <span className={user.accuracyRate >= 80 ? 'text-emerald-400 font-bold' : 'text-white/70'}>
                             {user.accuracyRate}%
                           </span>
