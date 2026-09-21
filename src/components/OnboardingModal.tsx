@@ -37,7 +37,8 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth, removeUndefined } from '../firebase';
@@ -120,6 +121,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [resendCooldown, setResendCooldown] = useState(0);
   const [quickActivationCode, setQuickActivationCode] = useState('');
   const [isQuickActivating, setIsQuickActivating] = useState(false);
+  const [firebaseEmailStatus, setFirebaseEmailStatus] = useState<'sent' | 'existing_account' | 'error' | null>(null);
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
 
   // --- Google Verification State (MSSV & 12-Digit UID Confirmation) ---
   const [googleAuthData, setGoogleAuthData] = useState<{
@@ -402,6 +405,38 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
+  const handleSendPasswordResetEmail = async () => {
+    const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
+    if (!targetEmail || !auth) return;
+    soundFx.playClick();
+    vibrateTap();
+    setIsSendingResetEmail(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      await sendPasswordResetEmail(auth, targetEmail);
+      soundFx.playPacingChime('complete');
+      vibrateSuccess();
+      setSuccessMsg(
+        localLanguage !== 'vi'
+          ? `Password reset email sent to ${targetEmail}. Please check your Inbox and SPAM folder.`
+          : `Đã gửi email đặt lại mật khẩu tới ${targetEmail}. Vui lòng kiểm tra Hộp thư đến và mục Thư rác (Spam)!`
+      );
+    } catch (err: any) {
+      console.warn('sendPasswordResetEmail err:', err);
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(
+        localLanguage !== 'vi'
+          ? `Could not send reset email: ${err?.message || 'Error'}`
+          : `Không thể gửi email đặt lại mật khẩu: ${err?.message || 'Lỗi kết nối Firebase'}`
+      );
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
+
   const handleResendVerificationEmail = async () => {
     if (resendCooldown > 0) return;
     soundFx.playClick();
@@ -433,17 +468,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 console.warn('[Resend Email] Create user fallback:', createErr?.code || createErr);
                 if (createErr.code === 'auth/email-already-in-use') {
                   setNeedPasswordForResend(true);
-                  soundFx.playError();
-                  vibrateError();
-                  setErrorMsg(
-                    localLanguage !== 'vi'
-                      ? 'Incorrect password. Please enter your account password below to authorize sending the email.'
-                      : 'Mật khẩu chưa chính xác. Vui lòng nhập đúng mật khẩu tài khoản bên dưới để gửi email xác thực.'
-                  );
-                  setIsResendingEmail(false);
-                  return;
+                  setFirebaseEmailStatus('existing_account');
                 }
               }
+            } else if (signInErr.code === 'auth/wrong-password') {
+              setNeedPasswordForResend(true);
+              setFirebaseEmailStatus('existing_account');
             }
           }
         }
@@ -457,12 +487,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           emailSentViaFirebase = true;
           setResendCooldown(60);
           setNeedPasswordForResend(false);
+          setFirebaseEmailStatus('sent');
           soundFx.playPacingChime('complete');
           vibrateSuccess();
           setSuccessMsg(
             localLanguage !== 'vi'
               ? `Verification email resent to ${targetEmail}. Please check your inbox or spam folder.`
-              : `Đã gửi lại email xác thực thành công tới ${targetEmail}. Vui lòng kiểm tra hộp thư hoặc mục Spam.`
+              : `Đã gửi lại email xác thực thành công tới ${targetEmail}. Vui lòng kiểm tra hộp thư hoặc mục Spam!`
           );
         } catch (emailSendErr: any) {
           console.warn('[Resend Email] sendEmailVerification note:', emailSendErr?.code || emailSendErr);
@@ -480,7 +511,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      // 3. If Firebase email could not be sent (or user not created in Firebase), generate server activation code!
+      // 3. Fallback: generate server activation code so user is never stuck
       if (!emailSentViaFirebase) {
         try {
           const res = await fetch('/api/audience/resend-activation', {
@@ -494,30 +525,29 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           });
           const data = await res.json();
           if (res.ok && data.success && data.activationCode) {
-            setNeedPasswordForResend(false);
+            setQuickActivationCode(data.activationCode);
             setResendCooldown(30);
             soundFx.playPacingChime('complete');
             vibrateSuccess();
             setSuccessMsg(
               localLanguage !== 'vi'
-                ? `Backup activation code: ${data.activationCode}. You can enter it below or click "⚡ Instant Activation" to enter now!`
-                : `Đã tạo mã kích hoạt dự phòng: ${data.activationCode}. Hoặc bạn có thể bấm nút "⚡ Kích Hoạt Nhanh" bên dưới để vào sàn đấu ngay!`
+                ? `New 6-digit activation code: ${data.activationCode}. We filled it in Option 2 below!`
+                : `Mã kích hoạt 6 chữ số mới: ${data.activationCode}. Hệ thống đã tự điền vào ô Cách 2 bên dưới!`
             );
           } else {
-            setNeedPasswordForResend(false);
+            setResendCooldown(30);
             soundFx.playClick();
             setSuccessMsg(
               localLanguage !== 'vi'
-                ? 'You can click "⚡ Instant Activation & Enter Arena" below to access without waiting for email!'
-                : 'Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để tham gia trực tiếp không cần chờ email!'
+                ? 'You can enter 6-digit code or event code BTI2026 below to activate immediately!'
+                : 'Bạn có thể nhập mã kích hoạt 6 số hoặc mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay!'
             );
           }
         } catch {
-          setNeedPasswordForResend(false);
           setSuccessMsg(
             localLanguage !== 'vi'
-              ? 'You can click "⚡ Instant Activation & Enter Arena" below to access directly!'
-              : 'Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào sàn đấu ngay!'
+              ? 'You can enter 6-digit code or event code BTI2026 below to activate immediately!'
+              : 'Bạn có thể nhập mã kích hoạt 6 số hoặc mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay!'
           );
         }
       }
@@ -527,8 +557,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       vibrateError();
       setErrorMsg(
         localLanguage !== 'vi'
-          ? 'Notice: You can click "⚡ Instant Activation & Enter Arena" below to enter directly.'
-          : 'Gợi ý: Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào sàn đấu ngay.'
+          ? 'Notice: You can enter code BTI2026 below in Option 2 to enter directly.'
+          : 'Gợi ý: Bạn có thể nhập mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay.'
       );
     } finally {
       setIsResendingEmail(false);
@@ -698,12 +728,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
       // 1. Create or ensure Firebase Auth user & send verification email
       let fbUser = null;
+      let fbAccountExisted = false;
       if (auth) {
         try {
           const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, regPassword);
           fbUser = userCred.user;
         } catch (fbErr: any) {
           if (fbErr.code === 'auth/email-already-in-use') {
+            fbAccountExisted = true;
             try {
               const cred = await signInWithEmailAndPassword(auth, cleanEmail, regPassword);
               fbUser = cred.user;
@@ -717,9 +749,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       }
 
       // Send Firebase Email Verification
+      let emailVerificationSent = false;
       if (fbUser && !fbUser.emailVerified) {
         try {
           await sendEmailVerification(fbUser);
+          emailVerificationSent = true;
         } catch (emailSendErr) {
           console.warn('Firebase sendEmailVerification note:', emailSendErr);
         }
@@ -778,15 +812,41 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         setPendingVerifyEmail(cleanEmail);
         setCachedAuthPassword(regPassword);
         setVerifyPasswordInput(regPassword);
-        setNeedPasswordForResend(false);
+        setNeedPasswordForResend(fbAccountExisted && !fbUser);
         setPendingVerifyUser(userObj);
         setResendCooldown(60);
+        if (data.activationCode) {
+          setQuickActivationCode(data.activationCode);
+        }
+        if (fbAccountExisted && !fbUser) {
+          setFirebaseEmailStatus('existing_account');
+        } else if (emailVerificationSent) {
+          setFirebaseEmailStatus('sent');
+        } else {
+          setFirebaseEmailStatus(null);
+        }
+
         setActiveTab('EMAIL_VERIFY');
-        setSuccessMsg(
-          localLanguage !== 'vi'
-            ? `Registration successful! A verification email has been sent to ${cleanEmail}. Please click the link to activate your account.`
-            : `Đăng ký tài khoản thành công! Email xác thực từ Firebase đã được gửi đến ${cleanEmail}. Vui lòng kiểm tra hộp thư và bấm vào link xác nhận để kích hoạt!`
-        );
+
+        if (emailVerificationSent) {
+          setSuccessMsg(
+            localLanguage !== 'vi'
+              ? `Registration successful! Verification email sent to ${cleanEmail}. Please check your Inbox and SPAM folder.`
+              : `Đăng ký thành công! Email xác thực đã được gửi tới ${cleanEmail}. Vui lòng kiểm tra Hộp thư đến và mục SPAM (Thư rác)!`
+          );
+        } else if (fbAccountExisted && !fbUser) {
+          setSuccessMsg(
+            localLanguage !== 'vi'
+              ? `Registration successful! This email already exists on Firebase with an older password. You can activate directly using Option 2 (Code: ${data.activationCode || 'BTI2026'}).`
+              : `Đăng ký thành công! Email này đã từng tạo trên Firebase với mật khẩu cũ. Bạn có thể kích hoạt trực tiếp ngay bằng Cách 2 bên dưới (Mã: ${data.activationCode || 'BTI2026'})!`
+          );
+        } else {
+          setSuccessMsg(
+            localLanguage !== 'vi'
+              ? `Registration successful! Please verify your account via email or using the code below.`
+              : `Đăng ký tài khoản thành công! Vui lòng xác thực tài khoản qua link email hoặc nhập mã bên dưới.`
+          );
+        }
       } else {
         soundFx.playError();
         vibrateError();
@@ -2257,26 +2317,62 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="p-2.5 sm:p-3 bg-white/5 border border-white/10 rounded-[2px] space-y-1.5 text-[11px] sm:text-xs">
                 <span className="font-mono font-bold text-sky-300 flex items-center gap-1.5">
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>{localLanguage !== 'vi' ? 'Next steps to activate:' : 'Hướng dẫn 3 bước kích hoạt:'}</span>
+                  <span>{localLanguage !== 'vi' ? 'Next steps to activate:' : 'Hướng dẫn kích hoạt tài khoản:'}</span>
                 </span>
                 <ol className="space-y-1 text-white/75 list-decimal list-inside leading-relaxed font-sans text-[10px] sm:text-[11px]">
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Open your email inbox (also check Spam/Junk folder).'
-                      : 'Mở hòm thư email của bạn (kiểm tra cả hộp thư Rác / Spam).'}
+                      ? 'Open your email inbox (CRITICAL: Check SPAM / JUNK / PROMOTIONS folder).'
+                      : 'Mở hòm thư email của bạn (ĐẶC BIỆT LƯU Ý: Hãy kiểm tra kỹ mục THƯ RÁC / SPAM / QUẢNG CÁO).'}
                   </li>
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Click the verification link provided in the email.'
+                      ? 'Click the verification link provided in the email sent by Firebase.'
                       : 'Bấm vào đường liên kết xác thực (verification link) trong email do Firebase gửi.'}
                   </li>
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Return to this screen and click "I Have Clicked the Verification Link".'
-                      : 'Quay lại màn hình này và bấm nút "Tôi Đã Bấm Link Xác Thực" bên dưới để hoàn tất.'}
+                      ? 'Return to this screen and click "Option 1: I Have Clicked the Verification Link".'
+                      : 'Quay lại màn hình này và bấm nút "Cách 1: Tôi Đã Bấm Link Xác Thực Trong Email" bên dưới.'}
                   </li>
                 </ol>
+                <div className="mt-1.5 pt-1.5 border-t border-white/10 text-[10px] text-amber-300/90 font-mono flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                  <span>{localLanguage !== 'vi' ? 'Did not receive email? Use Option 2 below to activate instantly!' : 'Chưa nhận được email? Dùng ngay Cách 2 bên dưới để vào sàn đấu tức thì!'}</span>
+                </div>
               </div>
+
+              {/* Special notice if email already existed on Firebase with older password */}
+              {firebaseEmailStatus === 'existing_account' && (
+                <div className="p-2.5 sm:p-3 bg-amber-500/10 border border-amber-500/30 rounded-[2px] space-y-2 text-[10px] sm:text-[11px] text-amber-200 animate-fadeIn">
+                  <div className="font-bold flex items-center gap-1.5 text-amber-300 font-mono">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{localLanguage !== 'vi' ? 'Notice: Existing Firebase Account' : 'Lưu ý: Email đã từng đăng ký trên Firebase'}</span>
+                  </div>
+                  <p className="leading-relaxed text-white/80 font-sans">
+                    {localLanguage !== 'vi'
+                      ? 'This email was previously registered on Firebase with another password. Firebase blocks sending verification emails without matching credentials. You can activate directly via Option 2 below, or request a password reset email.'
+                      : 'Email này đã từng được tạo trên Firebase Authentication từ trước với mật khẩu cũ. Vì lý do bảo mật, Firebase chặn phát lệnh gửi thư xác thực mới. Bạn có thể kích hoạt trực tiếp ngay bằng Cách 2 bên dưới, hoặc gửi email đặt lại mật khẩu.'}
+                  </p>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={handleSendPasswordResetEmail}
+                      disabled={isSendingResetEmail}
+                      className="px-2.5 py-1.5 bg-amber-600/80 hover:bg-amber-600 disabled:opacity-50 text-white font-mono text-[10px] font-bold rounded-[2px] transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    >
+                      {isSendingResetEmail ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3" />
+                          <span>{localLanguage !== 'vi' ? 'Send Password Reset Email' : 'Gửi Email Đặt Lại Mật Khẩu'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Password Confirmation Field (if Firebase session needs re-authentication) */}
               {(needPasswordForResend || !auth?.currentUser) && (
