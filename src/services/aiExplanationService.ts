@@ -183,8 +183,7 @@ export const aiExplanationService = {
           correct_key: correctKey,
           correct_option_text: correctOptionText,
           explanation: question.explanation || '',
-          target_lang: targetLang,
-          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+          target_lang: targetLang
         })
       });
 
@@ -224,8 +223,7 @@ export const aiExplanationService = {
           correct_key: correctKey,
           counts,
           percentages,
-          totalVotes,
-          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+          totalVotes
         })
       });
 

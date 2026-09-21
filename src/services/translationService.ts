@@ -99,8 +99,7 @@ export const translationService = {
           question_text: question.question_text,
           options: question.options,
           explanation: question.explanation || '',
-          target_lang: targetLang,
-          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+          target_lang: targetLang
         })
       });
 
@@ -148,8 +147,7 @@ export const translationService = {
         },
         body: JSON.stringify({
           text: trimmed,
-          target_lang: lang,
-          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+          target_lang: lang
         })
       });
 
@@ -198,8 +196,7 @@ export const translationService = {
         },
         body: JSON.stringify({
           options,
-          target_lang: targetLang,
-          apiKey: apiKey || localStorage.getItem('bti_gemini_api_key') || undefined
+          target_lang: targetLang
         })
       });
 

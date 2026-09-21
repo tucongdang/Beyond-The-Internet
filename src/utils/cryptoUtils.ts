@@ -13,6 +13,9 @@
 export function getSecureRandomInt(min: number, max: number): number {
   if (min >= max) return min;
   const range = max - min + 1;
+  if (range > 0xffffffff) {
+    throw new RangeError('[cryptoUtils] Range exceeds 32-bit unsigned integer limit');
+  }
 
   // 1. In Node.js environment, use native crypto.randomInt (built-in unbiased CSPRNG)
   if (typeof window === 'undefined') {
@@ -24,11 +27,9 @@ export function getSecureRandomInt(min: number, max: number): number {
     } catch {}
   }
 
-  // 2. In browser (Web Crypto API): compute power-of-2 bitmask covering the range
-  let mask = 1;
-  while (mask < range) {
-    mask = (mask << 1) | 1;
-  }
+  // 2. In browser (Web Crypto API): compute power-of-2 bitmask using Math.clz32
+  // Unsigned 32-bit bitmask covering (range - 1) with zero loop, no overflow risk
+  const mask = range <= 1 ? 0 : (0xffffffff >>> Math.clz32(range - 1));
 
   const array = new Uint32Array(1);
   while (true) {
@@ -49,28 +50,34 @@ export function getSecureRandomInt(min: number, max: number): number {
 
 /**
  * Returns a cryptographically secure alphanumeric random ID
+ * Uses uniform power-of-2 bitmask rejection sampling over a 36-char alphabet.
+ * Zero modulo bias, 100% uniform character distribution.
  * @param prefix Optional string prefix (e.g. 'qa_', 'scan_', 'cheer_')
  * @param length Length of the random suffix (default: 8)
  */
 export function getSecureRandomId(prefix: string = '', length: number = 8): string {
-  const bytes = new Uint8Array(Math.max(length, 4));
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes);
-  } else {
-    const nodeCrypto = require('crypto');
-    const buf = nodeCrypto.randomBytes(bytes.length);
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = buf[i];
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+  const mask = 63; // 2^6 - 1: smallest power-of-2 mask >= 36
+  let result = '';
+  const buf = new Uint8Array(Math.max(length * 2, 16));
+
+  while (result.length < length) {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      crypto.getRandomValues(buf);
+    } else {
+      const nodeCrypto = require('crypto');
+      const nodeBuf = nodeCrypto.randomBytes(buf.length);
+      for (let i = 0; i < buf.length; i++) buf[i] = nodeBuf[i];
+    }
+    for (let i = 0; i < buf.length && result.length < length; i++) {
+      const val = buf[i] & mask;
+      if (val < chars.length) {
+        result += chars[val];
+      }
     }
   }
 
-  // Convert bytes to base36 alphanumeric characters
-  let str = '';
-  for (let i = 0; i < bytes.length; i++) {
-    str += bytes[i].toString(36);
-  }
-  const suffix = str.substring(0, length);
-  return prefix ? `${prefix}${suffix}` : suffix;
+  return prefix ? `${prefix}${result}` : result;
 }
 
 /**

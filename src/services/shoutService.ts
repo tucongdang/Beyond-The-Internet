@@ -410,7 +410,7 @@ class RealtimeShoutService {
     // Determine status
     let initialStatus: 'ACTIVE' | 'PENDING' | 'FLAGGED' = 'ACTIVE';
     if (hasBadWord) initialStatus = 'FLAGGED';
-    else if (this.settings.require_approval && !payload.uid.startsWith('admin_')) initialStatus = 'PENDING';
+    else if (this.settings.require_approval) initialStatus = 'PENDING';
 
     const newShout: AudienceShout = {
       id: shoutId,

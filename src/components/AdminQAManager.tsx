@@ -333,8 +333,8 @@ export const AdminQAManager: React.FC<AdminQAManagerProps> = ({ gameState }) => 
               </button>
             </div>
             {summary ? (
-              <div className="text-xs text-[#F7CAC9]/90 leading-relaxed bg-[#F7CAC9]/10 p-2 rounded-[2px]">
-                <div dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, '<br/>') }} />
+              <div className="text-xs text-[#F7CAC9]/90 leading-relaxed bg-[#F7CAC9]/10 p-2 rounded-[2px] whitespace-pre-wrap">
+                {summary}
               </div>
             ) : (
               <div className="text-xs text-white/40 italic">
