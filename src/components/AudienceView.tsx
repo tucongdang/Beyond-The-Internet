@@ -2276,7 +2276,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return (
       <div
         id="audience-state-active"
-        className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 text-white space-y-5 relative"
+        className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 pb-28 sm:pb-8 text-white space-y-5 relative"
       >
         {/* Floating Toast Notification for Drag & Drop / Sequencing Warnings */}
         {/* Small Success Toast */}
@@ -4064,8 +4064,8 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         />
       </div>
 
-      {/* Floating Audience Action Group */}
-      <div className="fixed left-4 bottom-20 sm:bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+      {/* Floating Audience Action Group (Desktop / Tablet only) */}
+      <div className="hidden sm:inline-flex fixed left-4 bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
         <button
           id="btn-audience-shout-floating"
           type="button"
@@ -4127,20 +4127,20 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         </button>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Bottom Navigation Bar (Optimized for iOS Safe Area & Touch Targets) */}
       <nav 
         id="audience-mobile-bottom-nav"
         aria-label={t("view_nav_audience", localLanguage)}
-        className={`sm:hidden fixed bottom-0 left-0 right-0 h-[68px] ${
+        className={`sm:hidden fixed bottom-0 left-0 right-0 min-h-[62px] h-[calc(58px+env(safe-area-inset-bottom,0px))] ${
         isHighContrast 
-          ? 'bg-black/85 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
+          ? 'bg-black/95 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
           : 'bg-[#140628]/95 backdrop-blur-xl border-t border-[#3E1D74]/70 shadow-[0_-10px_35px_rgba(0,0,0,0.6)]'
-      } z-50 flex items-center justify-around px-1 pb-[max(env(safe-area-inset-bottom),6px)]`}
+      } z-50 flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,6px)] pt-1`}
       >
         <button
           type="button"
           aria-label={t("view_nav_contest", localLanguage)}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-white font-bold' : 'text-[#F7CAC9]'
           }`}
         >
@@ -4156,7 +4156,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             soundFx.playTing();
             setIsShoutModalOpen(true);
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-pink-400 font-bold' : 'text-pink-400 hover:text-pink-300'
           }`}
         >
@@ -4171,7 +4171,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             soundFx.playTing();
             setIsCheerModalOpen(true);
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-rose-400 font-bold' : 'text-rose-400 hover:text-rose-300'
           }`}
         >
@@ -4186,7 +4186,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             soundFx.playTing();
             setIsQAModalOpen(true);
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-sky-400 font-bold' : 'text-sky-300 hover:text-sky-200'
           }`}
         >
@@ -4201,7 +4201,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             soundFx.playClick();
             handleOpenShareModal();
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
           }`}
         >
@@ -4216,7 +4216,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             soundFx.playClick();
             handleOpenLogModal();
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
           }`}
         >
@@ -4230,7 +4230,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             vibrateTap();
             props.onOpenProfile();
           }}
-          className={`flex flex-col items-center justify-center gap-1 w-full h-full active:scale-95 transition-transform ${
+          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
             isHighContrast ? 'text-white/90 hover:text-white' : 'text-white/60 hover:text-white'
           }`}
         >

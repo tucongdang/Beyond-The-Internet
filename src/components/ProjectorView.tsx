@@ -1402,15 +1402,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     </div>
                   ) : (
                     <h2 className={`font-bold text-white leading-relaxed relative z-10 tracking-tight ${
-                      (gameState.question_text || '').length > 220
-                        ? 'text-sm sm:text-base md:text-lg lg:text-xl'
-                        : (gameState.question_text || '').length > 140
-                        ? 'text-base sm:text-lg md:text-xl lg:text-xl'
-                        : (gameState.question_text || '').length > 80
-                        ? 'text-base sm:text-lg md:text-xl lg:text-2xl'
-                        : (gameState.question_text || '').length > 45
-                        ? 'text-lg sm:text-xl md:text-2xl lg:text-2xl'
-                        : 'text-xl sm:text-2xl md:text-2xl lg:text-3xl'
+                      (gameState.question_text || '').length > 140
+                        ? 'stage-fluid-title-long'
+                        : 'stage-fluid-title'
                     }`}>
                       {gameState.question_text}
                     </h2>
@@ -1737,7 +1731,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                     {gameState.option_images?.[key] && (
                                       <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-48 object-cover rounded-[2px] shadow-md border border-white/10 mb-2" />
                                     )}
-                                    <span className={`text-base sm:text-lg md:text-xl font-bold tracking-tight ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
+                                    <span className={`stage-fluid-option text-base sm:text-lg md:text-xl font-bold tracking-tight ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
                                       {label}
                                     </span>
                                     {isEliminated && (
@@ -1821,8 +1815,8 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         </div>
       )}
 
-      {/* Stage Footer (Bento Style) */}
-      <footer className="relative z-10 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-4 text-[10px] text-white/40 font-mono">
+      {/* Stage Footer (Bento Style - Compact Single Row to Prevent AutoFit Downscale) */}
+      <footer className="relative z-10 flex items-center justify-between gap-3 border-t border-white/10 pt-2 text-[10px] text-white/40 font-mono whitespace-nowrap overflow-x-auto scrollbar-none shrink-0">
         <div className="flex items-center gap-3">
           <span>BEYOND THE INTERNET 2026 • LIVE STAGE ENGINE</span>
           <span>•</span>

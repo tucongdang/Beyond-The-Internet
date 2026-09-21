@@ -282,15 +282,15 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
       {/* ========================================================================= */}
       {isOpen && (
         <>
-          {/* Subtle backdrop click to close on small viewports */}
+          {/* Backdrop click to close on tablet viewports */}
           <div 
-            className="hidden sm:block fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] sm:bg-transparent sm:pointer-events-none transition-opacity"
+            className="hidden sm:block fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] xl:bg-transparent xl:pointer-events-none transition-opacity cursor-pointer"
             onClick={() => setIsOpen(false)}
           />
 
           <div
             id="audience-floating-tab-panel"
-            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[400px] z-[10000] rounded-l-[4px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
+            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[85vw] sm:w-[360px] lg:w-[400px] max-w-full z-[10000] rounded-l-[4px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
           >
             {/* Header: Tabs selector and Close button */}
             <div className="p-3.5 pb-2.5 border-b border-white/10 fluent-box-nested flex flex-col gap-2">
