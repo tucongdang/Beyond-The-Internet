@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Lock, ArrowRight, ArrowLeft, ShieldAlert, KeyRound, Eye, EyeOff, UserPlus, LogIn, LogOut, Search, CheckCircle2, Clock, AlertCircle, Shield, Sparkles } from 'lucide-react';
+import { Lock, ArrowRight, ArrowLeft, ShieldAlert, KeyRound, Eye, EyeOff, UserPlus, LogIn, LogOut, Search, CheckCircle2, Clock, AlertCircle, Shield, Sparkles, Copy, Check, ShieldCheck, RefreshCw } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateError } from '../utils/hapticUtils';
 import { AdminUser, TechnicalRole, TECHNICAL_ROLES } from '../types';
@@ -15,7 +15,7 @@ interface PasswordGateProps {
   children: React.ReactNode;
 }
 
-type GateTab = 'LOGIN' | 'REGISTER' | 'CHECK_STATUS' | 'MASTER_KEY';
+type GateTab = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD' | 'ACTIVATE' | 'CHECK_STATUS' | 'MASTER_KEY';
 
 export const PasswordGate: React.FC<PasswordGateProps> = ({
   isAuthenticated,
@@ -43,6 +43,23 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const [regCaptchaId, setRegCaptchaId] = useState('');
   const [regCaptchaAnswer, setRegCaptchaAnswer] = useState('');
 
+  // Forgot Password State
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotResetCode, setForgotResetCode] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [forgotStep, setForgotStep] = useState<1 | 2>(1);
+  const [forgotGeneratedCode, setForgotGeneratedCode] = useState<string | null>(null);
+  const [forgotCaptchaId, setForgotCaptchaId] = useState('');
+  const [forgotCaptchaAnswer, setForgotCaptchaAnswer] = useState('');
+
+  // Account Activation State
+  const [actUsername, setActUsername] = useState('');
+  const [actCode, setActCode] = useState('');
+  const [actCaptchaId, setActCaptchaId] = useState('');
+  const [actCaptchaAnswer, setActCaptchaAnswer] = useState('');
+
   // Stable CAPTCHA Callbacks
   const handleLoginCaptchaChange = useCallback((id: string, val: string) => {
     setLoginCaptchaId(id);
@@ -52,6 +69,16 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const handleRegCaptchaChange = useCallback((id: string, val: string) => {
     setRegCaptchaId(id);
     setRegCaptchaAnswer(val);
+  }, []);
+
+  const handleForgotCaptchaChange = useCallback((id: string, val: string) => {
+    setForgotCaptchaId(id);
+    setForgotCaptchaAnswer(val);
+  }, []);
+
+  const handleActCaptchaChange = useCallback((id: string, val: string) => {
+    setActCaptchaId(id);
+    setActCaptchaAnswer(val);
   }, []);
 
   // Status Check State
@@ -67,6 +94,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   if (isAuthenticated) {
     return <>{children}</>;
@@ -308,6 +336,187 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
     }
   };
 
+  // 6. Handle Forgot Password - Request OTP Code
+  const handleForgotRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotUsername.trim()) {
+      setError('Vui lòng nhập tên đăng nhập.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+    if (!forgotCaptchaAnswer.trim()) {
+      setError('Vui lòng giải bài toán CAPTCHA.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/forgot-password/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: forgotUsername.trim(),
+          captchaId: forgotCaptchaId,
+          captchaAnswer: forgotCaptchaAnswer.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+        setForgotGeneratedCode(data.resetCode);
+        setForgotResetCode(data.resetCode || '');
+        setForgotStep(2);
+        setSuccessMsg(data.message || 'Mã OTP khôi phục đã sẵn sàng.');
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setError(data.error || 'Không tìm thấy tài khoản quản trị.');
+      }
+    } catch {
+      soundFx.playError();
+      vibrateError();
+      setError('Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 7. Handle Forgot Password - Submit New Password
+  const handleForgotReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotResetCode.trim()) {
+      setError('Vui lòng nhập mã khôi phục 6 chữ số.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+    if (!forgotNewPassword || forgotNewPassword.length < 6) {
+      setError('Mật khẩu mới phải có tối thiểu 6 ký tự.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setError('Mật khẩu xác nhận không trùng khớp.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+    if (!forgotCaptchaAnswer.trim()) {
+      setError('Vui lòng giải bài toán CAPTCHA.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/forgot-password/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: forgotUsername.trim(),
+          resetCode: forgotResetCode.trim(),
+          newPassword: forgotNewPassword,
+          captchaId: forgotCaptchaId,
+          captchaAnswer: forgotCaptchaAnswer.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+        setSuccessMsg(data.message || 'Đặt lại mật khẩu thành công! Đang chuyển về đăng nhập...');
+        setUsername(forgotUsername.trim());
+        setPassword('');
+        setTimeout(() => {
+          setActiveTab('LOGIN');
+          setForgotStep(1);
+          setForgotGeneratedCode(null);
+        }, 1500);
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setError(data.error || 'Đặt lại mật khẩu thất bại.');
+      }
+    } catch {
+      soundFx.playError();
+      vibrateError();
+      setError('Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 8. Handle Account Activation
+  const handleActivateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!actUsername.trim() || !actCode.trim()) {
+      setError('Vui lòng nhập tên đăng nhập và mã kích hoạt 6 chữ số.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+    if (!actCaptchaAnswer.trim()) {
+      setError('Vui lòng giải bài toán CAPTCHA.');
+      soundFx.playError();
+      vibrateError();
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: actUsername.trim(),
+          activationCode: actCode.trim(),
+          captchaId: actCaptchaId,
+          captchaAnswer: actCaptchaAnswer.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+        if (data.token) {
+          sessionStorage.setItem('BTI2026_ADMIN_TOKEN', data.token);
+        }
+        if (data.user) {
+          sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(data.user));
+        }
+        onAuthenticated(data.user);
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setError(data.error || 'Kích hoạt tài khoản thất bại.');
+      }
+    } catch {
+      soundFx.playError();
+      vibrateError();
+      setError('Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex-1 min-h-[calc(100dvh-4rem)] flex items-center justify-center p-2.5 sm:p-4 py-4 sm:py-6 bg-transparent select-none overflow-y-auto">
       <div className="fluent-box p-3.5 sm:p-6 max-w-md w-full space-y-3 sm:space-y-4 relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 my-auto">
@@ -376,7 +585,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
         </div>
 
         {/* Mode Navigation Tabs */}
-        <div className="grid grid-cols-3 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[11px] sm:text-xs font-mono font-bold">
+        <div className="grid grid-cols-4 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold">
           <button
             type="button"
             onClick={() => {
@@ -405,6 +614,21 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
           >
             <UserPlus className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">Đăng Ký</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              vibrateTap();
+              setActiveTab('ACTIVATE');
+              setError(null);
+            }}
+            className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
+              activeTab === 'ACTIVATE' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Kích Hoạt</span>
           </button>
 
           <button
@@ -517,6 +741,34 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
               </svg>
               <span className="truncate">Đăng nhập bằng Google</span>
             </button>
+
+            {/* Quick helper links for Forgot password and Activation */}
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono pt-1 text-white/50">
+              <button
+                type="button"
+                onClick={() => {
+                  vibrateTap();
+                  setActiveTab('FORGOT_PASSWORD');
+                  setError(null);
+                  setSuccessMsg(null);
+                }}
+                className="hover:text-sky-300 transition underline underline-offset-2 cursor-pointer"
+              >
+                Quên mật khẩu?
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  vibrateTap();
+                  setActiveTab('ACTIVATE');
+                  setError(null);
+                  setSuccessMsg(null);
+                }}
+                className="hover:text-emerald-300 transition underline underline-offset-2 cursor-pointer"
+              >
+                Kích hoạt tài khoản
+              </button>
+            </div>
 
             {/* Emergency Master Key Access Link */}
             <div className="pt-1 text-center">
@@ -731,6 +983,241 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
               </div>
             )}
           </div>
+        )}
+
+        {/* TAB: FORGOT PASSWORD */}
+        {activeTab === 'FORGOT_PASSWORD' && (
+          <div className="space-y-3 text-left">
+            <div className="p-2 sm:p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/30 text-[10px] sm:text-[11px] text-sky-200/90 leading-relaxed font-sans">
+              <strong>Khôi phục mật khẩu Kỹ thuật viên:</strong> Nhập tên đăng nhập để lấy mã OTP xác thực và thiết lập lại mật khẩu mới.
+            </div>
+
+            {forgotStep === 1 ? (
+              <form onSubmit={handleForgotRequest} className="space-y-3">
+                <div>
+                  <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                    Tên đăng nhập kỹ thuật viên *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="VD: ktdh_minhanh..."
+                    value={forgotUsername}
+                    onChange={(e) => setForgotUsername(e.target.value)}
+                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <CaptchaChallenge
+                  value={forgotCaptchaAnswer}
+                  captchaId={forgotCaptchaId}
+                  onChange={handleForgotCaptchaChange}
+                  disabled={isSubmitting}
+                />
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-sky-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
+                  <span>{isSubmitting ? 'Đang Kiểm Tra...' : 'Nhận Mã Xác Thực'}</span>
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleForgotReset} className="space-y-3">
+                {forgotGeneratedCode && (
+                  <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/40 rounded-[2px] space-y-1.5 animate-fadeIn">
+                    <p className="text-[10px] text-emerald-300 font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" />
+                      Mã OTP Khôi Phục (Hệ Thống BTI 2026):
+                    </p>
+                    <div className="flex items-center justify-between bg-black/40 px-2.5 py-1.5 rounded-[2px] border border-emerald-500/30">
+                      <span className="font-mono text-base sm:text-lg font-black text-emerald-300 tracking-widest">
+                        {forgotGeneratedCode}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(forgotGeneratedCode);
+                          setCopiedCode(true);
+                          soundFx.playClick();
+                          vibrateTap();
+                          setTimeout(() => setCopiedCode(false), 2000);
+                        }}
+                        className="px-2 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded-[2px] text-[10px] font-mono flex items-center gap-1 cursor-pointer transition"
+                      >
+                        {copiedCode ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedCode ? 'Đã sao chép' : 'Sao chép'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                    Mã xác thực OTP (6 chữ số) *
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="VD: 123456"
+                    value={forgotResetCode}
+                    onChange={(e) => setForgotResetCode(e.target.value)}
+                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-center tracking-widest text-sm font-bold text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                    Mật khẩu mới (tối thiểu 6 ký tự) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showForgotNewPassword ? 'text' : 'password'}
+                      placeholder="Nhập mật khẩu mới..."
+                      value={forgotNewPassword}
+                      onChange={(e) => setForgotNewPassword(e.target.value)}
+                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white pl-2.5 sm:pl-3 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
+                      className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition cursor-pointer"
+                    >
+                      {showForgotNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                    Xác nhận mật khẩu mới *
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Nhập lại mật khẩu mới..."
+                    value={forgotConfirmPassword}
+                    onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                    required
+                  />
+                </div>
+
+                <CaptchaChallenge
+                  value={forgotCaptchaAnswer}
+                  captchaId={forgotCaptchaId}
+                  onChange={handleForgotCaptchaChange}
+                  disabled={isSubmitting}
+                />
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotStep(1);
+                      setForgotGeneratedCode(null);
+                    }}
+                    className="w-1/3 bg-white/10 hover:bg-white/15 text-white font-mono text-xs py-2 px-2 rounded-[2px] transition cursor-pointer"
+                  >
+                    ← Quay lại
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-2/3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isSubmitting ? 'Đang Cập Nhật...' : 'Lưu Mật Khẩu'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="text-center pt-1 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('LOGIN');
+                  setError(null);
+                }}
+                className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:underline cursor-pointer"
+              >
+                ← Quay lại Đăng Nhập
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ACTIVATE ACCOUNT */}
+        {activeTab === 'ACTIVATE' && (
+          <form onSubmit={handleActivateSubmit} className="space-y-3 text-left">
+            <div className="p-2 sm:p-2.5 rounded-[2px] bg-emerald-950/30 border border-emerald-500/30 text-[10px] sm:text-[11px] text-emerald-200/90 leading-relaxed font-sans">
+              <strong>Kích hoạt tài khoản Kỹ thuật viên:</strong> Nhập tên đăng nhập và mã kích hoạt để hoàn tất xác thực tài khoản quản trị.
+            </div>
+
+            <div>
+              <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                Tên đăng nhập *
+              </label>
+              <input
+                type="text"
+                placeholder="VD: ktdh_minhanh..."
+                value={actUsername}
+                onChange={(e) => setActUsername(e.target.value)}
+                className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
+                Mã kích hoạt (6 chữ số) *
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="VD: 123456"
+                value={actCode}
+                onChange={(e) => setActCode(e.target.value)}
+                className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-center tracking-widest text-sm font-bold text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:text-white/30 placeholder:text-xs placeholder:font-normal"
+                required
+              />
+            </div>
+
+            <CaptchaChallenge
+              value={actCaptchaAnswer}
+              captchaId={actCaptchaId}
+              onChange={handleActCaptchaChange}
+              disabled={isSubmitting}
+            />
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>{isSubmitting ? 'Đang Kích Hoạt...' : 'Kích Hoạt Tài Khoản'}</span>
+            </button>
+
+            <div className="text-center pt-1 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('LOGIN');
+                  setError(null);
+                }}
+                className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:underline cursor-pointer"
+              >
+                ← Quay lại Đăng Nhập
+              </button>
+            </div>
+          </form>
         )}
 
         {/* TAB 4: MASTER KEY EMERGENCY FALLBACK */}

@@ -50,6 +50,8 @@ export interface UserInfo {
   registeredAt?: number;
   teamId?: string;
   teamName?: string;
+  email?: string;
+  emailVerified?: boolean;
 }
 
 export interface QuestionTranslation {

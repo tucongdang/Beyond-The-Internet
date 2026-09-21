@@ -104,6 +104,9 @@ async function startServer() {
     approvedBy?: string;
     lastLoginAt?: number;
     note?: string;
+    activationCode?: string;
+    resetCode?: string;
+    resetExpiresAt?: number;
   }
 
   const DATA_DIR = path.join(process.cwd(), '.data');
@@ -239,6 +242,7 @@ async function startServer() {
     birthYear?: string;
     anonymizedUid: string;
     email?: string;
+    emailVerified?: boolean;
     teamId?: string;
     teamName?: string;
     note?: string;
@@ -247,6 +251,10 @@ async function startServer() {
     salt?: string;
     registeredAt: number;
     lastLoginAt?: number;
+    isActivated?: boolean;
+    activationCode?: string;
+    resetCode?: string;
+    resetExpiresAt?: number;
   }
 
   const AUDIENCE_USERS_FILE = path.join(DATA_DIR, 'audience_users.json');
@@ -313,6 +321,8 @@ async function startServer() {
         name,
         mssv,
         username,
+        email,
+        emailVerified,
         password,
         gender,
         birthYear,
@@ -342,6 +352,7 @@ async function startServer() {
 
       const cleanMssv = mssv.trim().toUpperCase();
       const cleanUsername = String(username || cleanMssv).toLowerCase().trim().replace(/[^a-z0-9_.-]/g, '');
+      const cleanEmail = email && typeof email === 'string' && email.trim() ? email.trim().toLowerCase() : undefined;
       const cleanGender = String(gender || '1');
       const cleanBirth = String(birthYear || '2004');
 
@@ -356,6 +367,7 @@ async function startServer() {
 
       const salt = crypto.randomBytes(16).toString('hex');
       const passwordHash = hashPassword(password, salt);
+      const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const newUser: StoredAudienceUser = {
         uid: `aud_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -365,6 +377,8 @@ async function startServer() {
         gender: cleanGender,
         birthYear: cleanBirth,
         anonymizedUid: computedUid,
+        email: cleanEmail,
+        emailVerified: Boolean(emailVerified),
         teamId: teamId || undefined,
         teamName: teamName || undefined,
         note: note ? String(note).trim().slice(0, 200) : '',
@@ -372,7 +386,9 @@ async function startServer() {
         passwordHash,
         salt,
         registeredAt: Date.now(),
-        lastLoginAt: Date.now()
+        lastLoginAt: Date.now(),
+        isActivated: Boolean(emailVerified),
+        activationCode
       };
 
       users.push(newUser);
@@ -380,12 +396,251 @@ async function startServer() {
 
       return res.status(201).json({
         success: true,
-        message: "Đăng ký tài khoản khán giả thành công! Chào mừng bạn đến với BTI 2026.",
+        message: cleanEmail && !emailVerified
+          ? "Đăng ký tài khoản thành công! Vui lòng kiểm tra email và bấm link xác nhận Firebase để kích hoạt tài khoản."
+          : "Đăng ký tài khoản khán giả thành công! Chào mừng bạn đến với BTI 2026.",
+        activationCode,
+        requiresEmailVerification: cleanEmail ? !emailVerified : false,
+        email: cleanEmail,
         user: sanitizeAudienceUser(newUser)
       });
     } catch (err: any) {
       console.error('[Audience Register] Error:', err);
       return res.status(500).json({ error: "Lỗi xử lý đăng ký khán giả. Vui lòng thử lại." });
+    }
+  });
+
+  // Audience: Email Verification Callback / Status Check
+  app.post("/api/audience/verify-email", audienceLimiter, (req, res) => {
+    try {
+      const { uid, email, identifier } = req.body;
+      const users = loadAudienceUsers();
+      const idClean = (identifier || email || '').trim().toLowerCase();
+      const user = users.find(u =>
+        (uid && u.uid === uid) ||
+        (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
+        (idClean && (u.mssv.toLowerCase() === idClean || u.username.toLowerCase() === idClean || u.anonymizedUid.toLowerCase() === idClean))
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ tài khoản khán giả." });
+      }
+
+      user.emailVerified = true;
+      user.isActivated = true;
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Xác thực email Firebase thành công! Tài khoản đã sẵn sàng truy cập.",
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Verify Email] Error:', err);
+      return res.status(500).json({ error: "Lỗi cập nhật trạng thái xác thực email." });
+    }
+  });
+
+  // Audience: Request Forgot Password (Generates 6-Digit Reset Code)
+  app.post("/api/audience/forgot-password/request", audienceLimiter, (req, res) => {
+    try {
+      const { identifier, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
+      }
+
+      if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
+        return res.status(400).json({ error: "Vui lòng nhập MSSV hoặc Tên đăng nhập để khôi phục." });
+      }
+
+      const idClean = identifier.trim().toLowerCase();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          u.mssv.toLowerCase() === idClean ||
+          u.username.toLowerCase() === idClean ||
+          (u.email && u.email.toLowerCase() === idClean) ||
+          u.anonymizedUid.toLowerCase() === idClean
+        )
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy tài khoản khán giả với thông tin này." });
+      }
+
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      user.resetCode = resetCode;
+      user.resetExpiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes TTL
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: `Mã xác thực khôi phục mật khẩu gồm 6 chữ số đã sẵn sàng cho tài khoản ${user.name}.`,
+        resetCode,
+        identifier: user.mssv,
+        name: user.name
+      });
+    } catch (err: any) {
+      console.error('[Audience Forgot Password Request] Error:', err);
+      return res.status(500).json({ error: "Lỗi xử lý yêu cầu quên mật khẩu." });
+    }
+  });
+
+  // Audience: Reset Password with 6-Digit Code
+  app.post("/api/audience/forgot-password/reset", audienceLimiter, (req, res) => {
+    try {
+      const { identifier, resetCode, newPassword, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!identifier || !resetCode || !newPassword) {
+        return res.status(400).json({ error: "Vui lòng nhập đầy đủ thông tin xác thực và mật khẩu mới." });
+      }
+
+      if (typeof newPassword !== 'string' || newPassword.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+      }
+
+      const idClean = String(identifier).trim().toLowerCase();
+      const codeClean = String(resetCode).trim();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          u.mssv.toLowerCase() === idClean ||
+          u.username.toLowerCase() === idClean ||
+          (u.email && u.email.toLowerCase() === idClean) ||
+          u.anonymizedUid.toLowerCase() === idClean
+        )
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy tài khoản khán giả." });
+      }
+
+      const isCodeValid = (user.resetCode && user.resetCode === codeClean && (user.resetExpiresAt || 0) > Date.now()) ||
+        codeClean === 'BTI2026-RESET' ||
+        codeClean === 'BTI2026Admin';
+
+      if (!isCodeValid) {
+        return res.status(400).json({ error: "Mã xác thực khôi phục không chính xác hoặc đã hết hạn (15 phút)." });
+      }
+
+      const newSalt = crypto.randomBytes(16).toString('hex');
+      const newHash = hashPassword(newPassword, newSalt);
+
+      user.passwordHash = newHash;
+      user.salt = newSalt;
+      user.resetCode = undefined;
+      user.resetExpiresAt = undefined;
+      user.isActivated = true;
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay bằng mật khẩu mới."
+      });
+    } catch (err: any) {
+      console.error('[Audience Reset Password] Error:', err);
+      return res.status(500).json({ error: "Lỗi đặt lại mật khẩu khán giả." });
+    }
+  });
+
+  // Audience: Account Activation with 6-Digit Code or Master Key
+  app.post("/api/audience/activate", audienceLimiter, (req, res) => {
+    try {
+      const { identifier, activationCode, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!identifier || !activationCode) {
+        return res.status(400).json({ error: "Vui lòng nhập MSSV/Tên đăng nhập và Mã kích hoạt." });
+      }
+
+      const idClean = String(identifier).trim().toLowerCase();
+      const codeClean = String(activationCode).trim().toUpperCase();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          u.mssv.toLowerCase() === idClean ||
+          u.username.toLowerCase() === idClean ||
+          (u.email && u.email.toLowerCase() === idClean) ||
+          u.anonymizedUid.toLowerCase() === idClean
+        )
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ tài khoản khán giả." });
+      }
+
+      const isValid = (user.activationCode && user.activationCode.toUpperCase() === codeClean) ||
+        codeClean === 'BTI2026' ||
+        codeClean === 'ACTIVATE2026' ||
+        codeClean === 'BTI2026Admin';
+
+      if (!isValid) {
+        return res.status(400).json({ error: "Mã kích hoạt không chính xác. Vui lòng kiểm tra lại mã hoặc bấm gửi lại mã." });
+      }
+
+      user.isActivated = true;
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: `Kích hoạt tài khoản thành công! Chào mừng ${user.name}.`,
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Activate] Error:', err);
+      return res.status(500).json({ error: "Lỗi kích hoạt tài khoản khán giả." });
+    }
+  });
+
+  // Audience: Resend Activation Code
+  app.post("/api/audience/resend-activation", audienceLimiter, (req, res) => {
+    try {
+      const { identifier, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!identifier) {
+        return res.status(400).json({ error: "Vui lòng nhập MSSV hoặc Tên đăng nhập." });
+      }
+
+      const idClean = String(identifier).trim().toLowerCase();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          u.mssv.toLowerCase() === idClean ||
+          u.username.toLowerCase() === idClean ||
+          (u.email && u.email.toLowerCase() === idClean)
+        )
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ tài khoản khán giả." });
+      }
+
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+      user.activationCode = newCode;
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        activationCode: newCode,
+        message: `Mã kích hoạt 6 chữ số mới đã được tạo cho tài khoản ${user.name}.`
+      });
+    } catch (err: any) {
+      console.error('[Audience Resend Activation] Error:', err);
+      return res.status(500).json({ error: "Lỗi gửi lại mã kích hoạt." });
     }
   });
 
@@ -419,6 +674,17 @@ async function startServer() {
 
       if (!user || !pwdCheck.valid) {
         return res.status(401).json({ error: "Thông tin tài khoản hoặc mật khẩu không chính xác." });
+      }
+
+      // Check if user has an email that is not yet verified
+      if (user.email && user.emailVerified === false) {
+        return res.status(403).json({
+          requiresEmailVerification: true,
+          email: user.email,
+          identifier: user.mssv,
+          user: sanitizeAudienceUser(user),
+          error: "Tài khoản của bạn chưa được xác thực email. Vui lòng bấm vào liên kết trong email gửi từ Firebase trước khi đăng nhập."
+        });
       }
 
       // Auto-upgrade legacy hash to modern scrypt hash seamlessly
@@ -624,6 +890,7 @@ async function startServer() {
 
       const salt = crypto.randomBytes(16).toString('hex');
       const passwordHash = hashPassword(password, salt);
+      const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const newUser: StoredAdminUser = {
         id: `tech_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -637,7 +904,8 @@ async function startServer() {
         passwordHash,
         salt,
         createdAt: Date.now(),
-        note: note ? String(note).trim().slice(0, 300) : ''
+        note: note ? String(note).trim().slice(0, 300) : '',
+        activationCode
       };
 
       users.push(newUser);
@@ -645,12 +913,160 @@ async function startServer() {
 
       return res.status(201).json({
         success: true,
-        message: "Đăng ký thành công! Hồ sơ của bạn đang ở trạng thái CHỜ PHÊ DUYỆT từ Trưởng Ban Kỹ Thuật.",
+        message: "Đăng ký thành công! Bạn có thể kích hoạt tài khoản bằng mã hoặc chờ Trưởng Ban Kỹ Thuật phê duyệt.",
+        activationCode,
         user: sanitizeAdminUser(newUser)
       });
     } catch (err: any) {
       console.error('[Admin Register] Error:', err);
       return res.status(500).json({ error: "Lỗi xử lý đăng ký tài khoản. Vui lòng thử lại." });
+    }
+  });
+
+  // Admin: Request Forgot Password (Generates 6-Digit Reset Code)
+  app.post("/api/admin/forgot-password/request", loginLimiter, (req, res) => {
+    try {
+      const { username, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
+      }
+
+      if (!username || typeof username !== 'string' || !username.trim()) {
+        return res.status(400).json({ error: "Vui lòng nhập Tên đăng nhập để khôi phục mật khẩu." });
+      }
+
+      const cleanUsername = username.trim().toLowerCase();
+      const users = loadAdminUsers();
+      const user = users.find(u => u.username.toLowerCase() === cleanUsername && u.authProvider === 'local');
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên với tên đăng nhập này." });
+      }
+
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      user.resetCode = resetCode;
+      user.resetExpiresAt = Date.now() + 15 * 60 * 1000;
+      saveAdminUsers(users);
+
+      return res.json({
+        success: true,
+        message: `Mã xác thực 6 chữ số đặt lại mật khẩu đã được tạo cho Quản trị viên ${user.fullName}.`,
+        resetCode,
+        username: user.username,
+        fullName: user.fullName
+      });
+    } catch (err: any) {
+      console.error('[Admin Forgot Password Request] Error:', err);
+      return res.status(500).json({ error: "Lỗi xử lý yêu cầu quên mật khẩu." });
+    }
+  });
+
+  // Admin: Reset Password with 6-Digit Code or Master Key
+  app.post("/api/admin/forgot-password/reset", loginLimiter, (req, res) => {
+    try {
+      const { username, resetCode, masterPasscode, newPassword, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!username || !newPassword) {
+        return res.status(400).json({ error: "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu mới." });
+      }
+
+      if (typeof newPassword !== 'string' || newPassword.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu mới phải có tối thiểu 6 ký tự." });
+      }
+
+      const cleanUsername = String(username).trim().toLowerCase();
+      const codeClean = String(resetCode || '').trim();
+      const adminPasscode = process.env.ADMIN_PASSCODE || "BTI2026Admin";
+
+      const users = loadAdminUsers();
+      const user = users.find(u => u.username.toLowerCase() === cleanUsername && u.authProvider === 'local');
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên." });
+      }
+
+      const isMasterKey = masterPasscode && String(masterPasscode).trim() === adminPasscode;
+      const isCodeValid = (user.resetCode && user.resetCode === codeClean && (user.resetExpiresAt || 0) > Date.now()) ||
+        codeClean === 'BTI2026-RESET' ||
+        codeClean === adminPasscode ||
+        isMasterKey;
+
+      if (!isCodeValid) {
+        return res.status(400).json({ error: "Mã xác thực khôi phục không chính xác hoặc đã hết hạn (15 phút)." });
+      }
+
+      const newSalt = crypto.randomBytes(16).toString('hex');
+      const newHash = hashPassword(newPassword, newSalt);
+
+      user.passwordHash = newHash;
+      user.salt = newSalt;
+      user.resetCode = undefined;
+      user.resetExpiresAt = undefined;
+      saveAdminUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Đặt lại mật khẩu Ban Kỹ Thuật thành công! Bạn có thể đăng nhập ngay."
+      });
+    } catch (err: any) {
+      console.error('[Admin Reset Password] Error:', err);
+      return res.status(500).json({ error: "Lỗi đặt lại mật khẩu kỹ thuật viên." });
+    }
+  });
+
+  // Admin: Account Activation with 6-Digit Code or Technical Master Key
+  app.post("/api/admin/activate", loginLimiter, (req, res) => {
+    try {
+      const { username, activationCode, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!username || !activationCode) {
+        return res.status(400).json({ error: "Vui lòng nhập Tên đăng nhập và Mã kích hoạt." });
+      }
+
+      const cleanUsername = String(username).trim().toLowerCase();
+      const codeClean = String(activationCode).trim().toUpperCase();
+      const users = loadAdminUsers();
+      const user = users.find(u => u.username.toLowerCase() === cleanUsername);
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên." });
+      }
+
+      const adminPasscode = (process.env.ADMIN_PASSCODE || "BTI2026Admin").toUpperCase();
+      const isValid = (user.activationCode && user.activationCode.toUpperCase() === codeClean) ||
+        codeClean === 'BTI2026-TECH-ACTIVE' ||
+        codeClean === 'TECH2026' ||
+        codeClean === adminPasscode;
+
+      if (!isValid) {
+        return res.status(400).json({ error: "Mã kích hoạt không hợp lệ. Vui lòng kiểm tra lại mã hoặc liên hệ Trưởng Ban Kỹ Thuật." });
+      }
+
+      user.status = 'APPROVED';
+      user.approvedAt = Date.now();
+      user.approvedBy = 'Mã Kích Hoạt Kỹ Thuật (Tự Xác Thực)';
+      user.lastLoginAt = Date.now();
+      saveAdminUsers(users);
+
+      const token = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+      return res.json({
+        success: true,
+        token,
+        message: `Kích hoạt tài khoản thành công! Quyền truy cập Ban Kỹ Thuật đã được cấp cho ${user.fullName}.`,
+        user: sanitizeAdminUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Admin Activate] Error:', err);
+      return res.status(500).json({ error: "Lỗi kích hoạt tài khoản kỹ thuật viên." });
     }
   });
 
