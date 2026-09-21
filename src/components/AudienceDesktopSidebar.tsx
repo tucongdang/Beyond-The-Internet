@@ -182,7 +182,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
             vibrateTap();
             setIsDockCollapsed(false);
           }}
-          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[9998] p-2 pl-2.5 fluent-box border-y border-l border-white/10 rounded-l-[2px] text-slate-400 hover:text-white transition-all shadow-2xl cursor-pointer hover-effect pointer-events-auto"
+          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] p-2 pl-2.5 fluent-box border-y border-l border-white/10 rounded-l-[2px] text-slate-400 hover:text-white transition-all shadow-2xl cursor-pointer hover-effect pointer-events-auto"
           title={t("sidebar_show", localLanguage)}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -190,7 +190,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
       ) : (
         <aside 
           id="audience-floating-dock-trigger"
-          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[9998] flex-col items-end pointer-events-auto select-none"
+          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] flex-col items-end pointer-events-auto select-none"
           aria-label="Toolbar"
         >
           <div className="flex flex-col gap-1.5 p-1.5 pr-0 rounded-l-[2px] fluent-box border-y border-l border-white/10 shadow-2xl transition-all duration-300">
@@ -284,13 +284,13 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
         <>
           {/* Backdrop click to close on tablet viewports */}
           <div 
-            className="hidden sm:block fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] xl:bg-transparent xl:pointer-events-none transition-opacity cursor-pointer"
+            className="hidden sm:block fixed inset-0 bg-black/50 backdrop-blur-sm z-[45] xl:bg-transparent xl:pointer-events-none transition-opacity cursor-pointer"
             onClick={() => setIsOpen(false)}
           />
 
           <div
             id="audience-floating-tab-panel"
-            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[85vw] sm:w-[360px] lg:w-[400px] max-w-full z-[10000] rounded-l-[4px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
+            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[85vw] sm:w-[360px] lg:w-[400px] max-w-full z-[46] rounded-l-[4px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
           >
             {/* Header: Tabs selector and Close button */}
             <div className="p-3.5 pb-2.5 border-b border-white/10 fluent-box-nested flex flex-col gap-2">

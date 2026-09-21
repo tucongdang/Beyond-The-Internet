@@ -24,6 +24,16 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sentToast, setSentToast] = useState<boolean>(false);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Compute distribution of current question
   const voteAnalysis = React.useMemo(() => {
     const counts: Record<string, number> = {};
@@ -95,19 +105,27 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div
+      className="fluent-dialog-overlay animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div 
-        className="w-full max-w-xl bg-[#190839] border border-amber-400/40 rounded-[2px] shadow-2xl flex flex-col overflow-hidden text-white"
+        className="fluent-dialog w-full max-w-xl shadow-2xl relative my-auto border border-amber-400/40"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-mccopilot-title"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-transparent">
+        {/* Header - Locked to top with shrink-0 */}
+        <div className="fluent-dialog-header bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-transparent">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-[2px] bg-amber-500/20 border border-amber-400/40 text-amber-300">
+            <div className="p-2 rounded-[2px] bg-amber-500/20 border border-amber-400/40 text-amber-300 shrink-0">
               <Mic className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-amber-300 flex items-center gap-1.5">
+              <h3 id="ai-mccopilot-title" className="font-bold text-base text-amber-300 flex items-center gap-1.5">
                 AI MC Co-pilot
                 <span className="text-[10px] px-1.5 py-0.5 rounded-[2px] bg-amber-400/20 text-amber-200 border border-amber-400/40">
                   Live Stage Assist
@@ -120,14 +138,15 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white"
+            className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white cursor-pointer"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
+        {/* Content - Scrollable with safe bounds */}
+        <div className="fluent-dialog-body space-y-4 scrollbar-thin">
           {/* Question Summary Pill */}
           <div className="p-3 rounded-[2px] bg-white/5 border border-white/10 flex items-center justify-between gap-3 text-xs">
             <div className="min-w-0 flex-1 truncate">
@@ -204,10 +223,10 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10 bg-white/5 flex items-center justify-between gap-3">
+        <div className="fluent-dialog-footer justify-between">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-xs font-semibold transition text-white"
+            className="px-4 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-xs font-semibold transition text-white cursor-pointer"
           >
             Đóng
           </button>

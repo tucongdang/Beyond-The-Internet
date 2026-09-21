@@ -68,6 +68,15 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
 
   useEffect(() => {
     if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
 
     let batteryManager: BatteryManager | null = null;
     let isMounted = true;
@@ -148,17 +157,20 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
   const modalNode = (
     <div
       id="battery-saver-modal-overlay"
-      className="fixed inset-0 select-none animate-fadeIn flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md z-[9999999]"
+      className="fluent-dialog-overlay z-[60] animate-fadeIn select-none"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="battery-modal-title"
     >
       <div
         id="battery-saver-modal-content"
-        className="relative w-full max-w-lg rounded-[2px] fluent-box shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh] border border-white/10"
+        className="fluent-dialog relative w-full max-w-lg rounded-[2px] fluent-box shadow-2xl text-white flex flex-col border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Banner */}
         <div
-          className={`p-4 sm:p-5 flex items-center justify-between border-b ${
+          className={`fluent-dialog-header shrink-0 p-4 sm:p-5 flex items-center justify-between border-b ${
             isBatterySaver ? 'bg-emerald-950/60 border-emerald-500/40' : 'fluent-box-nested border-white/10'
           }`}
         >
@@ -172,7 +184,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                <h3 id="battery-modal-title" className="text-base sm:text-lg font-bold tracking-tight text-white">
                   {effectiveLanguage === 'en' ? 'Battery Saver Mode' : 'Chế Độ Tiết Kiệm Pin'}
                 </h3>
                 {isBatterySaver && (
@@ -194,14 +206,15 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               vibrateTap();
               onClose();
             }}
-            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition"
+            aria-label="Đóng"
+            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Modal Content */}
-        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto scrollbar-none flex-1">
+        <div className="fluent-dialog-body p-4 sm:p-5 space-y-3.5 flex-1 scrollbar-thin">
           {/* Real-time Battery Status Card */}
           {batteryState.supported && (
             <div className="p-3.5 sm:p-4 rounded-[2px] fluent-box-nested flex items-center justify-between border border-white/10">
@@ -384,8 +397,11 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
             </div>
             <button
               type="button"
+              role="switch"
+              aria-checked={autoEnable}
+              aria-label="Tự động bật khi pin dưới 20%"
               onClick={handleToggleAuto}
-              className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center shrink-0 ${
+              className={`w-10 h-6 rounded-full transition-colors p-0.5 flex items-center shrink-0 cursor-pointer ${
                 autoEnable ? 'bg-emerald-400 justify-end' : 'bg-white/20 justify-start'
               }`}
             >
@@ -408,7 +424,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3.5 sm:p-4 border-t border-white/10 fluent-box-nested flex items-center justify-between gap-3">
+        <div className="fluent-dialog-footer shrink-0 p-3.5 sm:p-4 border-t border-white/10 fluent-box-nested flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => {

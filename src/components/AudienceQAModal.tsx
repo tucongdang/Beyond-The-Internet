@@ -52,6 +52,15 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
       setActiveTab(initialTab);
     }
   }, [isOpen, initialTab]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
   
   // Submission Form State
   const [questionText, setQuestionText] = useState('');
@@ -168,7 +177,13 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
   if (!isOpen) return null;
 
   const content = (
-    <div className="fluent-dialog-overlay animate-fadeIn" onClick={onClose}>
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn" 
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="qa-modal-title"
+    >
       <div
         className="fluent-dialog w-full max-w-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -181,7 +196,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold tracking-wide text-white flex items-center gap-2">
+                <h3 id="qa-modal-title" className="text-base sm:text-lg font-bold tracking-wide text-white flex items-center gap-2">
                   {t("qa_title", localLanguage)}
                 </h3>
                 {settings.is_open ? (

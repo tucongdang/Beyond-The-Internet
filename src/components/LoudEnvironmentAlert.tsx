@@ -68,8 +68,8 @@ export const LoudEnvironmentAlert: React.FC = () => {
     <>
       {/* Auto-boost feedback toast */}
       {autoToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] w-11/12 max-w-md animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="bg-emerald-950/95 border border-emerald-500/50 rounded-lg p-3 text-white shadow-2xl flex items-center gap-3 backdrop-blur-md">
+        <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="bg-emerald-950/95 border border-emerald-500/50 rounded-[4px] p-3 text-white shadow-2xl flex items-center gap-3 backdrop-blur-md">
             <div className="p-1.5 rounded-full bg-emerald-500/20 text-emerald-400">
               <Check className="w-4 h-4" />
             </div>
@@ -90,13 +90,13 @@ export const LoudEnvironmentAlert: React.FC = () => {
       {suggestionEvent && (
         <aside
           aria-label="Loud environment suggestion"
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[55] w-11/12 max-w-lg animate-in fade-in slide-in-from-top-4 duration-300"
+          className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-lg animate-in fade-in slide-in-from-top-4 duration-300"
         >
-          <div className="bg-slate-900/95 backdrop-blur-md border-2 border-amber-500/80 rounded-xl p-4 shadow-2xl shadow-amber-950/40 text-white flex flex-col gap-3">
+          <div className="bg-slate-900/95 backdrop-blur-md border-2 border-amber-500/80 rounded-[4px] p-4 shadow-2xl shadow-amber-950/40 text-white flex flex-col gap-3">
             {/* Header */}
             <div className="flex items-start justify-between gap-2 border-b border-amber-500/20 pb-2.5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0 animate-pulse">
+                <div className="p-2 rounded-[2px] bg-amber-500/20 text-amber-400 shrink-0 animate-pulse">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>

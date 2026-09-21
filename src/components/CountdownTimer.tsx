@@ -55,7 +55,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   });
 
   const isControlled = typeof propTimeLeft === 'number';
-  const effectiveTotal = propTotalTime || gameState?.time_limit || 15;
+  const effectiveTotal = Math.max(1, Number(propTotalTime || gameState?.time_limit) || 15);
 
   // Sync internal timer with gameState if not controlled
   useEffect(() => {
@@ -178,7 +178,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   if (variant === 'circular') {
     const radius = 24;
     const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+    const rawOffset = circumference - (progressPercent / 100) * circumference;
+    const strokeDashoffset = Number.isFinite(rawOffset) ? rawOffset : 0;
 
     return (
       <div className={`relative inline-flex items-center justify-center select-none ${className}`}>

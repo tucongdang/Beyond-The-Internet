@@ -226,9 +226,12 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const modalContent = (
     <div
       id="share-game-modal-overlay"
-      className="fluent-dialog-overlay z-[999999] animate-fadeIn flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
       onMouseMove={handleUserActivity}
       onTouchStart={handleUserActivity}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="share-game-title"
       onClick={(e) => {
         handleUserActivity();
         if (e.target === e.currentTarget) {
@@ -240,10 +243,10 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     >
       <div
         id="share-game-modal-content"
-        className={`w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl shadow-purple-950/90 relative overflow-y-auto my-auto flex flex-col items-center select-none transition-all duration-300 ${
+        className={`fluent-dialog w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl shadow-purple-950/90 relative flex flex-col items-center select-none transition-all duration-300 ${
           displayMode === 'fullscreen'
             ? 'max-w-4xl min-h-[88vh] md:min-h-[92vh] justify-between p-6 sm:p-8'
-            : 'max-w-md max-h-[90vh] p-4 sm:p-6'
+            : 'max-w-md p-4 sm:p-6'
         }`}
         onMouseMove={handleUserActivity}
         onTouchStart={handleUserActivity}

@@ -86,6 +86,15 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [lastActionFeedback, setLastActionFeedback] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (!showBroadcastModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowBroadcastModal(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showBroadcastModal]);
+
   // Helper vibration
   const triggerHaptic不易 = (pattern: number | number[] = 100) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -649,16 +658,25 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
       {/* ================= URGENT BROADCAST CENTER MODAL ================= */}
       {showBroadcastModal && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[4px] shadow-2xl shadow-cyan-950/80 overflow-hidden flex flex-col max-h-[90vh]">
+        <div 
+          className="fluent-dialog-overlay z-[60] animate-fadeIn"
+          onClick={() => setShowBroadcastModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="broadcast-modal-title"
+        >
+          <div 
+            className="fluent-dialog fluent-box border border-cyan-500/50 bg-gradient-to-b from-slate-950 via-[#0a1226] to-[#040814] w-full max-w-xl rounded-[4px] shadow-2xl shadow-cyan-950/80 flex flex-col text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-cyan-950/30">
+            <div className="fluent-dialog-header shrink-0 p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-cyan-950/30">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[2px] bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-950/50">
                   <Megaphone className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <h3 id="broadcast-modal-title" className="text-base sm:text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
                     Trung Tâm Phát Thông Báo Khẩn
                   </h3>
                   <p className="text-xs text-white/50">
@@ -677,7 +695,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+            <div className="fluent-dialog-body p-4 sm:p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 scrollbar-thin">
               {/* Active Broadcast Alert & Instant Recall */}
               {gameState.announcer_overlay?.active && gameState.announcer_overlay?.text && (
                 <div className="p-3 rounded-[2px] fluent-box-nested border border-rose-500/50 bg-rose-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
@@ -744,7 +762,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
                   placeholder="VD: 🚨 THÔNG BÁO KHẨN TỪ BAN TỔ CHỨC"
-                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm font-medium focus:border-cyan-400 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-base sm:text-sm font-medium focus:border-cyan-400 focus:outline-none"
                 />
               </div>
 
@@ -758,7 +776,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Nhập nội dung thông báo gửi đến toàn bộ điện thoại khán giả và màn chiếu..."
-                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-xs sm:text-sm focus:border-cyan-400 focus:outline-none resize-none"
+                  className="w-full px-3 py-2 rounded-[2px] bg-black/60 border border-white/15 text-white text-base sm:text-sm focus:border-cyan-400 focus:outline-none resize-none"
                 />
               </div>
 
@@ -807,7 +825,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-white/10 flex items-center justify-end gap-2.5 bg-black/40">
+            <div className="fluent-dialog-footer shrink-0 p-4 border-t border-white/10 flex items-center justify-end gap-2.5 bg-black/40">
               <button
                 type="button"
                 onClick={() => setShowBroadcastModal(false)}

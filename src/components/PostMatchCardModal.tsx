@@ -32,6 +32,15 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
 
     setIsGenerating(true);
     const canvas = canvasRef.current;
@@ -248,22 +257,31 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     handleDownload();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="postmatch-modal-title"
+    >
       <div 
-        className="w-full max-w-lg bg-[#190839] border border-[#F7CAC9]/40 rounded-[2px] shadow-2xl flex flex-col overflow-hidden text-white"
+        className="fluent-dialog w-full max-w-lg bg-[#190839] border border-[#F7CAC9]/40 rounded-[2px] shadow-2xl flex flex-col text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
+        <div className="fluent-dialog-header shrink-0 flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#F7CAC9]" />
-            <h3 className="font-bold text-base text-[#F7CAC9] uppercase tracking-wider">
+            <h3 id="postmatch-modal-title" className="font-bold text-base text-[#F7CAC9] uppercase tracking-wider">
               Thẻ Thành Tích Khán Giả
             </h3>
           </div>
           <button
             onClick={onClose}
+            aria-label="Đóng"
             className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -271,7 +289,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col items-center justify-center gap-4 overflow-y-auto max-h-[75vh]">
+        <div className="fluent-dialog-body p-4 flex flex-col items-center justify-center gap-4 scrollbar-thin">
           {/* Hidden full-res canvas */}
           <canvas ref={canvasRef} className="hidden" />
 
@@ -293,7 +311,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-white/10 bg-white/5 flex items-center justify-between gap-2.5">
+        <div className="fluent-dialog-footer shrink-0 p-4 border-t border-white/10 bg-white/5 flex items-center justify-between gap-2.5">
           <button
             onClick={onClose}
             className="px-3.5 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-xs font-semibold transition text-white cursor-pointer"

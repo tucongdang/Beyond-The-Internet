@@ -43,7 +43,7 @@ const OPTION_COLORS: Record<string, { fill: string; stroke: string; bg: string; 
 };
 
 // Active Shape for Interactive Hover / Focus
-const renderActiveShape = (props: any) => {
+const renderActiveShape = (props: any, localLanguage: string = 'vi') => {
   const {
     cx,
     cy,
@@ -88,7 +88,7 @@ const renderActiveShape = (props: any) => {
         fill="#FFFFFF"
         className="font-mono font-bold text-sm sm:text-base select-none"
       >
-        {`Lựa chọn ${payload.key}`}
+        {localLanguage !== 'vi' ? `Option ${payload.key}` : `Lựa chọn ${payload.key}`}
       </text>
       <text
         x={cx}
@@ -97,7 +97,7 @@ const renderActiveShape = (props: any) => {
         fill={fill}
         className="font-mono font-black text-xs sm:text-sm select-none"
       >
-        {`${value} phiếu (${(percent * 100).toFixed(0)}%)`}
+        {`${value} ${localLanguage !== 'vi' ? 'votes' : 'phiếu'} (${(percent * 100).toFixed(0)}%)`}
       </text>
     </g>
   );
@@ -144,7 +144,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
 
       return {
         key,
-        name: `Lựa chọn ${key}`,
+        name: localLanguage !== 'vi' ? `Option ${key}` : `Lựa chọn ${key}`,
         text: optText,
         value: count,
         percentage: pct,
@@ -165,17 +165,17 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
     }
 
     // Determine consensus / split level
-    let consensus = 'CHƯA CÓ PHẢN HỒI';
+    let consensus = localLanguage !== 'vi' ? 'NO FEEDBACK YET' : 'CHƯA CÓ PHẢN HỒI';
     let consensusColor = 'text-white/40';
     if (total > 0 && leader) {
       if (leader.percentage >= 65) {
-        consensus = 'ĐỒNG THUẬN CAO (Áp đảo)';
+        consensus = localLanguage !== 'vi' ? 'HIGH CONSENSUS (Dominant)' : 'ĐỒNG THUẬN CAO (Áp đảo)';
         consensusColor = 'text-emerald-400';
       } else if (leader.percentage >= 40) {
-        consensus = 'XU HƯỚNG RÕ RÀNG';
+        consensus = localLanguage !== 'vi' ? 'CLEAR TREND' : 'XU HƯỚNG RÕ RÀNG';
         consensusColor = 'text-sky-400';
       } else {
-        consensus = 'PHÂN TÁN / TRANH CHẤP';
+        consensus = localLanguage !== 'vi' ? 'SPLIT / CONTESTED' : 'PHÂN TÁN / TRANH CHẤP';
         consensusColor = 'text-amber-400';
       }
     }
@@ -201,7 +201,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
       consensusLevel: { text: consensus, color: consensusColor },
       correctStats: correctInfo
     };
-  }, [gameState.options, gameState.status, gameState.correct_key, gameState.eliminated_options, responses]);
+  }, [gameState.options, gameState.status, gameState.correct_key, gameState.eliminated_options, responses, localLanguage]);
 
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
@@ -232,7 +232,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-1.5 truncate">
-                Phân Bổ Lựa Chọn Khán Giả
+                {localLanguage !== 'vi' ? 'Audience Answer Distribution' : 'Phân Bổ Lựa Chọn Khán Giả'}
               </h2>
               {isActive && (
                 <span className="flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 animate-pulse shrink-0">
@@ -242,7 +242,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
               )}
             </div>
             <p className="text-[10px] text-white/50 font-mono truncate">
-              Biểu đồ trực quan xu hướng câu trả lời khán giả theo thời gian thực
+              {localLanguage !== 'vi' ? 'Real-time audience answer trends' : 'Biểu đồ trực quan xu hướng câu trả lời khán giả theo thời gian thực'}
             </p>
           </div>
         </div>
@@ -313,14 +313,16 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
             {leadingOption && leadingOption.value > 0 ? (
               <div className="flex items-center gap-1 font-bold truncate">
                 <span className="text-amber-300 font-mono text-xs sm:text-sm">
-                  Lựa chọn {leadingOption.key}
+                  {localLanguage !== 'vi' ? `Option ${leadingOption.key}` : `Lựa chọn ${leadingOption.key}`}
                 </span>
                 <span className="text-[11px] text-white/70 font-mono">
-                  ({Math.round(leadingOption.percentage)}% - {leadingOption.value} phiếu)
+                  ({Math.round(leadingOption.percentage)}% - {leadingOption.value} {localLanguage !== 'vi' ? 'votes' : 'phiếu'})
                 </span>
               </div>
             ) : (
-              <span className="text-white/40 font-mono text-[11px]">Đang chờ lượt vote...</span>
+              <span className="text-white/40 font-mono text-[11px]">
+                {localLanguage !== 'vi' ? 'Waiting for votes...' : 'Đang chờ lượt vote...'}
+              </span>
             )}
           </div>
         </div>
@@ -454,7 +456,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
                 <Pie
                   // @ts-ignore
                   activeIndex={activeIndex !== null ? activeIndex : undefined}
-                  activeShape={renderActiveShape}
+                  activeShape={(props: any) => renderActiveShape(props, localLanguage)}
                   data={chartData.filter(d => d.value > 0 || totalVotes === 0)}
                   cx="50%"
                   cy="50%"
@@ -489,10 +491,12 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
                           <div className="fluent-box-nested p-2.5 rounded-[2px] border border-white/20 shadow-2xl backdrop-blur-xl text-white font-mono space-y-1 z-50">
                             <div className="flex items-center gap-2">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                              <span className="font-bold text-xs text-white">Lựa chọn {item.key}</span>
+                              <span className="font-bold text-xs text-white">
+                                {localLanguage !== 'vi' ? `Option ${item.key}` : `Lựa chọn ${item.key}`}
+                              </span>
                               {item.isCorrect && (
                                 <span className="text-[9px] px-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-[2px]">
-                                  CHÍNH XÁC
+                                  {localLanguage !== 'vi' ? 'CORRECT' : 'CHÍNH XÁC'}
                                 </span>
                               )}
                             </div>
@@ -528,7 +532,7 @@ export const AudienceAnswerDistributionChart: React.FC<AudienceAnswerDistributio
           {/* Interactive Legend & Details List */}
           <div className="md:col-span-5 space-y-1.5">
             <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">
-              Chi tiết từng lựa chọn:
+              {localLanguage !== 'vi' ? 'Option breakdown:' : 'Chi tiết từng lựa chọn:'}
             </span>
             {chartData.map((item, idx) => (
               <div

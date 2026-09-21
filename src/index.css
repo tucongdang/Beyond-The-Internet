@@ -283,6 +283,30 @@ button, a, [role="button"] {
 .pb-safe-nav {
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
 }
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Modal Open Body Scroll Lock */
+body:has(.fluent-dialog-overlay),
+body:has([aria-modal="true"]) {
+  overflow: hidden !important;
+}
+
+/* Prevent iOS Safari Automatic Zoom on Input Focus (< 16px triggers zoom) */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  .fluent-input,
+  .fluent-textarea,
+  .fluent-select {
+    font-size: 16px !important;
+  }
+}
 
 /* Fluid Stage & Auditorium Typography (Scale smoothly from 720p to 4K LED) */
 .stage-fluid-title {
@@ -1082,31 +1106,32 @@ body.battery-saver-active,
 
 /* Fluent 2 Modal & Dialog System */
 .fluent-dialog-overlay {
-  background: rgba(8, 3, 20, 0.72);
+  background: rgba(8, 3, 20, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   position: fixed;
   inset: 0;
-  z-index: 99999;
+  z-index: 60;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: max(1rem, env(safe-area-inset-top, 16px)) max(1rem, env(safe-area-inset-right, 16px)) max(1rem, env(safe-area-inset-bottom, 16px)) max(1rem, env(safe-area-inset-left, 16px));
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .fluent-dialog-overlay > * {
   margin: auto;
 }
 
 .fluent-dialog {
-  background: rgba(25, 10, 48, 0.88);
+  background: rgba(25, 10, 48, 0.95);
   backdrop-filter: blur(32px) saturate(160%);
   -webkit-backdrop-filter: blur(32px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
-  max-height: 90vh;
+  max-height: min(90vh, calc(100dvh - max(2rem, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))));
   display: flex;
   flex-direction: column;
 }
@@ -1130,11 +1155,15 @@ body.battery-saver-active,
   align-items: center;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
 }
 
 .fluent-dialog-body {
   padding: 1.25rem;
   overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .fluent-dialog-footer {
@@ -1145,6 +1174,7 @@ body.battery-saver-active,
   justify-content: flex-end;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
 }
 
 /* Fluent 2 Form Input Controls */

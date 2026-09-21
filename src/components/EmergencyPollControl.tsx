@@ -37,16 +37,25 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 overflow-y-auto animate-fadeIn">
-      <div className="relative w-full max-w-5xl fluent-box rounded-[2px] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col text-white">
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="emergency-poll-title"
+    >
+      <div 
+        className="fluent-dialog w-full max-w-5xl fluent-box rounded-[2px] shadow-2xl flex flex-col text-white my-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 fluent-box-nested">
+        <div className="fluent-dialog-header shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/10 fluent-box-nested">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-[2px] fluent-box text-[#F7CAC9] border border-[#F7CAC9]/30 flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white uppercase tracking-wider">
+              <h3 id="emergency-poll-title" className="text-base font-bold text-white uppercase tracking-wider">
                 Hệ Thống Khảo Sát Khẩn Cấp & Live Poll Unified
               </h3>
               <p className="text-[11px] text-white/50">
@@ -58,6 +67,7 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Đóng"
             className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
             title="Đóng cửa sổ"
           >
@@ -66,7 +76,7 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
         </div>
 
         {/* Modal Body hosting AdminPollManager */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+        <div className="fluent-dialog-body p-4 sm:p-6 overflow-y-auto space-y-4 scrollbar-thin">
           <AdminPollManager
             gameState={gameState}
             allResponses={allResponses}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Globe, Check, AlertCircle, RefreshCw, Send } from 'lucide-react';
 import { QuestionItem, QuestionTranslation, GameState } from '../types';
 import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
@@ -26,6 +26,16 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
   const [previewTranslations, setPreviewTranslations] = useState<Record<string, QuestionTranslation>>(() => {
     return gameState.translations || {};
   });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -95,16 +105,27 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="fluent-card w-full max-w-xl max-h-[90vh] flex flex-col rounded-[4px] border border-white/20 bg-[#190839]/95 shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+    <div
+      className="fluent-dialog-overlay animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="fluent-dialog w-full max-w-xl shadow-2xl relative my-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-translation-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Locked to top with shrink-0 */}
+        <div className="fluent-dialog-header">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[2px] bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[2px] bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center justify-center shrink-0">
               <Globe className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-sm sm:text-base flex items-center gap-1.5">
+              <h3 id="ai-translation-title" className="text-white font-bold text-sm sm:text-base flex items-center gap-1.5">
                 Dịch Câu Hỏi Bằng AI (Gemini Flash)
               </h3>
               <p className="text-[11px] text-white/50 font-mono">
@@ -115,13 +136,14 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+            aria-label="Đóng"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
+        {/* Content Body - Scrollable */}
+        <div className="fluent-dialog-body space-y-4 scrollbar-thin">
           {/* Source Question Preview */}
           <div className="fluent-box-nested p-3.5 rounded-[2px] border border-white/10">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9] block mb-1">

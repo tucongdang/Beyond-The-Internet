@@ -88,6 +88,15 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
     };
   }, [isOpen, user?.uid]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSend = async (e?: React.FormEvent) => {
@@ -187,19 +196,25 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
   const currentColorConfig = SHOUT_BADGE_COLORS[selectedColor] || SHOUT_BADGE_COLORS.purple;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="audience-shout-title"
+    >
       <div 
-        className="w-full max-w-lg bg-[#190839] border border-white/20 rounded-[4px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-white"
+        className="fluent-dialog w-full max-w-lg bg-[#190839] border border-white/20 rounded-[4px] shadow-2xl flex flex-col text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
+        <div className="fluent-dialog-header shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-[2px] bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center text-white shadow-md">
               <Megaphone className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base text-white flex items-center gap-1.5">
+              <h3 id="audience-shout-title" className="font-bold text-sm sm:text-base text-white flex items-center gap-1.5">
                 {localLanguage !== 'vi' ? "Audience Shout" : "Hô To Khán Giả"} <span className="text-[11px] font-mono text-[#F7CAC9] font-normal">Audience Shout</span>
               </h3>
               <p className="text-[11px] text-white/60">
@@ -212,14 +227,15 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+            aria-label="Đóng"
+            className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-white/10 bg-black/20 p-1">
+        <div className="shrink-0 flex border-b border-white/10 bg-black/20 p-1">
           <button
             onClick={() => {
               vibrateTap();
@@ -296,7 +312,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                     }}
                     placeholder={localLanguage !== 'vi' ? "Ex: Go Team A! You guys rock 🔥" : "VD: Cố lên đội A ơi! Đỉnh chóp quá 🔥"}
                     maxLength={maxChars}
-                    className="w-full px-3.5 py-2.5 rounded-[2px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-[2px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-base sm:text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
                   />
                   {inputText && (
                     <button

@@ -610,7 +610,7 @@ export default function App() {
 
         
       {batteryToast.show && (
-        <div className="fixed top-20 right-4 z-[9999] bg-green-900/90 text-green-100 px-4 py-3 rounded-[2px] shadow-lg border border-green-500/50 flex items-center gap-2 animate-fadeIn">
+        <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 right-4 z-50 bg-green-900/90 text-green-100 px-4 py-3 rounded-[2px] shadow-lg border border-green-500/50 flex items-center gap-2 animate-fadeIn">
           <Zap className="w-5 h-5 text-green-400 animate-pulse" />
           <span className="text-sm font-medium">{batteryToast.message}</span>
         </div>

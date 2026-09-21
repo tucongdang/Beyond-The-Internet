@@ -193,7 +193,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
   const isUrgent = activeToast.type === 'URGENT' || activeToast.type === 'ALERT';
 
   return (
-    <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center pointer-events-none px-4 w-full max-w-lg select-none">
+    <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none px-4 w-full max-w-lg select-none">
       {/* Show strictly ONLY 1 notification toast at a time with Fluent UI v2 motion */}
       <div
         key={activeToast.id}

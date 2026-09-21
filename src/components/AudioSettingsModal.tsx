@@ -229,18 +229,28 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+    <div
+      className="fluent-dialog-overlay animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          soundFx.playClick();
+          vibrateTap();
+          onClose();
+        }
+      }}
+    >
       <div
         id="audio-settings-modal"
-        className="w-full max-w-md fluent-box rounded-[2px] border border-white/20 shadow-2xl p-5 sm:p-6 space-y-6 text-white bg-[#150a2e]/95 relative"
+        className="fluent-dialog w-full max-w-lg shadow-2xl relative my-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="audio-settings-title"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
+        {/* Header - Locked to top with shrink-0 */}
+        <div className="fluent-dialog-header">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[2px] bg-sky-500/15 border border-sky-400/40 text-sky-300 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-[2px] bg-sky-500/15 border border-sky-400/40 text-sky-300 flex items-center justify-center shadow-sm shrink-0">
               <Sliders className="w-4 h-4" />
             </div>
             <div>
@@ -254,16 +264,21 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              onClose();
+            }}
             className="p-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/60 hover:text-white transition cursor-pointer border border-white/10"
             title="Đóng (Esc)"
+            aria-label="Đóng"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Sliders Container */}
-        <div className="space-y-4">
+        {/* Sliders Container - Scrollable with safe bounds */}
+        <div className="fluent-dialog-body space-y-4 scrollbar-thin">
           {/* 1. SOUND FX VOLUME SLIDER */}
           <div className="p-3.5 sm:p-4 rounded-[2px] fluent-box-nested border border-white/10 space-y-3">
             <div className="flex items-center justify-between">
@@ -507,7 +522,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
                   id="select-tts-voice"
                   value={selectedVoiceURI}
                   onChange={handleVoiceSelectChange}
-                  className="w-full text-xs font-mono bg-black/40 border border-white/15 rounded-[2px] px-2.5 py-1.5 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
+                  className="w-full text-base sm:text-xs font-mono bg-black/40 border border-white/15 rounded-[2px] px-2.5 py-1.5 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
                   style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
                 >
                   <option value="auto" className="bg-slate-900 text-white">
@@ -737,14 +752,18 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
         </div>
 
         {/* Footer Info & Done Button */}
-        <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-white/50 font-mono">
+        <div className="fluent-dialog-footer justify-between text-[11px] text-white/50 font-mono">
           <span className="flex items-center gap-1">
             <Info className="w-3.5 h-3.5 text-sky-400" />
             <span>Tự động lưu vào trình duyệt</span>
           </span>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              onClose();
+            }}
             className="px-4 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-bold transition border border-white/20 cursor-pointer"
           >
             Hoàn Tất

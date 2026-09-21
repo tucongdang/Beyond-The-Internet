@@ -287,7 +287,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 title={t("view_score_log_title", localLanguage)}
               >
                 <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                <span className="text-[11px]">Logs</span>
+                <span className="hidden min-[380px]:inline text-[11px]">Logs</span>
               </button>
             )}
 
@@ -305,7 +305,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 title="Xuất thẻ thành tích Infographic (Post-Match Card)"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span className="text-[11px]">Thẻ</span>
+                <span className="hidden min-[380px]:inline text-[11px]">Thẻ</span>
               </button>
             )}
 

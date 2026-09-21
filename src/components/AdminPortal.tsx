@@ -4945,7 +4945,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             {item.word}
                           </span>
                           <span className="text-[10px] font-mono px-1.5 py-0.5 fluent-box-nested text-amber-300 rounded-[2px] font-bold">
-                            {item.count} ({Math.round((item.count / riskSubmissions.length) * 100)}%)
+                            {item.count} ({riskSubmissions.length > 0 ? Math.round((item.count / riskSubmissions.length) * 100) : 0}%)
                           </span>
                         </div>
                       ))}

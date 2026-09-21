@@ -186,15 +186,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#0D0420]/80 backdrop-blur-md" />
-      
-      <div className="relative fluent-box rounded-[4px] p-6 sm:p-8 w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-modal-title"
+    >
+      <div 
+        className="fluent-dialog relative fluent-box rounded-[4px] p-6 sm:p-8 w-full max-w-md shadow-2xl flex flex-col text-white"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-horizon" />
-        <div className="relative z-10 space-y-6">
+        <div className="fluent-dialog-body relative z-10 space-y-6 scrollbar-thin overflow-y-auto">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-black text-white tracking-tight uppercase">
+            <h2 id="onboarding-modal-title" className="text-2xl font-black text-white tracking-tight uppercase">
               {t("onboard_join", localLanguage)} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F7CAC9] to-[#E2DBEC]">Beyond The Internet</span>
             </h2>
           </div>
@@ -250,7 +258,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     setName(e.target.value);
                     if (errors.name) setErrors({ ...errors, name: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-base sm:text-sm text-white placeholder-white/20 outline-none transition"
                 />
                 {errors.name && <p className="text-xs text-rose-400 mt-1">{errors.name}</p>}
               </div>
@@ -261,13 +269,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </label>
                 <input
                   type="text"
+                  autoCapitalize="characters"
                   placeholder={t("onboard_mssv_ph", localLanguage)}
                   value={mssv}
                   onChange={(e) => {
-                    setMssv(e.target.value);
+                    setMssv(e.target.value.toUpperCase());
                     if (errors.mssv) setErrors({ ...errors, mssv: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                  className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-base sm:text-sm text-white placeholder-white/20 outline-none transition uppercase"
                 />
                 {errors.mssv && <p className="text-xs text-rose-400 mt-1">{errors.mssv}</p>}
               </div>
@@ -283,7 +292,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       setGender(e.target.value);
                       if (errors.gender) setErrors({ ...errors, gender: undefined });
                     }}
-                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white outline-none transition appearance-none"
+                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-base sm:text-sm text-white outline-none transition appearance-none"
                   >
                     <option value="" disabled>{t("onboard_gender_ph", localLanguage)}</option>
                     <option value="1">{t("onboard_gender_m", localLanguage)}</option>
@@ -298,6 +307,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     placeholder={t("onboard_birth_ph", localLanguage)}
                     maxLength={4}
                     value={birthYear}
@@ -305,7 +315,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       setBirthYear(e.target.value.replace(/\D/g, ''));
                       if (errors.birthYear) setErrors({ ...errors, birthYear: undefined });
                     }}
-                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition"
+                    className="w-full fluent-box-nested focus:border-[#F7CAC9] rounded-[2px] px-4 py-3 text-base sm:text-sm text-white placeholder-white/20 outline-none transition"
                   />
                   {errors.birthYear && <p className="text-xs text-rose-400 mt-1">{errors.birthYear}</p>}
                 </div>
@@ -402,13 +412,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   placeholder={t("onboard_verify_id_ph", localLanguage)}
                   value={verifyId}
                   onChange={(e) => {
                     setVerifyId(e.target.value.toUpperCase());
                     if (errors.verifyId) setErrors({ ...errors, verifyId: undefined });
                   }}
-                  className="w-full fluent-box-nested focus:border-amber-500 rounded-[2px] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition font-mono tracking-widest"
+                  className="w-full fluent-box-nested focus:border-amber-500 rounded-[2px] px-4 py-3 text-base sm:text-sm text-white placeholder-white/20 outline-none transition font-mono tracking-widest"
                 />
                 {errors.verifyId && <p className="text-xs text-rose-400 mt-1">{errors.verifyId}</p>}
               </div>

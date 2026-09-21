@@ -231,6 +231,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
     if (isOpen) {
       setName(user.name);
       setMssv(user.mssv);
@@ -303,8 +312,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   return createPortal(
     <div
-      className="fluent-dialog-overlay animate-fadeIn"
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-modal-title"
     >
       <div
         className="fluent-dialog w-full max-w-lg"
@@ -312,7 +324,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       >
         {/* Header */}
         <div className="fluent-dialog-header">
-          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <h2 id="profile-modal-title" className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5 text-[#F7CAC9]" /> {t("prof_title", localLanguage)}
           </h2>
           <button
@@ -643,6 +655,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               {/* Toggle Switch */}
               <button
                 type="button"
+                role="switch"
+                aria-checked={hapticsEnabled}
+                aria-label="Phản hồi xúc giác"
                 onClick={handleToggleHaptics}
                 className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   hapticsEnabled ? 'bg-purple-600 justify-end' : 'bg-gray-700 justify-start'
@@ -913,6 +928,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={subtitlesEnabled}
+                aria-label="Phụ đề trực tiếp"
                 onClick={handleToggleSubtitles}
                 className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   subtitlesEnabled ? 'bg-teal-500 justify-end' : 'bg-gray-700 justify-start'
@@ -930,6 +948,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={ambientListenerEnabled}
+                aria-label="Cảnh báo tiếng ồn môi trường"
                 onClick={handleToggleAmbientListener}
                 className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   ambientListenerEnabled ? 'bg-amber-500 justify-end' : 'bg-gray-700 justify-start'
@@ -947,6 +968,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={autoSpeakAnswer}
+                aria-label="Tự động đọc đáp án"
                 onClick={handleToggleAutoSpeak}
                 className={`w-11 h-6 flex items-center rounded-[2px] p-1 transition duration-300 cursor-pointer ${
                   autoSpeakAnswer ? 'bg-emerald-500 justify-end' : 'bg-gray-700 justify-start'

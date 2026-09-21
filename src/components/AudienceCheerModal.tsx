@@ -35,19 +35,32 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !mounted) return null;
 
   const modalContent = (
-    <div className="fluent-dialog-overlay z-[99999] animate-fadeIn">
-      {/* Click outside to close */}
-      <div className="absolute inset-0" onClick={onClose} />
-
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cheer-modal-title"
+      onClick={onClose}
+    >
       {/* Modal Dialog Card */}
       <div
-        className={`fluent-dialog p-5 sm:p-6 w-full max-w-lg animate-slideUpFade ${isHighContrast ? "bg-black/95 border-2 border-white text-white" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+        className={`fluent-dialog p-5 sm:p-6 w-full max-w-lg animate-slideUpFade flex flex-col ${isHighContrast ? "bg-black/95 border-2 border-white text-white" : ""}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/10 relative z-10">
+        <div className="fluent-dialog-header shrink-0 flex items-center justify-between pb-3 border-b border-white/10 relative z-10">
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-[2px] flex items-center justify-center border"
@@ -60,7 +73,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
               <Heart className="w-5 h-5 fill-current animate-pulse" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+              <h2 id="cheer-modal-title" className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
                 {localLanguage !== 'vi' ? 'STAGE BOOST' : 'TIẾP SỨC SÂN KHẤU'}
                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] bg-white/10 text-rose-300 border border-rose-500/30">
                   LIVE 100%
@@ -86,7 +99,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
         </div>
 
         {/* Body content */}
-        <div className="py-4 space-y-4 relative z-10 overflow-y-auto">
+        <div className="fluent-dialog-body py-4 space-y-4 relative z-10 scrollbar-thin">
           {/* Main Cheer Tap Component */}
           <AudienceCheerButton user={user} isHighContrast={isHighContrast} />
 
@@ -117,12 +130,12 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
         </div>
 
         {/* Footer info */}
-        <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-white/50">
+        <div className="fluent-dialog-footer shrink-0 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-white/50">
           <span>{t("cheer_sync", localLanguage)}</span>
           <button
             type="button"
             onClick={onClose}
-            className="text-rose-300 hover:text-rose-200 font-bold underline"
+            className="text-rose-300 hover:text-rose-200 font-bold underline cursor-pointer"
           >
             {localLanguage !== 'vi' ? 'Close' : 'Đóng bảng'}
           </button>

@@ -529,7 +529,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       const currentCount = seqItems ? seqItems.length : 0;
       showSeqWarningToast(
         t("view_sort_err_incomplete", localLanguage),
-        t("view_sort_incomplete", localLanguage).replace("{expected}", String(expectedCount)).replace("{current}", String(currentCount)).replace("{expected}", String(expectedCount)),
+        t("view_sort_incomplete", localLanguage)
+          .replaceAll("{expected}", String(expectedCount))
+          .replaceAll("{current}", String(currentCount)),
         'warning'
       );
       return;
@@ -1360,7 +1362,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
   if (gameState.panic_mode) {
     return (
-      <div className="flex-1 w-full h-full flex items-center justify-center relative z-[999] bg-red-950/90 backdrop-blur-md p-6">
+      <div className="flex-1 w-full h-full flex items-center justify-center relative z-30 bg-red-950/90 backdrop-blur-md p-6">
         <div className="max-w-md w-full text-center space-y-6">
           <div className="w-24 h-24 mx-auto rounded-full bg-red-600/20 flex items-center justify-center animate-pulse">
             <AlertOctagon className="w-12 h-12 text-red-500" />
@@ -1448,8 +1450,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         
       {/* Auto-Zoom Long Text Question Modal */}
       {isQuestionZoomed && isLongQuestion && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-lg animate-in fade-in duration-200" onClick={() => setIsQuestionZoomed(false)}>
-          <div className="w-full max-w-2xl bg-[#0f172a] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-lg animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsQuestionZoomed(false)}
+        >
+          <div
+            className="w-full max-w-2xl bg-[#0f172a] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))]"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
               <h3 className="text-[#F7CAC9] font-mono font-bold text-sm tracking-widest uppercase flex items-center gap-2">
                 <ZoomIn className="w-4 h-4" />
@@ -2281,7 +2291,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         {/* Floating Toast Notification for Drag & Drop / Sequencing Warnings */}
         {/* Small Success Toast */}
         {submitToast && (
-          <div className="fixed bottom-6 right-6 z-50 animate-fadeIn pointer-events-none">
+          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 right-4 sm:right-6 z-50 animate-fadeIn pointer-events-none">
             <div className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2.5 rounded-[2px] shadow-lg shadow-emerald-500/30">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-sm font-bold">{t("active_submitted", localLanguage)}</span>
@@ -2291,7 +2301,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
         {/* Mini-Tip Quick Guide */}
         {showMiniTip && (
-          <div className="fixed bottom-24 right-4 sm:right-6 z-50 animate-slideUp">
+          <div className="fixed bottom-[calc(80px+env(safe-area-inset-bottom,0px))] sm:bottom-24 right-4 sm:right-6 z-50 animate-slideUp">
             <div className="flex items-start gap-3 bg-[#190839]/95 backdrop-blur-xl border-2 border-[#F7CAC9]/40 text-white p-4 rounded-[2px] shadow-[0_0_30px_rgba(247,202,201,0.2)] max-w-xs sm:max-w-sm relative">
               <div className="bg-[#F7CAC9]/20 p-2 rounded-[2px] shrink-0 mt-0.5">
                 <HelpCircle className="w-5 h-5 text-[#F7CAC9] animate-pulse" />
@@ -2318,7 +2328,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
 
         {seqToast && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl pointer-events-auto">
+          <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl pointer-events-auto">
             <div className={`p-4 sm:p-5 rounded-[2px] border-2 backdrop-blur-2xl flex items-start gap-3.5 transition-all shadow-2xl ${
               seqToast.type === 'error'
                 ? 'bg-rose-950/95 border-rose-500 text-rose-100 shadow-rose-900/80'
@@ -2355,7 +2365,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
         {/* Tab switch / focus departure warning toast */}
         {showTabSwitchWarning && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl">
+          <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl">
             <div className="p-4 rounded-[2px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-rose-950/80">
               <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0">
                 <AlertTriangle className="w-5 h-5 animate-bounce" />
@@ -2380,7 +2390,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
         {/* Offline sync status notice */}
         {offlineNotice && (
-          <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn pointer-events-auto">
+          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn pointer-events-auto">
             <div className="flex items-center gap-2 bg-slate-900/95 border border-amber-400/50 text-amber-200 px-4 py-2.5 rounded-[2px] shadow-2xl text-xs font-semibold backdrop-blur-md">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
               <span>{offlineNotice}</span>
@@ -2983,8 +2993,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     
                     {/* Short Answer Confirm Modal */}
                     {isConfirmingShortAnswer && (
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[4px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp">
+                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true">
+                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[4px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
                           <div className="w-12 h-12 rounded-[2px] bg-amber-500/20 flex items-center justify-center mb-4">
                             <AlertCircle className="w-6 h-6 text-amber-400" />
                           </div>

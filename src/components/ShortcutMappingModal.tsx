@@ -246,18 +246,27 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[4px] shadow-2xl shadow-purple-950/80 overflow-hidden flex flex-col max-h-[92vh]">
+    <div 
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="shortcut-modal-title"
+    >
+      <div 
+        className="fluent-dialog fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[4px] shadow-2xl shadow-purple-950/80 flex flex-col text-white"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* ================= HEADER RIBBON ================= */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-purple-950/30">
+        <div className="fluent-dialog-header shrink-0 p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-purple-950/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[2px] bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-purple-300 shadow-md shadow-purple-950/50 shrink-0">
               <Keyboard className="w-5 h-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
+                <h3 id="shortcut-modal-title" className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
                   Trung Tâm Ánh Xạ Phím Tắt Sân Khấu BTI 2026
                 </h3>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] bg-purple-950 text-purple-300 border border-purple-500/40">
@@ -383,7 +392,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm chức năng, tên phím tắt (VD: space, khóa, bảng điểm, 1...)"
-              className="w-full pl-9 pr-3 py-1.5 rounded-[2px] bg-black/60 border border-white/15 text-white text-xs placeholder:text-white/30 focus:border-purple-400 focus:outline-none"
+              className="w-full pl-9 pr-3 py-1.5 rounded-[2px] bg-black/60 border border-white/15 text-white text-base sm:text-xs placeholder:text-white/30 focus:border-purple-400 focus:outline-none"
             />
             {searchQuery && (
               <button
@@ -410,8 +419,11 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setSelectedCategory(tab.id as any)}
-                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium whitespace-nowrap transition cursor-pointer ${
+                onClick={() => {
+                  setSelectedCategory(tab.id);
+                  soundFx.playClick();
+                }}
+                className={`px-2.5 py-1 rounded-[2px] text-xs font-mono transition shrink-0 cursor-pointer ${
                   selectedCategory === tab.id
                     ? 'bg-purple-600 text-white font-bold shadow'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -424,7 +436,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
         </div>
 
         {/* ================= SHORTCUTS LIST BENTO GRID ================= */}
-        <div className="p-3 sm:p-5 overflow-y-auto custom-scrollbar flex-1 space-y-3">
+        <div className="fluent-dialog-body p-3 sm:p-5 overflow-y-auto custom-scrollbar flex-1 space-y-3 scrollbar-thin">
           
           {feedbackMessage && (
             <div className="p-2.5 rounded-[2px] bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs font-mono flex items-center gap-2 animate-fadeIn">
@@ -523,13 +535,22 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
 
         {/* ================= KEY RECORDER MODAL OVERLAY ================= */}
         {editingShortcut && (
-          <div className="fixed inset-0 z-[100050] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-            <div className="fluent-box border border-purple-500/60 bg-gradient-to-b from-slate-950 via-[#101736] to-[#080d22] w-full max-w-md rounded-[4px] p-5 text-white shadow-2xl shadow-purple-950/90 space-y-4">
+          <div 
+            className="fluent-dialog-overlay z-[70] animate-fadeIn"
+            onClick={() => setEditingShortcut(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remapping-modal-title"
+          >
+            <div 
+              className="fluent-dialog fluent-box border border-purple-500/60 bg-gradient-to-b from-slate-950 via-[#101736] to-[#080d22] w-full max-w-md rounded-[4px] p-5 text-white shadow-2xl shadow-purple-950/90 space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
                   <Edit3 className="w-4 h-4 text-purple-400" />
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-white">
+                  <h4 id="remapping-modal-title" className="text-sm font-bold uppercase tracking-wider text-white">
                     Gán Phím Tắt Mới
                   </h4>
                 </div>

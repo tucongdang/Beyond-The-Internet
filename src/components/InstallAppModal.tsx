@@ -16,6 +16,15 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePwaInstall();
   const [installSuccess, setInstallSuccess] = useState(false);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleInstallClick = async () => {
@@ -35,11 +44,14 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
 
   const modalContent = (
     <div
-      className="fluent-dialog-overlay z-[999999] animate-fadeIn"
+      className="fluent-dialog-overlay z-[60] animate-fadeIn"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="install-app-title"
     >
       <div 
-        className="fluent-box border border-white/10 w-full max-w-md rounded-[4px] shadow-2xl overflow-hidden p-6 relative text-[#F5EFF9]"
+        className="fluent-dialog fluent-box border border-white/10 w-full max-w-md rounded-[4px] shadow-2xl flex flex-col p-6 relative text-[#F5EFF9]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -61,7 +73,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">
+              <h3 id="install-app-title" className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">
                 {localLanguage !== 'vi' ? 'Install Web App' : 'Cài Đặt Ứng Dụng'}
               </h3>
               <span className="text-[10px] px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] font-bold border border-[#F7CAC9]/30">

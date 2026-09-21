@@ -91,7 +91,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
       role="alert"
       aria-live="assertive"
       style={{ left: 'auto' }}
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-auto z-[9999] max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
+      className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] right-4 sm:bottom-6 sm:right-6 left-auto z-50 max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
     >
       {/* Fluent UI 2 Top Highlight Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 pointer-events-none z-10" />

@@ -83,6 +83,15 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
   const [expandedExplanation, setExpandedExplanation] = useState<Record<string, boolean>>({});
   const [isCopied, setIsCopied] = useState(false);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // 1. Consolidate list of reviewable questions from session
   const logEntries: LogEntryItem[] = useMemo(() => {
     if (!user) return [];
@@ -310,22 +319,25 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
 
   return createPortal(
     <div
-      className="fluent-dialog-overlay animate-fadeIn select-none z-[9999999]"
+      className="fluent-dialog-overlay animate-fadeIn select-none z-[60]"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="log-modal-title"
     >
       <div
-        className="fluent-box border border-white/10 w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] h-full rounded-[2px] shadow-2xl flex flex-col overflow-hidden text-white relative my-auto"
+        className="fluent-dialog fluent-box border border-white/10 w-full max-w-4xl rounded-[2px] shadow-2xl flex flex-col text-white relative my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 fluent-box-nested border-b border-white/10 flex items-center justify-between shrink-0">
+        <div className="fluent-dialog-header p-4 sm:p-5 fluent-box-nested border-b border-white/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-[2px] fluent-box border border-[#F7CAC9]/40 text-[#F7CAC9] flex items-center justify-center font-bold shadow-md">
               <History className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+                <h2 id="log-modal-title" className="text-base sm:text-lg font-extrabold text-white tracking-tight">
                   {t("log_title", localLanguage)}
                 </h2>
                 <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30">
@@ -415,7 +427,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               placeholder={localLanguage !== 'vi' ? 'Search by question ID, content, answer...' : 'Tìm theo mã câu, nội dung câu hỏi, đáp án...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full fluent-box border border-white/10 focus:border-[#F7CAC9] rounded-[2px] pl-9 pr-8 py-2 text-xs font-mono text-white placeholder-white/30 outline-none transition"
+              className="w-full fluent-box border border-white/10 focus:border-[#F7CAC9] rounded-[2px] pl-9 pr-8 py-2 text-base sm:text-xs font-mono text-white placeholder-white/30 outline-none transition"
             />
             {searchTerm && (
               <button
@@ -435,7 +447,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
               soundFx.playClick();
               setRoundFilter(e.target.value);
             }}
-            className="fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3 py-2 text-xs font-mono text-white outline-none cursor-pointer"
+            className="fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3 py-2 text-base sm:text-xs font-mono text-white outline-none cursor-pointer"
           >
             <option value="ALL" className="bg-[#190839] text-white">{t("log_all_rounds", localLanguage)}</option>
             <option value="ROUND1" className="bg-[#190839] text-white">{t("log_round1", localLanguage)}</option>
@@ -475,7 +487,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
         </div>
 
         {/* Scrollable Log Entries List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="fluent-dialog-body flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin">
           {!user ? (
             <div className="text-center py-16 p-6 rounded-[2px] fluent-box-nested border border-white/10">
               <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-3 animate-pulse" />

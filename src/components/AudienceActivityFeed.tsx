@@ -100,7 +100,7 @@ export const AudienceActivityFeed: React.FC<AudienceActivityFeedProps> = ({ game
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-4 left-4 z-50 flex flex-col gap-2 pointer-events-none">
       <AnimatePresence>
         {toasts.map(toast => (
           <motion.div

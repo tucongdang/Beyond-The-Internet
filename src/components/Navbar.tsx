@@ -234,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header
       id="app-navbar"
-      className="sticky top-0 z-[100] w-full fluent-navbar text-[#e5e5e5] select-none transition-all"
+      className="sticky top-0 z-40 w-full fluent-navbar text-[#e5e5e5] select-none transition-all"
     >
       <div 
         className="max-w-[1400px] mx-auto px-3 sm:px-5 h-15 flex items-center justify-between gap-3"

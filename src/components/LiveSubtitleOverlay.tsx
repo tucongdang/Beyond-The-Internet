@@ -45,9 +45,9 @@ export const LiveSubtitleOverlay: React.FC = () => {
   return createPortal(
     <aside
       aria-label="Live Subtitles"
-      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-xl pointer-events-auto animate-in fade-in slide-in-from-bottom-3 duration-200"
+      className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-xl pointer-events-auto animate-in fade-in slide-in-from-bottom-3 duration-200"
     >
-      <div className="bg-black/90 backdrop-blur-md border border-emerald-500/40 rounded-lg p-3.5 shadow-2xl shadow-emerald-950/50 text-white flex flex-col gap-2">
+      <div className="bg-black/90 backdrop-blur-md border border-emerald-500/40 rounded-[4px] p-3.5 shadow-2xl shadow-emerald-950/50 text-white flex flex-col gap-2">
         <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">

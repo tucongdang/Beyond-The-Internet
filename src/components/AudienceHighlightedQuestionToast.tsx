@@ -119,7 +119,7 @@ export const AudienceHighlightedQuestionToast: React.FC<AudienceHighlightedQuest
   return (
     <AnimatePresence>
       {isVisible && (
-        <div className="fixed top-14 sm:top-5 left-0 right-0 z-[60] flex justify-center pointer-events-none px-3 sm:px-4">
+        <div className="fixed top-[calc(3.75rem+env(safe-area-inset-top,0px))] sm:top-5 left-0 right-0 z-50 flex justify-center pointer-events-none px-3 sm:px-4">
           <motion.div
             id="toast-audience-highlighted-qa"
             initial={{ opacity: 0, y: -25, scale: 0.94 }}
