@@ -234,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header
       id="app-navbar"
-      className="sticky top-0 z-40 w-full fluent-navbar text-[#e5e5e5] select-none transition-all"
+      className="sticky top-0 z-40 w-full max-w-full overflow-x-hidden fluent-navbar text-[#e5e5e5] select-none transition-all"
     >
       <div 
         className="max-w-[1400px] mx-auto px-3 sm:px-5 h-15 flex items-center justify-between gap-3"
@@ -272,7 +272,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right: Telemetry & Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Admin Quick Controls Group */}
           {currentView === 'admin' && (
             <div className="hidden sm:inline-flex fluent-action-group">
@@ -398,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Battery Status Indicator */}
-            <div>
+            <div className="hidden sm:block">
               <BatteryIndicator forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
             </div>
 
@@ -411,7 +411,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }
               data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
               data-tooltip-placement="bottom"
-              className="has-tooltip flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
+              className="has-tooltip hidden sm:flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
             >
               <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
                 {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}

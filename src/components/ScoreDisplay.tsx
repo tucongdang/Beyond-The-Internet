@@ -167,7 +167,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
 
 
   return (
-    <div id="bti-score-display" className={`fluent-box border-b border-white/10 text-white sticky top-0 z-40 shadow-xl ${className}`}>
+    <div id="bti-score-display" className={`fluent-box border-b border-white/10 text-white sticky top-0 z-40 shadow-xl max-w-full overflow-x-hidden ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
         <div 
           className="flex items-center justify-between cursor-pointer select-none active:opacity-80"
@@ -219,7 +219,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {isWakeLockSupported !== false && onToggleWakeLock && (
               <button
                 type="button"
@@ -283,7 +283,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onOpenLogModal();
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
+                className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
                 title={t("view_score_log_title", localLanguage)}
               >
                 <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -301,7 +301,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onOpenPostMatchModal();
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
+                className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
                 title="Xuất thẻ thành tích Infographic (Post-Match Card)"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />

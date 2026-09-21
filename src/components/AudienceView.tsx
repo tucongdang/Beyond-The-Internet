@@ -1,5 +1,6 @@
 import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
 import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { syncService } from '../services/syncService';
@@ -1398,7 +1399,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return (
       <div
         id="audience-unregistered-banner"
-        className="min-h-[calc(100dvh-4rem)] flex items-center justify-center p-4"
+        className="min-h-[calc(100dvh-10rem)] flex items-center justify-center p-4 pb-8"
       >
         <div className="max-w-md w-full fluent-box rounded-[2px] p-6 sm:p-8 text-center text-white shadow-2xl relative overflow-hidden">
           <div className="w-16 h-16 rounded-[2px] bg-gradient-to-tr from-[#F7CAC9] to-[#F7CAC9] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#F7CAC9]/30">
@@ -2286,7 +2287,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return (
       <div
         id="audience-state-active"
-        className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 pb-28 sm:pb-8 text-white space-y-5 relative"
+        className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 pb-6 sm:pb-8 text-white space-y-5 relative"
       >
         {/* Floating Toast Notification for Drag & Drop / Sequencing Warnings */}
         {/* Small Success Toast */}
@@ -4061,7 +4062,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       <div className="px-3 sm:px-6 pt-2 max-w-7xl mx-auto w-full z-40 relative">
         <NextQuestionCountdown gameState={props.gameState} compact={false} />
       </div>
-      <div className={`flex-1 overflow-x-hidden ${hasAnnouncer ? 'pb-44 sm:pb-16' : 'pb-32 sm:pb-0'}`}>
+      <div className={`flex-1 overflow-x-hidden ${hasAnnouncer ? 'pb-44 sm:pb-16' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-6'}`}>
         <AudienceViewContent 
           {...props} 
           onOpenLogModal={handleOpenLogModal}
@@ -4138,116 +4139,119 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       </div>
 
       {/* Mobile Bottom Navigation Bar (Optimized for iOS Safe Area & Touch Targets) */}
-      <nav 
-        id="audience-mobile-bottom-nav"
-        aria-label={t("view_nav_audience", localLanguage)}
-        className={`sm:hidden fixed bottom-0 left-0 right-0 min-h-[62px] h-[calc(58px+env(safe-area-inset-bottom,0px))] ${
-        isHighContrast 
-          ? 'bg-black/95 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
-          : 'bg-[#140628]/95 backdrop-blur-xl border-t border-[#3E1D74]/70 shadow-[0_-10px_35px_rgba(0,0,0,0.6)]'
-      } z-50 flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,6px)] pt-1`}
-      >
-        <button
-          type="button"
-          aria-label={t("view_nav_contest", localLanguage)}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-white font-bold' : 'text-[#F7CAC9]'
-          }`}
+      {typeof document !== 'undefined' && createPortal(
+        <nav 
+          id="audience-mobile-bottom-nav"
+          aria-label={t("view_nav_audience", localLanguage)}
+          className={`sm:hidden fixed bottom-0 left-0 right-0 min-h-[62px] h-[calc(58px+env(safe-area-inset-bottom,0px))] ${
+          isHighContrast 
+            ? 'bg-black/95 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
+            : 'bg-[#140628]/95 backdrop-blur-xl border-t border-[#3E1D74]/70 shadow-[0_-10px_35px_rgba(0,0,0,0.6)]'
+        } z-50 flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,6px)] pt-1`}
         >
-          <Home className="w-5 h-5 drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_contest", localLanguage)}</span>
-          <span className="w-1 h-1 rounded-full bg-[#F7CAC9] mt-0.5" />
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_shout", localLanguage)}
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsShoutModalOpen(true);
-          }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-pink-400 font-bold' : 'text-pink-400 hover:text-pink-300'
-          }`}
-        >
-          <Megaphone className="w-5 h-5 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_shout", localLanguage)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_cheering", localLanguage)}
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsCheerModalOpen(true);
-          }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-rose-400 font-bold' : 'text-rose-400 hover:text-rose-300'
-          }`}
-        >
-          <Heart className="w-5 h-5 fill-current text-rose-400 animate-pulse drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_cheer", localLanguage)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_qna", localLanguage)}
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsQAModalOpen(true);
-          }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-sky-400 font-bold' : 'text-sky-300 hover:text-sky-200'
-          }`}
-        >
-          <MessageSquare className="w-5 h-5 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_qna", localLanguage)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_invite", localLanguage)}
-          onClick={() => {
-            vibrateTap();
-            soundFx.playClick();
-            handleOpenShareModal();
-          }}
-          className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
-          }`}
-        >
-          <QrCode className="w-5 h-5 text-[#F7CAC9]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_invite", localLanguage)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_log", localLanguage)}
-          onClick={() => {
-            vibrateTap();
-            soundFx.playClick();
-            handleOpenLogModal();
-          }}
-          className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
-          }`}
-        >
-          <History className="w-5 h-5 text-[#F7CAC9]" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_log", localLanguage)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={t("view_nav_profile", localLanguage)}
-          onClick={() => {
-            vibrateTap();
-            props.onOpenProfile();
-          }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-            isHighContrast ? 'text-white/90 hover:text-white' : 'text-white/60 hover:text-white'
-          }`}
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[9px] font-bold tracking-tight">{t("view_profile", localLanguage)}</span>
-        </button>
-      </nav>
+          <button
+            type="button"
+            aria-label={t("view_nav_contest", localLanguage)}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-white font-bold' : 'text-[#F7CAC9]'
+            }`}
+          >
+            <Home className="w-5 h-5 drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_contest", localLanguage)}</span>
+            <span className="w-1 h-1 rounded-full bg-[#F7CAC9] mt-0.5" />
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_shout", localLanguage)}
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsShoutModalOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-pink-400 font-bold' : 'text-pink-400 hover:text-pink-300'
+            }`}
+          >
+            <Megaphone className="w-5 h-5 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_shout", localLanguage)}</span>
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_cheering", localLanguage)}
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsCheerModalOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-rose-400 font-bold' : 'text-rose-400 hover:text-rose-300'
+            }`}
+          >
+            <Heart className="w-5 h-5 fill-current text-rose-400 animate-pulse drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_cheer", localLanguage)}</span>
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_qna", localLanguage)}
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsQAModalOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-sky-400 font-bold' : 'text-sky-300 hover:text-sky-200'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_qna", localLanguage)}</span>
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_invite", localLanguage)}
+            onClick={() => {
+              vibrateTap();
+              soundFx.playClick();
+              handleOpenShareModal();
+            }}
+            className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
+            }`}
+          >
+            <QrCode className="w-5 h-5 text-[#F7CAC9]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_invite", localLanguage)}</span>
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_log", localLanguage)}
+            onClick={() => {
+              vibrateTap();
+              soundFx.playClick();
+              handleOpenLogModal();
+            }}
+            className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
+            }`}
+          >
+            <History className="w-5 h-5 text-[#F7CAC9]" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_log", localLanguage)}</span>
+          </button>
+          <button
+            type="button"
+            aria-label={t("view_nav_profile", localLanguage)}
+            onClick={() => {
+              vibrateTap();
+              props.onOpenProfile();
+            }}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-white/90 hover:text-white' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[9px] font-bold tracking-tight">{t("view_profile", localLanguage)}</span>
+          </button>
+        </nav>,
+        document.body
+      )}
 
       {/* Audience Shout Modal */}
       <AudienceShoutModal
