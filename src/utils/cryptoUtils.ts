@@ -5,23 +5,31 @@
  */
 
 /**
- * Returns a cryptographically secure random integer between min and max (inclusive)
+ * Returns an unbiased cryptographically secure random integer between min and max (inclusive).
+ * Uses rejection sampling to completely eliminate modulo bias (CWE-338 / CodeQL js/biased-cryptographic-random).
  */
 export function getSecureRandomInt(min: number, max: number): number {
   if (min >= max) return min;
   const range = max - min + 1;
   const array = new Uint32Array(1);
 
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(array);
-  } else {
-    // Standard Node.js crypto fallback
-    const nodeCrypto = require('crypto');
-    const buf = nodeCrypto.randomBytes(4);
-    array[0] = buf.readUInt32LE(0);
-  }
+  // Largest multiple of range that fits in 32-bit unsigned integer (2^32 = 4294967296)
+  const maxMultiple = Math.floor(4294967296 / range) * range;
 
-  return min + (array[0] % range);
+  let rand: number;
+  do {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      crypto.getRandomValues(array);
+      rand = array[0];
+    } else {
+      // Standard Node.js crypto fallback
+      const nodeCrypto = require('crypto');
+      const buf = nodeCrypto.randomBytes(4);
+      rand = buf.readUInt32LE(0);
+    }
+  } while (rand >= maxMultiple);
+
+  return min + Math.floor((rand / maxMultiple) * range);
 }
 
 /**
