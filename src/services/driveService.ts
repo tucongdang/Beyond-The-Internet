@@ -16,7 +16,7 @@ export const driveService = {
 
   async authenticate(interactive: boolean = false): Promise<string | null> {
     if (cachedAccessToken) return cachedAccessToken;
-    if (!interactive) return null;
+    if (!interactive || !auth) return null;
     
     try {
       const result = await signInWithPopup(auth, provider);

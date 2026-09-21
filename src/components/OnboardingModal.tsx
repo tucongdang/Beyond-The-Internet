@@ -82,6 +82,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setErrorMsg(null);
     setLoading(true);
     try {
+      if (!auth) {
+        throw new Error('Firebase Auth chưa được khởi tạo. Vui lòng kiểm tra lại cấu hình kết nối.');
+      }
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       

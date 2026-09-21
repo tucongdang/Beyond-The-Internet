@@ -240,7 +240,9 @@ export default function App() {
   // User Profile
   const handleAudienceLogout = () => {
     try {
-      signOut(auth || getAuth());
+      if (auth) {
+        signOut(auth);
+      }
     } catch (e) {
       console.error('SignOut error:', e);
     }
@@ -316,61 +318,67 @@ export default function App() {
   const [isOfflineBannerDismissed, setIsOfflineBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!auth) return;
     let unsubsDoc: (() => void) | null = null;
-    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (unsubsDoc) {
-        unsubsDoc();
-        unsubsDoc = null;
-      }
-      if (firebaseUser) {
-        const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
-        let shouldListen = false;
-        
-        if (saved) {
-          const localProfile: UserInfo = saved;
-          if (localProfile.uid === firebaseUser.uid) {
-            if (!localProfile.anonymizedUid || localProfile.anonymizedUid.length !== 12) {
-              localProfile.anonymizedUid = generate12DigitUID(
-                localProfile.name || '',
-                localProfile.mssv || '',
-                localProfile.gender || '1',
-                localProfile.birthYear || '2004'
-              );
-              setSecureItem('BTI2026_USER_PROFILE', localProfile);
-              try {
-                await setDoc(doc(db, 'users', localProfile.uid), localProfile, { merge: true });
-              } catch (e) {
-                console.error("Failed to update user 12-digit UID in firestore", e);
-              }
-            }
-            setUser(localProfile);
-            shouldListen = true;
-          }
+    let unsubscribeAuth: (() => void) | null = null;
+    try {
+      unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (unsubsDoc) {
+          unsubsDoc();
+          unsubsDoc = null;
         }
-        
-        if (shouldListen) {
-          // Listen for remote changes
-          unsubsDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
-            if (docSnap.exists()) {
-              const profile = docSnap.data() as UserInfo;
-              setUser(prev => {
-                if (prev && JSON.stringify(prev) !== JSON.stringify(profile)) {
-                  setSecureItem('BTI2026_USER_PROFILE', profile);
-                  return profile;
+        if (firebaseUser) {
+          const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
+          let shouldListen = false;
+          
+          if (saved) {
+            const localProfile: UserInfo = saved;
+            if (localProfile.uid === firebaseUser.uid) {
+              if (!localProfile.anonymizedUid || localProfile.anonymizedUid.length !== 12) {
+                localProfile.anonymizedUid = generate12DigitUID(
+                  localProfile.name || '',
+                  localProfile.mssv || '',
+                  localProfile.gender || '1',
+                  localProfile.birthYear || '2004'
+                );
+                setSecureItem('BTI2026_USER_PROFILE', localProfile);
+                try {
+                  await setDoc(doc(db, 'users', localProfile.uid), localProfile, { merge: true });
+                } catch (e) {
+                  console.error("Failed to update user 12-digit UID in firestore", e);
                 }
-                return prev || profile;
-              });
+              }
+              setUser(localProfile);
+              shouldListen = true;
             }
-          }, (err) => {
-            console.warn('Firestore user profile listener error:', err);
-          });
+          }
+          
+          if (shouldListen) {
+            // Listen for remote changes
+            unsubsDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+              if (docSnap.exists()) {
+                const profile = docSnap.data() as UserInfo;
+                setUser(prev => {
+                  if (prev && JSON.stringify(prev) !== JSON.stringify(profile)) {
+                    setSecureItem('BTI2026_USER_PROFILE', profile);
+                    return profile;
+                  }
+                  return prev || profile;
+                });
+              }
+            }, (err) => {
+              console.warn('Firestore user profile listener error:', err);
+            });
+          }
+        } else {
+          // Logged out
         }
-      } else {
-        // Logged out
-      }
-    });
+      });
+    } catch (err) {
+      console.warn('[App] onAuthStateChanged initialization error:', err);
+    }
     return () => {
-      unsubscribeAuth();
+      if (unsubscribeAuth) unsubscribeAuth();
       if (unsubsDoc) unsubsDoc();
     };
   }, []);
