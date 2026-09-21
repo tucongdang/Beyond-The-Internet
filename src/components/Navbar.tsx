@@ -659,7 +659,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
                 <div>
                   <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
-                    <span>Firebase Ping</span>
+                    <span>{effectiveLanguage === 'en' ? 'Server Latency' : 'Độ Trễ Máy Chủ'}</span>
                     <span className={`text-[9px] px-1.5 py-0.2 rounded-[2px] font-mono font-bold uppercase tracking-wider ${
                       pingInfo.quality === 'excellent'
                         ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
@@ -715,7 +715,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {currentView === 'admin' && (
               <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
-                <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">Điều Khiển Admin</span>
+                <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">Điều Hành Ban Tổ Chức</span>
                 
                 <button
                   onClick={() => {
@@ -729,7 +729,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'bg-amber-950/40 text-amber-300 border-amber-500/30'
                   }`}
                 >
-                  <Database className="w-4 h-4" /> {isFirebaseConnected ? 'Firebase Live Sync' : 'Đồng bộ Cục bộ (Offline)'}
+                  <Database className="w-4 h-4" /> {isFirebaseConnected ? 'Đồng Bộ Trực Tiếp (Live)' : 'Đồng Bộ Cục Bộ (Ngoại Tuyến)'}
                 </button>
 
                 {onOpenQrCode && (
@@ -765,7 +765,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="px-3 py-2.5 bg-rose-950/30 text-rose-300 rounded-[2px] flex items-center gap-2.5 font-semibold text-left border border-rose-500/30 text-xs"
                   >
-                    <LogOut className="w-4 h-4" /> Đăng Xuất Admin
+                    <LogOut className="w-4 h-4" /> Đăng Xuất Ban Tổ Chức
                   </button>
                 )}
 

@@ -2601,15 +2601,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div className="min-w-0">
             <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
               <h1 className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white truncate sm:overflow-visible">
-                ADMIN CONTROL CENTER
+                TRUNG TÂM ĐIỀU HÀNH BTI 2026
               </h1>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-bold bg-blue-600/80 text-blue-100 uppercase tracking-wider whitespace-nowrap border border-blue-400/40 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-400 animate-pulse" />
-                NODE 07 • MASTER
+                MÁY CHỦ CHÍNH • MASTER
               </span>
             </div>
             <p className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-normal sm:tracking-[0.15em] font-mono break-words">
-              Beyond The Internet 2026 • Live Orchestration & SPSS Pipeline
+              Beyond The Internet 2026 • Điều Phối Trực Tiếp & Phân Tích Dữ Liệu
             </p>
           </div>
         </div>
@@ -2635,7 +2635,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         {/* Fluent UI Header Action Bar (Cụm 3: Action Controls) */}
         <div className="fluent-action-bar flex-wrap justify-start xl:justify-end gap-2 w-full xl:w-auto order-2 xl:order-3 mt-3 xl:mt-0">
           {/* Group 1: Màn Chiếu & Phát Sóng (Broadcast & Stage Display) */}
-          <div className="fluent-action-group flex-1 sm:flex-initial justify-center sm:justify-start">
+          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start">
             {/* Snap Audience Interaction Button */}
             <button
               type="button"
@@ -2643,7 +2643,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               onClick={() => handleSnapAudienceInteraction()}
               disabled={isSnapping}
               data-tooltip="Chụp ảnh màn chiếu sân khấu (Biểu đồ, Đám mây từ khóa, Phản hồi) lưu vào Nhật ký phát sóng"
-              data-tooltip-title="Snapshot Màn Chiếu"
+              data-tooltip-title="Chụp Màn Chiếu"
               data-tooltip-variant="accent"
               className={`has-tooltip fluent-action-btn ${
                 isSnapping
@@ -2652,7 +2652,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <Camera className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isSnapping ? 'animate-spin' : 'text-pink-200'}`} />
-              <span>{isSnapping ? 'Đang Chụp...' : '📸 Snap Màn Chiếu'}</span>
+              <span>{isSnapping ? 'Đang Chụp...' : '📸 Chụp Màn Chiếu'}</span>
               <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono bg-black/40 text-pink-200 border border-pink-400/30">
                 {snapshotCount}
               </span>
@@ -2673,10 +2673,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <QrCode className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.show_qr ? 'text-white' : 'text-sky-400'}`} />
-              <span>Live QR</span>
+              <span>Mã QR Live</span>
               {gameState.show_qr ? (
                 <span className="px-1.5 py-0.2 text-[9px] font-mono bg-sky-950/80 rounded-[2px] text-sky-200 uppercase font-extrabold tracking-wider">
-                  ON
+                  BẬT
                 </span>
               ) : (
                 <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-sky-500/30 text-sky-200">
@@ -2693,10 +2693,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               onClick={() => {
                 const nextState = !gameState.panic_mode;
                 syncService.updateGameState({ panic_mode: nextState });
-                triggerHudToast('PANIC', nextState ? 'ĐÃ KÍCH HOẠT PANIC MODE' : 'Đã TẮT Panic Mode');
+                triggerHudToast('PANIC', nextState ? 'ĐÃ KÍCH HOẠT KHÓA KHẨN CẤP' : 'Đã TẮT Khóa Khẩn Cấp');
               }}
-              data-tooltip="[PANIC MODE] Ẩn tất cả đáp án và khóa quyền gửi bài trên toàn bộ thiết bị khán giả ngay lập tức"
-              data-tooltip-title="Khẩn Cấp"
+              data-tooltip="[KHÓA KHẨN CẤP] Ẩn tất cả đáp án và khóa quyền gửi bài trên toàn bộ thiết bị khán giả ngay lập tức"
+              data-tooltip-title="Khóa Khẩn Cấp (Panic)"
               className={`has-tooltip fluent-action-btn ${
                 gameState.panic_mode
                   ? 'bg-red-600 text-white border-red-400 shadow-md shadow-red-900/50 ring-2 ring-red-500 animate-pulse'
@@ -2704,9 +2704,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <AlertOctagon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.panic_mode ? 'text-white animate-bounce' : 'text-red-400'}`} />
-              <span className="font-bold">{gameState.panic_mode ? 'PANIC ON' : 'PANIC'}</span>
+              <span className="font-bold">{gameState.panic_mode ? 'ĐÃ KHÓA KHẨN' : 'KHẨN CẤP'}</span>
             </button>
-{/* Announcer Overlay Trigger */}
+
+            {/* Announcer Overlay Trigger */}
             <button
               type="button"
               id="btn-admin-header-announcer"
@@ -2726,7 +2727,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <Megaphone className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.announcer_overlay?.active && gameState.announcer_overlay?.text ? 'text-cyan-300 animate-bounce' : 'text-cyan-400'}`} />
-              <span>Thông Báo Live</span>
+              <span>Chữ Chạy Live</span>
               {gameState.announcer_overlay?.active && gameState.announcer_overlay?.text ? (
                 <span className="w-2 h-2 rounded-[2px] bg-cyan-400 animate-ping" />
               ) : (
@@ -2744,17 +2745,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 setShowMcCoPilotModal(true);
               }}
               data-tooltip="AI gợi ý lời dẫn trực tiếp cho MC dựa trên phân phối đáp án khán giả"
-              data-tooltip-title="AI MC Co-pilot"
+              data-tooltip-title="Trợ Lý MC AI"
               data-tooltip-variant="accent"
               className="has-tooltip fluent-action-btn text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border-amber-500/40"
             >
               <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-              <span>AI MC Co-pilot</span>
+              <span>Trợ Lý MC AI</span>
             </button>
           </div>
 
           {/* Group 2: Khảo Sát & Xuất Dữ Liệu (Polls & Data Intelligence) */}
-          <div className="fluent-action-group flex-1 sm:flex-initial justify-center sm:justify-start">
+          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start">
             {/* Emergency Poll Trigger */}
             <button
               type="button"
@@ -2794,7 +2795,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               className="has-tooltip fluent-action-btn text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-500/40 shadow-sm"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-              <span>Xuất CSV</span>
+              <span>Xuất CSV (SPSS)</span>
               <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono bg-emerald-900/60 text-emerald-200 border border-emerald-500/30">
                 {spssRows.length}
               </span>
@@ -2803,13 +2804,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
 
           {/* Group 3: Điều Phối Khán Giả & Màn Chiếu (Stage Orchestration) */}
-          <div className="fluent-action-group flex-1 sm:flex-initial justify-center sm:justify-start">
+          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start">
             {onViewChange && (
               <button
                 type="button"
                 id="btn-admin-header-pause"
                 onClick={() => openConfirm(
-                  'Tạm dừng Game?',
+                  'Tạm dừng Trận Đấu?',
                   'Cảnh báo: Hành động này sẽ chuyển TẤT CẢ khán giả về Màn Hình Chờ (Pause). Bạn có chắc chắn?',
                   () => syncService.updateGameState({ force_route: 'client_landing', force_route_ts: Date.now() }),
                   'Đồng ý Tạm Dừng'
@@ -2820,7 +2821,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 className="has-tooltip fluent-action-btn text-amber-300 bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/30"
               >
                 <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-                <span>Tạm Dừng</span>
+                <span>Tạm Dừng Trận</span>
               </button>
             )}
 
@@ -2829,8 +2830,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 type="button"
                 id="btn-admin-header-resume"
                 onClick={() => openConfirm(
-                  'Tiếp tục Game?',
-                  'Hành động này sẽ ĐƯA TẤT CẢ khán giả trở lại màn hình thi đấu (Audience View). Bạn có chắc chắn?',
+                  'Tiếp tục Trận Đấu?',
+                  'Hành động này sẽ ĐƯA TẤT CẢ khán giả trở lại màn hình thi đấu trực tiếp (Audience View). Bạn có chắc chắn?',
                   () => syncService.updateGameState({ force_route: 'audience', force_route_ts: Date.now() }),
                   'Đồng ý Tiếp Tục'
                 )}
@@ -2840,7 +2841,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 className="has-tooltip fluent-action-btn text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30"
               >
                 <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-                <span>Tiếp Tục</span>
+                <span>Tiếp Tục Trận</span>
               </button>
             )}
 
@@ -2852,7 +2853,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 const newState = !gameState.projector_dimmed;
                 syncService.updateGameState({ projector_dimmed: newState });
               }}
-              data-tooltip="Làm mờ/Ẩn tạm thời nội dung trên màn chiếu LED sân khấu"
+              data-tooltip="Ẩn/Mờ tạm thời nội dung trên màn chiếu LED sân khấu"
               data-tooltip-title="Màn Chiếu Sân Khấu"
               className={`has-tooltip fluent-action-btn ${
                 gameState.projector_dimmed 
@@ -2861,7 +2862,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               {gameState.projector_dimmed ? <MonitorOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" /> : <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" />}
-              <span>{gameState.projector_dimmed ? 'Đang Mờ' : 'Làm Mờ'}</span>
+              <span>{gameState.projector_dimmed ? 'Đang Ẩn Màn Chiếu' : 'Ẩn Màn Chiếu'}</span>
             </button>
             
             {/* Show Summary / Leaderboard Button */}
@@ -2889,11 +2890,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <Trophy className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.show_summary ? 'text-white' : 'text-amber-400'}`} />
-              <span>Tổng Kết</span>
+              <span>Bảng Tổng Kết</span>
             </button>
           </div>
           {/* Group 4: Giám Sát & Trợ Giúp (Telemetry & Shortcuts) */}
-          <div className="fluent-action-group flex-1 sm:flex-initial justify-center sm:justify-start">
+          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start">
             <button
               type="button"
               id="btn-admin-header-network-monitor"

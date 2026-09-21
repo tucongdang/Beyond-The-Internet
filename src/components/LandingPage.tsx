@@ -22,8 +22,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const { localLanguage } = useLanguage();
 
   return (
-    <div className="w-full min-h-full bg-transparent relative flex flex-col items-center justify-center text-[#F5EFF9] p-4 sm:p-8 pb-24 select-none">
-      <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center py-8 sm:py-14">
+    <div className="w-full min-h-full bg-transparent relative flex flex-col items-center justify-start text-[#F5EFF9] px-4 py-6 sm:p-8 pb-24 select-none">
+      <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center my-auto py-4 sm:py-8">
         
         {/* Top Horizon Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 fluent-box-nested rounded-[2px] text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6 shadow-sm border border-[#F7CAC9]/20 animate-fadeIn">

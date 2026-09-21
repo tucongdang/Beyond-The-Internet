@@ -166,33 +166,41 @@ html, body, #root {
   padding: 0;
 }
 
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(247, 202, 201, 0.3) transparent !important;
+}
+
 html {
   font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(247, 202, 201, 0.3) transparent;
 }
 
 /* Custom sleek scrollbar for WebKit browsers (removes wide gray native Windows bars & arrows) */
+*::-webkit-scrollbar,
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+*::-webkit-scrollbar-track,
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+*::-webkit-scrollbar-thumb,
 ::-webkit-scrollbar-thumb {
   background: rgba(247, 202, 201, 0.25);
   border-radius: 3px;
 }
+*::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(247, 202, 201, 0.45);
 }
+*::-webkit-scrollbar-button,
 ::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 body, input, button, select, textarea {
@@ -1029,9 +1037,11 @@ body.battery-saver-active,
 
 .fluent-action-group {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem;
+  max-width: 100%;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

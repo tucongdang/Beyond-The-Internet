@@ -558,7 +558,7 @@ export default function App() {
       {/* Audience Notification Toast (Hidden on Admin & Projector views) */}
       <NotificationToast userUid={user?.uid} gameState={gameState} currentView={currentView} />
       {/* Top Navigation */}
-      {currentView !== 'landing' && currentView !== 'projector' && (
+      {currentView !== 'projector' && (
       <Navbar
         currentView={currentView}
         onViewChange={(view) => {
