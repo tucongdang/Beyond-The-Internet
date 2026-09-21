@@ -283,7 +283,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onOpenLogModal();
                 }}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
+                className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
                 title={t("view_score_log_title", localLanguage)}
               >
                 <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -301,7 +301,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                   vibrateTap();
                   onOpenPostMatchModal();
                 }}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
+                className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
                 title="Xuất thẻ thành tích Infographic (Post-Match Card)"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -314,7 +314,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               type="button"
               id="btn-audience-fullscreen-toggle"
               onClick={handleToggleFullscreen}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
+              className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
                 isFullscreen
                   ? 'fluent-box-nested text-indigo-200 border-indigo-400'
                   : 'fluent-box-nested hover:bg-white/15 text-slate-300 hover:text-white border-white/10'
@@ -332,7 +332,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             {/* Battle Royale Survival Status Pill */}
             {survivalStats.totalContestants > 0 && (
               <div 
-                className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold"
+                className="hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold"
                 title={`Đấu trường sinh tử: ${survivalStats.survivorsCount}/${survivalStats.totalContestants} bất bại (${survivalStats.survivalRate}%)`}
               >
                 <Shield className={`w-3.5 h-3.5 ${survivalStats.isUserAlive ? 'text-emerald-400' : 'text-slate-400'}`} />
@@ -342,7 +342,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               </div>
             )}
 
-            <div className="hidden sm:flex px-3 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
+            <div className="hidden lg:flex px-3 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
               <Star className="w-3.5 h-3.5 text-purple-400 fill-purple-400/50" />
               <span>{t("score_rank", localLanguage).toUpperCase()} #{stats.rank}</span>
             </div>
@@ -362,6 +362,42 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 <span className="text-[10px] px-2 py-1 fluent-box-nested text-emerald-300 rounded-[2px] font-mono">{stats.accuracyRate}% {t("score_accuracy", localLanguage)}</span>
               </div>
             </div>
+
+            {/* Mobile / Tablet Quick Action Buttons when expanded */}
+            {(onOpenLogModal || onOpenPostMatchModal) && (
+              <div className="lg:hidden grid grid-cols-2 gap-2 mb-3">
+                {onOpenLogModal && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      soundFx.playClick();
+                      vibrateTap();
+                      onOpenLogModal();
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition active:scale-[0.98]"
+                  >
+                    <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                    <span>Lịch Sử Đấu (Logs)</span>
+                  </button>
+                )}
+                {onOpenPostMatchModal && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      soundFx.playClick();
+                      vibrateTap();
+                      onOpenPostMatchModal();
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition active:scale-[0.98]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Thẻ Thành Tích</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {ROUND_DETAILS.map(round => {
