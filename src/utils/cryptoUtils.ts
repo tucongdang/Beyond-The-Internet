@@ -16,20 +16,23 @@ export function getSecureRandomInt(min: number, max: number): number {
   // Largest multiple of range that fits in 32-bit unsigned integer (2^32 = 4294967296)
   const maxMultiple = Math.floor(4294967296 / range) * range;
 
-  let rand: number;
-  do {
+  while (true) {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(array);
-      rand = array[0];
     } else {
       // Standard Node.js crypto fallback
       const nodeCrypto = require('crypto');
       const buf = nodeCrypto.randomBytes(4);
-      rand = buf.readUInt32LE(0);
+      array[0] = buf.readUInt32LE(0);
     }
-  } while (rand >= maxMultiple);
 
-  return min + Math.floor((rand / maxMultiple) * range);
+    const rand = array[0];
+    if (rand >= maxMultiple) {
+      continue;
+    }
+
+    return min + (rand % range);
+  }
 }
 
 /**
