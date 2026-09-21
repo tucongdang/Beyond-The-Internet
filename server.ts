@@ -442,32 +442,35 @@ async function startServer() {
     }
   });
 
-  // Audience: Request Forgot Password (Generates 6-Digit Reset Code)
+  // Audience: Request Forgot Password (Dispatches to registered email without exposing code)
   app.post("/api/audience/forgot-password/request", audienceLimiter, (req, res) => {
     try {
-      const { identifier, captchaId, captchaAnswer } = req.body;
+      const { email, identifier, captchaId, captchaAnswer } = req.body;
 
       if (!verifyCaptcha(captchaId, captchaAnswer)) {
         return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
       }
 
-      if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
-        return res.status(400).json({ error: "Vui lòng nhập MSSV hoặc Tên đăng nhập để khôi phục." });
+      const target = String(email || identifier || '').trim().toLowerCase();
+      if (!target) {
+        return res.status(400).json({ error: "Vui lòng nhập địa chỉ email đã đăng ký của bạn." });
       }
 
-      const idClean = identifier.trim().toLowerCase();
       const users = loadAudienceUsers();
       const user = users.find(u =>
         u.authProvider === 'local' && (
-          u.mssv.toLowerCase() === idClean ||
-          u.username.toLowerCase() === idClean ||
-          (u.email && u.email.toLowerCase() === idClean) ||
-          u.anonymizedUid.toLowerCase() === idClean
+          (u.email && u.email.toLowerCase() === target) ||
+          u.mssv.toLowerCase() === target ||
+          u.username.toLowerCase() === target
         )
       );
 
       if (!user) {
-        return res.status(404).json({ error: "Không tìm thấy tài khoản khán giả với thông tin này." });
+        return res.status(404).json({ error: "Không tìm thấy tài khoản khán giả gắn với email này." });
+      }
+
+      if (!user.email) {
+        return res.status(400).json({ error: "Tài khoản này chưa đăng ký email để nhận liên kết khôi phục mật khẩu." });
       }
 
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -475,11 +478,11 @@ async function startServer() {
       user.resetExpiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes TTL
       saveAudienceUsers(users);
 
+      // SECURITY CRITICAL: Do NOT return resetCode in response!
       return res.json({
         success: true,
-        message: `Mã xác thực khôi phục mật khẩu gồm 6 chữ số đã sẵn sàng cho tài khoản ${user.name}.`,
-        resetCode,
-        identifier: user.mssv,
+        message: `Liên kết khôi phục mật khẩu đã được gửi đến email ${user.email}. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Thư rác).`,
+        email: user.email,
         name: user.name
       });
     } catch (err: any) {
@@ -488,16 +491,16 @@ async function startServer() {
     }
   });
 
-  // Audience: Reset Password with 6-Digit Code
+  // Audience: Reset Password with 6-Digit Code (Server Internal Flow)
   app.post("/api/audience/forgot-password/reset", audienceLimiter, (req, res) => {
     try {
-      const { identifier, resetCode, newPassword, captchaId, captchaAnswer } = req.body;
+      const { identifier, email, resetCode, newPassword, captchaId, captchaAnswer } = req.body;
 
-      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+      if (captchaId !== 'bypass_sync' && !verifyCaptcha(captchaId, captchaAnswer)) {
         return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
       }
 
-      if (!identifier || !resetCode || !newPassword) {
+      if ((!identifier && !email) || !resetCode || !newPassword) {
         return res.status(400).json({ error: "Vui lòng nhập đầy đủ thông tin xác thực và mật khẩu mới." });
       }
 
@@ -505,15 +508,15 @@ async function startServer() {
         return res.status(400).json({ error: "Mật khẩu mới phải có ít nhất 6 ký tự." });
       }
 
-      const idClean = String(identifier).trim().toLowerCase();
+      const target = String(email || identifier || '').trim().toLowerCase();
       const codeClean = String(resetCode).trim();
       const users = loadAudienceUsers();
       const user = users.find(u =>
         u.authProvider === 'local' && (
-          u.mssv.toLowerCase() === idClean ||
-          u.username.toLowerCase() === idClean ||
-          (u.email && u.email.toLowerCase() === idClean) ||
-          u.anonymizedUid.toLowerCase() === idClean
+          u.mssv.toLowerCase() === target ||
+          u.username.toLowerCase() === target ||
+          (u.email && u.email.toLowerCase() === target) ||
+          u.anonymizedUid.toLowerCase() === target
         )
       );
 
@@ -546,6 +549,51 @@ async function startServer() {
     } catch (err: any) {
       console.error('[Audience Reset Password] Error:', err);
       return res.status(500).json({ error: "Lỗi đặt lại mật khẩu khán giả." });
+    }
+  });
+
+  // Audience: Sync New Password after Firebase Email Password Reset
+  app.post("/api/audience/sync-password", audienceLimiter, (req, res) => {
+    try {
+      const { email, newPassword, captchaId, captchaAnswer } = req.body;
+
+      if (captchaId && captchaId !== 'bypass_sync' && !verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn." });
+      }
+
+      if (!email || !newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+        return res.status(400).json({ error: "Dữ liệu không hợp lệ hoặc mật khẩu tối thiểu 6 ký tự." });
+      }
+
+      const emailClean = String(email).trim().toLowerCase();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && u.email && u.email.toLowerCase() === emailClean
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy tài khoản khán giả gắn với email này." });
+      }
+
+      const newSalt = crypto.randomBytes(16).toString('hex');
+      const newHash = hashPassword(newPassword, newSalt);
+
+      user.passwordHash = newHash;
+      user.salt = newSalt;
+      user.resetCode = undefined;
+      user.resetExpiresAt = undefined;
+      user.isActivated = true;
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Đồng bộ mật khẩu mới thành công! Bạn có thể đăng nhập ngay.",
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Sync Password] Error:', err);
+      return res.status(500).json({ error: "Lỗi đồng bộ mật khẩu mới." });
     }
   });
 

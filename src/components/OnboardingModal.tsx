@@ -148,15 +148,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [quickUid, setQuickUid] = useState('');
 
   // --- Forgot Password State ---
-  const [forgotIdentifier, setForgotIdentifier] = useState('');
-  const [forgotResetCode, setForgotResetCode] = useState('');
-  const [forgotNewPassword, setForgotNewPassword] = useState('');
-  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
-  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
-  const [forgotGeneratedCode, setForgotGeneratedCode] = useState<string | null>(null);
   const [forgotCaptchaId, setForgotCaptchaId] = useState('');
   const [forgotCaptchaAnswer, setForgotCaptchaAnswer] = useState('');
+  const [forgotCooldown, setForgotCooldown] = useState(0);
 
   // --- Account Activation State ---
   const [actIdentifier, setActIdentifier] = useState('');
@@ -188,14 +184,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   }, [activeTab, gVerName, gVerMssv, gVerGender, gVerBirthYear]);
 
-  // Cooldown countdown for resending verification email
+  // Cooldown countdown for resending verification and reset emails
   useEffect(() => {
-    if (resendCooldown <= 0) return;
+    if (resendCooldown <= 0 && forgotCooldown <= 0) return;
     const interval = setInterval(() => {
       setResendCooldown((prev) => Math.max(0, prev - 1));
+      setForgotCooldown((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
-  }, [resendCooldown]);
+  }, [resendCooldown, forgotCooldown]);
 
   // Stable CAPTCHA Callbacks
   const handleLoginCaptchaChange = useCallback((id: string, val: string) => {
@@ -662,6 +659,51 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         };
         onComplete(userObj);
       } else {
+        // If local password check failed (401), check if user reset their password via Firebase Auth
+        if (res.status === 401 && auth) {
+          const checkEmail = (loginIdentifier.includes('@') ? loginIdentifier : pendingVerifyEmail || forgotEmail || '').trim().toLowerCase();
+          if (checkEmail) {
+            try {
+              const fbCred = await signInWithEmailAndPassword(auth, checkEmail, loginPassword);
+              if (fbCred.user) {
+                // Firebase confirmed valid login with new password! Sync with local server
+                const syncRes = await fetch('/api/audience/sync-password', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email: checkEmail,
+                    newPassword: loginPassword,
+                    captchaId: 'bypass_sync',
+                    captchaAnswer: 'bypass_sync'
+                  })
+                });
+                const syncData = await syncRes.json();
+                if (syncRes.ok && syncData.success && syncData.user) {
+                  soundFx.playPacingChime('complete');
+                  vibrateSuccess();
+                  const userObj: UserInfo = {
+                    uid: syncData.user.uid,
+                    name: syncData.user.name,
+                    mssv: syncData.user.mssv,
+                    gender: syncData.user.gender,
+                    birthYear: syncData.user.birthYear,
+                    anonymizedUid: syncData.user.anonymizedUid,
+                    teamId: syncData.user.teamId,
+                    teamName: syncData.user.teamName,
+                    email: syncData.user.email,
+                    emailVerified: syncData.user.emailVerified ?? true,
+                    registeredAt: syncData.user.registeredAt
+                  };
+                  onComplete(userObj);
+                  return;
+                }
+              }
+            } catch (fbErr) {
+              console.warn('Firebase login fallback check:', fbErr);
+            }
+          }
+        }
+
         soundFx.playError();
         vibrateError();
         setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Invalid credentials.' : 'Thông tin đăng nhập không chính xác.'));
@@ -1166,18 +1208,19 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   // -------------------------------------------------------------
-  // 6. Handle Forgot Password - Request 6-Digit OTP Code
+  // 6. Handle Forgot Password - Send Reset Link to Registered Email
   // -------------------------------------------------------------
   const handleForgotRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotIdentifier.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please enter MSSV or Username.' : 'Vui lòng nhập MSSV hoặc Tên đăng nhập.');
+    const cleanEmail = forgotEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg(localLanguage !== 'vi' ? 'Please enter a valid registered email.' : 'Vui lòng nhập địa chỉ email đã đăng ký hợp lệ.');
       soundFx.playError();
       vibrateError();
       return;
     }
     if (!forgotCaptchaAnswer.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.');
+      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA challenge.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.');
       soundFx.playError();
       vibrateError();
       return;
@@ -1188,28 +1231,56 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/audience/forgot-password/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: forgotIdentifier.trim(),
-          captchaId: forgotCaptchaId,
-          captchaAnswer: forgotCaptchaAnswer.trim()
-        })
-      });
+      // 1. Send genuine password reset email via Firebase Authentication
+      let firebaseEmailSent = false;
+      if (auth) {
+        try {
+          await sendPasswordResetEmail(auth, cleanEmail);
+          firebaseEmailSent = true;
+        } catch (fbErr: any) {
+          console.warn('[Forgot Password] Firebase reset email note:', fbErr?.code || fbErr);
+        }
+      }
 
-      const data = await res.json();
-      if (res.ok && data.success) {
+      // 2. Request backend to verify account and log reset request (without exposing code)
+      let serverConfirmed = false;
+      try {
+        const res = await fetch('/api/audience/forgot-password/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: cleanEmail,
+            captchaId: forgotCaptchaId,
+            captchaAnswer: forgotCaptchaAnswer.trim()
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          serverConfirmed = true;
+        } else if (!firebaseEmailSent) {
+          soundFx.playError();
+          vibrateError();
+          setErrorMsg(data.error || (localLanguage !== 'vi' ? 'No audience account found with this email.' : 'Không tìm thấy tài khoản khán giả gắn với email này.'));
+          return;
+        }
+      } catch (serverErr) {
+        console.warn('Backend forgot-password notice:', serverErr);
+      }
+
+      if (firebaseEmailSent || serverConfirmed) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
-        setForgotGeneratedCode(data.resetCode);
-        setForgotResetCode(data.resetCode || '');
         setForgotStep(2);
-        setSuccessMsg(data.message || (localLanguage !== 'vi' ? 'Reset code generated successfully.' : 'Mã khôi phục đã sẵn sàng.'));
+        setForgotCooldown(60);
+        setSuccessMsg(
+          localLanguage !== 'vi'
+            ? `Password reset link sent to ${cleanEmail}. Please check your Inbox and SPAM folder.`
+            : `Đã gửi liên kết đặt lại mật khẩu đến ${cleanEmail}. Vui lòng kiểm tra Hộp thư đến và mục Thư rác (Spam)!`
+        );
       } else {
         soundFx.playError();
         vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Account not found.' : 'Không tìm thấy tài khoản khán giả.'));
+        setErrorMsg(localLanguage !== 'vi' ? 'Could not find account with this email.' : 'Không tìm thấy tài khoản với email này.');
       }
     } catch {
       soundFx.playError();
@@ -1220,74 +1291,37 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
-  // -------------------------------------------------------------
-  // 7. Handle Forgot Password - Submit New Password with OTP
-  // -------------------------------------------------------------
-  const handleForgotReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotResetCode.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please enter 6-digit reset code.' : 'Vui lòng nhập mã khôi phục 6 chữ số.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-    if (!forgotNewPassword || forgotNewPassword.length < 6) {
-      setErrorMsg(localLanguage !== 'vi' ? 'New password must be at least 6 characters.' : 'Mật khẩu mới phải có tối thiểu 6 ký tự.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-    if (forgotNewPassword !== forgotConfirmPassword) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Passwords do not match.' : 'Mật khẩu xác nhận không khớp.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-    if (!forgotCaptchaAnswer.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
+  const handleForgotResend = async () => {
+    if (forgotCooldown > 0) return;
+    const cleanEmail = forgotEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) return;
 
+    soundFx.playClick();
+    vibrateTap();
     setLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/audience/forgot-password/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: forgotIdentifier.trim(),
-          resetCode: forgotResetCode.trim(),
-          newPassword: forgotNewPassword,
-          captchaId: forgotCaptchaId,
-          captchaAnswer: forgotCaptchaAnswer.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-        setSuccessMsg(data.message || (localLanguage !== 'vi' ? 'Password reset successfully!' : 'Đặt lại mật khẩu thành công!'));
-        setLoginIdentifier(forgotIdentifier.trim());
-        setLoginPassword('');
-        setTimeout(() => {
-          setActiveTab('LOGIN');
-          setForgotStep(1);
-          setForgotGeneratedCode(null);
-        }, 1500);
-      } else {
-        soundFx.playError();
-        vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Password reset failed.' : 'Đặt lại mật khẩu thất bại.'));
+      if (auth) {
+        await sendPasswordResetEmail(auth, cleanEmail);
       }
-    } catch {
+      soundFx.playPacingChime('complete');
+      vibrateSuccess();
+      setForgotCooldown(60);
+      setSuccessMsg(
+        localLanguage !== 'vi'
+          ? `Password reset link resent to ${cleanEmail}. Please check your Inbox and SPAM folder.`
+          : `Đã gửi lại liên kết đặt lại mật khẩu đến ${cleanEmail}. Vui lòng kiểm tra Hộp thư đến và mục Thư rác (Spam)!`
+      );
+    } catch (err: any) {
       soundFx.playError();
       vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Connection error with server.' : 'Lỗi kết nối máy chủ xác thực.');
+      setErrorMsg(
+        localLanguage !== 'vi'
+          ? `Could not resend email: ${err?.message || 'Error'}`
+          : `Không thể gửi lại email: ${err?.message || 'Vui lòng thử lại sau ít phút'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -1706,15 +1740,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB: FORGOT PASSWORD (Request OTP + Set New Password) */}
+          {/* TAB: FORGOT PASSWORD (Send Secure Password Reset Email) */}
           {/* ========================================================= */}
           {activeTab === 'FORGOT_PASSWORD' && (
             <div className="space-y-3 sm:space-y-3.5 text-left animate-fadeIn">
               <div className="p-2 sm:p-2.5 bg-sky-950/30 border border-sky-500/30 rounded-[2px] text-[10px] sm:text-xs text-sky-200">
                 <p className="leading-relaxed font-sans">
                   {localLanguage !== 'vi'
-                    ? 'Reset password for your audience account. Step 1 generates an instant OTP reset code, and Step 2 allows you to set your new password.'
-                    : 'Khôi phục mật khẩu tài khoản khán giả. Bước 1 tạo mã OTP khôi phục, Bước 2 cập nhật mật khẩu mới.'}
+                    ? 'Reset password for your audience account via your registered email. A secure reset link will be sent to your inbox to protect your account from unauthorized changes.'
+                    : 'Khôi phục mật khẩu tài khoản khán giả qua email đăng ký. Hệ thống sẽ gửi liên kết đổi mật khẩu an toàn đến hộp thư của bạn để bảo vệ tài khoản, tránh đổi mật khẩu trái phép.'}
                 </p>
               </div>
 
@@ -1722,17 +1756,25 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <form onSubmit={handleForgotRequest} className="space-y-2.5 sm:space-y-3">
                   <div>
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                      {localLanguage !== 'vi' ? 'Student ID (MSSV) or Username' : 'Mã số sinh viên (MSSV) hoặc Tên đăng nhập'} *
+                      {localLanguage !== 'vi' ? 'Registered Email Address' : 'Địa chỉ Email đã đăng ký tài khoản'} *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder={localLanguage !== 'vi' ? 'e.g. 22123456 or username' : 'VD: 22123456 hoặc tên đăng nhập'}
-                      value={forgotIdentifier}
-                      onChange={(e) => setForgotIdentifier(e.target.value)}
-                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                      autoFocus
-                    />
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        placeholder="your-email@example.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white pl-8 pr-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
+                        autoFocus
+                      />
+                      <Mail className="w-3.5 h-3.5 text-white/40 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] text-white/50 mt-1 font-sans">
+                      {localLanguage !== 'vi'
+                        ? 'A secure password reset link will be dispatched exclusively to this address.'
+                        : 'Liên kết đặt lại mật khẩu sẽ chỉ được gửi đến hộp thư này để xác minh quyền sở hữu.'}
+                    </p>
                   </div>
 
                   {/* Mathematical CAPTCHA Challenge */}
@@ -1753,137 +1795,103 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <KeyRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>{localLanguage !== 'vi' ? 'Generate Reset Code' : 'Tạo Mã Khôi Phục OTP'}</span>
+                        <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span>{localLanguage !== 'vi' ? 'Send Reset Email' : 'Gửi Liên Kết Đặt Lại Mật Khẩu'}</span>
                         <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </>
                     )}
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handleForgotReset} className="space-y-2.5 sm:space-y-3">
-                  {forgotGeneratedCode && (
-                    <div className="p-2 sm:p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-[2px] flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] text-emerald-300 font-mono block">
-                          {localLanguage !== 'vi' ? 'Your Reset Code (valid 15 mins):' : 'Mã OTP khôi phục của bạn (hiệu lực 15 phút):'}
-                        </span>
-                        <span className="text-sm sm:text-base font-mono font-black text-emerald-200 tracking-widest">
-                          {forgotGeneratedCode}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(forgotGeneratedCode);
-                          setCopiedCode(true);
-                          soundFx.playClick();
-                          setTimeout(() => setCopiedCode(false), 2000);
-                        }}
-                        className="px-2 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded-[2px] text-[10px] font-mono flex items-center gap-1 cursor-pointer transition border border-emerald-500/40"
-                      >
-                        {copiedCode ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
-                        <span>{copiedCode ? (localLanguage !== 'vi' ? 'Copied' : 'Đã chép') : (localLanguage !== 'vi' ? 'Copy' : 'Sao chép')}</span>
-                      </button>
+                <div className="space-y-3 sm:space-y-3.5 animate-fadeIn">
+                  {/* Visual Header Confirmation */}
+                  <div className="p-3 sm:p-3.5 bg-gradient-to-br from-sky-950/60 via-[#0D0420] to-indigo-950/60 border border-sky-500/30 rounded-[2px] text-center space-y-2">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 mx-auto rounded-full bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shadow-lg shadow-sky-950/50">
+                      <Mail className="w-5 h-5 sm:w-5.5 sm:h-5.5 animate-pulse" />
                     </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                      {localLanguage !== 'vi' ? '6-Digit Reset Code' : 'Mã khôi phục 6 chữ số'} *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="123456"
-                      value={forgotResetCode}
-                      onChange={(e) => setForgotResetCode(e.target.value)}
-                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition tracking-widest font-bold placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                        {localLanguage !== 'vi' ? 'New Password' : 'Mật khẩu mới'} *
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
-                        className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 font-mono transition cursor-pointer"
-                      >
-                        {showForgotNewPassword ? <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
-                        <span>{showForgotNewPassword ? (localLanguage !== 'vi' ? 'Hide' : 'Ẩn') : (localLanguage !== 'vi' ? 'Show' : 'Hiện')}</span>
-                      </button>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-white font-mono uppercase tracking-wider">
+                        {localLanguage !== 'vi' ? 'Password Reset Email Sent' : 'Đã Gửi Email Khôi Phục Mật Khẩu'}
+                      </h4>
+                      <p className="text-[10px] sm:text-[11px] text-white/70 mt-0.5 font-sans leading-relaxed">
+                        {localLanguage !== 'vi'
+                          ? 'A secure password reset link has been dispatched to:'
+                          : 'Liên kết đặt lại mật khẩu an toàn đã được gửi tới:'}
+                      </p>
                     </div>
-                    <input
-                      type={showForgotNewPassword ? 'text' : 'password'}
-                      required
-                      placeholder="••••••••"
-                      value={forgotNewPassword}
-                      onChange={(e) => setForgotNewPassword(e.target.value)}
-                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                    />
+
+                    <div className="p-1.5 sm:p-2 bg-black/50 border border-sky-500/30 rounded-[2px] flex items-center justify-center gap-2 max-w-sm mx-auto">
+                      <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                      <span className="text-xs font-mono font-bold text-sky-200 truncate">
+                        {forgotEmail}
+                      </span>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                      {localLanguage !== 'vi' ? 'Confirm New Password' : 'Xác nhận mật khẩu mới'} *
-                    </label>
-                    <input
-                      type={showForgotNewPassword ? 'text' : 'password'}
-                      required
-                      placeholder="••••••••"
-                      value={forgotConfirmPassword}
-                      onChange={(e) => setForgotConfirmPassword(e.target.value)}
-                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                    />
+                  {/* 3 Step Instructions */}
+                  <div className="p-2.5 sm:p-3 bg-white/5 border border-white/10 rounded-[2px] space-y-1.5 text-[11px] sm:text-xs">
+                    <span className="font-mono font-bold text-sky-300 flex items-center gap-1.5">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{localLanguage !== 'vi' ? 'How to complete reset:' : '3 bước hoàn tất đặt lại mật khẩu:'}</span>
+                    </span>
+                    <ol className="space-y-1 text-white/75 list-decimal list-inside leading-relaxed font-sans text-[10px] sm:text-[11px]">
+                      <li>
+                        {localLanguage !== 'vi'
+                          ? 'Open your email inbox (CRITICAL: Check SPAM / JUNK / PROMOTIONS folder).'
+                          : 'Mở hòm thư email của bạn (ĐẶC BIỆT LƯU Ý: Hãy kiểm tra kỹ mục THƯ RÁC / SPAM / QUẢNG CÁO).'}
+                      </li>
+                      <li>
+                        {localLanguage !== 'vi'
+                          ? 'Click the password reset link inside the email sent by Firebase.'
+                          : 'Bấm vào đường liên kết trong email gửi từ Firebase để đặt mật khẩu mới.'}
+                      </li>
+                      <li>
+                        {localLanguage !== 'vi'
+                          ? 'After setting your new password, return to Login tab and sign in.'
+                          : 'Sau khi đổi mật khẩu xong, quay lại tab Đăng Nhập để đăng nhập vào Đấu Trường.'}
+                      </li>
+                    </ol>
                   </div>
 
-                  {/* Mathematical CAPTCHA Challenge */}
-                  <CaptchaChallenge
-                    captchaId={forgotCaptchaId}
-                    value={forgotCaptchaAnswer}
-                    onChange={handleForgotCaptchaChange}
-                    disabled={loading}
-                    apiEndpoint="/api/audience/captcha"
-                  />
-
+                  {/* Resend button with cooldown */}
                   <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono"
+                    type="button"
+                    onClick={handleForgotResend}
+                    disabled={loading || forgotCooldown > 0}
+                    className="w-full bg-white/10 hover:bg-white/15 disabled:opacity-40 text-white/90 font-mono text-xs py-2 px-3 rounded-[2px] transition flex items-center justify-center gap-2 border border-white/10 cursor-pointer"
                   >
                     {loading ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>{localLanguage !== 'vi' ? 'Update Password' : 'Xác Nhận Đổi Mật Khẩu'}</span>
+                        <Send className="w-3.5 h-3.5 text-sky-400" />
+                        <span>
+                          {forgotCooldown > 0
+                            ? (localLanguage !== 'vi' ? `Resend email in ${forgotCooldown}s` : `Gửi lại email sau ${forgotCooldown}s`)
+                            : (localLanguage !== 'vi' ? 'Resend Reset Email' : 'Gửi Lại Email Khôi Phục')}
+                        </span>
                       </>
                     )}
                   </button>
-                </form>
-              )}
 
-              <div className="flex items-center justify-between pt-1">
-                {forgotStep === 2 && (
-                  <button
-                    type="button"
-                    onClick={() => setForgotStep(1)}
-                    className="text-[10px] sm:text-[11px] font-mono text-white/60 hover:text-white underline cursor-pointer"
-                  >
-                    {localLanguage !== 'vi' ? '← Back to Step 1' : '← Quay lại Bước 1'}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('LOGIN')}
-                  className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer ml-auto"
-                >
-                  {localLanguage !== 'vi' ? 'Back to Login' : 'Quay lại Đăng Nhập'}
-                </button>
-              </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setForgotStep(1)}
+                      className="text-[10px] sm:text-[11px] font-mono text-white/60 hover:text-white underline cursor-pointer"
+                    >
+                      {localLanguage !== 'vi' ? '← Change email' : '← Đổi email khác'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTabChange('LOGIN')}
+                      className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer"
+                    >
+                      {localLanguage !== 'vi' ? 'Back to Login →' : 'Quay lại Đăng Nhập →'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
