@@ -142,7 +142,15 @@ async function startServer() {
   }
 
   function hashPassword(password: string, salt: string): string {
-    return crypto.createHmac('sha256', salt).update(password).digest('hex');
+    return crypto.scryptSync(password, salt, 64).toString('hex');
+  }
+
+  function verifyPassword(password: string, salt: string, expectedHash: string): boolean {
+    const computed = hashPassword(password, salt);
+    const a = Buffer.from(computed, 'hex');
+    const b = Buffer.from(expectedHash, 'hex');
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
   }
 
   function sanitizeAdminUser(u: StoredAdminUser) {
@@ -270,7 +278,7 @@ async function startServer() {
       const users = loadAdminUsers();
       const user = users.find(u => u.username === cleanUsername && u.authProvider === 'local');
 
-      if (!user || !user.salt || !user.passwordHash || hashPassword(password, user.salt) !== user.passwordHash) {
+      if (!user || !user.salt || !user.passwordHash || !verifyPassword(password, user.salt, user.passwordHash)) {
         return res.status(401).json({ error: "Tên đăng nhập hoặc mật khẩu không chính xác." });
       }
 
