@@ -135,7 +135,7 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+            className="min-w-[44px] min-h-[44px] rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
             aria-label="Đóng"
           >
             <X className="w-4 h-4" />

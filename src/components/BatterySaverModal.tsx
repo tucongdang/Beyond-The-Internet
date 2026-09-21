@@ -154,6 +154,9 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
     ? formatTime(batteryState.chargingTime)
     : formatTime(batteryState.dischargingTime);
 
+  if (!isOpen) return null;
+  if (typeof document === 'undefined' || !document.body) return null;
+
   const modalNode = (
     <div
       id="battery-saver-modal-overlay"
@@ -207,7 +210,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               onClose();
             }}
             aria-label="Đóng"
-            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition cursor-pointer"
+            className="min-w-[44px] min-h-[44px] rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>

@@ -298,8 +298,9 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition flex items-center justify-center cursor-pointer"
               title="Đóng bảng phím tắt (ESC)"
+              aria-label="Đóng bảng phím tắt"
             >
               <X className="w-5 h-5" />
             </button>

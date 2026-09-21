@@ -10,7 +10,7 @@ import {
   limit, 
   getDocs 
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth, removeUndefined } from '../firebase';
 import { AudienceShout, ShoutBadgeColor, ShoutSettings } from '../types';
 import { getSecureRandomId } from '../utils/cryptoUtils';
 
@@ -453,7 +453,7 @@ class RealtimeShoutService {
     if (db) {
       const path = `shouts/${shoutId}`;
       try {
-        await setDoc(doc(db, 'shouts', shoutId), newShout);
+        await setDoc(doc(db, 'shouts', shoutId), removeUndefined(newShout));
       } catch (err) {
         handleFirestoreError(err, OperationType.CREATE, path);
       }

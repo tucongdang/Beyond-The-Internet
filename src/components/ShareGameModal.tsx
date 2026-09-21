@@ -251,9 +251,6 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
         onMouseMove={handleUserActivity}
         onTouchStart={handleUserActivity}
       >
-        {/* Top Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#F7CAC9] to-transparent pointer-events-none" />
-
         {/* Structured Header Row */}
         <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 mb-3 shrink-0">
           {/* Live indicator badge */}
@@ -347,7 +344,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 vibrateTap();
                 onClose();
               }}
-              className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer"
               aria-label={localLanguage !== 'vi' ? 'Close (ESC)' : 'Đóng (ESC)'}
               title={localLanguage !== 'vi' ? 'Close (Key ESC)' : 'Đóng (Phím ESC)'}
             >
@@ -600,6 +597,6 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     </div>
   );
 
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || !document.body) return null;
   return createPortal(modalContent, document.body);
 };

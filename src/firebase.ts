@@ -39,3 +39,23 @@ try {
 }
 
 export const auth: Auth = firebaseAuth as Auth;
+
+/**
+ * Deeply strips undefined fields from an object or array to prevent Firestore
+ * "Function setDoc() called with invalid data. Unsupported field value: undefined" errors.
+ */
+export function removeUndefined<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(item => removeUndefined(item)) as unknown as T;
+  const clean: any = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const val = (obj as any)[key];
+      if (val !== undefined) {
+        clean[key] = removeUndefined(val);
+      }
+    }
+  }
+  return clean as T;
+}
+

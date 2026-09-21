@@ -195,8 +195,9 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
               type="button"
               onClick={fetchUsers}
               disabled={isLoading}
-              className="p-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer border border-white/10"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer border border-white/10 flex items-center justify-center"
               title="Làm mới danh sách"
+              aria-label="Làm mới danh sách"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -206,8 +207,9 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
                 vibrateTap();
                 onClose();
               }}
-              className="p-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer border border-white/10"
+              className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer border border-white/10 flex items-center justify-center"
               title="Đóng cửa sổ"
+              aria-label="Đóng cửa sổ"
             >
               <X className="w-4 h-4" />
             </button>

@@ -1190,18 +1190,6 @@ body.battery-saver-active,
   flex-direction: column;
 }
 
-.fluent-dialog::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #F7CAC9, #E39A96, #B6A6D8);
-  pointer-events: none;
-  z-index: 20;
-}
-
 .fluent-dialog-header {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);

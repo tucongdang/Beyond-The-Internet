@@ -227,6 +227,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined' || !document.body) return null;
 
   return createPortal(
     <div
@@ -269,7 +270,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/60 hover:text-white transition cursor-pointer border border-white/10"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/60 hover:text-white transition cursor-pointer border border-white/10 flex items-center justify-center"
             title="Đóng (Esc)"
             aria-label="Đóng"
           >

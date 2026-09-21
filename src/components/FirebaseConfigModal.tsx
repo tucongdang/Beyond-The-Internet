@@ -103,7 +103,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
           <button
             onClick={onClose}
             aria-label="Đóng"
-            className="text-white/40 hover:text-white p-1.5 rounded-[2px] hover:bg-white/10 backdrop-blur-md transition cursor-pointer"
+            className="text-white/40 hover:text-white min-w-[44px] min-h-[44px] p-2 rounded-[2px] hover:bg-white/10 backdrop-blur-md transition cursor-pointer flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>

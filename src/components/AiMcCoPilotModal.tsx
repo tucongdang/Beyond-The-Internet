@@ -138,7 +138,7 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white cursor-pointer"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white cursor-pointer flex items-center justify-center"
             aria-label="Đóng"
           >
             <X className="w-5 h-5" />

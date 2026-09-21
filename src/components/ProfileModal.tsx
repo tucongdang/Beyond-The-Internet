@@ -5,6 +5,7 @@ import { UserInfo, GameState, UserResponse } from '../types';
 import { computeAudienceScoreFromResponses } from '../services/audienceScoringService';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getApp, getApps } from 'firebase/app';
+import { removeUndefined } from '../firebase';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { soundFx } from '../services/audioEffects';
 import { aiExplanationService } from '../services/aiExplanationService';
@@ -275,7 +276,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       
       const app = getApps()[0];
       const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
-      await setDoc(doc(db, 'users', user.uid), updatedUser, { merge: true });
+      await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedUser), { merge: true });
       
       onUpdateUser(updatedUser);
       vibrateSuccess();
@@ -308,7 +309,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   if (!isOpen) return null;
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || !document.body) return null;
 
   return createPortal(
     <div
@@ -332,7 +333,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition cursor-pointer"
+            className="min-w-[44px] min-h-[44px] p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-[2px] transition cursor-pointer flex items-center justify-center"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>

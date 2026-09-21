@@ -145,12 +145,38 @@ async function startServer() {
     return crypto.scryptSync(password, salt, 64).toString('hex');
   }
 
-  function verifyPassword(password: string, salt: string, expectedHash: string): boolean {
-    const computed = hashPassword(password, salt);
-    const a = Buffer.from(computed, 'hex');
-    const b = Buffer.from(expectedHash, 'hex');
-    if (a.length !== b.length) return false;
-    return crypto.timingSafeEqual(a, b);
+  function legacyHmacHash(password: string, salt: string): string {
+    return crypto.createHmac('sha256', salt).update(password).digest('hex');
+  }
+
+  function verifyPassword(password: string, salt: string, expectedHash: string): { valid: boolean; needsRehash: boolean } {
+    if (!password || !salt || !expectedHash) return { valid: false, needsRehash: false };
+
+    // 1. Try modern scrypt key derivation
+    try {
+      const computedScrypt = hashPassword(password, salt);
+      const a = Buffer.from(computedScrypt, 'hex');
+      const b = Buffer.from(expectedHash, 'hex');
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+        return { valid: true, needsRehash: false };
+      }
+    } catch {
+      // Continue to fallback
+    }
+
+    // 2. Backward compatibility fallback for legacy HMAC-SHA256 hashes
+    try {
+      const computedLegacy = legacyHmacHash(password, salt);
+      const a = Buffer.from(computedLegacy, 'hex');
+      const b = Buffer.from(expectedHash, 'hex');
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+        return { valid: true, needsRehash: true };
+      }
+    } catch {
+      // Continue
+    }
+
+    return { valid: false, needsRehash: false };
   }
 
   function sanitizeAdminUser(u: StoredAdminUser) {
@@ -195,10 +221,373 @@ async function startServer() {
     return item.answer.trim().toLowerCase() === String(answer).trim().toLowerCase();
   }
 
-  // 1. Get CAPTCHA challenge
-  app.get("/api/admin/captcha", (req, res) => {
+  // 1. Get CAPTCHA challenge (Shared for Admin & Audience)
+  app.get(["/api/admin/captcha", "/api/audience/captcha", "/api/captcha"], (req, res) => {
     const challenge = generateCaptcha();
     res.json(challenge);
+  });
+
+  // -------------------------------------------------------------
+  // Audience / Contestant User Data Store & Authentication System
+  // -------------------------------------------------------------
+  interface StoredAudienceUser {
+    uid: string;
+    username: string;
+    name: string;
+    mssv: string;
+    gender?: string;
+    birthYear?: string;
+    anonymizedUid: string;
+    email?: string;
+    teamId?: string;
+    teamName?: string;
+    note?: string;
+    authProvider: 'local' | 'google';
+    passwordHash?: string;
+    salt?: string;
+    registeredAt: number;
+    lastLoginAt?: number;
+  }
+
+  const AUDIENCE_USERS_FILE = path.join(DATA_DIR, 'audience_users.json');
+
+  function loadAudienceUsers(): StoredAudienceUser[] {
+    ensureDataDir();
+    if (fs.existsSync(AUDIENCE_USERS_FILE)) {
+      try {
+        const content = fs.readFileSync(AUDIENCE_USERS_FILE, 'utf-8');
+        return JSON.parse(content);
+      } catch (e) {
+        console.error('Error reading audience_users.json:', e);
+      }
+    }
+    return [];
+  }
+
+  function saveAudienceUsers(users: StoredAudienceUser[]) {
+    ensureDataDir();
+    try {
+      fs.writeFileSync(AUDIENCE_USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('Error saving audience_users.json:', e);
+    }
+  }
+
+  function sanitizeAudienceUser(u: StoredAudienceUser) {
+    const { passwordHash, salt, ...safe } = u;
+    return safe;
+  }
+
+  function generateServerAudienceUid(name: string, mssv: string, gender: string, birthYear: string): string {
+    const normName = String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z]/g, '');
+    const cleanMssv = String(mssv || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const cleanGender = String(gender || '1').slice(0, 1);
+    const cleanBirth = String(birthYear || '2004').slice(-2);
+    
+    const seed = `${normName}_${cleanMssv}_${cleanGender}_${cleanBirth}_BTI2026`;
+    const hash = crypto.createHash('sha256').update(seed).digest('hex');
+    const digits = hash.replace(/\D/g, '');
+    const numPart = (digits + '842917356023').slice(0, 8);
+    const prefix = `${cleanBirth}${cleanGender}${cleanMssv.slice(-1) || '0'}`;
+    return `${prefix}${numPart}`.slice(0, 12);
+  }
+
+  // Audience Rate Limiter (Allows high concurrent audience logins while guarding against bot abuse)
+  const audienceLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 150,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+      if (isDev) return true;
+      const ip = req.ip || req.socket.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    },
+    message: { error: "Quá nhiều lần gửi yêu cầu từ IP này. Vui lòng thử lại sau ít phút." }
+  });
+
+  // Audience: 1. Register Local Account
+  app.post("/api/audience/register", audienceLimiter, (req, res) => {
+    try {
+      const {
+        name,
+        mssv,
+        username,
+        password,
+        gender,
+        birthYear,
+        anonymizedUid,
+        teamId,
+        teamName,
+        note,
+        captchaId,
+        captchaAnswer
+      } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
+      }
+
+      if (!name || typeof name !== 'string' || name.trim().length < 2) {
+        return res.status(400).json({ error: "Vui lòng nhập họ và tên hợp lệ (tối thiểu 2 ký tự)." });
+      }
+
+      if (!mssv || typeof mssv !== 'string' || mssv.trim().length < 2) {
+        return res.status(400).json({ error: "Vui lòng nhập MSSV / Mã định danh hợp lệ." });
+      }
+
+      if (!password || typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu phải có độ dài tối thiểu 6 ký tự." });
+      }
+
+      const cleanMssv = mssv.trim().toUpperCase();
+      const cleanUsername = String(username || cleanMssv).toLowerCase().trim().replace(/[^a-z0-9_.-]/g, '');
+      const cleanGender = String(gender || '1');
+      const cleanBirth = String(birthYear || '2004');
+
+      const users = loadAudienceUsers();
+      if (users.some(u => u.mssv.toUpperCase() === cleanMssv && u.authProvider === 'local')) {
+        return res.status(409).json({ error: "Mã số sinh viên (MSSV) này đã được đăng ký tài khoản. Vui lòng chọn tab 'Đăng Nhập'." });
+      }
+
+      const computedUid = (anonymizedUid && anonymizedUid.length === 12)
+        ? anonymizedUid
+        : generateServerAudienceUid(name, cleanMssv, cleanGender, cleanBirth);
+
+      const salt = crypto.randomBytes(16).toString('hex');
+      const passwordHash = hashPassword(password, salt);
+
+      const newUser: StoredAudienceUser = {
+        uid: `aud_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+        username: cleanUsername || cleanMssv.toLowerCase(),
+        name: name.trim(),
+        mssv: cleanMssv,
+        gender: cleanGender,
+        birthYear: cleanBirth,
+        anonymizedUid: computedUid,
+        teamId: teamId || undefined,
+        teamName: teamName || undefined,
+        note: note ? String(note).trim().slice(0, 200) : '',
+        authProvider: 'local',
+        passwordHash,
+        salt,
+        registeredAt: Date.now(),
+        lastLoginAt: Date.now()
+      };
+
+      users.push(newUser);
+      saveAudienceUsers(users);
+
+      return res.status(201).json({
+        success: true,
+        message: "Đăng ký tài khoản khán giả thành công! Chào mừng bạn đến với BTI 2026.",
+        user: sanitizeAudienceUser(newUser)
+      });
+    } catch (err: any) {
+      console.error('[Audience Register] Error:', err);
+      return res.status(500).json({ error: "Lỗi xử lý đăng ký khán giả. Vui lòng thử lại." });
+    }
+  });
+
+  // Audience: 2. Login Local Account
+  app.post("/api/audience/login", audienceLimiter, (req, res) => {
+    try {
+      const { identifier, password, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
+      }
+
+      if (!identifier || !password) {
+        return res.status(400).json({ error: "Vui lòng nhập đầy đủ MSSV/Tên đăng nhập và mật khẩu." });
+      }
+
+      const idClean = String(identifier).trim().toLowerCase();
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          u.mssv.toLowerCase() === idClean ||
+          u.username.toLowerCase() === idClean ||
+          (u.email && u.email.toLowerCase() === idClean) ||
+          u.anonymizedUid.toLowerCase() === idClean
+        )
+      );
+
+      const pwdCheck = user && user.salt && user.passwordHash
+        ? verifyPassword(password, user.salt, user.passwordHash)
+        : { valid: false, needsRehash: false };
+
+      if (!user || !pwdCheck.valid) {
+        return res.status(401).json({ error: "Thông tin tài khoản hoặc mật khẩu không chính xác." });
+      }
+
+      // Auto-upgrade legacy hash to modern scrypt hash seamlessly
+      if (pwdCheck.needsRehash && user.salt) {
+        user.passwordHash = hashPassword(password, user.salt);
+      }
+
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: `Đăng nhập thành công! Chào mừng ${user.name}.`,
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Login] Error:', err);
+      return res.status(500).json({ error: "Lỗi đăng nhập tài khoản khán giả." });
+    }
+  });
+
+  // Audience: 3. Google Sign-In / Sync
+  app.post("/api/audience/google-auth", audienceLimiter, (req, res) => {
+    try {
+      const { uid, email, displayName, mssv, gender, birthYear, anonymizedUid, teamId, isRegistering } = req.body;
+
+      if (!uid || !email) {
+        return res.status(400).json({ error: "Thiếu thông tin tài khoản Google." });
+      }
+
+      const users = loadAudienceUsers();
+      let user = users.find(u => u.uid === uid || (u.email && u.email.toLowerCase() === email.toLowerCase()));
+
+      if (!user) {
+        if (!isRegistering && (!mssv || !gender || !birthYear)) {
+          return res.status(404).json({
+            notFound: true,
+            email: email.toLowerCase(),
+            displayName: displayName || email.split('@')[0],
+            message: "Tài khoản Google này chưa có hồ sơ khán giả tại BTI 2026. Vui lòng xác thực MSSV và mã định danh."
+          });
+        }
+
+        const cleanMssv = String(mssv || email.split('@')[0]).toUpperCase();
+        const cleanGender = String(gender || '1');
+        const cleanBirth = String(birthYear || '2004');
+        const computedUid = (anonymizedUid && anonymizedUid.length === 12)
+          ? anonymizedUid
+          : generateServerAudienceUid(displayName || email.split('@')[0], cleanMssv, cleanGender, cleanBirth);
+
+        user = {
+          uid,
+          username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, ''),
+          name: (displayName || email.split('@')[0]).trim(),
+          mssv: cleanMssv,
+          gender: cleanGender,
+          birthYear: cleanBirth,
+          anonymizedUid: computedUid,
+          email: email.toLowerCase(),
+          teamId: teamId || undefined,
+          authProvider: 'google',
+          registeredAt: Date.now(),
+          lastLoginAt: Date.now()
+        };
+
+        users.push(user);
+        saveAudienceUsers(users);
+
+        return res.status(201).json({
+          success: true,
+          message: "Xác thực tài khoản Google và MSSV thành công!",
+          user: sanitizeAudienceUser(user)
+        });
+      }
+
+      // If user exists, update fields if provided in verification
+      if (displayName) user.name = displayName.trim();
+      if (mssv) user.mssv = String(mssv).trim().toUpperCase();
+      if (gender) user.gender = String(gender);
+      if (birthYear) user.birthYear = String(birthYear);
+      if (anonymizedUid && anonymizedUid.length === 12) user.anonymizedUid = anonymizedUid;
+      if (teamId !== undefined) user.teamId = teamId || undefined;
+      
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Xác thực Google và MSSV thành công!",
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Google Auth] Error:', err);
+      return res.status(500).json({ error: "Lỗi xác thực tài khoản Google." });
+    }
+  });
+
+  // Audience: 4. Check Status / Profile Lookup
+  app.get("/api/audience/check-status/:identifier", (req, res) => {
+    try {
+      const id = String(req.params.identifier || '').trim().toLowerCase();
+      if (!id) {
+        return res.status(400).json({ error: "Thiếu mã tra cứu." });
+      }
+
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.mssv.toLowerCase() === id ||
+        u.username.toLowerCase() === id ||
+        (u.email && u.email.toLowerCase() === id) ||
+        u.anonymizedUid.toLowerCase() === id
+      );
+
+      if (!user) {
+        return res.json({ exists: false });
+      }
+
+      return res.json({
+        exists: true,
+        user: {
+          name: user.name,
+          mssv: user.mssv,
+          anonymizedUid: user.anonymizedUid,
+          authProvider: user.authProvider,
+          registeredAt: user.registeredAt,
+          lastLoginAt: user.lastLoginAt,
+          teamId: user.teamId,
+          teamName: user.teamName
+        }
+      });
+    } catch (err: any) {
+      console.error('[Audience Check Status] Error:', err);
+      return res.status(500).json({ error: "Lỗi tra cứu thông tin hồ sơ." });
+    }
+  });
+
+  // Audience: 5. Quick Access (Instant login with MSSV + 12-Digit UID)
+  app.post("/api/audience/quick-access", audienceLimiter, (req, res) => {
+    try {
+      const { mssv, anonymizedUid } = req.body;
+      if (!mssv || !anonymizedUid) {
+        return res.status(400).json({ error: "Vui lòng nhập đầy đủ MSSV và Mã định danh 12 số." });
+      }
+
+      const cleanMssv = String(mssv).trim().toUpperCase();
+      const cleanUid = String(anonymizedUid).trim().toUpperCase();
+
+      const users = loadAudienceUsers();
+      const user = users.find(u =>
+        u.mssv.toUpperCase() === cleanMssv &&
+        u.anonymizedUid.toUpperCase() === cleanUid
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ khớp với MSSV và Mã định danh đã nhập." });
+      }
+
+      user.lastLoginAt = Date.now();
+      saveAudienceUsers(users);
+
+      return res.json({
+        success: true,
+        message: `Xác thực thành công! Chào mừng ${user.name}.`,
+        user: sanitizeAudienceUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Audience Quick Access] Error:', err);
+      return res.status(500).json({ error: "Lỗi xác thực nhanh." });
+    }
   });
 
   // 2. Register Technical Admin Account
@@ -278,8 +667,17 @@ async function startServer() {
       const users = loadAdminUsers();
       const user = users.find(u => u.username === cleanUsername && u.authProvider === 'local');
 
-      if (!user || !user.salt || !user.passwordHash || !verifyPassword(password, user.salt, user.passwordHash)) {
+      const pwdCheck = user && user.salt && user.passwordHash
+        ? verifyPassword(password, user.salt, user.passwordHash)
+        : { valid: false, needsRehash: false };
+
+      if (!user || !pwdCheck.valid) {
         return res.status(401).json({ error: "Tên đăng nhập hoặc mật khẩu không chính xác." });
+      }
+
+      // Auto-upgrade legacy hash to modern scrypt hash seamlessly
+      if (pwdCheck.needsRehash && user.salt) {
+        user.passwordHash = hashPassword(password, user.salt);
       }
 
       if (user.status === 'PENDING') {

@@ -315,7 +315,7 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
   };
 
   if (!isOpen) return null;
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || !document.body) return null;
 
   return createPortal(
     <div
@@ -367,7 +367,8 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
                 soundFx.playClick();
                 onClose();
               }}
-              className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 flex items-center justify-center transition"
+              className="min-w-[44px] min-h-[44px] rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 flex items-center justify-center transition cursor-pointer"
+              aria-label="Đóng"
             >
               <X className="w-4 h-4" />
             </button>

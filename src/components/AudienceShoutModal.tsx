@@ -228,7 +228,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
               onClose();
             }}
             aria-label="Đóng"
-            className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>

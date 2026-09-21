@@ -1084,7 +1084,7 @@ class RealtimeSyncService {
         
     if (this.db && this.isFirebaseConnected) {
       try {
-        await setDoc(doc(this.db, 'responses', `${questionId}_${uid}`), { questionId, uid, response: processedResponse });
+        await setDoc(doc(this.db, 'responses', `${questionId}_${uid}`), this.removeUndefined({ questionId, uid, response: processedResponse }));
         if (isNewResponse) {
           const userName = processedResponse.user_info?.name || 'Khán giả';
           this.logActivity('QUESTION_SUBMITTED', 'Gửi câu trả lời', `${userName} đã gửi đáp án cho câu hỏi ${questionId}.`, { questionId, uid, choice: processedResponse.choice });
@@ -1098,16 +1098,16 @@ class RealtimeSyncService {
     if (!uid) return;
     const now = Date.now();
     const isNew = !this.cachedPresence[uid] || !this.cachedPresence[uid].online;
-    this.cachedPresence[uid] = { online: true, last_active: now, name, mssv };
+    this.cachedPresence[uid] = { online: true, last_active: now, name: name || '', mssv: mssv || '' };
     this.saveLocalPresence();
     this.notifyPresenceListeners();
-    if (this.broadcastChannel) this.broadcastChannel.postMessage({ type: 'PRESENCE_PING', payload: { uid, info: { name, mssv } } });
+    if (this.broadcastChannel) this.broadcastChannel.postMessage({ type: 'PRESENCE_PING', payload: { uid, info: { name: name || '', mssv: mssv || '' } } });
     
     if (this.db && this.isFirebaseConnected) {
       try {
-        await setDoc(doc(this.db, 'presence', uid), { online: true, last_active: now, name, mssv }, { merge: true });
+        await setDoc(doc(this.db, 'presence', uid), this.removeUndefined({ online: true, last_active: now, name: name || '', mssv: mssv || '' }), { merge: true });
         if (isNew) {
-          this.logActivity('USER_JOINED', 'Khán giả tham gia', `${name} (${mssv || 'Khách'}) đã tham gia hoặc kết nối lại.`, { uid, name, mssv });
+          this.logActivity('USER_JOINED', 'Khán giả tham gia', `${name || 'Khán giả'} (${mssv || 'Khách'}) đã tham gia hoặc kết nối lại.`, { uid, name: name || '', mssv: mssv || '' });
         }
       } catch {}
     }

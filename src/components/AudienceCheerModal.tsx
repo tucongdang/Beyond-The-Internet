@@ -45,6 +45,7 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen || !mounted) return null;
+  if (typeof document === 'undefined' || !document.body) return null;
 
   const modalContent = (
     <div 
@@ -92,7 +93,8 @@ export const AudienceCheerModal: React.FC<AudienceCheerModalProps> = ({
               soundFx.playClick();
               onClose();
             }}
-            className="p-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition flex items-center justify-center cursor-pointer"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>

@@ -42,6 +42,9 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
     }
   };
 
+  if (!isOpen) return null;
+  if (typeof document === 'undefined' || !document.body) return null;
+
   const modalContent = (
     <div
       className="fluent-dialog-overlay z-[60] animate-fadeIn"
@@ -60,7 +63,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             soundFx.playClick();
             onClose();
           }}
-          className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-[2px] bg-white/10 hover:bg-white/20 transition"
+          className="absolute top-3 right-3 min-w-[44px] min-h-[44px] p-2.5 text-white/50 hover:text-white rounded-[2px] bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer"
           aria-label={localLanguage !== 'vi' ? 'Close' : 'Đóng'}
         >
           <X className="w-4 h-4" />

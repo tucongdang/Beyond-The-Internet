@@ -283,6 +283,29 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
             </div>
           </div>
         </div>
+      ) : compact ? (
+        <button
+          type="button"
+          id="battery-indicator-navbar"
+          data-tooltip={tooltipText}
+          data-tooltip-title={t("view_battery_status", effectiveLanguage)}
+          data-tooltip-placement="bottom"
+          data-tooltip-variant="success"
+          onClick={handleOpenModal}
+          className={`has-tooltip min-h-[44px] px-2 flex items-center justify-center gap-1 text-white/80 hover:text-white cursor-pointer ${className}`}
+          aria-label={t("view_battery_label_dev", effectiveLanguage).replace("{percent}", String(percent))}
+        >
+          <div className="flex items-center gap-0.5 relative">
+            {isCharging ? (
+              <Zap className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+            ) : (
+              <BatteryIcon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
+            )}
+          </div>
+          <span className={`text-[10px] font-mono font-bold ${visuals.textColor}`}>
+            {percent}%
+          </span>
+        </button>
       ) : (
         <button
           type="button"
@@ -292,7 +315,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
           data-tooltip-placement="bottom"
           data-tooltip-variant="success"
           onClick={handleOpenModal}
-          className={`has-tooltip fluent-nav-btn ${visuals.bgColor} ${visuals.borderColor} hover:border-emerald-400/50 ${className}`}
+          className={`has-tooltip min-h-[44px] fluent-nav-btn ${visuals.bgColor} ${visuals.borderColor} hover:border-emerald-400/50 ${className}`}
           aria-label={t("view_battery_label_dev", effectiveLanguage).replace("{percent}", String(percent))}
         >
           <div className="flex items-center gap-1 relative">

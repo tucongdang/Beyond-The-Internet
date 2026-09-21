@@ -68,7 +68,7 @@ export const EmergencyPollControl: React.FC<EmergencyPollControlProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Đóng"
-            className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
+            className="min-w-[44px] min-h-[44px] rounded-[2px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
             title="Đóng cửa sổ"
           >
             <X className="w-4 h-4" />

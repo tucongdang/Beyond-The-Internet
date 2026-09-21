@@ -188,7 +188,8 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition"
+            aria-label="Đóng"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition flex items-center justify-center cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

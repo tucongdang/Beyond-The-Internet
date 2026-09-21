@@ -1,5 +1,5 @@
 import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, getDocs, Firestore } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, removeUndefined } from '../firebase';
 import { AudienceQAQuestion, QASettings, QAQuestionStatus, QAQuestionCategory, UserInfo } from '../types';
 import { syncService } from './syncService';
 import { getSecureRandomId, getSecureRandomInt } from '../utils/cryptoUtils';
@@ -265,7 +265,7 @@ class RealtimeQAService {
     try {
       const firestoreDb = db as Firestore;
       if (firestoreDb) {
-        await setDoc(doc(firestoreDb, 'audience_qa', questionId), newQuestion);
+        await setDoc(doc(firestoreDb, 'audience_qa', questionId), removeUndefined(newQuestion));
       }
     } catch (err) {
       console.warn('Failed to sync new question to Firestore:', err);
@@ -457,7 +457,7 @@ class RealtimeQAService {
       try {
         const firestoreDb = db as Firestore;
         if (firestoreDb) {
-          await setDoc(doc(firestoreDb, 'audience_qa', id), q);
+          await setDoc(doc(firestoreDb, 'audience_qa', id), removeUndefined(q));
         }
       } catch {}
     }

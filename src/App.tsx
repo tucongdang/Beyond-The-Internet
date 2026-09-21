@@ -10,7 +10,7 @@ import { syncService, DEFAULT_GAME_STATE } from './services/syncService';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
-import { auth, db } from './firebase';
+import { auth, db, removeUndefined } from './firebase';
 import QRCode from 'qrcode';
 import { soundFx } from './services/audioEffects';
 import { vibrateTap, vibrateCopy } from './utils/hapticUtils';
@@ -363,7 +363,7 @@ export default function App() {
                 );
                 setSecureItem('BTI2026_USER_PROFILE', localProfile);
                 try {
-                  await setDoc(doc(db, 'users', localProfile.uid), localProfile, { merge: true });
+                  await setDoc(doc(db, 'users', localProfile.uid), removeUndefined(localProfile), { merge: true });
                 } catch (e) {
                   console.error("Failed to update user 12-digit UID in firestore", e);
                 }
@@ -560,7 +560,7 @@ export default function App() {
     syncService.sendPresencePing(userInfo);
     
     try {
-      await setDoc(doc(db, 'users', userInfo.uid), userInfo, { merge: true });
+      await setDoc(doc(db, 'users', userInfo.uid), removeUndefined(userInfo), { merge: true });
     } catch (e) {
       console.error("Failed to save user to firestore", e);
     }
@@ -598,6 +598,8 @@ export default function App() {
         activeCount={activeCount}
         user={user}
         adminUser={adminUser}
+        isAdminAuthenticated={isAuthenticated}
+        isOnboardingOpen={isOnboardingOpen}
         onOpenProfile={() => {
           if (user) {
             setIsProfileModalOpen(true);
@@ -653,26 +655,54 @@ export default function App() {
         )}
 
         {currentView === 'audience' && (
-          <AudienceView
-            gameState={gameState}
-            user={user}
-            responses={allResponses[gameState.question_id] || currentResponses || {}}
-            allResponses={allResponses}
-            isHighContrast={isHighContrast}
-            onToggleHighContrast={handleToggleHighContrast}
-            onOpenRegister={() => setIsOnboardingOpen(true)}
-            onOpenProfile={() => {
-              if (user) {
-                setIsProfileModalOpen(true);
-              } else {
-                setIsOnboardingOpen(true);
-              }
-            }}
-          />
+          (!user || isOnboardingOpen) ? (
+            <OnboardingModal
+              isOpen={true}
+              isInline={true}
+              onComplete={handleUserComplete}
+              currentUser={user}
+              onExit={() => {
+                if (user && isOnboardingOpen) {
+                  setIsOnboardingOpen(false);
+                } else {
+                  setCurrentView('landing');
+                }
+              }}
+              onClose={() => {
+                if (user && isOnboardingOpen) {
+                  setIsOnboardingOpen(false);
+                } else {
+                  setCurrentView('landing');
+                }
+              }}
+            />
+          ) : (
+            <AudienceView
+              gameState={gameState}
+              user={user}
+              responses={allResponses[gameState.question_id] || currentResponses || {}}
+              allResponses={allResponses}
+              isHighContrast={isHighContrast}
+              onToggleHighContrast={handleToggleHighContrast}
+              onOpenRegister={() => setIsOnboardingOpen(true)}
+              onOpenProfile={() => {
+                if (user) {
+                  setIsProfileModalOpen(true);
+                } else {
+                  setIsOnboardingOpen(true);
+                }
+              }}
+            />
+          )
         )}
 
         {currentView === 'admin' && (
-          <PasswordGate isAuthenticated={isAuthenticated} onAuthenticated={handleAuthenticate} viewName="Ban Kỹ Thuật (Admin)">
+          <PasswordGate
+            isAuthenticated={isAuthenticated}
+            onAuthenticated={handleAuthenticate}
+            viewName="Ban Kỹ Thuật (Admin)"
+            onExit={() => setCurrentView('landing')}
+          >
             <AdminPortal
               adminUser={adminUser}
               onLogout={handleLogout}
@@ -688,7 +718,12 @@ export default function App() {
         )}
 
         {currentView === 'projector' && (
-          <PasswordGate isAuthenticated={isAuthenticated} onAuthenticated={handleAuthenticate} viewName="Màn Chiếu (Projector)">
+          <PasswordGate
+            isAuthenticated={isAuthenticated}
+            onAuthenticated={handleAuthenticate}
+            viewName="Màn Chiếu (Projector)"
+            onExit={() => setCurrentView('landing')}
+          >
             <ProjectorView
               gameState={gameState}
               responses={allResponses[gameState.question_id] || currentResponses || {}}
@@ -714,12 +749,6 @@ export default function App() {
       )}
 
       {/* Modals */}
-      <OnboardingModal
-        isOpen={isOnboardingOpen}
-        onComplete={handleUserComplete}
-        currentUser={user}
-      />
-
       <FirebaseConfigModal
         isOpen={isFirebaseConfigOpen}
         onClose={() => {
@@ -736,7 +765,7 @@ export default function App() {
       />
 
       {/* MODAL: Audience QR Code Display (Only on audience/landing views; admin and projector have dedicated controllers) */}
-      {((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) && currentView !== 'admin' && currentView !== 'projector' && typeof document !== 'undefined' && createPortal(
+      {((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) && currentView !== 'admin' && currentView !== 'projector' && typeof document !== 'undefined' && !!document.body && createPortal(
         <div 
           id="app-global-qr-modal-overlay"
           className="fluent-dialog-overlay z-[999999] animate-fadeIn flex items-center justify-center p-4 overflow-y-auto"
@@ -750,9 +779,6 @@ export default function App() {
             id="app-global-qr-modal-content"
             className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar"
           >
-            {/* Top Accent Line */}
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#F7CAC9] to-transparent pointer-events-none" />
-
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-[2px] bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center">

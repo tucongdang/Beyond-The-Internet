@@ -221,8 +221,9 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
               vibrateTap();
               onClose();
             }}
-            className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
             title={t("qa_close", localLanguage)}
+            aria-label={t("qa_close", localLanguage)}
           >
             <X className="w-5 h-5" />
           </button>
@@ -677,5 +678,5 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
     </div>
   );
 
-  return typeof document !== 'undefined' ? createPortal(content, document.body) : null;
+  return (typeof document !== 'undefined' && !!document.body) ? createPortal(content, document.body) : null;
 };

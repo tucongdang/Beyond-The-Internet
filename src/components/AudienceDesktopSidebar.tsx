@@ -796,6 +796,6 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
     </>
   );
 
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || !document.body) return null;
   return createPortal(sidebarContent, document.body);
 };

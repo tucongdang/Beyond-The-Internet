@@ -4139,7 +4139,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       </div>
 
       {/* Mobile Bottom Navigation Bar (Optimized for iOS Safe Area & Touch Targets) */}
-      {typeof document !== 'undefined' && createPortal(
+      {typeof document !== 'undefined' && !!document.body && createPortal(
         <nav 
           id="audience-mobile-bottom-nav"
           aria-label={t("view_nav_audience", localLanguage)}

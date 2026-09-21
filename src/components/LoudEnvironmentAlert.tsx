@@ -64,6 +64,9 @@ export const LoudEnvironmentAlert: React.FC = () => {
     setSuggestionEvent(null);
   };
 
+  if (!autoToast && !suggestionEvent) return null;
+  if (typeof document === 'undefined' || !document.body) return null;
+
   return createPortal(
     <>
       {/* Auto-boost feedback toast */}

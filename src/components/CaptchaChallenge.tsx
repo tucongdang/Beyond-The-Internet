@@ -8,13 +8,15 @@ interface CaptchaChallengeProps {
   captchaId: string;
   onChange: (captchaId: string, answer: string) => void;
   disabled?: boolean;
+  apiEndpoint?: string;
 }
 
 export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
   value,
   captchaId,
   onChange,
-  disabled = false
+  disabled = false,
+  apiEndpoint = '/api/captcha'
 }) => {
   const [question, setQuestion] = useState<string>('...');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -26,7 +28,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
   const fetchCaptcha = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/captcha');
+      const res = await fetch(apiEndpoint);
       const data = await res.json();
       if (data.captchaId && data.question) {
         setQuestion(data.question);
@@ -82,7 +84,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
     }
 
     // Skewed, crisp math text
-    ctx.font = 'bold 18px "Courier New", monospace';
+    ctx.font = 'bold 16px "Courier New", monospace';
     ctx.fillStyle = '#F7CAC9';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -92,11 +94,11 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
   }, [question]);
 
   return (
-    <div className="space-y-1.5 select-none">
-      <div className="flex items-center justify-between text-[11px] font-mono font-bold text-white/70">
-        <span className="flex items-center gap-1.5 text-sky-300">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Mã bảo vệ chống bot (CAPTCHA)</span>
+    <div className="space-y-1 select-none">
+      <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
+        <span className="flex items-center gap-1 text-sky-300 truncate">
+          <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+          <span className="truncate">Mã bảo vệ (CAPTCHA)</span>
         </span>
         <button
           type="button"
@@ -106,20 +108,20 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
             fetchCaptcha();
           }}
           disabled={isLoading || disabled}
-          className="hover:text-white flex items-center gap-1 transition text-[10px] text-white/50 cursor-pointer disabled:opacity-40"
+          className="hover:text-white flex items-center gap-1 transition text-[10px] text-white/50 cursor-pointer disabled:opacity-40 shrink-0 ml-1"
           title="Đổi bài toán khác"
         >
-          <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${isLoading ? 'animate-spin' : ''}`} />
           <span>Đổi mã</span>
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <div className="relative rounded-[2px] border border-white/20 overflow-hidden shadow-inner shrink-0">
           <canvas
             ref={canvasRef}
-            width={120}
-            height={38}
+            width={105}
+            height={34}
             className="block"
             title={`Bài toán CAPTCHA: ${question} = ?`}
           />
@@ -136,7 +138,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
             const cleanVal = e.target.value.replace(/[^0-9-]/g, '');
             onChange(captchaId, cleanVal);
           }}
-          className="flex-1 bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-[#F7CAC9]/60 text-center font-mono font-bold text-sm text-white px-3 py-2 rounded-[2px] outline-none tracking-widest transition shadow-inner disabled:opacity-50"
+          className="flex-1 min-w-0 bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 text-center font-mono font-bold text-xs text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition shadow-inner disabled:opacity-50 placeholder:font-normal placeholder:text-xs placeholder:text-white/30 placeholder:tracking-normal"
           maxLength={6}
           required
         />

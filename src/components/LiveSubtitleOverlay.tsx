@@ -35,6 +35,9 @@ export const LiveSubtitleOverlay: React.FC = () => {
   if (!isSubtitlesEnabled || !speechState.active || !speechState.text.trim()) {
     return null;
   }
+  if (typeof document === 'undefined' || !document.body) {
+    return null;
+  }
 
   const handleClose = () => {
     soundFx.playClick();

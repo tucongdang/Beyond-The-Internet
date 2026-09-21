@@ -15,6 +15,9 @@ interface NavbarProps {
   gameState: GameState;
   activeCount: number;
   user: UserInfo | null;
+  adminUser?: AdminUser | null;
+  isAdminAuthenticated?: boolean;
+  isOnboardingOpen?: boolean;
   onOpenProfile: () => void;
   onLogout?: () => void;
   onOpenFirebaseConfig: () => void;
@@ -24,7 +27,6 @@ interface NavbarProps {
   onAdminLogout?: () => void;
   onOpenQrCode?: () => void;
   onOpenInstallModal?: () => void;
-  adminUser?: AdminUser | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeCount,
   user,
   adminUser,
+  isAdminAuthenticated = false,
+  isOnboardingOpen = false,
   onOpenProfile,
   onLogout,
   onOpenFirebaseConfig,
@@ -45,9 +49,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenInstallModal,
 }) => {
   const { localLanguage, toggleLanguage } = useLanguage();
-  // Admin Portal strictly retains Vietnamese navigation bar
   const effectiveLanguage = currentView === 'admin' ? 'vi' : localLanguage;
-  const isLanding = currentView === 'landing';
+  const isLanding = currentView === 'landing' || currentView === 'client_landing';
+
+  // Determine if the user is currently on an authentication / login screen
+  const isLoginScreen =
+    isLanding ||
+    (currentView === 'admin' && !isAdminAuthenticated) ||
+    (currentView === 'projector' && !isAdminAuthenticated) ||
+    (currentView === 'audience' && (!user || isOnboardingOpen));
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
 
@@ -143,9 +154,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getPingBadgeStyle = () => {
     if (pingInfo.quality === 'offline' || pingInfo.latencyMs === null) {
       return {
-        container: 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 hover:border-zinc-500/50',
         dot: 'bg-zinc-500',
-        icon: 'text-zinc-400',
+        text: 'text-zinc-400',
         label: 'Offline',
         qualityText: effectiveLanguage === 'en' ? 'Offline' : 'Mất kết nối',
         description: effectiveLanguage === 'en' ? 'Firebase Disconnected' : 'Mất kết nối Firebase'
@@ -153,9 +163,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     if (pingInfo.quality === 'excellent') {
       return {
-        container: 'bg-white/10 backdrop-blur-md border-emerald-500/30 text-emerald-400 hover:border-emerald-500/50',
-        dot: 'bg-emerald-400',
-        icon: 'text-emerald-400',
+        dot: 'bg-emerald-400 shadow-[0_0_6px_#34d399]',
+        text: 'text-emerald-300',
         label: `${pingInfo.latencyMs}ms`,
         qualityText: effectiveLanguage === 'en' ? 'Excellent' : 'Cực tốt',
         description: effectiveLanguage === 'en' ? 'Ultra-low latency (< 100ms)' : 'Độ trễ cực tốt (< 100ms)'
@@ -163,9 +172,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     if (pingInfo.quality === 'good') {
       return {
-        container: 'bg-white/10 backdrop-blur-md border-sky-500/30 text-sky-400 hover:border-sky-500/50',
-        dot: 'bg-sky-400',
-        icon: 'text-sky-400',
+        dot: 'bg-sky-400 shadow-[0_0_6px_#38bdf8]',
+        text: 'text-sky-300',
         label: `${pingInfo.latencyMs}ms`,
         qualityText: effectiveLanguage === 'en' ? 'Good' : 'Tốt',
         description: effectiveLanguage === 'en' ? 'Stable latency (< 250ms)' : 'Độ trễ ổn định (< 250ms)'
@@ -173,18 +181,16 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     if (pingInfo.quality === 'fair') {
       return {
-        container: 'bg-white/10 backdrop-blur-md border-amber-500/30 text-amber-400 hover:border-amber-500/50',
         dot: 'bg-amber-400',
-        icon: 'text-amber-400',
+        text: 'text-amber-300',
         label: `${pingInfo.latencyMs}ms`,
         qualityText: effectiveLanguage === 'en' ? 'Fair' : 'Trung bình',
         description: effectiveLanguage === 'en' ? 'Moderate latency (< 500ms)' : 'Độ trễ trung bình (< 500ms)'
       };
     }
     return {
-      container: 'bg-white/10 backdrop-blur-md border-rose-500/30 text-rose-400 hover:border-rose-500/50',
       dot: 'bg-rose-400 animate-ping',
-      icon: 'text-rose-400',
+      text: 'text-rose-300',
       label: `${pingInfo.latencyMs}ms`,
       qualityText: effectiveLanguage === 'en' ? 'Poor' : 'Chậm',
       description: effectiveLanguage === 'en' ? 'High latency (> 500ms)' : 'Độ trễ cao (> 500ms)'
@@ -195,38 +201,38 @@ export const Navbar: React.FC<NavbarProps> = ({
     switch (gameState.status) {
       case 'ACTIVE':
         return (
-          <div className="px-2.5 py-1 bg-emerald-950/50 border border-emerald-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_#34d399]" />
-            <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'In Progress' : 'Đang Diễn Ra'}
+          <div className="px-2 py-0.5 bg-emerald-950/40 border border-emerald-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_6px_#34d399]" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
+              {effectiveLanguage === 'en' ? 'Active' : 'Đang Đấu'}
             </span>
           </div>
         );
       case 'LOCKED':
         return (
-          <div className="px-2.5 py-1 bg-amber-950/50 border border-amber-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
-            <div className="w-2 h-2 bg-amber-400 rounded-full" />
-            <span className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
+          <div className="px-2 py-0.5 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
               {effectiveLanguage === 'en' ? 'Locked' : 'Đã Khóa'}
             </span>
           </div>
         );
       case 'REVEAL':
         return (
-          <div className="px-2.5 py-1 bg-purple-950/50 border border-purple-500/40 rounded-[2px] flex items-center gap-2 shadow-sm">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse shadow-[0_0_8px_#c084fc]" />
-            <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Result Revealed' : 'Công Bố Kết Quả'}
+          <div className="px-2 py-0.5 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse shadow-[0_0_6px_#c084fc]" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
+              {effectiveLanguage === 'en' ? 'Result' : 'Kết Quả'}
             </span>
           </div>
         );
       case 'STANDBY':
       default:
         return (
-          <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-[2px] flex items-center gap-2 shadow-sm">
-            <div className="w-2 h-2 bg-white/40 rounded-full" />
-            <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Waiting for Stage' : 'Chờ Sân Khấu'}
+          <div className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-white/40 rounded-full" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-white/50 uppercase tracking-wider">
+              {effectiveLanguage === 'en' ? 'Standby' : 'Chờ Khởi Động'}
             </span>
           </div>
         );
@@ -241,67 +247,65 @@ export const Navbar: React.FC<NavbarProps> = ({
       className="sticky top-0 z-40 w-full fluent-navbar text-[#e5e5e5] select-none transition-all"
     >
       <div 
-        className="max-w-[1400px] mx-auto px-3 sm:px-5 h-15 flex items-center justify-between gap-3"
+        className="max-w-[1400px] mx-auto px-2.5 sm:px-4 h-13 sm:h-14 flex items-center justify-between gap-2 sm:gap-3"
       >
-        {/* Left: Bento Branding & Status */}
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        {/* Left: Branding & Status Badge */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
           <div
             onClick={() => {
               vibrateTap();
               onViewChange('landing');
             }}
-            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0"
+            className="flex items-center gap-2 cursor-pointer group shrink-0"
+            title="Trang chủ BTI 2026"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-base sm:text-lg text-white shadow-lg shadow-blue-950/50 border border-blue-400/40 group-hover:scale-105 group-hover:border-blue-300/60 transition duration-200">
+            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-sm sm:text-base text-white shadow-md shadow-blue-950/40 border border-blue-400/40 group-hover:scale-105 group-hover:border-blue-300/60 transition duration-200">
               BTI
             </div>
-            <div className="hidden xl:block">
-              <h1 className="text-sm sm:text-base font-extrabold tracking-tight leading-tight text-white flex items-center gap-1.5 whitespace-nowrap">
+            <div className="hidden sm:block">
+              <h1 className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight text-white flex items-center gap-1 whitespace-nowrap">
                 BEYOND THE INTERNET <span className="text-sky-300">2026</span>
               </h1>
-              <p className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-[0.15em] font-mono leading-none mt-1 whitespace-nowrap">
-                Interactive Arena • BTI Node
+              <p className="text-[8px] sm:text-[9px] text-white/40 uppercase tracking-wider font-mono leading-none mt-0.5 whitespace-nowrap">
+                {currentView === 'admin' ? 'Ban Kỹ Thuật • Điều Hành' : 'Đấu Trường Trực Tiếp'}
               </p>
-            </div>
-            <div className="hidden md:block xl:hidden">
-              <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white whitespace-nowrap">
-                BTI <span className="text-sky-300">2026</span>
-              </h1>
             </div>
           </div>
 
-          {!isLanding && (
-            <div className="hidden lg:flex items-center">
+          {/* Status Badge - Hidden during Login */}
+          {!isLoginScreen && (
+            <div className="hidden md:flex items-center">
               {getStatusBadge()}
             </div>
           )}
         </div>
 
-        {/* Right: Telemetry & Controls */}
+        {/* Right: Sleek Groups (Admin Actions, Telemetry, Controls, Identity) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Admin Quick Controls Group */}
-          {currentView === 'admin' && (
-            <div className="hidden sm:inline-flex fluent-action-group">
+          
+          {/* Admin Tools Group (Sync, QR, LED Screen) - Only when Admin is authenticated */}
+          {!isLoginScreen && currentView === 'admin' && (
+            <div className="hidden sm:inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
               {/* Sync Status Button */}
               <button
                 onClick={() => {
                   vibrateTap();
                   onOpenFirebaseConfig();
                 }}
-                data-tooltip={isFirebaseConnected ? 'Trạng thái Firebase: Đang hoạt động trực tiếp (Live Sync)' : 'Trạng thái Firebase: Chế độ cục bộ (Offline / Local Mode)'}
-                data-tooltip-title="Cấu Hình Đồng Bộ"
+                data-tooltip={isFirebaseConnected ? 'Firebase Live: Đang đồng bộ thời gian thực' : 'Firebase Offline: Chế độ lưu trữ cục bộ'}
+                data-tooltip-title="Đồng Bộ Dữ Liệu"
                 data-tooltip-placement="bottom"
                 data-tooltip-variant={isFirebaseConnected ? 'success' : 'warning'}
-                className={`has-tooltip fluent-action-btn ${
+                className={`has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] text-xs transition cursor-pointer flex items-center justify-center gap-1 ${
                   isFirebaseConnected
-                    ? 'text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-500/30'
-                    : 'text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border-amber-500/30'
+                    ? 'text-emerald-300 hover:bg-emerald-950/50'
+                    : 'text-amber-300 hover:bg-amber-950/50'
                 }`}
               >
                 <Database className="w-3.5 h-3.5" />
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    isFirebaseConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]' : 'bg-amber-400 animate-pulse'
+                    isFirebaseConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_5px_#34d399]' : 'bg-amber-400'
                   }`}
                 />
               </button>
@@ -317,7 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-tooltip-title="Mã QR Khán Giả"
                   data-tooltip-hotkey="Q"
                   data-tooltip-placement="bottom"
-                  className="has-tooltip fluent-action-btn text-sky-300 bg-sky-950/40 hover:bg-sky-900/50 border-sky-500/30"
+                  className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] text-sky-300 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
                 >
                   <QrCode className="w-3.5 h-3.5" />
                 </button>
@@ -329,37 +333,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                   vibrateTap();
                   window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
                 }}
-                data-tooltip="Mở màn hình trình chiếu LED trong cửa sổ tab mới"
+                data-tooltip="Mở màn hình trình chiếu LED trong tab mới"
                 data-tooltip-title="Màn Chiếu LED"
                 data-tooltip-placement="bottom"
                 data-tooltip-variant="accent"
-                className="has-tooltip fluent-action-btn bg-sky-600 hover:bg-sky-500 text-white border-sky-400/50 shadow-md shadow-sky-950/30"
+                className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] bg-sky-600 hover:bg-sky-500 text-white transition cursor-pointer flex items-center justify-center"
               >
                 <Eye className="w-3.5 h-3.5" />
               </button>
-
-              {/* Admin Logout Button */}
-              {onAdminLogout && (
-                <button
-                  onClick={() => {
-                    vibrateTap();
-                    onAdminLogout();
-                  }}
-                  data-tooltip="Đăng xuất khỏi quyền điều khiển Ban Tổ Chức"
-                  data-tooltip-title="Đăng Xuất Admin"
-                  data-tooltip-placement="bottom"
-                  data-tooltip-variant="danger"
-                  className="has-tooltip fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           )}
 
-          {/* Telemetry Group: Ping, Battery, Connected Count - Only shown during active matches */}
-          {!isLanding && (
-            <div className="hidden lg:inline-flex fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
+          {/* Unified Compact Telemetry Group (Ping, Battery, Online Audience) - Only when logged in */}
+          {!isLoginScreen && (
+            <div className="hidden md:inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] px-1 py-0.5 gap-1.5 text-xs font-mono">
               {/* Ping / Latency Indicator */}
               <button
                 id="btn-ping-latency-indicator"
@@ -368,69 +355,43 @@ export const Navbar: React.FC<NavbarProps> = ({
                 data-tooltip={
                   pingInfo.latencyMs !== null
                     ? (effectiveLanguage === 'en'
-                        ? `Firebase latency: ${pingInfo.latencyMs}ms (${pingBadge.description}). Click to check again.`
-                        : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để kiểm tra lại ngay.`)
-                    : (effectiveLanguage === 'en'
-                        ? 'Realtime sync offline. Click to reconnect.'
-                        : 'Mất kết nối thời gian thực. Bấm để thử đồng bộ lại.')
+                        ? `Firebase ping: ${pingInfo.latencyMs}ms (${pingBadge.description})`
+                        : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để đo lại.`)
+                    : 'Realtime offline'
                 }
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Network Latency (RTT)' : 'Độ Trễ Mạng (Ping RTT)'}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Ping Latency' : 'Độ Trễ Mạng'}
                 data-tooltip-placement="bottom"
-                className={`hidden sm:flex has-tooltip fluent-action-btn ${pingBadge.container}`}
-                aria-label={effectiveLanguage === 'en' ? `Firebase latency: ${pingBadge.label}` : `Độ trễ Firebase: ${pingBadge.label}`}
+                className="has-tooltip min-h-[44px] px-2 flex items-center gap-1 text-white/80 hover:text-white cursor-pointer"
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    {pingInfo.latencyMs !== null && pingInfo.quality === 'excellent' && (
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400" />
-                    )}
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${pingBadge.dot}`} />
-                  </span>
-                  <Activity className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
-                </div>
-                <div className="flex flex-col items-start leading-none font-mono">
-                  <span className="text-[8px] uppercase tracking-wider font-bold opacity-75">
-                    Ping
-                  </span>
-                  <span className="text-xs font-bold tracking-tight">
-                    {isMeasuringPing ? (
-                      <span className="animate-pulse">...</span>
-                    ) : pingInfo.latencyMs !== null ? (
-                      `${pingInfo.latencyMs}ms`
-                    ) : (
-                      'Off'
-                    )}
-                  </span>
-                </div>
+                <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
+                <Activity className={`w-3 h-3 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.text}`} />
+                <span className={`text-[10px] font-bold ${pingBadge.text}`}>
+                  {isMeasuringPing ? '...' : pingInfo.latencyMs !== null ? `${pingInfo.latencyMs}ms` : 'Off'}
+                </span>
               </button>
 
+              <span className="w-[1px] h-3 bg-white/15" />
+
               {/* Battery Status Indicator */}
-              <div className="hidden sm:block">
-                <BatteryIndicator forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
-              </div>
+              <BatteryIndicator compact forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+
+              <span className="w-[1px] h-3 bg-white/15" />
 
               {/* Connected Audience Metric */}
               <div
-                data-tooltip={
-                  effectiveLanguage === 'en'
-                    ? 'Total online users currently in the game room'
-                    : 'Tổng số người dùng đang trực tuyến trong phòng thi'
-                }
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
+                data-tooltip={effectiveLanguage === 'en' ? 'Online arena members' : 'Số người đang trực tuyến'}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Audience' : 'Trực Tuyến'}
                 data-tooltip-placement="bottom"
-                className="has-tooltip hidden sm:flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
+                className="has-tooltip min-h-[44px] px-2 flex items-center gap-1 text-white/80"
               >
-                <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
-                  {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}
-                </span>
-                <span className="text-xs sm:text-sm font-mono font-extrabold text-emerald-400 leading-none">
-                  {activeCount}
-                </span>
+                <Users className="w-3 h-3 text-emerald-400" />
+                <span className="text-[10px] font-extrabold text-emerald-400">{activeCount}</span>
               </div>
             </div>
           )}
 
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
+          {/* System Utilities Group (Language, Audio, Fullscreen) - Unified everywhere */}
+          <div className="inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
             {/* Quick Language Toggle */}
             <button
               id="btn-toggle-language"
@@ -439,46 +400,38 @@ export const Navbar: React.FC<NavbarProps> = ({
                 soundFx.playClick();
                 toggleLanguage();
               }}
-              data-tooltip={
-                localLanguage !== 'vi'
-                  ? 'Chuyển sang Tiếng Việt (Switch to Vietnamese)'
-                  : 'Switch to English (Chuyển sang Tiếng Anh)'
-              }
-              data-tooltip-title={localLanguage !== 'vi' ? 'Language / Ngôn Ngữ' : 'Ngôn Ngữ / Language'}
+              data-tooltip={localLanguage !== 'vi' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
+              data-tooltip-title="Language / Ngôn Ngữ"
               data-tooltip-placement="bottom"
-              className="has-tooltip fluent-action-btn text-white/80 hover:text-white bg-white/5 hover:bg-white/10 border-white/10 flex items-center gap-1.5 px-2 font-mono cursor-pointer"
-              aria-label={localLanguage !== 'vi' ? 'Switch to Vietnamese' : 'Switch to English'}
+              className="has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[1px] text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1 text-[10px] font-mono font-bold cursor-pointer"
             >
-              <Globe className="w-3.5 h-3.5 text-sky-300" />
-              <span className="text-[11px] font-black text-sky-200 uppercase tracking-wide">
-                {localLanguage.toUpperCase()}
-              </span>
+              <Globe className="w-3 h-3 text-sky-300" />
+              <span>{localLanguage.toUpperCase()}</span>
             </button>
-            {/* Sound Toggle & Audio Settings */}
-            <div className="flex items-center rounded-[2px] bg-white/5 border border-white/10 p-0.5">
-              <button
-                id="btn-toggle-sound"
-                type="button"
-                onClick={() => {
-                  vibrateSelection();
-                  onToggleSound();
-                }}
-                data-tooltip={
-                  soundEnabled
-                    ? (effectiveLanguage === 'en' ? 'Mute all sound effects' : 'Tắt toàn bộ hiệu ứng âm thanh')
-                    : (effectiveLanguage === 'en' ? 'Enable arena sound effects' : 'Bật hiệu ứng âm thanh sàn đấu')
-                }
-                data-tooltip-title={effectiveLanguage === 'en' ? 'System Sound' : 'Âm Thanh Hệ Thống'}
-                data-tooltip-hotkey="M"
-                data-tooltip-placement="bottom"
-                className="has-tooltip p-1.5 rounded-[1px] text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                {soundEnabled ? (
-                  <Volume2 className="w-3.5 h-3.5 text-sky-300" />
-                ) : (
-                  <VolumeX className="w-3.5 h-3.5 text-white/40" />
-                )}
-              </button>
+
+            {/* Sound Toggle */}
+            <button
+              id="btn-toggle-sound"
+              type="button"
+              onClick={() => {
+                vibrateSelection();
+                onToggleSound();
+              }}
+              data-tooltip={soundEnabled ? 'Tắt âm thanh hệ thống' : 'Bật âm thanh hệ thống'}
+              data-tooltip-title="Âm Thanh"
+              data-tooltip-hotkey="M"
+              data-tooltip-placement="bottom"
+              className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-3.5 h-3.5 text-sky-300" />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5 text-white/40" />
+              )}
+            </button>
+
+            {/* Sound EQ Slider Settings (Hidden in Admin View) */}
+            {currentView !== 'admin' && (
               <button
                 id="btn-open-audio-settings"
                 type="button"
@@ -487,149 +440,130 @@ export const Navbar: React.FC<NavbarProps> = ({
                   soundFx.playClick();
                   setIsAudioSettingsOpen(true);
                 }}
-                data-tooltip={effectiveLanguage === 'en' ? 'Adjust TTS & Sound FX volume' : 'Chỉnh âm lượng Giọng đọc AI & Hiệu ứng'}
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng'}
+                data-tooltip="Tùy chỉnh âm lượng Giọng đọc AI & Hiệu ứng"
+                data-tooltip-title="Cài Đặt Âm Lượng"
                 data-tooltip-placement="bottom"
-                className="has-tooltip p-1.5 rounded-[1px] text-white/50 hover:text-white hover:bg-white/10 transition cursor-pointer border-l border-white/10"
+                className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-white/50 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
               >
                 <Sliders className="w-3 h-3 text-sky-300/80 hover:text-sky-300" />
               </button>
-            </div>
+            )}
 
             {/* Fullscreen Toggle */}
             <button
               id="btn-toggle-fullscreen"
               onClick={handleToggleFullscreen}
-              data-tooltip={
-                isFullscreen
-                  ? (effectiveLanguage === 'en' ? 'Exit fullscreen mode' : 'Thoát chế độ toàn màn hình')
-                  : (effectiveLanguage === 'en' ? 'Enter fullscreen for optimal experience' : 'Mở rộng toàn màn hình để tối ưu trải nghiệm')
-              }
-              data-tooltip-title={effectiveLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}
+              data-tooltip={isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình (F11)'}
+              data-tooltip-title="Toàn Màn Hình"
               data-tooltip-hotkey="F11"
               data-tooltip-placement="bottom"
-              className={`hidden lg:flex has-tooltip fluent-action-btn ${
+              className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] transition cursor-pointer items-center justify-center ${
                 isFullscreen
-                  ? 'bg-sky-600/80 text-white border-sky-400/50 shadow-sm'
-                  : 'text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'
+                  ? 'bg-sky-600 text-white'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
-              aria-label={
-                isFullscreen
-                  ? (effectiveLanguage === 'en' ? 'Exit fullscreen' : 'Thoát toàn màn hình')
-                  : (effectiveLanguage === 'en' ? 'Enter fullscreen' : 'Bật toàn màn hình')
-              }
             >
               {isFullscreen ? (
-                <Minimize className="w-3.5 h-3.5 text-sky-200" />
+                <Minimize className="w-3.5 h-3.5" />
               ) : (
-                <Maximize className="w-3.5 h-3.5 text-white/70 hover:text-white" />
+                <Maximize className="w-3.5 h-3.5" />
               )}
             </button>
-
-            {/* PWA Install Button (Desktop) */}
-            {onOpenInstallModal && (
-              <button
-                id="btn-navbar-install-pwa"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  onOpenInstallModal();
-                }}
-                data-tooltip={
-                  effectiveLanguage === 'en'
-                    ? 'Install app to Home Screen (PWA) for smoother experience'
-                    : 'Cài đặt ứng dụng về Màn hình chính (PWA) để dùng mượt mà hơn'
-                }
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Install App' : 'Cài Đặt Ứng Dụng'}
-                data-tooltip-placement="bottom"
-                className="hidden xl:flex has-tooltip fluent-action-btn text-sky-300 bg-sky-950/30 hover:bg-sky-900/40 border-sky-500/30"
-              >
-                <Download className="w-3.5 h-3.5 text-sky-300" />
-                <span className="hidden xl:inline text-[11px]">{effectiveLanguage === 'en' ? 'Install' : 'Cài App'}</span>
-              </button>
-            )}
           </div>
 
-          {/* User Profile / Admin Role Badge */}
-          {currentView === 'admin' ? (
-            <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-xs select-none shadow-sm">
-              <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
-                {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
-              </div>
-              <div className="flex flex-col items-start font-mono">
-                <span className="font-extrabold text-sky-300 text-[10px] leading-tight truncate max-w-[120px]">
-                  {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
-                </span>
-                <span className="text-white/50 text-[8px] leading-tight font-bold">
-                  {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
-                </span>
-              </div>
-            </div>
-          ) : user ? (
-            <div className="flex items-center gap-1.5">
-              <button
-                id="btn-user-profile"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  onOpenProfile();
-                }}
-                className="flex items-center gap-2 px-2.5 py-1 fluent-box-nested border border-white/10 hover:border-sky-500/40 rounded-[2px] text-xs transition cursor-pointer"
-              >
-                <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
-                  {user.name.slice(0, 1).toUpperCase()}
+          {/* User Profile / Admin Role Identity Pill */}
+          {!isLoginScreen && (
+            currentView === 'admin' ? (
+              <div className="flex items-center bg-white/5 backdrop-blur-xl border border-sky-500/30 rounded-[2px] p-0.5">
+                <div 
+                  className="flex items-center gap-1.5 px-2 py-0.5 min-h-[44px] text-xs select-none"
+                  title={`Ban Kỹ Thuật: ${adminUser ? adminUser.fullName : 'Admin'}`}
+                >
+                  <div className="w-5 h-5 rounded-[2px] bg-sky-600 text-white font-black flex items-center justify-center text-[10px]">
+                    {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
+                  </div>
+                  <span className="hidden xl:inline font-mono font-bold text-sky-300 text-[10px] truncate max-w-[100px]">
+                    {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                  </span>
                 </div>
-                <div className="hidden sm:flex flex-col items-start font-mono">
-                  <span className="font-bold text-white text-[10px] leading-tight truncate max-w-[100px]">{user.name}</span>
-                  <span className="text-emerald-400 font-bold text-[8px] leading-tight">{user.mssv}</span>
-                </div>
-              </button>
-              {onLogout && (
+
+                {onAdminLogout && (
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      onAdminLogout();
+                    }}
+                    data-tooltip="Đăng xuất Admin"
+                    data-tooltip-title="Đăng Xuất"
+                    data-tooltip-placement="bottom"
+                    data-tooltip-variant="danger"
+                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : user ? (
+              <div className="flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
                 <button
+                  id="btn-user-profile"
                   onClick={() => {
                     vibrateTap();
                     soundFx.playClick();
-                    onLogout();
+                    onOpenProfile();
                   }}
-                  className="p-1.5 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
-                  title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                  data-tooltip="Xem thông tin cá nhân"
+                  data-tooltip-title="Hồ Sơ Khán Giả"
+                  data-tooltip-placement="bottom"
+                  className="has-tooltip min-h-[44px] flex items-center gap-1.5 px-2 py-1 text-xs transition cursor-pointer hover:bg-white/10 rounded-[1px]"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px] border border-blue-400/40">
+                    {user.name.slice(0, 1).toUpperCase()}
+                  </div>
+                  <span className="hidden xl:inline font-mono font-bold text-white text-[10px] truncate max-w-[100px]">
+                    {user.name}
+                  </span>
                 </button>
-              )}
-            </div>
-          ) : (
-            <button
-              id="btn-navbar-signin"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                onOpenProfile();
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-[11px] sm:text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40 cursor-pointer"
-            >
-              <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-200" />
-              <span>{effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}</span>
-            </button>
+
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      onLogout();
+                    }}
+                    data-tooltip="Đăng xuất"
+                    data-tooltip-title="Đăng Xuất"
+                    data-tooltip-placement="bottom"
+                    data-tooltip-variant="danger"
+                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : null
           )}
 
-          {/* Hamburger Menu Toggle for Mobile & Tablet */}
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => {
               vibrateTap();
               setIsMobileMenuOpen(!isMobileMenuOpen);
             }}
-            className="lg:hidden p-2 fluent-nav-btn text-white/70 hover:text-white"
+            className="md:hidden min-w-[44px] min-h-[44px] p-2.5 rounded-[2px] bg-white/5 border border-white/15 text-white/80 hover:text-white flex items-center justify-center"
+            aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile / Tablet Floating Menu Sheet (App-Style Drawer, Portaled to document.body) */}
-      {typeof document !== 'undefined' && isMobileMenuOpen && createPortal(
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-start pointer-events-auto">
-          {/* Backdrop with click-to-close */}
+      {/* Mobile Drawer / Floating Sheet */}
+      {typeof document !== 'undefined' && !!document.body && isMobileMenuOpen && createPortal(
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-start pointer-events-auto">
+          {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn cursor-pointer"
             onClick={() => {
@@ -639,18 +573,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-hidden="true"
           />
 
-          {/* Floating Mobile Drawer / Sheet */}
+          {/* Drawer Sheet */}
           <div 
-            className="relative z-10 mx-auto w-full max-w-lg mt-[calc(3.75rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto bg-[#0D0420]/95 backdrop-blur-2xl border border-white/15 rounded-b-[4px] p-4 space-y-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-slideUpFade sm:rounded-[4px] sm:mt-[calc(4rem+env(safe-area-inset-top,0px))]"
+            className="relative z-10 mx-auto w-full max-w-lg mt-[calc(3.5rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto bg-[#0D0420]/95 backdrop-blur-2xl border border-white/15 rounded-b-[4px] p-4 space-y-3 shadow-2xl animate-slideUpFade"
           >
-            {/* Header row inside drawer with title and quick close */}
+            {/* Header row */}
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-[2px] fluent-acrylic-surface flex items-center justify-center font-black text-xs text-white border border-blue-400/40">
                   BTI
                 </div>
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
-                  {effectiveLanguage === 'en' ? 'Quick Menu' : 'Menu Điều Khiển'}
+                  {effectiveLanguage === 'en' ? 'Menu' : 'Menu Điều Khiển'}
                 </span>
               </div>
               <button
@@ -659,441 +593,247 @@ export const Navbar: React.FC<NavbarProps> = ({
                   vibrateTap();
                   setIsMobileMenuOpen(false);
                 }}
-                className="p-1 rounded-[2px] bg-white/10 text-white/70 hover:text-white"
-                title={effectiveLanguage === 'en' ? 'Close Menu' : 'Đóng Menu'}
+                className="min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/10 text-white/70 hover:text-white flex items-center justify-center cursor-pointer"
+                aria-label="Close menu"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Landing Page Welcome / Account Card */}
-            {isLanding && (
-              <div className="p-3.5 fluent-box-nested border border-sky-500/30 bg-sky-950/20 rounded-[2px] space-y-2.5">
-                {user ? (
-                  <div className="flex items-center justify-between w-full">
+            {/* In Login Screen: Clean minimal options */}
+            {isLoginScreen ? (
+              <div className="space-y-2 pt-1">
+                {/* Language switch */}
+                <button
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    toggleLanguage();
+                  }}
+                  className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-sky-300" />
+                    <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-[2px] bg-sky-500/30 text-sky-200 font-bold border border-sky-400/30">
+                    {localLanguage.toUpperCase()}
+                  </span>
+                </button>
+
+                {/* Audio settings (Hidden in Admin View) */}
+                {currentView !== 'admin' && (
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      setIsAudioSettingsOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-sky-300" />
+                      <span>{effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
+                    </div>
+                    <span className="text-[10px] text-white/50 font-bold">Sliders</span>
+                  </button>
+                )}
+
+                {/* Fullscreen */}
+                <button
+                  onClick={() => {
+                    handleToggleFullscreen();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                >
+                  <div className="flex items-center gap-2">
+                    {isFullscreen ? <Minimize className="w-4 h-4 text-sky-300" /> : <Maximize className="w-4 h-4 text-white/70" />}
+                    <span>{isFullscreen ? 'Thoát Toàn Màn Hình' : 'Toàn Màn Hình'}</span>
+                  </div>
+                  <span className="text-[10px] text-white/50">{isFullscreen ? 'ON' : 'OFF'}</span>
+                </button>
+
+                {/* Return Home */}
+                <button
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    onViewChange('landing');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 rounded-[2px] flex items-center justify-center gap-2 text-xs font-mono mt-2"
+                >
+                  <span>{effectiveLanguage === 'en' ? 'Home' : 'Quay Về Trang Chủ BTI'}</span>
+                </button>
+              </div>
+            ) : (
+              /* Authenticated Mobile Menu */
+              <div className="space-y-3">
+                {/* Account / Profile Card */}
+                {currentView === 'admin' ? (
+                  <div className="p-3 bg-sky-950/40 border border-sky-500/30 rounded-[2px] flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold font-mono">
+                        {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-sky-300 font-mono">
+                          {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                        </div>
+                        <div className="text-[9px] text-white/50 font-mono uppercase tracking-wider">
+                          {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
+                        </div>
+                      </div>
+                    </div>
+                    {onAdminLogout && (
+                      <button
+                        onClick={() => {
+                          vibrateTap();
+                          onAdminLogout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="p-1.5 bg-rose-950/40 text-rose-300 border border-rose-500/30 rounded-[2px]"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ) : user ? (
+                  <div className="p-3 bg-white/10 border border-white/15 rounded-[2px] flex items-center justify-between">
                     <button
                       onClick={() => {
                         vibrateTap();
-                        soundFx.playClick();
                         onOpenProfile();
                         setIsMobileMenuOpen(false);
                       }}
                       className="flex items-center gap-2.5 text-left cursor-pointer"
                     >
-                      <div className="w-8 h-8 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono border border-blue-400/40">
+                      <div className="w-7 h-7 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono border border-blue-400/40">
                         {user.name.slice(0, 1).toUpperCase()}
                       </div>
                       <div>
                         <div className="text-xs font-bold text-white font-mono">{user.name}</div>
-                        <div className="text-[9px] text-emerald-400 font-mono tracking-widest">{user.mssv}</div>
+                        <div className="text-[9px] text-emerald-400 font-mono">{user.mssv}</div>
                       </div>
                     </button>
                     {onLogout && (
                       <button
                         onClick={() => {
                           vibrateTap();
-                          soundFx.playClick();
                           onLogout();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
-                        title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                        className="p-1.5 bg-rose-950/40 text-rose-300 border border-rose-500/30 rounded-[2px]"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 text-sky-300">
-                      <Sparkles className="w-4 h-4" />
-                      <span className="text-xs font-bold font-mono uppercase tracking-wider">
-                        {effectiveLanguage === 'en' ? 'Welcome to BTI 2026' : 'Chào Mừng Đến Với BTI 2026'}
+                ) : null}
+
+                {/* Telemetry Card */}
+                <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${pingBadge.dot}`} />
+                      <span className="text-white/80">Độ trễ Ping:</span>
+                      <span className={`font-bold ${pingBadge.text}`}>
+                        {pingInfo.latencyMs !== null ? `${pingInfo.latencyMs}ms` : 'Offline'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-white/70 leading-relaxed font-sans">
-                      {effectiveLanguage === 'en'
-                        ? 'Sign in with your Name and Student ID to record points, participate in live voting, and compete on the leaderboard.'
-                        : 'Đăng nhập với Họ tên và MSSV để lưu điểm số, tham gia bình chọn và tranh tài trên bảng xếp hạng.'}
-                    </p>
+                    <button
+                      onClick={handleManualPing}
+                      disabled={isMeasuringPing}
+                      className="px-2 py-0.5 text-[10px] bg-white/10 border border-white/15 rounded-[2px] text-white"
+                    >
+                      {isMeasuringPing ? '...' : 'Đo lại'}
+                    </button>
+                  </div>
+
+                  <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+                </div>
+
+                {/* Admin Quick Options */}
+                {currentView === 'admin' && (
+                  <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+                    <button
+                      onClick={() => {
+                        vibrateTap();
+                        onOpenFirebaseConfig();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`px-3 py-2.5 rounded-[2px] flex items-center gap-2 text-xs font-semibold border ${
+                        isFirebaseConnected
+                          ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+                          : 'bg-amber-950/40 text-amber-300 border-amber-500/30'
+                      }`}
+                    >
+                      <Database className="w-4 h-4" /> {isFirebaseConnected ? 'Firebase Live' : 'Firebase Offline'}
+                    </button>
+
+                    {onOpenQrCode && (
+                      <button
+                        onClick={() => {
+                          vibrateTap();
+                          onOpenQrCode();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="px-3 py-2.5 bg-sky-950/30 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center gap-2 text-xs font-semibold"
+                      >
+                        <QrCode className="w-4 h-4" /> Mã QR Khán Giả
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        vibrateTap();
+                        window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-3 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-[2px] flex items-center gap-2 text-xs font-bold"
+                    >
+                      <Eye className="w-4 h-4" /> Mở Màn Chiếu LED Sân Khấu
+                    </button>
+                  </div>
+                )}
+
+                {/* Utilities in Drawer */}
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      toggleLanguage();
+                    }}
+                    className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-sky-300" />
+                      <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
+                    </div>
+                    <span className="font-bold text-sky-200">{localLanguage.toUpperCase()}</span>
+                  </button>
+
+                  {currentView !== 'admin' && (
                     <button
                       onClick={() => {
                         vibrateTap();
                         soundFx.playClick();
-                        onOpenProfile();
+                        setIsAudioSettingsOpen(true);
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full py-2.5 px-3 fluent-acrylic-surface text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md border border-blue-400/40 cursor-pointer"
+                      className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
                     >
-                      <User className="w-3.5 h-3.5 text-sky-200" />
-                      <span>{effectiveLanguage === 'en' ? 'Sign In / Register' : 'Đăng Nhập / Đăng Ký'}</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Mobile Connection & Latency Telemetry Card - Only when in active match */}
-            {!isLanding && (
-              <>
-                <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between shadow-inner">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${pingBadge.container}`}>
-                      <Activity className={`w-4 h-4 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
-                        <span>{effectiveLanguage === 'en' ? 'Server Latency' : 'Độ Trễ Máy Chủ'}</span>
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded-[2px] font-mono font-bold uppercase tracking-wider ${
-                          pingInfo.quality === 'excellent'
-                            ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
-                            : pingInfo.quality === 'good'
-                            ? 'bg-sky-950/60 text-sky-300 border border-sky-500/30'
-                            : pingInfo.quality === 'fair'
-                            ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
-                            : pingInfo.quality === 'poor'
-                            ? 'bg-rose-950/60 text-rose-300 border border-rose-500/30'
-                            : 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30'
-                        }`}>
-                          {pingBadge.qualityText}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <Sliders className="w-4 h-4 text-sky-300" />
+                        <span>{effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng'}</span>
                       </div>
-                      <div className="text-[11px] font-mono text-white/70 flex items-center gap-1.5 mt-0.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
-                        <span>RTT: <strong className="text-white font-bold">{pingInfo.latencyMs !== null ? `${pingInfo.latencyMs} ms` : (effectiveLanguage === 'en' ? 'Disconnected' : 'Mất kết nối')}</strong></span>
-                        {pingInfo.lastChecked > 0 && (
-                          <span className="text-white/40 text-[9px]">
-                            • {new Date(pingInfo.lastChecked).toLocaleTimeString(effectiveLanguage === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleManualPing}
-                    disabled={isMeasuringPing}
-                    className="px-2.5 py-1.5 fluent-action-btn text-xs font-mono font-bold border border-white/10 shrink-0"
-                    title={effectiveLanguage === 'en' ? 'Re-check latency now' : 'Đo lại độ trễ ngay'}
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin' : ''}`} />
-                    <span className="text-[11px]">{isMeasuringPing ? (effectiveLanguage === 'en' ? 'Testing' : 'Đang đo') : (effectiveLanguage === 'en' ? 'Re-test' : 'Đo lại')}</span>
-                  </button>
-                </div>
-
-                {/* Mobile Battery Status Card */}
-                <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
-              </>
-            )}
-
-            {currentView === 'admin' && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3 p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[2px]">
-                  <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
-                    {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-sky-300 font-mono">
-                      {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
-                    </div>
-                    <div className="text-[9px] text-white/50 font-mono tracking-widest uppercase">
-                      {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên (Admin)'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {currentView === 'admin' && (
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
-                <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">Điều Hành Ban Tổ Chức</span>
-                
-                <button
-                  onClick={() => {
-                    vibrateTap();
-                    onOpenFirebaseConfig();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`px-3 py-2.5 rounded-[2px] flex items-center gap-2.5 transition text-left border text-xs font-semibold ${
-                    isFirebaseConnected
-                      ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
-                      : 'bg-amber-950/40 text-amber-300 border-amber-500/30'
-                  }`}
-                >
-                  <Database className="w-4 h-4" /> {isFirebaseConnected ? 'Đồng Bộ Trực Tiếp (Live)' : 'Đồng Bộ Cục Bộ (Ngoại Tuyến)'}
-                </button>
-
-                {onOpenQrCode && (
-                  <button
-                    onClick={() => {
-                      vibrateTap();
-                      if (onOpenQrCode) onOpenQrCode();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2.5 bg-sky-950/30 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center gap-2.5 text-left text-xs font-semibold"
-                  >
-                    <QrCode className="w-4 h-4" /> Mã QR Khán Giả
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    vibrateTap();
-                    window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="px-3 py-2.5 bg-sky-600 hover:bg-sky-500 border border-sky-400/60 text-white rounded-[2px] flex items-center gap-2.5 font-bold text-left text-xs shadow-md shadow-sky-950/30"
-                >
-                  <Eye className="w-4 h-4" /> Mở Màn Chiếu Sân Khấu
-                </button>
-
-                {onAdminLogout && (
-                  <button
-                    onClick={() => {
-                      vibrateTap();
-                      if (onAdminLogout) onAdminLogout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2.5 bg-rose-950/30 text-rose-300 rounded-[2px] flex items-center gap-2.5 font-semibold text-left border border-rose-500/30 text-xs"
-                  >
-                    <LogOut className="w-4 h-4" /> Đăng Xuất Ban Tổ Chức
-                  </button>
-                )}
-
-                {/* Mobile Language Toggle in Admin menu */}
-                <button
-                  id="btn-mobile-language-admin"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    toggleLanguage();
-                  }}
-                  className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Globe className="w-4 h-4 text-sky-300" />
-                    <span>Ngôn Ngữ (Language)</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
-                      VI
-                    </span>
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage !== 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
-                      EN
-                    </span>
-                  </div>
-                </button>
-
-                {/* Mobile Audio Settings in Admin menu */}
-                <button
-                  id="btn-mobile-audio-settings-admin"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    setIsAudioSettingsOpen(true);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Sliders className="w-4 h-4 text-sky-300" />
-                    <span>{effectiveLanguage === 'en' ? 'Audio & AI Voice Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
-                  </div>
-                  <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/40 text-sky-200 border border-sky-500/30">
-                    Sliders
-                  </span>
-                </button>
-
-                {/* Mobile Fullscreen Toggle in Admin menu */}
-                <button
-                  id="btn-mobile-fullscreen-admin"
-                  onClick={() => {
-                    handleToggleFullscreen();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`px-3 py-2.5 rounded-[2px] flex items-center justify-between transition text-left border text-xs font-semibold ${
-                    isFullscreen
-                      ? 'bg-sky-950/40 text-sky-300 border-sky-500/40 font-bold'
-                      : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {isFullscreen ? <Minimize className="w-4 h-4 text-sky-300" /> : <Maximize className="w-4 h-4 text-white/70" />}
-                    <span>{isFullscreen ? 'Thoát Toàn Màn Hình' : 'Toàn Màn Hình (Fullscreen)'}</span>
-                  </div>
-                  <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-white/10 text-white/70">
-                    {isFullscreen ? 'ON' : 'OFF'}
-                  </span>
-                </button>
-
-                {/* Mobile PWA Install */}
-                {onOpenInstallModal && (
-                  <button
-                    id="btn-mobile-install-admin"
-                    onClick={() => {
-                      vibrateTap();
-                      soundFx.playClick();
-                      onOpenInstallModal();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Download className="w-4 h-4 text-sky-300" />
-                      <span>Cài Đặt Ứng Dụng (PWA)</span>
-                    </div>
-                    <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/50 text-sky-200 border border-sky-500/30">
-                      Install
-                    </span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {currentView !== 'admin' && (
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
-                <span className="text-[9px] text-white/40 uppercase font-mono font-bold tracking-widest px-1">
-                  {effectiveLanguage === 'en' ? 'System' : 'Hệ thống'}
-                </span>
-
-                {/* Mobile Language Toggle */}
-                <button
-                  id="btn-mobile-language"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    toggleLanguage();
-                  }}
-                  className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Globe className="w-4 h-4 text-sky-300" />
-                    <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage === 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
-                      VI
-                    </span>
-                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] font-bold ${localLanguage !== 'vi' ? 'bg-sky-500 text-white shadow-sm' : 'bg-white/10 text-white/50'}`}>
-                      EN
-                    </span>
-                  </div>
-                </button>
-
-                {/* Mobile Audio Settings in Audience menu */}
-                <button
-                  id="btn-mobile-audio-settings-user"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    setIsAudioSettingsOpen(true);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Sliders className="w-4 h-4 text-sky-300" />
-                    <span>{effectiveLanguage === 'en' ? 'Audio & Voice Volume Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
-                  </div>
-                  <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/40 text-sky-200 border border-sky-500/30">
-                    Sliders
-                  </span>
-                </button>
-
-                {/* Fullscreen Quick Toggle */}
-                <button
-                  id="btn-mobile-fullscreen"
-                  onClick={() => {
-                    handleToggleFullscreen();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`px-3 py-2.5 rounded-[2px] flex items-center justify-between transition text-left border text-xs font-semibold ${
-                    isFullscreen
-                      ? 'bg-sky-950/40 text-sky-300 border-sky-500/40 font-bold'
-                      : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {isFullscreen ? <Minimize className="w-4 h-4 text-sky-300" /> : <Maximize className="w-4 h-4 text-white/70" />}
-                    <span>
-                      {isFullscreen
-                        ? (effectiveLanguage === 'en' ? 'Exit Fullscreen' : 'Thoát Toàn Màn Hình')
-                        : (effectiveLanguage === 'en' ? 'Fullscreen Mode' : 'Toàn Màn Hình (Fullscreen)')}
-                    </span>
-                  </div>
-                  <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-white/10 text-white/70">
-                    {isFullscreen ? 'ON' : 'OFF'}
-                  </span>
-                </button>
-
-                {/* Mobile PWA Install */}
-                {onOpenInstallModal && (
-                  <button
-                    id="btn-mobile-install-user"
-                    onClick={() => {
-                      vibrateTap();
-                      soundFx.playClick();
-                      onOpenInstallModal();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2.5 bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Download className="w-4 h-4 text-sky-300" />
-                      <span>{effectiveLanguage === 'en' ? 'Install Application (PWA)' : 'Cài Đặt Ứng Dụng (PWA)'}</span>
-                    </div>
-                    <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/50 text-sky-200 border border-sky-500/30">
-                      Install
-                    </span>
-                  </button>
-                )}
-
-                {!isLanding && (
-                  user ? (
-                    <div className="flex items-center justify-between p-2.5 fluent-box-nested rounded-[2px] border border-white/10">
-                      <button
-                        onClick={() => {
-                          vibrateTap();
-                          onOpenProfile();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-2.5 text-left"
-                      >
-                        <div className="w-7 h-7 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
-                          {user.name.slice(0, 1).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-white font-mono">{user.name}</div>
-                          <div className="text-[9px] text-emerald-400 font-mono tracking-widest">{user.mssv}</div>
-                        </div>
-                      </button>
-                      {onLogout && (
-                        <button
-                          onClick={() => {
-                            vibrateTap();
-                            soundFx.playClick();
-                            onLogout();
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
-                          title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        vibrateTap();
-                        onOpenProfile();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] flex items-center justify-center font-bold text-xs shadow-md"
-                    >
-                      {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
+                      <span className="text-[10px] text-sky-200">Sliders</span>
                     </button>
-                  )
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1101,11 +841,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         document.body
       )}
 
-      {/* Independent Audio & AI Voice Settings Modal */}
-      <AudioSettingsModal
-        isOpen={isAudioSettingsOpen}
-        onClose={() => setIsAudioSettingsOpen(false)}
-      />
+      {/* Audio Settings Modal */}
+      {currentView !== 'admin' && (
+        <AudioSettingsModal
+          isOpen={isAudioSettingsOpen}
+          onClose={() => setIsAudioSettingsOpen(false)}
+        />
+      )}
     </header>
   );
 };
