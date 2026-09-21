@@ -677,11 +677,15 @@ async function startServer() {
         return res.status(401).json({ error: "Thông tin tài khoản hoặc mật khẩu không chính xác." });
       }
 
-      // If user has an email that was pending verification, auto-verify upon valid password authentication
-      // (Aligns with Admin portal login model to prevent event lockouts while keeping email verification optional/fallback)
-      if (user.email && user.emailVerified === false) {
-        user.emailVerified = true;
-        user.isActivated = true;
+      // Check if user account is not yet activated/verified
+      if (user.email && user.emailVerified === false && !user.isActivated) {
+        return res.status(403).json({
+          requiresEmailVerification: true,
+          email: user.email,
+          identifier: user.mssv,
+          user: sanitizeAudienceUser(user),
+          error: "Tài khoản của bạn chưa được kích hoạt. Vui lòng bấm vào liên kết trong email hoặc nhập mã kích hoạt 6 chữ số."
+        });
       }
 
       // Auto-upgrade legacy hash to modern scrypt hash seamlessly

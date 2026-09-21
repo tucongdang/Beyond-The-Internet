@@ -250,28 +250,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      let isVerified = Boolean(auth && auth.currentUser?.emailVerified);
-
-      // If Firebase Auth does not report verified yet, verify with backend directly
-      if (!isVerified) {
-        try {
-          const res = await fetch('/api/audience/verify-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              uid: pendingVerifyUser?.uid || auth?.currentUser?.uid,
-              email: targetEmail,
-              identifier: id
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            isVerified = true;
-          }
-        } catch (serverErr) {
-          console.warn('Server verify-email fallback notice:', serverErr);
-        }
-      }
+      const isVerified = Boolean(auth && auth.currentUser?.emailVerified);
 
       if (isVerified) {
         soundFx.playPacingChime('complete');
@@ -334,8 +313,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         vibrateError();
         setErrorMsg(
           localLanguage !== 'vi'
-            ? 'Firebase has not confirmed your email verification yet. You can click "⚡ Instant Activation" below to enter directly!'
-            : 'Firebase chưa ghi nhận liên kết xác thực. Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào trực tiếp!'
+            ? 'Firebase has not confirmed your email verification yet. Please click the link in your email, or enter the 6-digit activation code below.'
+            : 'Firebase chưa ghi nhận bạn bấm link xác thực trong email. Vui lòng mở hòm thư (kiểm tra cả mục Spam) để bấm link, hoặc nhập Mã kích hoạt 6 số bên dưới!'
         );
       }
     } catch (err: any) {
@@ -343,78 +322,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       soundFx.playError();
       vibrateError();
       setErrorMsg(localLanguage !== 'vi' ? 'Error checking verification status.' : 'Lỗi kiểm tra trạng thái xác thực từ Firebase.');
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
-
-  // Direct 1-Click Activation Bypass: Guarantees audience are NEVER locked out during live gameshow
-  const handleDirectActivate = async () => {
-    soundFx.playClick();
-    vibrateTap();
-    setIsCheckingVerification(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
-    const id = pendingVerifyUser?.mssv || loginIdentifier.trim() || targetEmail;
-
-    try {
-      const res = await fetch('/api/audience/verify-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: pendingVerifyUser?.uid || auth?.currentUser?.uid,
-          email: targetEmail,
-          identifier: id
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success && data.user) {
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-
-        const completedUser: UserInfo = {
-          uid: data.user.uid,
-          name: data.user.name,
-          mssv: data.user.mssv,
-          gender: data.user.gender,
-          birthYear: data.user.birthYear,
-          anonymizedUid: data.user.anonymizedUid,
-          teamId: data.user.teamId,
-          teamName: data.user.teamName,
-          email: data.user.email || targetEmail,
-          emailVerified: true,
-          registeredAt: data.user.registeredAt
-        };
-
-        if (db) {
-          try {
-            await setDoc(doc(db, 'users', completedUser.uid), removeUndefined(completedUser), { merge: true });
-          } catch (e) {
-            console.warn('Firestore mirror sync note:', e);
-          }
-        }
-
-        setSuccessMsg(
-          localLanguage !== 'vi'
-            ? 'Account activated successfully! Entering arena...'
-            : 'Kích hoạt tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
-        );
-
-        setTimeout(() => {
-          onComplete(completedUser);
-        }, 800);
-      } else {
-        soundFx.playError();
-        vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Activation failed.' : 'Kích hoạt không thành công.'));
-      }
-    } catch {
-      soundFx.playError();
-      vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Connection error.' : 'Lỗi kết nối máy chủ xác thực.');
     } finally {
       setIsCheckingVerification(false);
     }
@@ -2405,7 +2312,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-1">
-                {/* 1. Primary: I have clicked the verification link */}
+                {/* Way 1: Verification Link in Email */}
                 <button
                   type="button"
                   onClick={handleCheckEmailVerification}
@@ -2417,35 +2324,24 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                      <span>{localLanguage !== 'vi' ? 'I Have Clicked the Verification Link' : 'Tôi Đã Bấm Link Xác Thực'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Option 1: I Have Clicked the Verification Link' : 'Cách 1: Tôi Đã Bấm Link Xác Thực Trong Email'}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
 
-                {/* 2. Direct Instant Activation Button (Bypasses email delivery delays) */}
-                <button
-                  type="button"
-                  onClick={handleDirectActivate}
-                  disabled={isCheckingVerification}
-                  className="w-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-amber-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono border border-amber-400/40"
-                >
-                  <Zap className="w-4 h-4 text-amber-200 animate-pulse" />
-                  <span>{localLanguage !== 'vi' ? '⚡ Instant Activation & Enter Arena' : '⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay'}</span>
-                </button>
-
-                {/* 3. Fast Code / BTI2026 Activation Input */}
-                <div className="p-2 sm:p-2.5 bg-black/40 border border-white/10 rounded-[2px] space-y-1.5 text-left">
+                {/* Way 2: 6-Digit Code / BTI2026 Activation */}
+                <div className="p-2.5 sm:p-3 bg-black/50 border border-sky-500/30 rounded-[2px] space-y-1.5 text-left">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-sky-300 flex items-center gap-1">
-                      <KeyRound className="w-3 h-3 text-sky-400" />
-                      <span>{localLanguage !== 'vi' ? 'Or enter 6-digit code / BTI2026:' : 'Hoặc nhập Mã 6 số / Mã BTI2026:'}</span>
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-sky-300 flex items-center gap-1.5">
+                      <KeyRound className="w-3.5 h-3.5 text-sky-400" />
+                      <span>{localLanguage !== 'vi' ? 'Option 2: Enter 6-digit code or BTI2026 event code:' : 'Cách 2: Nhập Mã Kích Hoạt 6 số (hoặc mã BTI2026):'}</span>
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <input
                       type="text"
-                      placeholder={localLanguage !== 'vi' ? 'e.g. 123456 or BTI2026' : 'Mã 6 số hoặc BTI2026'}
+                      placeholder={localLanguage !== 'vi' ? 'e.g. 123456 or BTI2026' : 'VD: 123456 hoặc BTI2026'}
                       value={quickActivationCode}
                       onChange={(e) => setQuickActivationCode(e.target.value.toUpperCase())}
                       className="flex-1 bg-[#0D0420] border border-white/20 hover:border-sky-400 focus:border-sky-400 font-mono text-xs text-white px-2.5 py-1.5 rounded-[2px] outline-none transition uppercase tracking-wider"
@@ -2454,12 +2350,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       type="button"
                       onClick={handleQuickCodeActivate}
                       disabled={!quickActivationCode.trim() || isQuickActivating}
-                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-mono font-bold text-xs rounded-[2px] transition cursor-pointer shrink-0"
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-mono font-bold text-xs rounded-[2px] transition cursor-pointer shrink-0 shadow-sm"
                     >
                       {isQuickActivating ? (
                         <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <span>{localLanguage !== 'vi' ? 'Activate' : 'Kích Hoạt'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Verify Code' : 'Xác Nhận Mã'}</span>
                       )}
                     </button>
                   </div>
