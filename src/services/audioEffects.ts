@@ -60,7 +60,7 @@ class SoundEffectsService {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return null;
 
-    if (!this.ctx || this.ctx.state === 'suspended') {
+    if (!this.ctx || this.ctx.state === 'closed') {
       try {
         this.ctx = new AudioContextClass();
       } catch {

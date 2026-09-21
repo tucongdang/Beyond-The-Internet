@@ -354,18 +354,20 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     : gameState.explanation;
 
   // Helper to detect CJK / East Asian characters (Hangul, Hanzi, Kanji, Kana) for typography breathing room
-  const isCjk = (text?: string, lang?: string): boolean => {
+  const isCjk = (text?: unknown, lang?: string): boolean => {
     if (lang && ['ko', 'zh', 'ja', 'th'].includes(lang)) return true;
     if (!text) return false;
-    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(text);
+    const str = typeof text === 'string' ? text : String(text);
+    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(str);
   };
   const isCjkQuestion = isCjk(activeQuestionText, localLanguage);
 
   // Helper to detect Korean (Hangul) specifically for NEXON Lv1 Gothic question font
-  const isKorean = (text?: string, lang?: string): boolean => {
+  const isKorean = (text?: unknown, lang?: string): boolean => {
     if (lang === 'ko') return true;
     if (!text) return false;
-    return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(text);
+    const str = typeof text === 'string' ? text : String(text);
+    return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(str);
   };
   const isKoreanQuestion = isKorean(activeQuestionText, localLanguage);
 
@@ -723,14 +725,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     try {
       const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
       const queue: any[] = raw ? JSON.parse(raw) : [];
-      queue.push({
+      // Remove any prior pending entry for the same question and user so newest choice takes precedence
+      const filteredQueue = queue.filter(item => !(item.questionId === gameState.question_id && item.uid === user?.uid));
+      filteredQueue.push({
         id: `${gameState.question_id}_${user?.uid}_${Date.now()}`,
         questionId: gameState.question_id,
         uid: user?.uid,
         payload: { ...payload, isOfflineSync: true },
         savedAt: Date.now()
       });
-      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(filteredQueue));
       setOfflineNotice('📶 Mạng gián đoạn! Đáp án đã được lưu ngoại tuyến, sẽ tự động đồng bộ khi có kết nối.');
     } catch (err) {
       console.warn('Queue offline response error:', err);

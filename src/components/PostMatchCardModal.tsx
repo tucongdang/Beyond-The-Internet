@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, Download, Share2, Sparkles, Trophy, Flame, Shield, CheckCircle2 } from 'lucide-react';
+import { X, Download, Share2, Sparkles, Check } from 'lucide-react';
 import { UserInfo } from '../types';
 
 interface PostMatchCardModalProps {
@@ -83,7 +83,9 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     ctx.textAlign = 'center';
     ctx.font = 'bold 30px "SVN-Gilroy", "Lexend", sans-serif';
     ctx.fillStyle = '#EBC7D6';
-    ctx.letterSpacing = '4px';
+    try {
+      (ctx as any).letterSpacing = '4px';
+    } catch {}
     ctx.fillText('BEYOND THE INTERNET 2026', width / 2, 110);
 
     ctx.font = '500 20px "SVN-Gilroy", "Lexend", sans-serif';
@@ -213,12 +215,36 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
 
   if (!isOpen) return null;
 
+  const [isShared, setIsShared] = useState<boolean>(false);
+
   const handleDownload = () => {
     if (!dataUrl) return;
     const link = document.createElement('a');
     link.download = `BTI2026_Achievement_${user?.mssv || 'Contestant'}.png`;
     link.href = dataUrl;
     link.click();
+  };
+
+  const handleShare = async () => {
+    if (!dataUrl) return;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], `BTI2026_${user?.mssv || 'Card'}.png`, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Thành tích Beyond The Internet 2026',
+            text: `Tôi đạt ${totalScore} điểm tại Live Gameshow Beyond The Internet 2026!`,
+            files: [file]
+          });
+          setIsShared(true);
+          setTimeout(() => setIsShared(false), 2000);
+          return;
+        }
+      } catch {}
+    }
+    // Fallback: download directly
+    handleDownload();
   };
 
   return (
@@ -237,7 +263,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white"
+            className="p-1.5 rounded-[2px] hover:bg-white/10 transition text-white/70 hover:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -266,12 +292,21 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-white/10 bg-white/5 flex items-center justify-between gap-3">
+        <div className="p-4 border-t border-white/10 bg-white/5 flex items-center justify-between gap-2.5">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-xs font-semibold transition text-white"
+            className="px-3.5 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-xs font-semibold transition text-white cursor-pointer"
           >
             Đóng
+          </button>
+
+          <button
+            onClick={handleShare}
+            disabled={!dataUrl}
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[2px] bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition cursor-pointer"
+          >
+            {isShared ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+            {isShared ? 'Đã chia sẻ' : 'Chia sẻ'}
           </button>
 
           <button
@@ -280,7 +315,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-[2px] bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-white font-bold text-xs shadow-lg transition active:scale-[0.98] cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            Tải Ảnh Thành Tích (PNG HD)
+            Tải Ảnh HD (PNG)
           </button>
         </div>
       </div>

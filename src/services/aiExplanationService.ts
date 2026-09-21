@@ -5,6 +5,8 @@ export interface McCoPilotResult {
   mcLine: string;
 }
 
+let activeUtterance: SpeechSynthesisUtterance | null = null;
+
 export const aiExplanationService = {
   /**
    * Fetch 2-3 sentence instant explanation on demand for audience view.
@@ -134,6 +136,7 @@ export const aiExplanationService = {
     window.speechSynthesis.cancel(); // Cancel any existing playback
 
     const utterance = new SpeechSynthesisUtterance(text);
+    activeUtterance = utterance;
     
     // Map application language codes to BCP 47 speech synthesis tags
     const speechLangMap: Record<string, string> = {
@@ -154,10 +157,12 @@ export const aiExplanationService = {
     utterance.pitch = 1.0;
 
     utterance.onend = () => {
+      activeUtterance = null;
       if (onEnd) onEnd();
     };
 
     utterance.onerror = (e) => {
+      activeUtterance = null;
       console.warn('[SpeechSynthesis] Error:', e);
       if (onError) onError();
     };
@@ -172,6 +177,7 @@ export const aiExplanationService = {
   stopSpeech(): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      activeUtterance = null;
     }
   }
 };

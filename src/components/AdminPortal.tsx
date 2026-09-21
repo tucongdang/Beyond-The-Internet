@@ -7482,7 +7482,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={showMcCoPilotModal}
         onClose={() => setShowMcCoPilotModal(false)}
         gameState={gameState}
-        responses={responses}
+        responses={allResponses[gameState.question_id] || {}}
       />
 
       {/* Floating Host Pacing Toaster Notifications */}
