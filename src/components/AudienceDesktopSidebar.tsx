@@ -698,7 +698,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     </button>
                   )}
 
-                  {/* High Contrast Mode */}
+                  {/* High Contrast Mode & Battery Saver */}
                   {onToggleHighContrast && (
                     <button
                       type="button"
@@ -708,16 +708,19 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         onToggleHighContrast();
                       }}
                       className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
-                        isHighContrast
+                        isHighContrast || isBatterySaver
                           ? 'bg-amber-400 text-black border-amber-300 font-bold'
                           : 'fluent-box-nested text-white/50 hover:text-white'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Contrast className="w-4 h-4" />
-                        <span>{localLanguage !== 'vi' ? 'High Contrast Black' : 'Nền Đen Tương Phản Cao'}</span>
+                        <Zap className={`w-3.5 h-3.5 ${isHighContrast || isBatterySaver ? 'text-black fill-current' : 'text-emerald-400 fill-current'}`} />
+                        <span>{localLanguage !== 'vi' ? 'OLED Black & Battery Saver' : 'Nền Đen OLED & Tiết Kiệm Pin'}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage !== 'vi' ? "T Key" : "Phím T"}</span>
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
+                        {isHighContrast || isBatterySaver ? (localLanguage !== 'vi' ? 'Active' : 'Đang Bật') : (localLanguage !== 'vi' ? "T Key" : "Phím T")}
+                      </span>
                     </button>
                   )}
 

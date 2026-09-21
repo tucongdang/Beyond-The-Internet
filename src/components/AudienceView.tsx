@@ -74,7 +74,7 @@ import {
   MessageSquare,
   Megaphone,
   RefreshCw, Globe, Languages, ChevronDown, Check,
-  Volume2, VolumeX, Shield
+  Volume2, VolumeX, Shield, Bot
 } from 'lucide-react';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { calculateSurvivalStats } from '../utils/leaderboardUtils';
@@ -94,6 +94,7 @@ import { AudienceHighlightedQuestionToast } from './AudienceHighlightedQuestionT
 import { QuestionLikeButton } from './QuestionLikeButton';
 import { AudienceShoutMarquee } from './AudienceShoutMarquee';
 import { AudienceShoutModal } from './AudienceShoutModal';
+import { ClientLandingPage } from './ClientLandingPage';
 
 interface AudienceViewProps {
   gameState: GameState;
@@ -170,6 +171,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [hasVotedThisQuestion, setHasVotedThisQuestion] = useState<boolean>(false);
   const [isPendingSync, setIsPendingSync] = useState<boolean>(false);
   const [submitToast, setSubmitToast] = useState<boolean>(false);
+  const [autoSubmitToast, setAutoSubmitToast] = useState<boolean>(false);
+  const hasAutoSubmittedRef = useRef<boolean>(false);
+  const autoSubmitFnRef = useRef<() => void>(() => {});
   const [timeLeft, setTimeLeft] = useState<number>(gameState.time_limit);
   const prevStatusRef = useRef<string>(gameState.status);
 
@@ -845,6 +849,46 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
   };
 
+  // Toggle automatic reading of answer ON/OFF
+  const handleToggleAutoSpeakAnswer = useCallback(() => {
+    setAutoSpeakAnswer(prev => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bti_auto_speak_answer', String(next));
+      }
+      if (!next && isSpeakingQuestion) {
+        aiExplanationService.stopSpeech();
+        setIsSpeakingQuestion(false);
+      }
+      return next;
+    });
+    soundFx.playClick();
+    vibrateTap();
+  }, [isSpeakingQuestion]);
+
+  // Manually trigger reading correct answer or stop speech
+  const handleToggleSpeakAnswer = useCallback(() => {
+    if (isSpeakingQuestion) {
+      aiExplanationService.stopSpeech();
+      setIsSpeakingQuestion(false);
+    } else {
+      setIsSpeakingQuestion(true);
+      aiExplanationService.speakCorrectAnswer(
+        {
+          options: activeOptions || gameState.options,
+          roundType: gameState.round_type,
+          correctKey: gameState.correct_key,
+          explanation: activeExplanation || gameState.explanation
+        },
+        localLanguage,
+        () => setIsSpeakingQuestion(false),
+        () => setIsSpeakingQuestion(false)
+      );
+    }
+    soundFx.playClick();
+    vibrateTap();
+  }, [isSpeakingQuestion, activeOptions, gameState.options, gameState.round_type, gameState.correct_key, activeExplanation, gameState.explanation, localLanguage]);
+
   // Automatically trigger reading of correct answer after timer expires or when revealed by Admin
   const triggerAutoSpeakCorrectAnswer = useCallback(() => {
     if (!autoSpeakAnswer) return;
@@ -933,6 +977,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       setVcnvPrediction('');
       setIsEditingVcnv(false);
       setHasVotedThisQuestion(false);
+      hasAutoSubmittedRef.current = false;
       setTfChoices({});
       setIsDoubleDownActive(false);
       aiExplanationService.stopSpeech();
@@ -1008,6 +1053,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       if (remaining === 0 && prevStatusRef.current === 'ACTIVE') {
         soundFx.playLock();
         vibrateRoundEnd();
+        autoSubmitFnRef.current();
       }
     }, 250);
 
@@ -1024,7 +1070,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         soundFx.playLock();
         // Short-staccato pulse pattern when a round ends / locks
         vibrateRoundEnd();
+        autoSubmitFnRef.current();
       } else if (gameState.status === 'REVEAL') {
+        autoSubmitFnRef.current();
         const hasAnswered = Boolean(user?.uid && responses[user.uid]?.choice);
         const isUserCorrect = user?.uid && (responses[user.uid]?.choice || '').trim().toUpperCase() === (gameState.correct_key || '').trim().toUpperCase();
         soundFx.playReveal(Boolean(isUserCorrect));
@@ -1151,6 +1199,166 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const cancelShortAnswerSubmit = () => {
     setIsConfirmingShortAnswer(false);
   };
+
+  // Auto-submit answer when time expires across all rounds
+  const autoSubmitCurrentAnswer = useCallback(async () => {
+    if (!user || hasVotedThisQuestion || hasAutoSubmittedRef.current) return;
+    if (responses?.[user.uid]?.choice) return;
+
+    let candidateChoice = '';
+    const roundType = gameState.round_type;
+
+    if (roundType === 'TRUE_FALSE_4') {
+      const activeKeys = Object.keys(tfChoices);
+      if (activeKeys.length > 0) {
+        candidateChoice = activeKeys.sort().map(k => `${k}:${tfChoices[k]}`).join(',');
+      }
+    } else if (roundType === 'SEQUENCING') {
+      if (seqItems && seqItems.length > 0) {
+        candidateChoice = seqItems.join('-');
+      }
+    } else if (roundType === 'SHORT_ANSWER' || roundType === 'FILL_IN_BLANK') {
+      if (shortAnswerText.trim()) {
+        candidateChoice = shortAnswerText.trim().toUpperCase();
+      }
+    } else if (roundType === 'VCNV') {
+      if (shortAnswerText.trim()) {
+        candidateChoice = shortAnswerText.trim().toUpperCase();
+      } else if (selectedChoice) {
+        candidateChoice = selectedChoice;
+      }
+    } else {
+      // MULTIPLE_CHOICE, BLIND_POLL, IMAGE_POLL, TRUE_FALSE, ELIMINATION_6, etc.
+      if (selectedChoice && !gameState.eliminated_options?.includes(selectedChoice)) {
+        candidateChoice = selectedChoice;
+      }
+    }
+
+    let didSubmitAny = false;
+
+    // 1. Submit main question answer if candidateChoice is available
+    if (candidateChoice) {
+      hasAutoSubmittedRef.current = true;
+      didSubmitAny = true;
+      setSelectedChoice(candidateChoice);
+      setHasVotedThisQuestion(true);
+      setIsConfirmingShortAnswer(false);
+
+      const now = Date.now();
+      const latency = gameState.server_start_time
+        ? Math.max(0.1, (now - gameState.server_start_time) / 1000)
+        : Number(gameState.time_limit || 15);
+
+      const responsePayload: UserResponse = {
+        choice: candidateChoice,
+        timestamp: now,
+        latency_sec: Number(latency.toFixed(2)),
+        isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
+        tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
+        user_info: {
+          name: user.name,
+          mssv: user.mssv,
+          uid: user.uid,
+          anonymizedUid: user.anonymizedUid || user.uid
+        }
+      };
+
+      if (!navigator.onLine) {
+        queueOfflineResponse(responsePayload);
+      }
+
+      setIsPendingSync(true);
+      try {
+        await syncService.submitResponse(gameState.question_id, user.uid, responsePayload);
+      } catch (err) {
+        console.warn('Auto submit response failed, saving to offline queue:', err);
+        queueOfflineResponse(responsePayload);
+      } finally {
+        setIsPendingSync(false);
+      }
+    }
+
+    // 2. Also handle VCNV Keyword Prediction if typed and pending
+    if (roundType === 'VCNV' && vcnvPrediction.trim() && !gameState.vcnv_summary_active) {
+      hasAutoSubmittedRef.current = true;
+      didSubmitAny = true;
+      setIsEditingVcnv(false);
+      const now = Date.now();
+      const latency = gameState.server_start_time
+        ? Math.max(0.1, (now - gameState.server_start_time) / 1000)
+        : 1.0;
+      try {
+        await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
+          choice: vcnvPrediction.trim().toUpperCase(),
+          timestamp: now,
+          latency_sec: Number(latency.toFixed(2)),
+          user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+        });
+      } catch (err) {
+        console.warn('Auto submit VCNV prediction failed:', err);
+      }
+    }
+
+    // 3. Also handle VCNV Risk Box prediction if typed and not submitted
+    if (roundType === 'VCNV' && !hasSubmittedRisk && (riskAnswerText.trim() || riskCnvText.trim())) {
+      hasAutoSubmittedRef.current = true;
+      didSubmitAny = true;
+      setHasSubmittedRisk(true);
+      setIsEditingRisk(false);
+      const syncNow = syncService.getSynchronizedNow();
+      const latency = Number(((syncNow - (gameState.vcnv_risk_start_time || syncNow)) / 1000).toFixed(2));
+      if (riskAnswerText.trim()) {
+        try {
+          await syncService.submitResponse('VCNV_RISK', user.uid, {
+            choice: riskAnswerText.trim().toUpperCase(),
+            timestamp: syncNow,
+            latency_sec: latency,
+            user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+          });
+        } catch (err) {
+          console.warn('Auto submit VCNV risk answer failed:', err);
+        }
+      }
+      if (riskCnvText.trim()) {
+        try {
+          await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
+            choice: riskCnvText.trim().toUpperCase(),
+            timestamp: syncNow,
+            latency_sec: latency,
+            user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+          });
+        } catch (err) {
+          console.warn('Auto submit VCNV risk keyword failed:', err);
+        }
+      }
+    }
+
+    if (didSubmitAny) {
+      soundFx.playClick();
+      vibrateSubmit();
+      setAutoSubmitToast(true);
+      setTimeout(() => setAutoSubmitToast(false), 4000);
+    }
+  }, [
+    user,
+    hasVotedThisQuestion,
+    responses,
+    gameState,
+    selectedChoice,
+    shortAnswerText,
+    seqItems,
+    tfChoices,
+    vcnvPrediction,
+    riskAnswerText,
+    riskCnvText,
+    hasSubmittedRisk,
+    isDoubleDownActive,
+    isVeDichRound
+  ]);
+
+  useEffect(() => {
+    autoSubmitFnRef.current = autoSubmitCurrentAnswer;
+  });
 
   // Calculate vote statistics for Reveal state
   const tfStats = useMemo(() => {
@@ -1362,21 +1570,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const renderContent = () => {
 
   if (gameState.panic_mode) {
-    return (
-      <div className="flex-1 w-full h-full flex items-center justify-center relative z-30 bg-red-950/90 backdrop-blur-md p-6">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="w-24 h-24 mx-auto rounded-full bg-red-600/20 flex items-center justify-center animate-pulse">
-            <AlertOctagon className="w-12 h-12 text-red-500" />
-          </div>
-          <h2 className="text-3xl font-black text-red-400 tracking-widest uppercase">{t("view_panic_title", localLanguage)}</h2>
-          <p className="text-red-300/80 text-sm leading-relaxed">
-            {t("view_panic_desc1", localLanguage)}
-            <br/><br/>
-            {t("view_panic_desc2", localLanguage)}
-          </p>
-        </div>
-      </div>
-    );
+    return <ClientLandingPage gameState={gameState} isPanic={true} />;
   }
   if (gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE')) {
     return <LuckyDrawAudience gameState={gameState} currentUserInfo={user} />;
@@ -2300,6 +2494,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
         )}
 
+        {/* Auto-submitted Toast */}
+        {autoSubmitToast && (
+          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 right-4 sm:right-6 z-50 animate-fadeIn pointer-events-none">
+            <div className="flex items-center gap-2.5 bg-amber-500 text-slate-950 px-4 py-2.5 rounded-[2px] shadow-lg shadow-amber-500/30 border border-amber-300">
+              <Clock className="w-4 h-4 text-slate-950 shrink-0" />
+              <span className="text-sm font-bold">{t("view_auto_submitted", localLanguage)}</span>
+            </div>
+          </div>
+        )}
+
         {/* Mini-Tip Quick Guide */}
         {showMiniTip && (
           <div className="fixed bottom-[calc(80px+env(safe-area-inset-bottom,0px))] sm:bottom-24 right-4 sm:right-6 z-50 animate-slideUp">
@@ -2439,6 +2643,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span className="hidden sm:inline text-[11px] font-bold">Thẻ</span>
+          </button>
+
+          {/* AI Auto-Read Answer Toggle Button */}
+          <button
+            type="button"
+            onClick={handleToggleAutoSpeakAnswer}
+            className={`p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium border flex items-center gap-1.5 transition hover-effect cursor-pointer ${
+              autoSpeakAnswer
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30'
+                : 'bg-white/5 hover:bg-white/10 text-white/50 border-white/10'
+            }`}
+            title={autoSpeakAnswer ? 'Đọc đáp án bằng AI: Đang BẬT (Bấm để Tắt)' : 'Đọc đáp án bằng AI: Đang TẮT (Bấm để Bật)'}
+            aria-label={autoSpeakAnswer ? 'Tắt đọc đáp án bằng AI' : 'Bật đọc đáp án bằng AI'}
+          >
+            <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/40'}`} />
+            <span className="hidden sm:inline text-[11px] font-bold">
+              {autoSpeakAnswer ? 'Đọc đáp án: BẬT' : 'Đọc đáp án: TẮT'}
+            </span>
           </button>
 
           <button
@@ -2620,6 +2842,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           ) : (
                             <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
                           )}
+                        </button>
+
+                        {/* AI Auto-Read Answer Quick Toggle Button */}
+                        <button
+                          type="button"
+                          onClick={handleToggleAutoSpeakAnswer}
+                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono ${
+                            autoSpeakAnswer
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
+                              : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
+                          }`}
+                          title={autoSpeakAnswer ? 'AI tự đọc đáp án đúng: Đang BẬT (bấm để Tắt)' : 'AI tự đọc đáp án đúng: Đang TẮT (bấm để Bật)'}
+                        >
+                          <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/30'}`} />
+                          <span className="hidden xl:inline font-bold">
+                            {autoSpeakAnswer ? 'AI Đáp án: BẬT' : 'AI Đáp án: TẮT'}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -3329,6 +3568,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         id="audience-state-locked"
         className="max-w-5xl w-full mx-auto p-4 sm:p-6 text-white relative animate-fadeIn"
       >
+        {/* Auto-submitted Toast in LOCKED state */}
+        {autoSubmitToast && (
+          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 right-4 sm:right-6 z-50 animate-fadeIn pointer-events-none">
+            <div className="flex items-center gap-2.5 bg-amber-500 text-slate-950 px-4 py-2.5 rounded-[2px] shadow-lg shadow-amber-500/30 border border-amber-300">
+              <Clock className="w-4 h-4 text-slate-950 shrink-0" />
+              <span className="text-sm font-bold">{t("view_auto_submitted", localLanguage)}</span>
+            </div>
+          </div>
+        )}
+
         {/* Main Locked Status Card */}
         <div className="w-full fluent-box rounded-[2px] p-6 sm:p-8 text-center shadow-2xl">
           <div className="w-16 h-16 rounded-[2px] bg-white/10 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-5 shadow-lg">
@@ -3477,6 +3726,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         id="audience-state-reveal"
         className="max-w-5xl w-full mx-auto p-4 sm:p-6 text-white relative animate-fadeIn"
       >
+        {/* Auto-submitted Toast in REVEAL state */}
+        {autoSubmitToast && (
+          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 right-4 sm:right-6 z-50 animate-fadeIn pointer-events-none">
+            <div className="flex items-center gap-2.5 bg-amber-500 text-slate-950 px-4 py-2.5 rounded-[2px] shadow-lg shadow-amber-500/30 border border-amber-300">
+              <Clock className="w-4 h-4 text-slate-950 shrink-0" />
+              <span className="text-sm font-bold">{t("view_auto_submitted", localLanguage)}</span>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
         {/* Result Announcement Hero Card */}
         <div
@@ -3574,8 +3833,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
           )}
 
-          {/* Upvote & Like Question Action */}
-          <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-center gap-3">
+          {/* Upvote & Like Question Action and AI Read Answer */}
+          <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-center gap-3">
             <span className="text-xs text-slate-300">{t("view_feedback", localLanguage)}</span>
             <QuestionLikeButton
               questionId={gameState.question_id}
@@ -3583,6 +3842,48 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               gameState={gameState}
               variant="pill"
             />
+            
+            {/* Unified AI Voice Read Answer Segmented Control */}
+            <div className="inline-flex items-center rounded-[2px] border border-emerald-500/40 bg-white/5 overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={handleToggleSpeakAnswer}
+                className={`px-3 py-1.5 transition cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold ${
+                  isSpeakingQuestion
+                    ? 'bg-emerald-500/30 text-emerald-300 animate-pulse'
+                    : 'hover:bg-white/10 text-white'
+                }`}
+                title={isSpeakingQuestion ? t("view_ai_stop_reading", localLanguage) : t("view_ai_read_answer", localLanguage)}
+              >
+                {isSpeakingQuestion ? (
+                  <>
+                    <VolumeX className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                    <span>{t("view_ai_stop_reading", localLanguage)}</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{t("view_ai_read_answer", localLanguage)}</span>
+                  </>
+                )}
+              </button>
+
+              <div className="w-[1px] h-4 bg-emerald-500/30" />
+
+              <button
+                type="button"
+                onClick={handleToggleAutoSpeakAnswer}
+                className={`px-2.5 py-1.5 transition cursor-pointer flex items-center gap-1 text-xs font-mono font-semibold ${
+                  autoSpeakAnswer
+                    ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                    : 'hover:bg-white/10 text-white/60'
+                }`}
+                title={autoSpeakAnswer ? 'Tự động đọc đáp án: Đang BẬT (Bấm để Tắt)' : 'Tự động đọc đáp án: Đang TẮT (Bấm để Bật)'}
+              >
+                <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/40'}`} />
+                <span>{autoSpeakAnswer ? t("view_ai_auto_speak_on", localLanguage) : t("view_ai_auto_speak_off", localLanguage)}</span>
+              </button>
+            </div>
           </div>
         </div>
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}
@@ -3591,22 +3892,40 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <h3 className={`text-lg sm:text-xl font-black text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
               {activeQuestionText}
             </h3>
-            <button
-              type="button"
-              onClick={handleToggleSpeakQuestion}
-              className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer shrink-0 ${
-                isSpeakingQuestion
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
-                  : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
-              }`}
-              title={isSpeakingQuestion ? t("view_tts_stop", localLanguage) : t("view_tts_start", localLanguage)}
-            >
-              {isSpeakingQuestion ? (
-                <VolumeX className="w-4 h-4 text-emerald-400 animate-pulse" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
-              )}
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleToggleSpeakQuestion}
+                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer ${
+                  isSpeakingQuestion
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
+                    : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
+                }`}
+                title={isSpeakingQuestion ? 'Dừng đọc' : 'Đọc câu hỏi'}
+              >
+                {isSpeakingQuestion ? (
+                  <VolumeX className="w-4 h-4 text-emerald-400 animate-pulse" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleAutoSpeakAnswer}
+                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono ${
+                  autoSpeakAnswer
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
+                    : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
+                }`}
+                title={autoSpeakAnswer ? 'AI tự đọc đáp án đúng: Đang BẬT (bấm để Tắt)' : 'AI tự đọc đáp án đúng: Đang TẮT (bấm để Bật)'}
+              >
+                <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/30'}`} />
+                <span className="hidden sm:inline font-bold">
+                  {autoSpeakAnswer ? 'AI Đáp án: BẬT' : 'AI Đáp án: TẮT'}
+                </span>
+              </button>
+            </div>
           </div>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
             {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
@@ -4035,6 +4354,10 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const myData = useMemo(() => {
     return leaderboard.find(u => u.uid === props.user?.uid || (props.user?.mssv && u.mssv === props.user.mssv));
   }, [leaderboard, props.user?.uid, props.user?.mssv]);
+
+  if (props.gameState.panic_mode) {
+    return <ClientLandingPage gameState={props.gameState} isPanic={true} />;
+  }
 
   return (
     <div className={`flex flex-col h-full relative transition-all duration-300 ${isHighContrast ? 'audience-high-contrast bg-black/50 backdrop-blur-[24px] saturate-150' : ''}`}>

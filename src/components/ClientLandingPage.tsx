@@ -6,12 +6,14 @@ import { AnnouncerOverlay } from './AnnouncerOverlay';
 
 interface ClientLandingPageProps {
   gameState?: GameState;
+  isPanic?: boolean;
 }
 
-export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState }) => {
+export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState, isPanic }) => {
   const { localLanguage } = useLanguage();
   const overlay = gameState?.announcer_overlay;
   const hasLiveAnnouncement = Boolean(overlay?.active && overlay?.text?.trim());
+  const isPanicMode = isPanic ?? Boolean(gameState?.panic_mode);
 
   return (
     <div className="min-h-full flex-1 w-full bg-transparent relative overflow-hidden flex flex-col items-center justify-center text-[#F5EFF9] p-4 sm:p-8 pb-20 select-none">
@@ -24,14 +26,24 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState 
         </div>
         
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white mb-3 sm:mb-4 drop-shadow-2xl uppercase">
-          {localLanguage !== 'vi' ? 'Please Stand By' : 'Vui Lòng Chờ'}
+          {isPanicMode
+            ? (localLanguage !== 'vi' ? 'System Paused' : 'Hệ Thống Tạm Dừng')
+            : (localLanguage !== 'vi' ? 'Please Stand By' : 'Vui Lòng Chờ')}
         </h1>
         
         <p className="text-sm sm:text-base text-[#B6A6D8] mb-7 font-normal leading-relaxed max-w-md">
-          {localLanguage !== 'vi' ? (
-            <>The organizers are preparing for the next contest round.<br/>Please stay on this screen and be ready to participate.</>
+          {isPanicMode ? (
+            localLanguage !== 'vi' ? (
+              <>Interaction is currently paused by the Administrator.<br/>All submitted answers are safely preserved. Please wait for further announcements.</>
+            ) : (
+              <>Quyền tương tác hiện đang bị tạm dừng bởi Quản trị viên.<br/>Mọi câu trả lời đã nộp vẫn được bảo lưu an toàn. Vui lòng chờ thông báo tiếp theo.</>
+            )
           ) : (
-            <>Ban tổ chức đang chuẩn bị cho nội dung thi đấu tiếp theo.<br/>Vui lòng giữ nguyên màn hình và sẵn sàng tham gia.</>
+            localLanguage !== 'vi' ? (
+              <>The organizers are preparing for the next contest round.<br/>Please stay on this screen and be ready to participate.</>
+            ) : (
+              <>Ban tổ chức đang chuẩn bị cho nội dung thi đấu tiếp theo.<br/>Vui lòng giữ nguyên màn hình và sẵn sàng tham gia.</>
+            )
           )}
         </p>
 

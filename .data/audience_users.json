@@ -1,0 +1,21 @@
+[
+  {
+    "uid": "aud_1789999171209_d286b652",
+    "username": "nh27",
+    "name": "Nico Hülkenberg",
+    "mssv": "2727272727",
+    "gender": "1",
+    "birthYear": "1987",
+    "anonymizedUid": "2727NH187257",
+    "email": "dangtu2006+nh27@gmail.com",
+    "emailVerified": true,
+    "note": "",
+    "authProvider": "local",
+    "passwordHash": "146dc1ca0ce8c49eb642e48746ea47a3d61769574931f557dabcf3d2d629538c2f4cc61db9bb1ab362e750d8bff0d06e48d87658b0fdcf58a66d726276c81ef2",
+    "salt": "11398412453a9d670bc7d2d36e495c9b",
+    "registeredAt": 1789999171209,
+    "lastLoginAt": 1789999298579,
+    "isActivated": true,
+    "activationCode": "782847"
+  }
+]

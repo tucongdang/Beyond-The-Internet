@@ -7,7 +7,9 @@ const EVENT_NAME = 'bti_battery_saver_changed';
 export function getBatterySaverMode(): boolean {
   if (typeof window === 'undefined') return false;
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    const bs = localStorage.getItem(STORAGE_KEY) === 'true';
+    const hc = localStorage.getItem('bti_audience_high_contrast') === 'true';
+    return bs || hc;
   } catch {
     return false;
   }
@@ -17,6 +19,7 @@ export function setBatterySaverMode(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, String(enabled));
+    localStorage.setItem('bti_audience_high_contrast', String(enabled));
   } catch {}
 
   applyBatterySaverClasses(enabled);
@@ -46,15 +49,8 @@ export function applyBatterySaverClasses(enabled: boolean): void {
     document.documentElement.classList.add('battery-saver-active', 'audience-high-contrast');
     document.body.classList.add('battery-saver-active', 'audience-high-contrast');
   } else {
-    document.documentElement.classList.remove('battery-saver-active');
-    document.body.classList.remove('battery-saver-active');
-    try {
-      const isHighContrast = localStorage.getItem('bti_audience_high_contrast') === 'true';
-      if (!isHighContrast) {
-        document.documentElement.classList.remove('audience-high-contrast');
-        document.body.classList.remove('audience-high-contrast');
-      }
-    } catch {}
+    document.documentElement.classList.remove('battery-saver-active', 'audience-high-contrast');
+    document.body.classList.remove('battery-saver-active', 'audience-high-contrast');
   }
 }
 

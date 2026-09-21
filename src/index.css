@@ -521,8 +521,27 @@ body:has([aria-modal="true"]) {
 /* High Contrast / Pure Black Dark Mode Synchronization */
 html.audience-high-contrast,
 body.audience-high-contrast,
-.audience-high-contrast {
+.audience-high-contrast,
+html.battery-saver-active,
+body.battery-saver-active,
+.battery-saver-active {
   background-color: #000000 !important;
+  background-image: none !important;
+}
+
+html.audience-high-contrast .fixed.z-\[-3\],
+html.audience-high-contrast .fixed.z-\[-1\],
+body.audience-high-contrast .fixed.z-\[-3\],
+body.audience-high-contrast .fixed.z-\[-1\],
+.audience-high-contrast .fixed.z-\[-3\],
+.audience-high-contrast .fixed.z-\[-1\],
+html.battery-saver-active .fixed.z-\[-3\],
+html.battery-saver-active .fixed.z-\[-1\],
+body.battery-saver-active .fixed.z-\[-3\],
+body.battery-saver-active .fixed.z-\[-1\],
+.battery-saver-active .fixed.z-\[-3\],
+.battery-saver-active .fixed.z-\[-1\] {
+  display: none !important;
 }
 
 /* Make main containers, root wrapper and backdrop panels pure black in dark contrast mode */

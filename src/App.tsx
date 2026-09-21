@@ -34,7 +34,7 @@ import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
 import { LiveSubtitleOverlay } from './components/LiveSubtitleOverlay';
 import { LoudEnvironmentAlert } from './components/LoudEnvironmentAlert';
-import { applyBatterySaverClasses, getBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
+import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 
 export default function App() {
@@ -271,54 +271,40 @@ export default function App() {
     setCurrentView('landing');
   };
 
-  // Global pure black dark mode (audience-high-contrast) persistent across sessions
+  // Global pure black dark mode (audience-high-contrast) & Battery Saver synchronization
   const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem('bti_audience_high_contrast') === 'true';
-      } catch {
-        return false;
-      }
-    }
-    return false;
+    return getBatterySaverMode();
   });
 
-  const handleToggleHighContrast = () => {
-    setIsHighContrast((prev) => {
-      const nextVal = !prev;
-      try {
-        localStorage.setItem('bti_audience_high_contrast', String(nextVal));
-      } catch {}
-      return nextVal;
-    });
-  };
+  const handleToggleHighContrast = useCallback(() => {
+    const nextVal = !getBatterySaverMode();
+    setBatterySaverMode(nextVal);
+    setIsHighContrast(nextVal);
+  }, []);
 
   // Keep document.body & html class in sync with isHighContrast & BatterySaverMode
   useEffect(() => {
-    applyBatterySaverClasses(getBatterySaverMode());
-    if (typeof document !== 'undefined') {
-      if (isHighContrast) {
-        document.documentElement.classList.add('audience-high-contrast');
-        document.body.classList.add('audience-high-contrast');
-      } else if (!getBatterySaverMode()) {
-        document.documentElement.classList.remove('audience-high-contrast');
-        document.body.classList.remove('audience-high-contrast');
-      }
-    }
+    const isModeActive = isHighContrast || getBatterySaverMode();
+    applyBatterySaverClasses(isModeActive);
   }, [isHighContrast]);
 
-  // Synchronize across tabs or components via storage events
+  // Synchronize across tabs or components via battery saver and storage events
   useEffect(() => {
-    const handleStorageChange = () => {
-      try {
-        const val = localStorage.getItem('bti_audience_high_contrast') === 'true';
-        setIsHighContrast(val);
-      } catch {
-        // ignore
+    const handleBatterySaverChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ enabled: boolean }>;
+      setIsHighContrast(customEvent.detail.enabled);
+    };
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'bti_battery_saver_mode' || e.key === 'bti_audience_high_contrast') {
+        setIsHighContrast(getBatterySaverMode());
       }
     };
+    window.addEventListener('bti_battery_saver_changed', handleBatterySaverChange);
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('bti_battery_saver_changed', handleBatterySaverChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const [user, setUser] = useState<UserInfo | null>(() => {
@@ -569,11 +555,15 @@ export default function App() {
   return (
     <div className="min-h-[100dvh] h-[100dvh] overflow-hidden bg-transparent text-[#F5EFF9] font-sans flex flex-col antialiased selection:bg-[#F7CAC9] selection:text-[#190839] relative z-0">
       {/* --- GLOBAL APP BACKGROUND (Sync with Landing Page) --- */}
-      <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md">
-        <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
-        <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-      <div className="fixed inset-0 z-[-1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+      {!(isHighContrast || isBatterySaver) && (
+        <>
+          <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md">
+            <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
+            <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+          <div className="fixed inset-0 z-[-1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+        </>
+      )}
 
       {/* Audience Notification Toast (Hidden on Admin & Projector views) */}
       <NotificationToast userUid={user?.uid} gameState={gameState} currentView={currentView} />

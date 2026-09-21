@@ -7,6 +7,8 @@ import { calculateLeaderboard, calculateSurvivalStats } from '../utils/leaderboa
 import { vibrateTap } from '../utils/hapticUtils';
 import { soundFx } from '../services/audioEffects';
 import { BatteryIndicator } from './BatteryIndicator';
+import { BatterySaverModal } from './BatterySaverModal';
+import { getBatterySaverMode, setBatterySaverMode, useBatterySaver } from '../utils/batterySaverUtils';
 import { useLanguage } from '../hooks/useLanguage';
 import { getSecureRandomInt } from '../utils/cryptoUtils';
 
@@ -77,6 +79,8 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(Boolean(document.fullscreenElement));
+  const { isBatterySaver } = useBatterySaver();
+  const [isBatteryModalOpen, setIsBatteryModalOpen] = useState(false);
   
   const prevScoreRef = useRef(0);
   const [displayScore, setDisplayScore] = useState(0);
@@ -250,27 +254,59 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             )}
 
             {onToggleHighContrast && (
-              <button
-                type="button"
-                id="btn-audience-high-contrast-toggle"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  soundFx.playClick();
-                  vibrateTap();
-                  onToggleHighContrast();
-                }}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
-                  isHighContrast
-                    ? 'bg-amber-400 text-black border-amber-300 shadow-lg'
-                    : 'fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white border-white/20'
-                }`}
-                title={isHighContrast ? (t("view_score_dark_on", localLanguage)) : (t("view_score_dark_off", localLanguage))}
-              >
-                <Contrast className={`w-3.5 h-3.5 ${isHighContrast ? 'text-black' : 'text-amber-300'}`} />
-                <span className="hidden sm:inline text-[11px]">
-                  {t("view_score_dark", localLanguage)}
-                </span>
-              </button>
+              <div className="inline-flex items-center rounded-[2px] border border-white/20 overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  id="btn-audience-high-contrast-toggle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundFx.playClick();
+                    vibrateTap();
+                    if (onToggleHighContrast) {
+                      onToggleHighContrast();
+                    } else {
+                      setBatterySaverMode(!getBatterySaverMode());
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 text-xs font-mono font-bold transition hover-effect ${
+                    isHighContrast || isBatterySaver
+                      ? 'bg-amber-400 text-black font-extrabold shadow-sm'
+                      : 'fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white'
+                  }`}
+                  title={
+                    isHighContrast || isBatterySaver
+                      ? (t("view_score_dark_on", localLanguage))
+                      : (t("view_score_dark_off", localLanguage))
+                  }
+                >
+                  <Contrast className={`w-3.5 h-3.5 ${isHighContrast || isBatterySaver ? 'text-black' : 'text-amber-300'}`} />
+                  <Zap className={`w-3 h-3 ${isHighContrast || isBatterySaver ? 'text-black fill-current' : 'text-emerald-400'}`} />
+                  <span className="hidden sm:inline text-[11px]">
+                    {t("view_score_dark", localLanguage)}
+                  </span>
+                  {(isHighContrast || isBatterySaver) && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  id="btn-audience-battery-settings"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    soundFx.playClick();
+                    vibrateTap();
+                    setIsBatteryModalOpen(true);
+                  }}
+                  className={`px-1.5 py-1.5 text-xs transition border-l ${
+                    isHighContrast || isBatterySaver
+                      ? 'bg-amber-400 hover:bg-amber-300 text-black border-black/20'
+                      : 'fluent-box-nested hover:bg-white/20 text-white/60 hover:text-white border-white/15'
+                  }`}
+                  title={localLanguage !== 'vi' ? 'Battery Saver Settings' : 'Cài đặt chi tiết Tiết kiệm pin'}
+                >
+                  <Sparkles className="w-3 h-3" />
+                </button>
+              </div>
             )}
 
             {onOpenLogModal && (
@@ -433,6 +469,12 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </div>
         )}
       </div>
+
+      {/* Battery Saver Settings Modal */}
+      <BatterySaverModal
+        isOpen={isBatteryModalOpen}
+        onClose={() => setIsBatteryModalOpen(false)}
+      />
     </div>
   );
 };
