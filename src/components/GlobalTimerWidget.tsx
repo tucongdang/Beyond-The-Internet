@@ -25,10 +25,8 @@ import {
   VolumeX,
   XCircle,
   Timer,
-  Eye,
-  Bot
+  Eye
 } from 'lucide-react';
-import { aiExplanationService } from '../services/aiExplanationService';
 
 interface GlobalTimerWidgetProps {
   gameState: GameState;
@@ -54,40 +52,6 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
   onTriggerHudToast
 }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [adminTtsEnabled, setAdminTtsEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bti_admin_tts_enabled');
-      if (saved !== null) return saved === 'true';
-    }
-    return false; // Default off on Admin console to avoid duplicating Projector audio
-  });
-  const [isAdminSpeaking, setIsAdminSpeaking] = useState<boolean>(false);
-  const lastAdminSpokenQIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (gameState.status === 'ACTIVE') {
-      lastAdminSpokenQIdRef.current = null;
-      return;
-    }
-    if (gameState.status === 'REVEAL' && gameState.correct_key && adminTtsEnabled) {
-      const qId = gameState.question_id;
-      if (qId && lastAdminSpokenQIdRef.current !== qId) {
-        lastAdminSpokenQIdRef.current = qId;
-        setIsAdminSpeaking(true);
-        aiExplanationService.speakCorrectAnswer(
-          {
-            options: gameState.options,
-            roundType: gameState.round_type,
-            correctKey: gameState.correct_key,
-            explanation: gameState.explanation
-          },
-          'vi',
-          () => setIsAdminSpeaking(false),
-          () => setIsAdminSpeaking(false)
-        );
-      }
-    }
-  }, [gameState.status, gameState.correct_key, gameState.question_id, adminTtsEnabled, gameState.options, gameState.round_type, gameState.explanation]);
 
   const [customInputTime, setCustomInputTime] = useState<string>(String(gameState.time_limit || 20));
   const [isPaused, setIsPaused] = useState(false);
@@ -373,36 +337,6 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             <span className="hidden sm:inline text-[10px] font-bold">{soundEnabled ? 'ÂM THANH' : 'MUTE'}</span>
           </button>
 
-          {/* AI Voice Read Answer Toggle */}
-          <button
-            type="button"
-            onClick={() => {
-              const next = !adminTtsEnabled;
-              setAdminTtsEnabled(next);
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('bti_admin_tts_enabled', String(next));
-              }
-              if (!next && isAdminSpeaking) {
-                aiExplanationService.stopSpeech();
-                setIsAdminSpeaking(false);
-              }
-              soundFx.playClick();
-              vibrateTap();
-            }}
-            className={`p-2 rounded-[2px] text-xs font-mono border transition flex items-center gap-1.5 cursor-pointer ${
-              isAdminSpeaking
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
-                : adminTtsEnabled
-                ? 'bg-sky-500/20 text-sky-300 border-sky-400/50 shadow-sm'
-                : 'fluent-box-nested text-white/50 border-white/10 hover:text-white'
-            }`}
-            title={adminTtsEnabled ? 'AI đọc đáp án trên máy Admin: BẬT (bấm để tắt)' : 'AI đọc đáp án trên máy Admin: TẮT (bấm để bật)'}
-          >
-            <Bot className={`w-3.5 h-3.5 ${adminTtsEnabled ? 'text-sky-300' : 'text-white/40'}`} />
-            <span className="hidden sm:inline text-[10px] font-bold">
-              {adminTtsEnabled ? 'AI ĐÁP ÁN: BẬT' : 'AI ĐÁP ÁN: TẮT'}
-            </span>
-          </button>
 
           <span
             className={`text-xs font-mono font-bold px-3 py-1.5 rounded-[2px] border uppercase tracking-wider ${
