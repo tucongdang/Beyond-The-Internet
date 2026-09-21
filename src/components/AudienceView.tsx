@@ -216,6 +216,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return true; // Auto read out correct answer by default
   });
   const lastSpokenCorrectAnswerQIdRef = useRef<string | null>(null);
+  const autoSpeakTimeoutRef = useRef<any>(null);
+  const autoSpeakAnswerRef = useRef<boolean>(autoSpeakAnswer);
+
+  useEffect(() => {
+    autoSpeakAnswerRef.current = autoSpeakAnswer;
+  }, [autoSpeakAnswer]);
+
+  useEffect(() => {
+    const unsub = aiExplanationService.subscribeSpeechState(state => {
+      setIsSpeakingQuestion(state.active);
+    });
+    return () => {
+      unsub();
+      if (autoSpeakTimeoutRef.current) {
+        clearTimeout(autoSpeakTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // AI Instant Explanation state ("Hỏi Nhanh Vì Sao")
   const [aiExplanation, setAiExplanation] = useState<string>('');
@@ -849,29 +867,89 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
   };
 
-  // Toggle automatic reading of answer ON/OFF
-  const handleToggleAutoSpeakAnswer = useCallback(() => {
-    setAutoSpeakAnswer(prev => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bti_auto_speak_answer', String(next));
-      }
-      if (!next && isSpeakingQuestion) {
-        aiExplanationService.stopSpeech();
-        setIsSpeakingQuestion(false);
-      }
-      return next;
-    });
+  // Unified handler: Toggles AI Answer reading ON/OFF and controls active playback
+  const handleToggleSpeakAnswer = useCallback(() => {
     soundFx.playClick();
     vibrateTap();
-  }, [isSpeakingQuestion]);
 
-  // Manually trigger reading correct answer or stop speech
-  const handleToggleSpeakAnswer = useCallback(() => {
-    if (isSpeakingQuestion) {
+    const isActuallySpeaking = isSpeakingQuestion || (typeof window !== 'undefined' && Boolean(window.speechSynthesis?.speaking));
+
+    if (isActuallySpeaking || autoSpeakAnswer) {
+      // 1. Cancel any pending delayed playback timeout
+      if (autoSpeakTimeoutRef.current) {
+        clearTimeout(autoSpeakTimeoutRef.current);
+        autoSpeakTimeoutRef.current = null;
+      }
+
+      // 2. Stop speech immediately and unconditionally
       aiExplanationService.stopSpeech();
       setIsSpeakingQuestion(false);
+
+      // 3. Turn OFF auto speak state & localStorage
+      setAutoSpeakAnswer(false);
+      autoSpeakAnswerRef.current = false;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bti_auto_speak_answer', 'false');
+      }
     } else {
+      // Currently OFF and NOT speaking -> Turn ON & speak current answer if on REVEAL screen
+      setAutoSpeakAnswer(true);
+      autoSpeakAnswerRef.current = true;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('bti_auto_speak_answer', 'true');
+      }
+      if (gameState.status === 'REVEAL' && gameState.correct_key) {
+        lastSpokenCorrectAnswerQIdRef.current = gameState.question_id;
+        if (autoSpeakTimeoutRef.current) {
+          clearTimeout(autoSpeakTimeoutRef.current);
+          autoSpeakTimeoutRef.current = null;
+        }
+        setIsSpeakingQuestion(true);
+        aiExplanationService.speakCorrectAnswer(
+          {
+            options: activeOptions || gameState.options,
+            roundType: gameState.round_type,
+            correctKey: gameState.correct_key,
+            explanation: activeExplanation || gameState.explanation
+          },
+          localLanguage,
+          () => setIsSpeakingQuestion(false),
+          () => setIsSpeakingQuestion(false)
+        );
+      }
+    }
+  }, [
+    autoSpeakAnswer,
+    isSpeakingQuestion,
+    gameState.status,
+    gameState.question_id,
+    gameState.correct_key,
+    gameState.options,
+    gameState.round_type,
+    gameState.explanation,
+    activeOptions,
+    activeExplanation,
+    localLanguage
+  ]);
+
+  const handleToggleAutoSpeakAnswer = handleToggleSpeakAnswer;
+
+  // Automatically trigger reading of correct answer after timer expires or when revealed by Admin
+  const triggerAutoSpeakCorrectAnswer = useCallback(() => {
+    if (!autoSpeakAnswerRef.current) return;
+    const qId = gameState.question_id;
+    if (!qId || !gameState.correct_key) return;
+    if (lastSpokenCorrectAnswerQIdRef.current === qId) return;
+
+    lastSpokenCorrectAnswerQIdRef.current = qId;
+
+    if (autoSpeakTimeoutRef.current) {
+      clearTimeout(autoSpeakTimeoutRef.current);
+    }
+
+    // Allow reveal chime / fanfare sound effects to lead before AI voice begins
+    autoSpeakTimeoutRef.current = setTimeout(() => {
+      if (!autoSpeakAnswerRef.current) return;
       setIsSpeakingQuestion(true);
       aiExplanationService.speakCorrectAnswer(
         {
@@ -884,41 +962,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         () => setIsSpeakingQuestion(false),
         () => setIsSpeakingQuestion(false)
       );
-    }
-    soundFx.playClick();
-    vibrateTap();
-  }, [isSpeakingQuestion, activeOptions, gameState.options, gameState.round_type, gameState.correct_key, activeExplanation, gameState.explanation, localLanguage]);
-
-  // Automatically trigger reading of correct answer after timer expires or when revealed by Admin
-  const triggerAutoSpeakCorrectAnswer = useCallback(() => {
-    if (!autoSpeakAnswer) return;
-    const qId = gameState.question_id;
-    if (!qId || !gameState.correct_key) return;
-    if (lastSpokenCorrectAnswerQIdRef.current === qId) return;
-
-    lastSpokenCorrectAnswerQIdRef.current = qId;
-    setIsSpeakingQuestion(true);
-
-    // Allow reveal chime / fanfare sound effects to lead before AI voice begins
-    setTimeout(() => {
-      aiExplanationService.speakCorrectAnswer(
-        {
-          options: activeOptions || gameState.options,
-          roundType: gameState.round_type,
-          correctKey: gameState.correct_key,
-          explanation: activeExplanation || gameState.explanation
-        },
-        localLanguage,
-        () => setIsSpeakingQuestion(false),
-        () => setIsSpeakingQuestion(false)
-      );
     }, 450);
-  }, [autoSpeakAnswer, gameState.question_id, gameState.correct_key, gameState.options, gameState.round_type, gameState.explanation, activeOptions, activeExplanation, localLanguage]);
+  }, [gameState.question_id, gameState.correct_key, gameState.options, gameState.round_type, gameState.explanation, activeOptions, activeExplanation, localLanguage]);
 
   // Automatic Answer TTS Effect: Triggers after timer expiration or when Admin reveals answer
   useEffect(() => {
     if (gameState.status === 'ACTIVE') {
       lastSpokenCorrectAnswerQIdRef.current = null;
+      if (autoSpeakTimeoutRef.current) {
+        clearTimeout(autoSpeakTimeoutRef.current);
+        autoSpeakTimeoutRef.current = null;
+      }
       return;
     }
 
@@ -3843,47 +3897,42 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               variant="pill"
             />
             
-            {/* Unified AI Voice Read Answer Segmented Control */}
-            <div className="inline-flex items-center rounded-[2px] border border-emerald-500/40 bg-white/5 overflow-hidden shadow-sm">
-              <button
-                type="button"
-                onClick={handleToggleSpeakAnswer}
-                className={`px-3 py-1.5 transition cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold ${
-                  isSpeakingQuestion
-                    ? 'bg-emerald-500/30 text-emerald-300 animate-pulse'
-                    : 'hover:bg-white/10 text-white'
-                }`}
-                title={isSpeakingQuestion ? t("view_ai_stop_reading", localLanguage) : t("view_ai_read_answer", localLanguage)}
-              >
-                {isSpeakingQuestion ? (
-                  <>
-                    <VolumeX className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                    <span>{t("view_ai_stop_reading", localLanguage)}</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{t("view_ai_read_answer", localLanguage)}</span>
-                  </>
-                )}
-              </button>
-
-              <div className="w-[1px] h-4 bg-emerald-500/30" />
-
-              <button
-                type="button"
-                onClick={handleToggleAutoSpeakAnswer}
-                className={`px-2.5 py-1.5 transition cursor-pointer flex items-center gap-1 text-xs font-mono font-semibold ${
-                  autoSpeakAnswer
-                    ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
-                    : 'hover:bg-white/10 text-white/60'
-                }`}
-                title={autoSpeakAnswer ? 'Tự động đọc đáp án: Đang BẬT (Bấm để Tắt)' : 'Tự động đọc đáp án: Đang TẮT (Bấm để Bật)'}
-              >
-                <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/40'}`} />
-                <span>{autoSpeakAnswer ? t("view_ai_auto_speak_on", localLanguage) : t("view_ai_auto_speak_off", localLanguage)}</span>
-              </button>
-            </div>
+            {/* Unified Single AI Voice Read Answer Button */}
+            <button
+              type="button"
+              onClick={handleToggleSpeakAnswer}
+              className={`px-3 py-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold ${
+                isSpeakingQuestion
+                  ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 animate-pulse'
+                  : autoSpeakAnswer
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/50 hover:bg-emerald-500/25'
+                  : 'bg-white/5 hover:bg-white/10 text-white/50 border-white/10'
+              }`}
+              title={
+                isSpeakingQuestion
+                  ? 'Dừng đọc đáp án ngay lập tức'
+                  : autoSpeakAnswer
+                  ? 'Đọc đáp án AI: Đang BẬT (Bấm để Tắt)'
+                  : 'Đọc đáp án AI: Đang TẮT (Bấm để Bật & Đọc)'
+              }
+            >
+              {isSpeakingQuestion ? (
+                <>
+                  <VolumeX className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  <span>{t("view_ai_stop_reading", localLanguage)}</span>
+                </>
+              ) : autoSpeakAnswer ? (
+                <>
+                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t("view_ai_auto_speak_on", localLanguage)}</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX className="w-3.5 h-3.5 text-white/40" />
+                  <span>{t("view_ai_auto_speak_off", localLanguage)}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}

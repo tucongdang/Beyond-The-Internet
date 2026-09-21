@@ -592,8 +592,29 @@ export const aiExplanationService = {
     soundFx.setTtsActive(false);
     this._emitSpeechState('', false, 'none');
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      activeUtterance = null;
+      try {
+        if (activeUtterance) {
+          activeUtterance.onend = null;
+          activeUtterance.onerror = null;
+          activeUtterance.onstart = null;
+          activeUtterance.onpause = null;
+          activeUtterance.onresume = null;
+          activeUtterance = null;
+        }
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.cancel();
+        setTimeout(() => {
+          try {
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+              window.speechSynthesis.cancel();
+            }
+          } catch {}
+        }, 15);
+      } catch (err) {
+        console.warn('[SpeechSynthesis] stopSpeech error:', err);
+      }
     }
   }
 };
