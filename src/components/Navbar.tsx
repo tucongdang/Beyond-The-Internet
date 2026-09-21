@@ -259,14 +259,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Interactive Arena • BTI Node
               </p>
             </div>
-            <div className="hidden sm:block xl:hidden">
+            <div className="hidden md:block xl:hidden">
               <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white whitespace-nowrap">
                 BTI <span className="text-sky-300">2026</span>
               </h1>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center">
+          <div className="hidden lg:flex items-center">
             {getStatusBadge()}
           </div>
         </div>
@@ -352,7 +352,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Telemetry Group: Ping, Battery, Connected Count */}
-          <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
+          <div className="hidden lg:inline-flex fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
             {/* Ping / Latency Indicator */}
             <button
               id="btn-ping-latency-indicator"
@@ -500,7 +500,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               data-tooltip-title={effectiveLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}
               data-tooltip-hotkey="F11"
               data-tooltip-placement="bottom"
-              className={`hidden sm:flex has-tooltip fluent-action-btn ${
+              className={`hidden lg:flex has-tooltip fluent-action-btn ${
                 isFullscreen
                   ? 'bg-sky-600/80 text-white border-sky-400/50 shadow-sm'
                   : 'text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'
@@ -534,7 +534,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }
                 data-tooltip-title={effectiveLanguage === 'en' ? 'Install App' : 'Cài Đặt Ứng Dụng'}
                 data-tooltip-placement="bottom"
-                className="hidden sm:flex has-tooltip fluent-action-btn text-sky-300 bg-sky-950/30 hover:bg-sky-900/40 border-sky-500/30"
+                className="hidden xl:flex has-tooltip fluent-action-btn text-sky-300 bg-sky-950/30 hover:bg-sky-900/40 border-sky-500/30"
               >
                 <Download className="w-3.5 h-3.5 text-sky-300" />
                 <span className="hidden xl:inline text-[11px]">{effectiveLanguage === 'en' ? 'Install' : 'Cài App'}</span>
@@ -544,7 +544,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* User Profile / Admin Role Badge */}
           {currentView === 'admin' ? (
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-xs select-none shadow-sm">
+            <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-xs select-none shadow-sm">
               <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
                 A
               </div>
@@ -554,7 +554,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
           ) : user ? (
-            <div className="hidden sm:flex items-center gap-1.5">
+            <div className="hidden lg:flex items-center gap-1.5">
               <button
                 id="btn-user-profile"
                 onClick={() => {
@@ -591,19 +591,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 vibrateTap();
                 onOpenProfile();
               }}
-              className="hidden sm:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
+              className="hidden lg:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
             >
               {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
             </button>
           )}
 
-          {/* Hamburger Menu Toggle for Mobile */}
+          {/* Hamburger Menu Toggle for Mobile & Tablet */}
           <button
             onClick={() => {
               vibrateTap();
               setIsMobileMenuOpen(!isMobileMenuOpen);
             }}
-            className="sm:hidden p-2 fluent-nav-btn text-white/70 hover:text-white"
+            className="lg:hidden p-2 fluent-nav-btn text-white/70 hover:text-white"
           >
             {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -612,7 +612,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Dropdown Menu with Fluent Styling */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden border-t border-white/10 bg-[#0D0420]/95 backdrop-blur-2xl p-3.5 space-y-3 shadow-2xl absolute top-full left-0 w-full z-[100] animate-fadeIn">
+        <div className="lg:hidden border-t border-white/10 bg-[#0D0420]/95 backdrop-blur-2xl p-3.5 space-y-3 shadow-2xl absolute top-full left-0 w-full z-[100] animate-fadeIn">
           {/* Mobile Connection & Latency Telemetry Card */}
           <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between shadow-inner">
             <div className="flex items-center gap-3">

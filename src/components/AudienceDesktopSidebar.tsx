@@ -182,7 +182,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
             vibrateTap();
             setIsDockCollapsed(false);
           }}
-          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] p-2 pl-2.5 fluent-box border-y border-l border-white/10 rounded-l-[2px] text-slate-400 hover:text-white transition-all shadow-2xl cursor-pointer hover-effect pointer-events-auto"
+          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] p-2 pl-2.5 fluent-box border-y border-l border-white/10 rounded-l-[2px] text-slate-400 hover:text-white transition-all shadow-2xl cursor-pointer hover-effect pointer-events-auto"
           title={t("sidebar_show", localLanguage)}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -190,7 +190,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
       ) : (
         <aside 
           id="audience-floating-dock-trigger"
-          className="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] flex-col items-end pointer-events-auto select-none"
+          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-[45] flex-col items-end pointer-events-auto select-none"
           aria-label="Toolbar"
         >
           <div className="flex flex-col gap-1.5 p-1.5 pr-0 rounded-l-[2px] fluent-box border-y border-l border-white/10 shadow-2xl transition-all duration-300">

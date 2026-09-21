@@ -110,7 +110,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
 
   return (
     <div 
-      className={`relative w-full overflow-hidden select-none transition-all ${
+      className={`relative w-full overflow-hidden select-none transition-all flex items-center gap-2 px-2 sm:px-3 ${
         variant === 'projector'
           ? 'bg-slate-950/85 backdrop-blur-xl border-y border-[#3E1D74]/80 py-2 shadow-2xl'
           : 'bg-[#190839]/90 backdrop-blur-lg border-y border-white/15 py-1.5 shadow-lg'
@@ -121,30 +121,31 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
       onTouchEnd={() => setIsPaused(false)}
     >
       {/* Left Badge / CTA Button */}
-      <div className="absolute left-0 top-0 bottom-0 z-20 flex items-center pl-2 sm:pl-3 pr-4 bg-gradient-to-r from-[#190839] via-[#190839]/95 to-transparent pointer-events-auto">
-        <button
-          onClick={() => {
-            vibrateTap();
-            if (onOpenShoutModal) onOpenShoutModal();
-          }}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-[2px] font-bold text-xs shadow-md transition-all group ${
-            variant === 'projector'
-              ? 'bg-gradient-to-r from-[#3E1D74] to-[#B6A6D8]/40 text-white border border-[#B6A6D8]/50'
-              : 'bg-gradient-to-r from-pink-600/90 to-purple-600/90 hover:from-pink-500 hover:to-purple-500 text-white border border-pink-400/40 active:scale-95'
-          }`}
-          title={localLanguage !== 'vi' ? "Send your shout to the screen" : "Gửi tiếng hô cổ vũ của bạn lên màn hình"}
-        >
-          <Megaphone className="w-3.5 h-3.5 text-[#F7CAC9] group-hover:rotate-12 transition-transform" />
-          <span className="hidden sm:inline font-mono uppercase tracking-wider text-[11px]">{t("shout_btn", localLanguage)}</span>
-          <span className="sm:hidden font-mono uppercase tracking-wider text-[10px]">{t("shout_btn_short", localLanguage)}</span>
-          {variant !== 'projector' && (
-            <Plus className="w-3 h-3 text-white/80 group-hover:scale-125 transition-transform" />
-          )}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          vibrateTap();
+          if (onOpenShoutModal) onOpenShoutModal();
+        }}
+        className={`shrink-0 z-10 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-[2px] font-bold text-xs shadow-md transition-all group ${
+          variant === 'projector'
+            ? 'bg-gradient-to-r from-[#3E1D74] to-[#B6A6D8]/40 text-white border border-[#B6A6D8]/50'
+            : 'bg-gradient-to-r from-pink-600/90 to-purple-600/90 hover:from-pink-500 hover:to-purple-500 text-white border border-pink-400/40 active:scale-95'
+        }`}
+        title={localLanguage !== 'vi' ? "Send your shout to the screen" : "Gửi tiếng hô cổ vũ của bạn lên màn hình"}
+      >
+        <Megaphone className="w-3.5 h-3.5 text-[#F7CAC9] group-hover:rotate-12 transition-transform" />
+        <span className="hidden sm:inline font-mono uppercase tracking-wider text-[11px]">{t("shout_btn", localLanguage)}</span>
+        <span className="sm:hidden font-mono uppercase tracking-wider text-[10px]">{t("shout_btn_short", localLanguage)}</span>
+        {variant !== 'projector' && (
+          <Plus className="w-3 h-3 text-white/80 group-hover:scale-125 transition-transform" />
+        )}
+      </button>
 
       {/* Marquee Content Rail */}
-      <div className="overflow-hidden flex w-full pl-20 sm:pl-24 pr-12">
+      <div className="flex-1 overflow-hidden min-w-0 relative">
+        <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-[#190839] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-l from-[#190839] to-transparent z-10 pointer-events-none" />
         <div 
           className={`flex items-center gap-3 sm:gap-4 whitespace-nowrap animate-marquee ${
             isPaused ? '[animation-play-state:paused]' : ''
@@ -201,15 +202,14 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                 <button
                   type="button"
                   onClick={(e) => handleLike(e, shout.id)}
-                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono transition-all ml-0.5 ${
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold transition-all ${
                     isUserLiked 
-                      ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 font-bold' 
-                      : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10'
+                      ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50' 
+                      : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'
                   } ${activeLikeAnimId === shout.id ? 'scale-125' : ''}`}
-                  title={localLanguage !== 'vi' ? "Heart this shout" : "Thả tim cho tiếng hô này"}
                 >
-                  <Heart className={`w-2.5 h-2.5 ${isUserLiked ? 'fill-rose-400 text-rose-400' : 'text-white/60'}`} />
-                  <span>{shout.likes || 0}</span>
+                  <Heart className={`w-3 h-3 ${isUserLiked ? 'fill-rose-400 text-rose-400' : ''}`} />
+                  <span>{shout.likes_count || 0}</span>
                 </button>
               </div>
             );
@@ -218,9 +218,10 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
       </div>
 
       {/* Right Collapse & View Wall Button */}
-      <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center pr-2 pl-4 bg-gradient-to-l from-[#190839] via-[#190839]/95 to-transparent pointer-events-auto gap-1">
+      <div className="shrink-0 z-10 flex items-center gap-1">
         {onOpenShoutModal && (
           <button
+            type="button"
             onClick={() => {
               vibrateTap();
               onOpenShoutModal();
@@ -233,6 +234,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
         )}
         {variant === 'audience' && (
           <button
+            type="button"
             onClick={() => setIsCollapsed(true)}
             className="p-1 rounded-[2px] text-white/40 hover:text-white/80 transition-colors"
             title={localLanguage !== 'vi' ? "Minimize shout bar" : "Thu nhỏ thanh tiếng hô"}
