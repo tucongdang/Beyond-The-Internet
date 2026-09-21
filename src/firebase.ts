@@ -3,8 +3,8 @@ import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore
 import { getAuth, Auth } from 'firebase/auth';
 import rawFirebaseConfig from '../firebase-applet-config.json';
 
-// Ensure API key is never an empty string, preventing synchronous auth/invalid-api-key crashes
-const FALLBACK_API_KEY = 'AIzaSyBTI2026ClientKey0000000000000000000';
+// Standard provisioned API key fallback
+const FALLBACK_API_KEY = 'AIzaSyDH5FdOqZNBuJALMzIg_o_vQWZyh7D0zbQ';
 
 const rawKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_FIREBASE_API_KEY)
   || (typeof process !== 'undefined' && (process.env as any)?.VITE_FIREBASE_API_KEY)
