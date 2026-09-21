@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, UserInfo, PingInfo } from '../types';
+import { GameState, UserInfo, PingInfo, AdminUser, TECHNICAL_ROLES } from '../types';
 import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
@@ -24,6 +24,7 @@ interface NavbarProps {
   onAdminLogout?: () => void;
   onOpenQrCode?: () => void;
   onOpenInstallModal?: () => void;
+  adminUser?: AdminUser | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -32,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   gameState,
   activeCount,
   user,
+  adminUser,
   onOpenProfile,
   onLogout,
   onOpenFirebaseConfig,
@@ -552,11 +554,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentView === 'admin' ? (
             <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-xs select-none shadow-sm">
               <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-extrabold flex items-center justify-center text-[10px] shadow-sm">
-                A
+                {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
               </div>
               <div className="flex flex-col items-start font-mono">
-                <span className="font-extrabold text-sky-300 text-[10px] leading-tight">Ban Tổ Chức</span>
-                <span className="text-white/50 text-[8px] leading-tight font-bold">Quản Trị Viên</span>
+                <span className="font-extrabold text-sky-300 text-[10px] leading-tight truncate max-w-[120px]">
+                  {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                </span>
+                <span className="text-white/50 text-[8px] leading-tight font-bold">
+                  {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
+                </span>
               </div>
             </div>
           ) : user ? (
@@ -783,11 +789,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3 p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[2px]">
                   <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
-                    A
+                    {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-sky-300 font-mono">Ban Tổ Chức</div>
-                    <div className="text-[9px] text-white/50 font-mono tracking-widest uppercase">Quản Trị Viên (Admin)</div>
+                    <div className="text-xs font-bold text-sky-300 font-mono">
+                      {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                    </div>
+                    <div className="text-[9px] text-white/50 font-mono tracking-widest uppercase">
+                      {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên (Admin)'}
+                    </div>
                   </div>
                 </div>
               </div>

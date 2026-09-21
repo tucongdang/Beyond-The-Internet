@@ -4,7 +4,7 @@ import {
   TabList, 
   Tab 
 } from './FluentTabs';
-import { GameState, QuestionItem, UserResponse, RoundType, OptionKey, StageSnapshotRecord, QR_PALETTES, QrPaletteId, QrPaletteConfig, QrHistoryItem } from '../types';
+import { GameState, QuestionItem, UserResponse, RoundType, OptionKey, StageSnapshotRecord, QR_PALETTES, QrPaletteId, QrPaletteConfig, QrHistoryItem, AdminUser } from '../types';
 
 const fluentDarkTransparentTheme = {};
 
@@ -46,6 +46,7 @@ import { AdminDashboard } from './AdminDashboard';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
 import { AiTranslationModal } from './AiTranslationModal';
+import { AdminApprovalModal } from './AdminApprovalModal';
 import { shortcutService } from '../services/shortcutService';
 import { AudienceAnswerDistributionChart } from './AudienceAnswerDistributionChart';
 import { FluentSearchBar } from './FluentSearchBar';
@@ -144,6 +145,7 @@ interface AdminPortalProps {
   onOpenFirebaseConfig: () => void;
   onViewChange?: (view: 'landing' | 'audience' | 'admin' | 'projector') => void;
   onLogout?: () => void;
+  adminUser?: AdminUser | null;
 }
 
 const DEFAULT_ADMIN_PASSCODE = 'BTI2026Admin';
@@ -156,7 +158,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   isFirebaseConnected,
   onOpenFirebaseConfig,
   onViewChange,
-  onLogout
+  onLogout,
+  adminUser
 }) => {
   // Completely disable all sound FX on the Admin screen
   useEffect(() => {
@@ -179,6 +182,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   });
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState('');
+
+  // Technical Staff Approval Management
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState<boolean>(false);
+  const [pendingApprovalCount, setPendingApprovalCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const token = sessionStorage.getItem('BTI2026_ADMIN_TOKEN') || '';
+        const res = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const count = (data.users || []).filter((u: any) => u.status === 'PENDING').length;
+          setPendingApprovalCount(count);
+        }
+      } catch {}
+    };
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Question selection & editing state
   const [questionBank, setQuestionBank] = useState<QuestionItem[]>(() => {
@@ -2636,6 +2663,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         <div className="fluent-action-bar flex-wrap justify-start xl:justify-end gap-2 w-full xl:w-auto order-2 xl:order-3 mt-3 xl:mt-0">
           {/* Group 1: Màn Chiếu & Phát Sóng (Broadcast & Stage Display) */}
           <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start">
+            {/* Technical Staff Approval Button */}
+            <button
+              type="button"
+              id="btn-admin-header-approvals"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setIsApprovalModalOpen(true);
+              }}
+              data-tooltip="Quản lý và phê duyệt tài khoản nhân sự Ban Kỹ Thuật"
+              data-tooltip-title="Phê Duyệt Kỹ Thuật"
+              data-tooltip-variant={pendingApprovalCount > 0 ? 'warning' : 'accent'}
+              className={`has-tooltip fluent-action-btn ${
+                pendingApprovalCount > 0
+                  ? 'bg-amber-950/70 text-amber-200 border-amber-500/60 ring-1 ring-amber-500/50 animate-pulse'
+                  : 'text-sky-300 bg-sky-950/40 hover:bg-sky-900/50 border-sky-500/30'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-300" />
+              <span>Duyệt Kỹ Thuật</span>
+              {pendingApprovalCount > 0 ? (
+                <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono font-bold bg-amber-500 text-black shadow-sm">
+                  {pendingApprovalCount}
+                </span>
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              )}
+            </button>
             {/* Snap Audience Interaction Button */}
             <button
               type="button"
@@ -7643,6 +7698,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={isAiTranslateModalOpen}
         onClose={() => setIsAiTranslateModalOpen(false)}
         gameState={gameState}
+      />
+
+      <AdminApprovalModal
+        isOpen={isApprovalModalOpen}
+        onClose={() => setIsApprovalModalOpen(false)}
       />
       </div>
     </FluentProvider>

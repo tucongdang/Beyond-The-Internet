@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
@@ -65,15 +66,421 @@ async function startServer() {
     message: { error: "Quá nhiều lần thử đăng nhập thất bại. Vui lòng thử lại sau 15 phút." }
   });
 
-  // Admin Login Endpoint (C-2)
+  // -------------------------------------------------------------
+  // Technical Team Admin Data Store & Approval System
+  // -------------------------------------------------------------
+  interface StoredAdminUser {
+    id: string;
+    username: string;
+    fullName: string;
+    technicalRole: 'SERVER_OPERATOR' | 'LED_OPERATOR' | 'STAGE_COORDINATOR';
+    role: 'SUPER_ADMIN' | 'OPERATOR';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED';
+    authProvider: 'local' | 'google';
+    email?: string;
+    passwordHash?: string;
+    salt?: string;
+    createdAt: number;
+    approvedAt?: number;
+    approvedBy?: string;
+    lastLoginAt?: number;
+    note?: string;
+  }
+
+  const DATA_DIR = path.join(process.cwd(), '.data');
+  const ADMIN_USERS_FILE = path.join(DATA_DIR, 'admin_users.json');
+
+  function ensureDataDir() {
+    if (!fs.existsSync(DATA_DIR)) {
+      try {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      } catch (e) {
+        console.warn('Could not create .data directory:', e);
+      }
+    }
+  }
+
+  function loadAdminUsers(): StoredAdminUser[] {
+    ensureDataDir();
+    if (fs.existsSync(ADMIN_USERS_FILE)) {
+      try {
+        const content = fs.readFileSync(ADMIN_USERS_FILE, 'utf-8');
+        return JSON.parse(content);
+      } catch (e) {
+        console.error('Error reading admin_users.json:', e);
+      }
+    }
+    return [];
+  }
+
+  function saveAdminUsers(users: StoredAdminUser[]) {
+    ensureDataDir();
+    try {
+      fs.writeFileSync(ADMIN_USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('Error saving admin_users.json:', e);
+    }
+  }
+
+  function hashPassword(password: string, salt: string): string {
+    return crypto.createHmac('sha256', salt).update(password).digest('hex');
+  }
+
+  function sanitizeAdminUser(u: StoredAdminUser) {
+    const { passwordHash, salt, ...safe } = u;
+    return safe;
+  }
+
+  // In-memory CAPTCHA Store with 5-minute TTL
+  interface CaptchaChallenge {
+    answer: string;
+    expiresAt: number;
+  }
+  const captchaStore = new Map<string, CaptchaChallenge>();
+
+  function generateCaptcha(): { captchaId: string; question: string } {
+    const now = Date.now();
+    for (const [id, c] of captchaStore.entries()) {
+      if (c.expiresAt < now) captchaStore.delete(id);
+    }
+
+    const num1 = Math.floor(Math.random() * 20) + 10;
+    const num2 = Math.floor(Math.random() * 15) + 1;
+    const isAddition = Math.random() > 0.3;
+    const answer = isAddition ? (num1 + num2) : (num1 - num2);
+    const question = `${num1} ${isAddition ? '+' : '-'} ${num2}`;
+
+    const captchaId = crypto.randomBytes(8).toString('hex');
+    captchaStore.set(captchaId, {
+      answer: String(answer),
+      expiresAt: now + 5 * 60 * 1000
+    });
+
+    return { captchaId, question };
+  }
+
+  function verifyCaptcha(captchaId: string, answer: string): boolean {
+    if (!captchaId || !answer) return false;
+    const item = captchaStore.get(captchaId);
+    if (!item) return false;
+    captchaStore.delete(captchaId); // Single use
+    if (item.expiresAt < Date.now()) return false;
+    return item.answer.trim().toLowerCase() === String(answer).trim().toLowerCase();
+  }
+
+  // 1. Get CAPTCHA challenge
+  app.get("/api/admin/captcha", (req, res) => {
+    const challenge = generateCaptcha();
+    res.json(challenge);
+  });
+
+  // 2. Register Technical Admin Account
+  app.post("/api/admin/register", loginLimiter, (req, res) => {
+    try {
+      const { fullName, username, password, technicalRole, email, note, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng bấm làm mới." });
+      }
+
+      if (!fullName || typeof fullName !== 'string' || fullName.trim().length < 2) {
+        return res.status(400).json({ error: "Vui lòng nhập họ và tên hợp lệ (ít nhất 2 ký tự)." });
+      }
+
+      const cleanUsername = String(username || '').toLowerCase().trim();
+      if (!/^[a-z0-9_.-]{3,30}$/.test(cleanUsername)) {
+        return res.status(400).json({ error: "Tên đăng nhập phải từ 3-30 ký tự, chỉ gồm chữ cái, số, gạch dưới hoặc gạch ngang." });
+      }
+
+      if (!password || typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu phải có độ dài tối thiểu 6 ký tự." });
+      }
+
+      const validRoles = ['SERVER_OPERATOR', 'LED_OPERATOR', 'STAGE_COORDINATOR'];
+      if (!technicalRole || !validRoles.includes(technicalRole)) {
+        return res.status(400).json({ error: "Vui lòng chọn vị trí chuyên trách hợp lệ thuộc Ban Kỹ Thuật." });
+      }
+
+      const users = loadAdminUsers();
+      if (users.some(u => u.username === cleanUsername)) {
+        return res.status(409).json({ error: "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác." });
+      }
+
+      const salt = crypto.randomBytes(16).toString('hex');
+      const passwordHash = hashPassword(password, salt);
+
+      const newUser: StoredAdminUser = {
+        id: `tech_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+        username: cleanUsername,
+        fullName: fullName.trim(),
+        technicalRole,
+        role: 'OPERATOR',
+        status: 'PENDING',
+        authProvider: 'local',
+        email: email ? String(email).trim() : undefined,
+        passwordHash,
+        salt,
+        createdAt: Date.now(),
+        note: note ? String(note).trim().slice(0, 300) : ''
+      };
+
+      users.push(newUser);
+      saveAdminUsers(users);
+
+      return res.status(201).json({
+        success: true,
+        message: "Đăng ký thành công! Hồ sơ của bạn đang ở trạng thái CHỜ PHÊ DUYỆT từ Trưởng Ban Kỹ Thuật.",
+        user: sanitizeAdminUser(newUser)
+      });
+    } catch (err: any) {
+      console.error('[Admin Register] Error:', err);
+      return res.status(500).json({ error: "Lỗi xử lý đăng ký tài khoản. Vui lòng thử lại." });
+    }
+  });
+
+  // 3. Technical Admin Login
+  app.post("/api/admin/login", loginLimiter, (req, res) => {
+    try {
+      const { username, password, captchaId, captchaAnswer } = req.body;
+
+      if (!verifyCaptcha(captchaId, captchaAnswer)) {
+        return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
+      }
+
+      const cleanUsername = String(username || '').toLowerCase().trim();
+      const users = loadAdminUsers();
+      const user = users.find(u => u.username === cleanUsername && u.authProvider === 'local');
+
+      if (!user || !user.salt || !user.passwordHash || hashPassword(password, user.salt) !== user.passwordHash) {
+        return res.status(401).json({ error: "Tên đăng nhập hoặc mật khẩu không chính xác." });
+      }
+
+      if (user.status === 'PENDING') {
+        return res.status(403).json({
+          success: false,
+          status: 'PENDING',
+          error: "Hồ sơ của bạn đang CHỜ PHÊ DUYỆT từ Trưởng Ban Kỹ Thuật. Vui lòng liên hệ quản trị viên cấp cao để được kích hoạt."
+        });
+      }
+
+      if (user.status === 'REJECTED') {
+        return res.status(403).json({
+          success: false,
+          status: 'REJECTED',
+          error: "Hồ sơ của bạn đã bị từ chối cấp quyền truy cập Ban Kỹ Thuật."
+        });
+      }
+
+      if (user.status === 'REVOKED') {
+        return res.status(403).json({
+          success: false,
+          status: 'REVOKED',
+          error: "Quyền truy cập của tài khoản này đã bị thu hồi hoặc tạm khóa. Vui lòng liên hệ Trưởng Ban Kỹ Thuật."
+        });
+      }
+
+      // Approved! Update last login and issue token
+      user.lastLoginAt = Date.now();
+      saveAdminUsers(users);
+
+      const token = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+      return res.json({
+        success: true,
+        token,
+        user: sanitizeAdminUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Admin Login] Error:', err);
+      return res.status(500).json({ error: "Lỗi đăng nhập hệ thống." });
+    }
+  });
+
+  // 4. Google Sign-In for Technical Admin
+  app.post("/api/admin/google-auth", loginLimiter, (req, res) => {
+    try {
+      const { uid, email, displayName, technicalRole, note, isRegistering } = req.body;
+
+      if (!uid || !email) {
+        return res.status(400).json({ error: "Thiếu thông tin xác thực Google." });
+      }
+
+      const users = loadAdminUsers();
+      let user = users.find(u => u.id === uid || (u.email && u.email.toLowerCase() === email.toLowerCase()));
+
+      if (!user) {
+        if (!isRegistering) {
+          return res.status(404).json({
+            notFound: true,
+            error: "Tài khoản Google này chưa đăng ký quyền Ban Kỹ Thuật. Vui lòng chọn 'Đăng ký' để gửi yêu cầu."
+          });
+        }
+
+        const validRoles = ['SERVER_OPERATOR', 'LED_OPERATOR', 'STAGE_COORDINATOR'];
+        const chosenRole = (technicalRole && validRoles.includes(technicalRole)) ? technicalRole : 'SERVER_OPERATOR';
+
+        user = {
+          id: uid,
+          username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, ''),
+          fullName: displayName || email.split('@')[0],
+          technicalRole: chosenRole,
+          role: 'OPERATOR',
+          status: 'PENDING',
+          authProvider: 'google',
+          email: email.toLowerCase(),
+          createdAt: Date.now(),
+          note: note ? String(note).trim().slice(0, 300) : ''
+        };
+        users.push(user);
+        saveAdminUsers(users);
+
+        return res.status(201).json({
+          success: true,
+          status: 'PENDING',
+          message: "Đã gửi yêu cầu đăng ký qua Google! Vui lòng đợi Trưởng Ban Kỹ Thuật phê duyệt.",
+          user: sanitizeAdminUser(user)
+        });
+      }
+
+      if (user.status === 'PENDING') {
+        return res.status(403).json({
+          success: false,
+          status: 'PENDING',
+          error: "Hồ sơ của bạn đang CHỜ PHÊ DUYỆT từ Trưởng Ban Kỹ Thuật."
+        });
+      }
+
+      if (user.status === 'REJECTED' || user.status === 'REVOKED') {
+        return res.status(403).json({
+          success: false,
+          status: user.status,
+          error: "Quyền truy cập của tài khoản này đã bị từ chối hoặc thu hồi."
+        });
+      }
+
+      user.lastLoginAt = Date.now();
+      saveAdminUsers(users);
+
+      const token = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+      return res.json({
+        success: true,
+        token,
+        user: sanitizeAdminUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Admin Google Auth] Error:', err);
+      return res.status(500).json({ error: "Lỗi xác thực Google." });
+    }
+  });
+
+  // 5. Emergency Master Passcode Login (Root Super Admin Fallback)
   app.post("/api/admin-login", loginLimiter, (req, res) => {
     const { passcode } = req.body;
     const adminPasscode = process.env.ADMIN_PASSCODE || "BTI2026Admin";
     if (!passcode || typeof passcode !== "string" || passcode.trim() !== adminPasscode) {
-      return res.status(401).json({ error: "Mật mã quản trị không chính xác." });
+      return res.status(401).json({ error: "Mật mã quản trị khẩn cấp không chính xác." });
     }
     const token = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
-    return res.json({ success: true, token });
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: "root_master",
+        username: "master_admin",
+        fullName: "Trưởng Ban Kỹ Thuật (Master Key)",
+        technicalRole: "SERVER_OPERATOR",
+        role: "SUPER_ADMIN",
+        status: "APPROVED",
+        authProvider: "local",
+        createdAt: Date.now()
+      }
+    });
+  });
+
+  // 6. Check approval status by username or email
+  app.get("/api/admin/check-status/:identifier", (req, res) => {
+    const id = String(req.params.identifier || '').toLowerCase().trim();
+    const users = loadAdminUsers();
+    const user = users.find(u => u.username === id || (u.email && u.email.toLowerCase() === id));
+    if (!user) {
+      return res.json({ exists: false });
+    }
+    return res.json({
+      exists: true,
+      fullName: user.fullName,
+      username: user.username,
+      technicalRole: user.technicalRole,
+      status: user.status,
+      createdAt: user.createdAt,
+      approvedAt: user.approvedAt,
+      approvedBy: user.approvedBy
+    });
+  });
+
+  // 7. Get Technical Admin Users List (Protected)
+  app.get("/api/admin/users", (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
+    const API_AUTH_SECRET = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+    if (process.env.API_AUTH_SECRET && token !== API_AUTH_SECRET && token !== "bti2026_admin_authorized") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const users = loadAdminUsers();
+    return res.json({ users: users.map(sanitizeAdminUser) });
+  });
+
+  // 8. Update User Status (Approve / Reject / Revoke)
+  app.post("/api/admin/update-status", (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
+    const API_AUTH_SECRET = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+    if (process.env.API_AUTH_SECRET && token !== API_AUTH_SECRET && token !== "bti2026_admin_authorized") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { userId, status, approvedBy } = req.body;
+    const validStatuses = ['APPROVED', 'REJECTED', 'REVOKED'];
+    if (!userId || !status || !validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Dữ liệu trạng thái không hợp lệ." });
+    }
+
+    const users = loadAdminUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên." });
+    }
+
+    user.status = status;
+    if (status === 'APPROVED') {
+      user.approvedAt = Date.now();
+      user.approvedBy = approvedBy || 'Trưởng Ban Kỹ Thuật';
+    }
+    saveAdminUsers(users);
+
+    return res.json({ success: true, user: sanitizeAdminUser(user) });
+  });
+
+  // 9. Delete User Profile
+  app.post("/api/admin/delete-user", (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
+    const API_AUTH_SECRET = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+    if (process.env.API_AUTH_SECRET && token !== API_AUTH_SECRET && token !== "bti2026_admin_authorized") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: "Thiếu userId." });
+    }
+
+    let users = loadAdminUsers();
+    const initialLen = users.length;
+    users = users.filter(u => u.id !== userId);
+    if (users.length === initialLen) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng cần xóa." });
+    }
+    saveAdminUsers(users);
+    return res.json({ success: true, message: "Đã xóa hồ sơ kỹ thuật viên thành công." });
   });
 
   // Authentication middleware for all AI endpoints (C-5)

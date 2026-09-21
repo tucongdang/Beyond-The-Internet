@@ -607,4 +607,46 @@ export interface QrScanTrendMetrics {
   velocityTrend: 'UP' | 'DOWN' | 'STABLE';
 }
 
+// Technical Team Roles & Admin Approval Types
+export type TechnicalRole =
+  | 'SERVER_OPERATOR'    // Kỹ thuật Điều hành Máy chủ & Đồng bộ Realtime
+  | 'LED_OPERATOR'       // Kỹ thuật Hiển thị Màn chiếu LED
+  | 'STAGE_COORDINATOR'; // Kỹ thuật viên Điều phối Sân khấu & Hỗ trợ Kỹ thuật
+
+export type AdminStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED';
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  technicalRole: TechnicalRole;
+  role: 'SUPER_ADMIN' | 'OPERATOR';
+  status: AdminStatus;
+  authProvider: 'local' | 'google';
+  email?: string;
+  createdAt: number;
+  approvedAt?: number;
+  approvedBy?: string;
+  lastLoginAt?: number;
+  note?: string;
+}
+
+export const TECHNICAL_ROLES: Record<TechnicalRole, { label: string; description: string; badgeColor: string }> = {
+  SERVER_OPERATOR: {
+    label: 'Kỹ thuật Điều hành Máy chủ & Đồng bộ Realtime',
+    description: 'Điều phối câu hỏi, timer, khóa bình chọn, tính điểm trực tiếp',
+    badgeColor: 'text-sky-300 bg-sky-950/60 border-sky-500/40'
+  },
+  LED_OPERATOR: {
+    label: 'Kỹ thuật Hiển thị Màn chiếu Sân khấu LED',
+    description: 'Vận hành giao diện hiển thị màn chiếu Projector sân khấu chính',
+    badgeColor: 'text-indigo-300 bg-indigo-950/60 border-indigo-500/40'
+  },
+  STAGE_COORDINATOR: {
+    label: 'Kỹ thuật viên Điều phối Sân khấu & Hỗ trợ Kỹ thuật',
+    description: 'Giám sát tương tác khán giả và hỗ trợ kỹ thuật sàn đấu',
+    badgeColor: 'text-emerald-300 bg-emerald-950/60 border-emerald-500/40'
+  }
+};
+
 

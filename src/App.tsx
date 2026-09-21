@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, UserInfo, UserResponse, QR_PALETTES, QrPaletteId } from './types';
+import { GameState, UserInfo, UserResponse, QR_PALETTES, QrPaletteId, AdminUser } from './types';
 import { syncService, DEFAULT_GAME_STATE } from './services/syncService';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -221,18 +221,38 @@ export default function App() {
     return false;
   });
 
-  const handleAuthenticate = () => {
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('BTI2026_TECH_USER');
+        return stored ? JSON.parse(stored) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const handleAuthenticate = (techUser?: AdminUser) => {
     setIsAuthenticated(true);
+    if (techUser) {
+      setAdminUser(techUser);
+    }
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+      if (techUser) {
+        sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(techUser));
+      }
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setAdminUser(null);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
       sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
+      sessionStorage.removeItem('BTI2026_TECH_USER');
     }
     setCurrentView('landing');
   };
@@ -577,6 +597,7 @@ export default function App() {
         gameState={gameState}
         activeCount={activeCount}
         user={user}
+        adminUser={adminUser}
         onOpenProfile={() => {
           if (user) {
             setIsProfileModalOpen(true);
@@ -651,8 +672,9 @@ export default function App() {
         )}
 
         {currentView === 'admin' && (
-          <PasswordGate isAuthenticated={isAuthenticated} onAuthenticated={handleAuthenticate} viewName="Ban Tổ Chức (Admin)">
+          <PasswordGate isAuthenticated={isAuthenticated} onAuthenticated={handleAuthenticate} viewName="Ban Kỹ Thuật (Admin)">
             <AdminPortal
+              adminUser={adminUser}
               onLogout={handleLogout}
               gameState={gameState}
               activeCount={activeCount}
