@@ -4,6 +4,7 @@ import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { Sparkles, Play, Square, Trophy, AlertCircle } from 'lucide-react';
 import { getUserDisplayUid } from '../utils/uidUtils';
+import { getSecureRandomItem } from '../utils/cryptoUtils';
 
 export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any }> = ({ gameState, allResponses }) => {
   const [notification, setNotification] = useState<string | null>(null);
@@ -56,8 +57,7 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
       });
       return;
     }
-    const randomIndex = Math.floor(Math.random() * candidates.length);
-    const selected = candidates[randomIndex];
+    const selected: UserInfo = getSecureRandomItem<UserInfo>(candidates);
     const winner: UserInfo = {
       ...selected,
       anonymizedUid: getUserDisplayUid(selected)

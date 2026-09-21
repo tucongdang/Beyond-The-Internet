@@ -6,6 +6,7 @@ import confetti from '../utils/confetti';
 import { vibrateGrandCelebration } from '../utils/hapticUtils';
 import { getProjectorTheme } from '../utils/themeUtils';
 import { getUserDisplayUid } from '../utils/uidUtils';
+import { getSecureRandomChars } from '../utils/cryptoUtils';
 
 export const LuckyDrawProjector: React.FC<{ gameState: GameState }> = ({ gameState }) => {
   const luckyDraw = gameState.lucky_draw || { status: 'IDLE', winner: null };
@@ -20,14 +21,8 @@ export const LuckyDrawProjector: React.FC<{ gameState: GameState }> = ({ gameSta
       soundFx.playTick(false); // ensure ticking or similar sound
       interval = setInterval(() => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let resMSSV = '';
-        let resName = '';
-        for (let i = 0; i < 8; i++) {
-          resMSSV += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        for (let i = 0; i < 15; i++) {
-          resName += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        const resMSSV = getSecureRandomChars(8, chars);
+        const resName = getSecureRandomChars(15, chars);
         setRandomString(resMSSV);
         setRandomName(resName);
       }, 50); // fast change

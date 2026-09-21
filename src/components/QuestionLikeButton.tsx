@@ -6,6 +6,7 @@ import { GameState, UserInfo } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap } from '../utils/hapticUtils';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 interface QuestionLikeButtonProps {
   questionId: string;
@@ -85,7 +86,7 @@ export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
     }
 
     try {
-      const activeUid = uid || 'anon_' + (sessionStorage.getItem('btea_anon_id') || Math.random().toString(36).substring(2, 9));
+      const activeUid = uid || (sessionStorage.getItem('btea_anon_id') || getSecureRandomId('anon_', 8));
       if (!sessionStorage.getItem('btea_anon_id')) {
         sessionStorage.setItem('btea_anon_id', activeUid);
       }

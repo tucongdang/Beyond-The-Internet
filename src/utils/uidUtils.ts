@@ -9,6 +9,8 @@
  * 5. 3 chữ số còn lại (10, 11, 12): 3 chữ số ngẫu nhiên (000-999), đảm bảo không trùng lặp
  */
 
+import { getSecureRandomInt } from './cryptoUtils';
+
 export function generate12DigitUID(
   name: string,
   mssv: string,
@@ -88,7 +90,7 @@ export function generate12DigitUID(
   let fullUid = '';
   let attempts = 0;
   do {
-    const random3 = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random3 = getSecureRandomInt(0, 999).toString().padStart(3, '0');
     fullUid = `${prefix}${random3}`;
     attempts++;
   } while (uidSet.has(fullUid) && attempts < 1000);

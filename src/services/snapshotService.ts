@@ -3,6 +3,7 @@ import { GameState, UserResponse, StageSnapshotRecord } from '../types';
 import { soundFx } from './audioEffects';
 import { syncService } from './syncService';
 import { driveService } from './driveService';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 const SNAPSHOT_STORAGE_KEY = 'BTI2026_BROADCAST_SNAPSHOT_HISTORY';
 
@@ -91,7 +92,7 @@ export class SnapshotService {
       }
 
       const newRecord: StageSnapshotRecord = {
-        id: `snap_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        id: getSecureRandomId(`snap_${Date.now()}_`, 7),
         timestamp: Date.now(),
         question_id: gameState.question_id || 'STANDBY',
         question_text: gameState.question_text || (gameState.status === 'STANDBY' ? 'Màn Hình Chờ' : 'Sân Khấu Live'),

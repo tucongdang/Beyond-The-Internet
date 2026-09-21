@@ -11,6 +11,7 @@ import { aiExplanationService } from '../services/aiExplanationService';
 import { SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { t } from '../utils/i18n';
 import { generate12DigitUID, getUserDisplayUid } from '../utils/uidUtils';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 import {
   vibrateTap,
   vibrateSubmit,
@@ -282,7 +283,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const generateNewAvatar = () => {
     soundFx.playClick();
     vibrateTap();
-    setAvatarSeed(Math.random().toString(36).substring(7));
+    setAvatarSeed(getSecureRandomId('', 8));
   };
 
   const handleToggleHaptics = () => {

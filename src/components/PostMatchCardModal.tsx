@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { X, Download, Share2, Sparkles, Check } from 'lucide-react';
 import { UserInfo } from '../types';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 interface PostMatchCardModalProps {
   isOpen: boolean;
@@ -202,7 +203,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     const nowStr = new Date().toLocaleString('vi-VN');
     ctx.fillStyle = '#8B7AA8';
     ctx.font = '16px "SVN-Gilroy", monospace';
-    ctx.fillText(`Thời gian xác thực: ${nowStr}  |  Mã bảo mật: BTI2026-${Math.random().toString(36).substring(2, 9).toUpperCase()}`, width / 2, 955);
+    ctx.fillText(`Thời gian xác thực: ${nowStr}  |  Mã bảo mật: BTI2026-${getSecureRandomId('', 8).toUpperCase()}`, width / 2, 955);
     ctx.fillText('Designed with Fluent UI v2 • 2026 Live Arena Interaction', width / 2, 990);
 
     // Generate export Data URL

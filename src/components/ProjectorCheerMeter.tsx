@@ -3,6 +3,7 @@ import { Heart, Flame, Zap, Sparkles, Activity, Users, Radio, Maximize2, Minimiz
 import { cheerService } from '../services/cheerService';
 import { CheerIntensityData, CheerEvent } from '../types';
 import { soundFx } from '../services/audioEffects';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 interface ProjectorCheerMeterProps {
   className?: string;
@@ -97,7 +98,7 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
     const label = ev.name && ev.name !== 'Khán giả ẩn danh' ? `${ev.name.split(' ').pop()}: ${emoji}${comboBadge}` : `${emoji}${comboBadge}`;
 
     const newParticle: FloatingParticle = {
-      id: `p_${Date.now()}_${Math.random()}`,
+      id: getSecureRandomId(`p_${Date.now()}_`, 6),
       type: ev.type,
       text: label,
       x: 10 + Math.random() * 80, // Random X spread

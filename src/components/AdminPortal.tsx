@@ -18,6 +18,7 @@ const soundFx = new Proxy({} as any, {
 });
 import { generateSPSSData, exportToCSV, exportToJSON, exportLeaderboardToCSV, normalizeVcnvAnswer } from '../utils/exportUtils';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
+import { getSecureRandomId, secureShuffle } from '../utils/cryptoUtils';
 import QRCode from 'qrcode';
 import { HostPacingToaster,
   HostPacingWidget,
@@ -557,7 +558,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
     const newToast: PacingToastItem = {
       ...toast,
-      id: 'pacing_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      id: getSecureRandomId('pacing_' + Date.now() + '_', 5),
       timestamp: syncService.getSynchronizedNow(),
       durationMs: toast.type === '100' ? 6500 : 5000
     };
@@ -1137,7 +1138,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
         // Automatically register into internal QR history (Last 5 generated QR codes with timestamps)
         const historyItem: QrHistoryItem = {
-          id: `qr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          id: getSecureRandomId(`qr_${Date.now()}_`, 7),
           timestamp: Date.now(),
           palette: activePaletteId,
           paletteName: palette.labelVi,
@@ -1673,7 +1674,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (candidates.length === 0) return;
 
     // Pick up to 2 random candidates
-    const shuffled = [...candidates].sort(() => 0.5 - Math.random());
+    const shuffled = secureShuffle(candidates);
     const toEliminate = shuffled.slice(0, 2);
 
     const updated = [...currentEliminated, ...toEliminate];

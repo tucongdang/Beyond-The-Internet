@@ -4,6 +4,7 @@ import { X, Bell, Trophy, AlertTriangle, Megaphone } from 'lucide-react';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { GameState } from '../types';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 interface NotificationToastProps {
   userUid?: string;
@@ -52,7 +53,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     if (currentView === 'admin' || currentView === 'projector') return;
     const unsubBroadcast = syncService.subscribeToGlobalNotificationBroadcast((notif) => {
       addToast({
-        id: notif.id || `global_${Date.now()}_${Math.random()}`,
+        id: notif.id || getSecureRandomId(`global_${Date.now()}_`, 6),
         title: notif.title || (localLanguage !== 'vi' ? 'Urgent Notice' : 'Thông báo khẩn'),
         message: notif.message,
         type: notif.type || 'URGENT',

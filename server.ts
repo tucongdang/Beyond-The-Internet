@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -11,6 +12,27 @@ async function startServer() {
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json());
+
+  // Global rate limiter to protect static file serving & SPA routes (CodeQL js/missing-rate-limiting)
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 2000,
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+  app.use(globalLimiter);
+
+  // Stricter rate limiter for API endpoints to prevent abuse & quota exhaustion
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      error: "Quá nhiều yêu cầu từ địa chỉ IP này. Vui lòng thử lại sau ít phút."
+    }
+  });
+  app.use("/api/", apiLimiter);
 
   // Health check endpoint for Cloud Run
   app.get("/api/health", (req, res) => {

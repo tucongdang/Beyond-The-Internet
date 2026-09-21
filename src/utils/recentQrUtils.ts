@@ -18,6 +18,8 @@ export interface RecentQrRecord {
 
 const STORAGE_KEY = 'BTI2026_RECENT_QRS_STORAGE';
 const MAX_RECENT_ITEMS = 10;
+
+import { getSecureRandomId } from './cryptoUtils';
 const EVENT_NAME = 'bti_recent_qrs_changed';
 
 export const recentQrUtils = {
@@ -92,7 +94,7 @@ export const recentQrUtils = {
         currentList.unshift(newItem);
       } else {
         newItem = {
-          id: `qr_${now}_${Math.random().toString(36).substring(2, 7)}`,
+          id: getSecureRandomId(`qr_${now}_`, 7),
           url: record.url,
           dataUrl: record.dataUrl,
           caption: record.caption || '',

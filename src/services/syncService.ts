@@ -5,6 +5,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 import { GameState, UserResponse, FirebaseConfig, UserInfo, PingInfo, PingQuality, LatencyHistoryPoint, LatencyStats, EmergencyPoll, EmergencyPollHistoryItem, ActivityLogType, ActivityLogCategory, QrHistoryItem, QrScanEvent, HourlyScanDataPoint, QrScanTrendMetrics } from '../types';
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
+import { getSecureRandomId, getSecureRandomInt, secureShuffle } from '../utils/cryptoUtils';
 
 const STORAGE_KEY_FIREBASE_CONFIG = 'BTI2026_FIREBASE_CONFIG';
 const STORAGE_KEY_GAME_STATE = 'BTI2026_GAME_STATE';
@@ -269,7 +270,7 @@ class RealtimeSyncService {
 
     // Realistic baseline latency around 38-68ms with minor jitter
     for (let t = now - windowMs; t <= now - stepMs; t += stepMs) {
-      const noise = Math.floor(Math.sin(t / 25000) * 12 + Math.cos(t / 15000) * 8 + (Math.random() * 6 - 3));
+      const noise = Math.floor(Math.sin(t / 25000) * 12 + Math.cos(t / 15000) * 8 + (getSecureRandomInt(0, 6) - 3));
       const lat = Math.max(28, 48 + noise);
       const timeDate = new Date(t);
       const timeFormatted = timeDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -935,18 +936,15 @@ class RealtimeSyncService {
         }
       });
       
-      for (let i = onlineUsers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [onlineUsers[i], onlineUsers[j]] = [onlineUsers[j], onlineUsers[i]];
-      }
+      const shuffledUsers = secureShuffle(onlineUsers);
       
       const batch = writeBatch(this.db);
       const teams = this.cachedGameState.teams;
       let batchCount = 0;
       let updatedUsers = 0;
       
-      for (let i = 0; i < onlineUsers.length; i++) {
-        const user = onlineUsers[i];
+      for (let i = 0; i < shuffledUsers.length; i++) {
+        const user = shuffledUsers[i];
         const team = teams[i % teams.length];
         
         if (user.teamId !== team.id) {
@@ -1170,8 +1168,8 @@ class RealtimeSyncService {
       
       for (let s = 0; s < hourScans; s++) {
         if (eventIdx >= count) break;
-        const minute = Math.floor(Math.random() * 58);
-        const sec = Math.floor(Math.random() * 58);
+        const minute = getSecureRandomInt(0, 57);
+        const sec = getSecureRandomInt(0, 57);
         const eventDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), h, minute, sec);
         const timestamp = eventDate.getTime();
         if (timestamp > now) continue;
@@ -1319,7 +1317,7 @@ class RealtimeSyncService {
     const dayStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     
     const newScanEvent: QrScanEvent = {
-      id: `scan_${now}_${Math.random().toString(36).substring(2, 7)}`,
+      id: getSecureRandomId(`scan_${now}_`, 7),
       timestamp: now,
       timestamp_iso: d.toISOString(),
       hour_key: `${dayStr} ${hoursStr}`,
@@ -1405,7 +1403,7 @@ class RealtimeSyncService {
 
       for (let i = 0; i < delta; i++) {
         const evt: QrScanEvent = {
-          id: `manual_scan_${now}_${i}_${Math.random().toString(36).substring(2, 6)}`,
+          id: getSecureRandomId(`manual_scan_${now}_${i}_`, 6),
           timestamp: now + i * 50,
           timestamp_iso: new Date(now + i * 50).toISOString(),
           hour_key: `${dayStr} ${hoursStr}`,

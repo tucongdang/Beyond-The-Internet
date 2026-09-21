@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { AudienceShout, ShoutBadgeColor, ShoutSettings } from '../types';
+import { getSecureRandomId } from '../utils/cryptoUtils';
 
 export enum OperationType {
   CREATE = 'create',
@@ -392,7 +393,7 @@ class RealtimeShoutService {
     }
 
     const now = Date.now();
-    const shoutId = `shout_${now}_${Math.random().toString(36).substring(2, 7)}`;
+    const shoutId = getSecureRandomId(`shout_${now}_`, 7);
     
     // Basic Bad Word Filter
     const BAD_WORDS = ['đụ', 'đù', 'cặc', 'lồn', 'địt', 'chó', 'điên', 'ngu', 'fuck', 'shit', 'bitch'];

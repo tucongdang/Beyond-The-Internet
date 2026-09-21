@@ -507,13 +507,13 @@ export const AdminActivityLog: React.FC = () => {
 
         {/* Log Entries Stream Table */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar max-h-[600px]">
-          {filteredLogs.map(log => {
+          {filteredLogs.map((log, idx) => {
             const isExpanded = log.id ? expandedLogIds.has(log.id) : false;
             const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
 
             return (
               <div
-                key={log.id || `${log.timestamp}-${Math.random()}`}
+                key={log.id || `${log.timestamp}-${idx}`}
                 className="fluent-box-nested border border-white/10 rounded-[2px] p-3 hover:bg-white/[0.08] transition relative group"
               >
                 <div className="flex items-start justify-between gap-3">

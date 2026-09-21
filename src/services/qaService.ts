@@ -2,6 +2,7 @@ import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, getDocs, Fir
 import { db } from '../firebase';
 import { AudienceQAQuestion, QASettings, QAQuestionStatus, QAQuestionCategory, UserInfo } from '../types';
 import { syncService } from './syncService';
+import { getSecureRandomId, getSecureRandomInt } from '../utils/cryptoUtils';
 
 const STORAGE_KEY_QA_ITEMS = 'BTI2026_AUDIENCE_QA_ITEMS';
 const STORAGE_KEY_QA_SETTINGS = 'BTI2026_AUDIENCE_QA_SETTINGS';
@@ -237,10 +238,10 @@ class RealtimeQAService {
       return { success: false, error: 'Hệ thống Q&A hiện đang tạm đóng nhận câu hỏi' };
     }
 
-    const questionId = 'qa_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const questionId = getSecureRandomId('qa_' + Date.now() + '_', 7);
     const newQuestion: AudienceQAQuestion = {
       id: questionId,
-      uid: user?.uid || 'anon_' + Math.random().toString(36).substring(2, 6),
+      uid: user?.uid || getSecureRandomId('anon_', 6),
       author_name: isAnonymous ? 'Khán giả ẩn danh' : (user?.name || 'Khán giả'),
       author_mssv: isAnonymous ? undefined : user?.mssv,
       is_anonymous: isAnonymous,
@@ -444,11 +445,11 @@ class RealtimeQAService {
     const now = Date.now();
     for (let i = 0; i < SAMPLE_QA_QUESTIONS.length; i++) {
       const sample = SAMPLE_QA_QUESTIONS[i];
-      const id = 'sample_qa_' + (i + 1) + '_' + Math.random().toString(36).substring(2, 6);
+      const id = getSecureRandomId('sample_qa_' + (i + 1) + '_', 6);
       const q: AudienceQAQuestion = {
         ...sample,
         id,
-        created_at: now - (i * 120000 + Math.floor(Math.random() * 45000))
+        created_at: now - (i * 120000 + getSecureRandomInt(0, 45000))
       };
 
       this.questions.push(q);

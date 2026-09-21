@@ -19,6 +19,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { syncService } from './syncService';
+import { getSecureRandomId, getSecureRandomItem } from '../utils/cryptoUtils';
 
 const STORAGE_KEY_TOTAL_CHEERS = 'BTI2026_TOTAL_CHEERS';
 const CHEER_DECAY_RATE = 0.88; // Decay multiplier per tick (every 250ms)
@@ -253,7 +254,7 @@ class RealtimeCheerService {
     count: number = 1
   ): { combo: number; event: CheerEvent } {
     const now = Date.now();
-    const uid = user?.uid || 'guest_' + Math.random().toString(36).substring(2, 7);
+    const uid = user?.uid || getSecureRandomId('guest_', 7);
 
     // Calculate user combo
     let combo = 1;
@@ -264,7 +265,7 @@ class RealtimeCheerService {
     this.comboCounters.set(uid, { count: combo, lastTime: now });
 
     const event: CheerEvent = {
-      id: `cheer_${uid}_${now}_${Math.random().toString(36).substring(2, 5)}`,
+      id: getSecureRandomId(`cheer_${uid}_${now}_`, 5),
       type,
       uid,
       name: user?.name || 'Khán giả ẩn danh',
@@ -297,7 +298,7 @@ class RealtimeCheerService {
     for (let i = 0; i < 15; i++) {
       setTimeout(() => {
         const types: CheerType[] = ['HEART', 'FIRE', 'ENERGY', 'CLAP', 'STAR'];
-        const randomType = types[Math.floor(Math.random() * types.length)];
+        const randomType = getSecureRandomItem(types);
         this.sendCheer(user || null, randomType, 2);
       }, i * 60);
     }

@@ -8,6 +8,7 @@ import { vibrateTap } from '../utils/hapticUtils';
 import { soundFx } from '../services/audioEffects';
 import { BatteryIndicator } from './BatteryIndicator';
 import { useLanguage } from '../hooks/useLanguage';
+import { getSecureRandomInt } from '../utils/cryptoUtils';
 
 interface ScoreDisplayProps {
   user: UserInfo | null;
@@ -133,7 +134,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
       
       if (endScore > prevScoreRef.current && prevScoreRef.current > 0) {
          const diff = endScore - prevScoreRef.current;
-         const id = Date.now() + Math.random();
+         const id = Date.now() + getSecureRandomInt(1, 1000000);
          setPopups(prev => [...prev, { id, diff }]);
          setTimeout(() => {
             setPopups(prev => prev.filter(p => p.id !== id));

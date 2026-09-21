@@ -22,6 +22,7 @@ import { ProjectorView } from './components/ProjectorView';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ProfileModal } from './components/ProfileModal';
 import { generate12DigitUID } from './utils/uidUtils';
+import { getSecureItem, setSecureItem, removeSecureItem } from './utils/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PasswordGate } from './components/PasswordGate';
 import { LandingPage } from './components/LandingPage';
@@ -201,7 +202,7 @@ export default function App() {
       if (params.get('view') === 'landing') {
         return 'landing';
       }
-      const savedUser = localStorage.getItem('BTI2026_USER_PROFILE');
+      const savedUser = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
       if (!savedUser) return 'landing';
     }
     return 'audience';
@@ -243,7 +244,7 @@ export default function App() {
       console.error('SignOut error:', e);
     }
     setUser(null);
-    localStorage.removeItem('BTI2026_USER_PROFILE');
+    removeSecureItem('BTI2026_USER_PROFILE');
     setCurrentView('landing');
   };
 
@@ -300,8 +301,8 @@ export default function App() {
   const [user, setUser] = useState<UserInfo | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('BTI2026_USER_PROFILE');
-        if (saved) return JSON.parse(saved);
+        const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
+        if (saved) return saved;
       } catch {}
     }
     return null;
@@ -321,11 +322,11 @@ export default function App() {
         unsubsDoc = null;
       }
       if (firebaseUser) {
-        const saved = localStorage.getItem('BTI2026_USER_PROFILE');
+        const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
         let shouldListen = false;
         
         if (saved) {
-          const localProfile: UserInfo = JSON.parse(saved);
+          const localProfile: UserInfo = saved;
           if (localProfile.uid === firebaseUser.uid) {
             if (!localProfile.anonymizedUid || localProfile.anonymizedUid.length !== 12) {
               localProfile.anonymizedUid = generate12DigitUID(
@@ -334,7 +335,7 @@ export default function App() {
                 localProfile.gender || '1',
                 localProfile.birthYear || '2004'
               );
-              localStorage.setItem('BTI2026_USER_PROFILE', JSON.stringify(localProfile));
+              setSecureItem('BTI2026_USER_PROFILE', localProfile);
               try {
                 await setDoc(doc(db, 'users', localProfile.uid), localProfile, { merge: true });
               } catch (e) {
@@ -353,7 +354,7 @@ export default function App() {
               const profile = docSnap.data() as UserInfo;
               setUser(prev => {
                 if (prev && JSON.stringify(prev) !== JSON.stringify(profile)) {
-                  localStorage.setItem('BTI2026_USER_PROFILE', JSON.stringify(profile));
+                  setSecureItem('BTI2026_USER_PROFILE', profile);
                   return profile;
                 }
                 return prev || profile;
@@ -525,7 +526,7 @@ export default function App() {
       );
     }
     setUser(userInfo);
-    localStorage.setItem('BTI2026_USER_PROFILE', JSON.stringify(userInfo));
+    setSecureItem('BTI2026_USER_PROFILE', userInfo);
     setIsOnboardingOpen(false);
     syncService.sendPresencePing(userInfo);
     
@@ -674,7 +675,7 @@ export default function App() {
           user={user}
           onUpdateUser={(updatedUser) => {
             setUser(updatedUser);
-            localStorage.setItem('BTI2026_USER_PROFILE', JSON.stringify(updatedUser));
+            setSecureItem('BTI2026_USER_PROFILE', updatedUser);
           }}
           allResponses={allResponses}
           gameState={gameState}
