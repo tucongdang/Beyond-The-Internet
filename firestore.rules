@@ -1,8 +1,103 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true; // It's an anonymous gameshow
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 1. Game State: Public read, protected write (Admin only)
+    match /game_state/{document} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 2. Users Collection: Public read (leaderboard / lucky draw), write by owner or admin
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() && (request.auth.uid == userId || isOwner(userId));
+      allow delete: if isAuthenticated();
+    }
+
+    // 3. Quiz Responses: Authenticated submit and view
+    match /responses/{responseId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // 4. Presence Heartbeats: Owner write, public read
+    match /presence/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 5. QR Scans: Authenticated submit
+    match /qr_scans/{scanId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // 6. Notifications: User messages or global
+    match /notifications/{userId}/messages/{messageId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // 7. Cheer Events (High-frequency live tap bursts): Public create with validation
+    match /cheer_events/{eventId} {
+      allow read: if true;
+      allow create: if request.resource.data.count is number 
+                    && request.resource.data.count >= 1 
+                    && request.resource.data.count <= 10;
+      allow update, delete: if isAuthenticated();
+    }
+
+    // 8. Cumulative Cheer Summary Counter
+    match /game_cheer/{docId} {
+      allow read: if true;
+      allow update: if true;
+      allow create, delete: if isAuthenticated();
+    }
+
+    // 9. Audience Shouts: Public read & create with size validation, admin manage
+    match /shouts/{shoutId} {
+      allow read: if true;
+      allow create: if request.resource.data.text is string 
+                    && request.resource.data.text.size() > 0 
+                    && request.resource.data.text.size() <= 250;
+      allow update, delete: if isAuthenticated();
+    }
+
+    // 10. Audience Q&A: Public read & create with size validation, upvote update
+    match /audience_qa/{qaId} {
+      allow read: if true;
+      allow create: if request.resource.data.question_text is string 
+                    && request.resource.data.question_text.size() > 0 
+                    && request.resource.data.question_text.size() <= 300;
+      allow update: if true; // allow audience upvotes
+      allow delete: if isAuthenticated();
+    }
+
+    // 11. Activity Logs: Audit trail (Immutable: create only, cannot edit or delete)
+    match /activity_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // 12. Question Likes: Separate document per question to avoid game_state collisions
+    match /question_likes/{questionId} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }

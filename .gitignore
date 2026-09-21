@@ -16,3 +16,11 @@ coverage/
 *.patch
 Local/
 
+# Credentials, certificates & service accounts
+*serviceAccount*.json
+*credentials*.json
+*.pem
+*.key
+*.keystore
+*.p12
+*.pfx

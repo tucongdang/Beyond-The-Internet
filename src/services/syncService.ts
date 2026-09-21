@@ -1944,11 +1944,10 @@ class RealtimeSyncService {
     currentUidsMap[questionId] = uidsList;
     currentLikesMap[questionId] = uidsList.length;
 
-    // Update state locally and sync to listeners
-    await this.updateGameState({
-      question_likes: currentLikesMap,
-      question_likes_uids: currentUidsMap
-    });
+    // Update state locally and sync to listeners without modifying game_state/current
+    this.cachedGameState.question_likes = currentLikesMap;
+    this.cachedGameState.question_likes_uids = currentUidsMap;
+    this.notifyStateListeners();
 
     if (this.broadcastChannel) {
       try {

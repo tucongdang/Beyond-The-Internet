@@ -232,6 +232,7 @@ export default function App() {
     setIsAuthenticated(false);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
+      sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
     }
     setCurrentView('landing');
   };

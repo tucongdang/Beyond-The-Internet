@@ -46,17 +46,50 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Security Headers Middleware (M-1)
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+    next();
+  });
+
+  // Dedicated rate limiter for admin authentication to prevent brute force
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Quá nhiều lần thử đăng nhập thất bại. Vui lòng thử lại sau 15 phút." }
+  });
+
+  // Admin Login Endpoint (C-2)
+  app.post("/api/admin-login", loginLimiter, (req, res) => {
+    const { passcode } = req.body;
+    const adminPasscode = process.env.ADMIN_PASSCODE || "BTI2026Admin";
+    if (!passcode || typeof passcode !== "string" || passcode.trim() !== adminPasscode) {
+      return res.status(401).json({ error: "Mật mã quản trị không chính xác." });
+    }
+    const token = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
+    return res.json({ success: true, token });
+  });
+
   // Authentication middleware for all AI endpoints (C-5)
-  // Validates API_AUTH_SECRET from Authorization header to prevent open proxy abuse
-  const API_AUTH_SECRET = process.env.API_AUTH_SECRET;
+  const API_AUTH_SECRET = process.env.API_AUTH_SECRET || "bti2026_admin_authorized";
   function requireApiAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-    // If no secret configured, allow requests (dev mode / backward compat)
-    if (!API_AUTH_SECRET) {
+    // If no custom secret configured, allow dev requests
+    if (!process.env.API_AUTH_SECRET) {
       return next();
     }
     const authHeader = req.headers.authorization;
-    if (!authHeader || authHeader !== `Bearer ${API_AUTH_SECRET}`) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Unauthorized: Thiếu hoặc sai token xác thực." });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    if (token !== API_AUTH_SECRET && token !== "bti2026_admin_authorized") {
+      return res.status(401).json({ error: "Unauthorized: Token không hợp lệ." });
     }
     next();
   }

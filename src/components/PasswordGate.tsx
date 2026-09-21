@@ -19,23 +19,46 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const [passcode, setPasscode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isAuthenticated) {
     return <>{children}</>;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPasscode = passcode.trim();
-    if (cleanPasscode === 'BTI2026Admin' || cleanPasscode === 'admin123') {
-      soundFx.playClick();
-      vibrateSuccess();
-      setError(null);
-      onAuthenticated();
-    } else {
+    if (!cleanPasscode) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: cleanPasscode })
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        soundFx.playClick();
+        vibrateSuccess();
+        if (data.token) {
+          sessionStorage.setItem('BTI2026_ADMIN_TOKEN', data.token);
+        }
+        onAuthenticated();
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setError(data.error || 'Mật mã quản trị không chính xác. Vui lòng thử lại!');
+      }
+    } catch {
       soundFx.playError();
       vibrateError();
-      setError('Mật mã quản trị không chính xác. Vui lòng thử lại!');
+      setError('Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,9 +109,10 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
           </div>
           <button
             type="submit"
-            className="w-full bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839] font-black py-3.5 px-6 rounded-[2px] uppercase text-xs tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 flex items-center justify-center gap-2 active:scale-95"
+            disabled={isSubmitting}
+            className="w-full bg-[#F7CAC9] hover:bg-[#FCEEEC] disabled:opacity-50 text-[#190839] font-black py-3.5 px-6 rounded-[2px] uppercase text-xs tracking-wider transition shadow-lg shadow-[#F7CAC9]/20 flex items-center justify-center gap-2 active:scale-95"
           >
-            <span>Mở Khóa Hệ Thống</span>
+            <span>{isSubmitting ? 'Đang Xác Thực...' : 'Mở Khóa Hệ Thống'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
