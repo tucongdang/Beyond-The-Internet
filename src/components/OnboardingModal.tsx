@@ -68,7 +68,7 @@ interface OnboardingModalProps {
   onClose?: () => void;
 }
 
-type AudienceAuthTab = 'LOGIN' | 'REGISTER' | 'EMAIL_VERIFY' | 'FORGOT_PASSWORD' | 'ACTIVATE' | 'CHECK_STATUS' | 'QUICK_ACCESS' | 'GOOGLE_VERIFY';
+type AudienceAuthTab = 'LOGIN' | 'REGISTER' | 'EMAIL_VERIFY' | 'FORGOT_PASSWORD' | 'CHECK_STATUS' | 'QUICK_ACCESS' | 'GOOGLE_VERIFY';
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   isOpen,
@@ -119,8 +119,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [quickActivationCode, setQuickActivationCode] = useState('');
-  const [isQuickActivating, setIsQuickActivating] = useState(false);
   const [firebaseEmailStatus, setFirebaseEmailStatus] = useState<'sent' | 'existing_account' | 'error' | null>(null);
   const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
 
@@ -153,13 +151,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [forgotCaptchaId, setForgotCaptchaId] = useState('');
   const [forgotCaptchaAnswer, setForgotCaptchaAnswer] = useState('');
   const [forgotCooldown, setForgotCooldown] = useState(0);
-
-  // --- Account Activation State ---
-  const [actIdentifier, setActIdentifier] = useState('');
-  const [actCode, setActCode] = useState('');
-  const [actCaptchaId, setActCaptchaId] = useState('');
-  const [actCaptchaAnswer, setActCaptchaAnswer] = useState('');
-  const [actResentCode, setActResentCode] = useState<string | null>(null);
 
   // --- General UI State ---
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -208,11 +199,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const handleForgotCaptchaChange = useCallback((id: string, val: string) => {
     setForgotCaptchaId(id);
     setForgotCaptchaAnswer(val);
-  }, []);
-
-  const handleActCaptchaChange = useCallback((id: string, val: string) => {
-    setActCaptchaId(id);
-    setActCaptchaAnswer(val);
   }, []);
 
   // Clear messages when switching tabs
@@ -313,8 +299,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         vibrateError();
         setErrorMsg(
           localLanguage !== 'vi'
-            ? 'Firebase has not confirmed your email verification yet. Please click the link in your email, or enter the 6-digit activation code below.'
-            : 'Firebase chưa ghi nhận bạn bấm link xác thực trong email. Vui lòng mở hòm thư (kiểm tra cả mục Spam) để bấm link, hoặc nhập Mã kích hoạt 6 số bên dưới!'
+            ? 'Firebase has not confirmed your email verification yet. Please open your email inbox (check Spam folder) and click the verification link!'
+            : 'Firebase chưa ghi nhận bạn bấm link xác thực trong email. Vui lòng mở hòm thư (kiểm tra cả mục Thư rác / Spam) để bấm link xác thực!'
         );
       }
     } catch (err: any) {
@@ -324,81 +310,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       setErrorMsg(localLanguage !== 'vi' ? 'Error checking verification status.' : 'Lỗi kiểm tra trạng thái xác thực từ Firebase.');
     } finally {
       setIsCheckingVerification(false);
-    }
-  };
-
-  // Quick Activation with 6-Digit Code or Master Key BTI2026
-  const handleQuickCodeActivate = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!quickActivationCode.trim()) return;
-
-    soundFx.playClick();
-    vibrateTap();
-    setIsQuickActivating(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    const id = pendingVerifyUser?.mssv || loginIdentifier.trim() || pendingVerifyEmail;
-
-    try {
-      const res = await fetch('/api/audience/activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: id,
-          activationCode: quickActivationCode.trim(),
-          captchaId: 'bypass_direct',
-          captchaAnswer: 'bypass_direct'
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success && data.user) {
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-
-        const completedUser: UserInfo = {
-          uid: data.user.uid,
-          name: data.user.name,
-          mssv: data.user.mssv,
-          gender: data.user.gender,
-          birthYear: data.user.birthYear,
-          anonymizedUid: data.user.anonymizedUid,
-          teamId: data.user.teamId,
-          teamName: data.user.teamName,
-          email: data.user.email,
-          emailVerified: true,
-          registeredAt: data.user.registeredAt
-        };
-
-        if (db) {
-          try {
-            await setDoc(doc(db, 'users', completedUser.uid), removeUndefined(completedUser), { merge: true });
-          } catch (e) {
-            console.warn('Firestore mirror note:', e);
-          }
-        }
-
-        setSuccessMsg(
-          localLanguage !== 'vi'
-            ? 'Account activated successfully! Entering arena...'
-            : 'Kích hoạt tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
-        );
-
-        setTimeout(() => {
-          onComplete(completedUser);
-        }, 800);
-      } else {
-        soundFx.playError();
-        vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Invalid activation code.' : 'Mã kích hoạt không chính xác.'));
-      }
-    } catch {
-      soundFx.playError();
-      vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Connection error.' : 'Lỗi kết nối máy chủ xác thực.');
-    } finally {
-      setIsQuickActivating(false);
     }
   };
 
@@ -508,45 +419,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      // 3. Fallback: generate server activation code so user is never stuck
       if (!emailSentViaFirebase) {
-        try {
-          const res = await fetch('/api/audience/resend-activation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              identifier: pendingVerifyUser?.mssv || loginIdentifier.trim() || targetEmail,
-              captchaId: 'bypass_resend',
-              captchaAnswer: 'bypass_resend'
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.success && data.activationCode) {
-            setQuickActivationCode(data.activationCode);
-            setResendCooldown(30);
-            soundFx.playPacingChime('complete');
-            vibrateSuccess();
-            setSuccessMsg(
-              localLanguage !== 'vi'
-                ? `New 6-digit activation code: ${data.activationCode}. We filled it in Option 2 below!`
-                : `Mã kích hoạt 6 chữ số mới: ${data.activationCode}. Hệ thống đã tự điền vào ô Cách 2 bên dưới!`
-            );
-          } else {
-            setResendCooldown(30);
-            soundFx.playClick();
-            setSuccessMsg(
-              localLanguage !== 'vi'
-                ? 'You can enter 6-digit code or event code BTI2026 below to activate immediately!'
-                : 'Bạn có thể nhập mã kích hoạt 6 số hoặc mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay!'
-            );
-          }
-        } catch {
-          setSuccessMsg(
-            localLanguage !== 'vi'
-              ? 'You can enter 6-digit code or event code BTI2026 below to activate immediately!'
-              : 'Bạn có thể nhập mã kích hoạt 6 số hoặc mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay!'
-          );
-        }
+        soundFx.playError();
+        vibrateError();
+        setErrorMsg(
+          localLanguage !== 'vi'
+            ? 'Could not send verification email. Please check your credentials or request a password reset email.'
+            : 'Chưa thể gửi email xác thực. Vui lòng nhập mật khẩu xác nhận ở trên hoặc gửi yêu cầu đặt lại mật khẩu.'
+        );
       }
     } catch (err: any) {
       console.error('[Resend Email Verification] Error:', err);
@@ -554,8 +434,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       vibrateError();
       setErrorMsg(
         localLanguage !== 'vi'
-          ? 'Notice: You can enter code BTI2026 below in Option 2 to enter directly.'
-          : 'Gợi ý: Bạn có thể nhập mã sự kiện BTI2026 ở Cách 2 bên dưới để kích hoạt ngay.'
+          ? 'Error sending verification email. Please check your network and try again.'
+          : 'Lỗi gửi email xác thực. Vui lòng kiểm tra kết nối mạng và thử lại sau ít phút.'
       );
     } finally {
       setIsResendingEmail(false);
@@ -857,9 +737,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         setNeedPasswordForResend(fbAccountExisted && !fbUser);
         setPendingVerifyUser(userObj);
         setResendCooldown(60);
-        if (data.activationCode) {
-          setQuickActivationCode(data.activationCode);
-        }
         if (fbAccountExisted && !fbUser) {
           setFirebaseEmailStatus('existing_account');
         } else if (emailVerificationSent) {
@@ -1327,123 +1204,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
-  // -------------------------------------------------------------
-  // 8. Handle Audience Account Activation with 6-Digit Code
-  // -------------------------------------------------------------
-  const handleActivateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!actIdentifier.trim() || !actCode.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please enter MSSV/Username and Activation Code.' : 'Vui lòng nhập MSSV/Tên đăng nhập và Mã kích hoạt.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-    if (!actCaptchaAnswer.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    try {
-      const res = await fetch('/api/audience/activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: actIdentifier.trim(),
-          activationCode: actCode.trim(),
-          captchaId: actCaptchaId,
-          captchaAnswer: actCaptchaAnswer.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success && data.user) {
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-        const userObj: UserInfo = {
-          uid: data.user.uid,
-          name: data.user.name,
-          mssv: data.user.mssv,
-          gender: data.user.gender,
-          birthYear: data.user.birthYear,
-          anonymizedUid: data.user.anonymizedUid,
-          teamId: data.user.teamId,
-          teamName: data.user.teamName,
-          registeredAt: data.user.registeredAt
-        };
-        onComplete(userObj);
-      } else {
-        soundFx.playError();
-        vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Activation failed.' : 'Kích hoạt tài khoản không thành công.'));
-      }
-    } catch {
-      soundFx.playError();
-      vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Connection error with server.' : 'Lỗi kết nối máy chủ xác thực.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // -------------------------------------------------------------
-  // 9. Handle Resend Activation Code
-  // -------------------------------------------------------------
-  const handleResendActivation = async () => {
-    if (!actIdentifier.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please enter MSSV or Username first.' : 'Vui lòng nhập MSSV hoặc Tên đăng nhập trước.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-    if (!actCaptchaAnswer.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA first.' : 'Vui lòng giải bài toán CAPTCHA trước.');
-      soundFx.playError();
-      vibrateError();
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    try {
-      const res = await fetch('/api/audience/resend-activation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: actIdentifier.trim(),
-          captchaId: actCaptchaId,
-          captchaAnswer: actCaptchaAnswer.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-        setActResentCode(data.activationCode);
-        setActCode(data.activationCode || '');
-        setSuccessMsg(data.message || (localLanguage !== 'vi' ? 'New activation code generated.' : 'Mã kích hoạt mới đã được tạo.'));
-      } else {
-        soundFx.playError();
-        vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Could not generate code.' : 'Không thể tạo mã kích hoạt.'));
-      }
-    } catch {
-      soundFx.playError();
-      vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Connection error with server.' : 'Lỗi kết nối máy chủ xác thực.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const content = (
     <div 
       className={`${
@@ -1528,7 +1288,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         </div>
 
         {/* Mode Navigation Tabs (Mirrors Admin Portal Structure) */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3 select-none">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3 select-none">
           <button
             type="button"
             onClick={() => handleTabChange('LOGIN')}
@@ -1560,17 +1320,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           >
             <KeyRound className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
             <span className="truncate">{localLanguage !== 'vi' ? 'Reset' : 'Quên MK'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleTabChange('ACTIVATE')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'ACTIVATE' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{localLanguage !== 'vi' ? 'Activate' : 'Kích Hoạt'}</span>
           </button>
 
           <button
@@ -1670,11 +1419,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleTabChange('ACTIVATE')}
-                    className="text-amber-300/80 hover:text-amber-200 hover:underline cursor-pointer flex items-center gap-1"
+                    onClick={() => handleTabChange('EMAIL_VERIFY')}
+                    className="text-white/60 hover:text-white hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    <ShieldCheck className="w-3 h-3" />
-                    <span>{localLanguage !== 'vi' ? 'Activate Account' : 'Kích hoạt tài khoản'}</span>
+                    <Mail className="w-3 h-3" />
+                    <span>{localLanguage !== 'vi' ? 'Verify Email' : 'Xác thực email'}</span>
                   </button>
                 </div>
 
@@ -1892,124 +1641,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* TAB: ACCOUNT ACTIVATION (Verify Account via OTP Code) */}
-          {/* ========================================================= */}
-          {activeTab === 'ACTIVATE' && (
-            <div className="space-y-3 sm:space-y-3.5 text-left animate-fadeIn">
-              <div className="p-2 sm:p-2.5 bg-amber-950/30 border border-amber-500/30 rounded-[2px] text-[10px] sm:text-xs text-amber-200">
-                <p className="leading-relaxed font-sans">
-                  {localLanguage !== 'vi'
-                    ? 'Activate your audience account by entering your MSSV/Username and the 6-digit Activation Code received upon registration or requested below.'
-                    : 'Kích hoạt tài khoản khán giả bằng cách nhập MSSV/Tên đăng nhập và Mã kích hoạt 6 chữ số được cấp khi đăng ký hoặc bấm lấy lại mã bên dưới.'}
-                </p>
-              </div>
-
-              {actResentCode && (
-                <div className="p-2 sm:p-2.5 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-amber-300 font-mono block">
-                      {localLanguage !== 'vi' ? 'Your Activation Code:' : 'Mã kích hoạt tài khoản của bạn:'}
-                    </span>
-                    <span className="text-sm sm:text-base font-mono font-black text-amber-200 tracking-widest">
-                      {actResentCode}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(actResentCode);
-                      setCopiedCode(true);
-                      soundFx.playClick();
-                      setTimeout(() => setCopiedCode(false), 2000);
-                    }}
-                    className="px-2 py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded-[2px] text-[10px] font-mono flex items-center gap-1 cursor-pointer transition border border-amber-500/40"
-                  >
-                    {copiedCode ? <Check className="w-3 h-3 text-amber-300" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedCode ? (localLanguage !== 'vi' ? 'Copied' : 'Đã chép') : (localLanguage !== 'vi' ? 'Copy' : 'Sao chép')}</span>
-                  </button>
-                </div>
-              )}
-
-              <form onSubmit={handleActivateSubmit} className="space-y-2.5 sm:space-y-3">
-                <div>
-                  <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                    {localLanguage !== 'vi' ? 'Student ID (MSSV) or Username' : 'Mã số sinh viên (MSSV) hoặc Tên đăng nhập'} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={localLanguage !== 'vi' ? 'e.g. 22123456 or username' : 'VD: 22123456 hoặc tên đăng nhập'}
-                    value={actIdentifier}
-                    onChange={(e) => setActIdentifier(e.target.value)}
-                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                    autoFocus
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                      {localLanguage !== 'vi' ? '6-Digit Activation Code' : 'Mã kích hoạt 6 chữ số'} *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleResendActivation}
-                      disabled={loading}
-                      className="text-[10px] text-amber-300 hover:text-white hover:underline flex items-center gap-1 font-mono transition cursor-pointer"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      <span>{localLanguage !== 'vi' ? 'Get/Resend Code' : 'Lấy lại mã kích hoạt'}</span>
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    placeholder="123456"
-                    value={actCode}
-                    onChange={(e) => setActCode(e.target.value)}
-                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition tracking-widest font-bold placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                  />
-                </div>
-
-                {/* Mathematical CAPTCHA Challenge */}
-                <CaptchaChallenge
-                  captchaId={actCaptchaId}
-                  value={actCaptchaAnswer}
-                  onChange={handleActCaptchaChange}
-                  disabled={loading}
-                  apiEndpoint="/api/audience/captcha"
-                />
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-amber-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono"
-                >
-                  {loading ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span>{localLanguage !== 'vi' ? 'Activate & Enter Arena' : 'Kích Hoạt & Vào Sàn Đấu'}</span>
-                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('LOGIN')}
-                  className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer"
-                >
-                  {localLanguage !== 'vi' ? '← Back to Login' : '← Quay lại Đăng Nhập'}
-                </button>
-              </div>
             </div>
           )}
 
@@ -2340,14 +1971,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </li>
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Return to this screen and click "Option 1: I Have Clicked the Verification Link".'
-                      : 'Quay lại màn hình này và bấm nút "Cách 1: Tôi Đã Bấm Link Xác Thực Trong Email" bên dưới.'}
+                      ? 'Return to this screen and click "I Have Clicked the Verification Link" below.'
+                      : 'Quay lại màn hình này và bấm nút "Tôi Đã Bấm Link Xác Thực Trong Email" bên dưới.'}
                   </li>
                 </ol>
-                <div className="mt-1.5 pt-1.5 border-t border-white/10 text-[10px] text-amber-300/90 font-mono flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-                  <span>{localLanguage !== 'vi' ? 'Did not receive email? Use Option 2 below to activate instantly!' : 'Chưa nhận được email? Dùng ngay Cách 2 bên dưới để vào sàn đấu tức thì!'}</span>
-                </div>
               </div>
 
               {/* Special notice if email already existed on Firebase with older password */}
@@ -2359,8 +1986,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </div>
                   <p className="leading-relaxed text-white/80 font-sans">
                     {localLanguage !== 'vi'
-                      ? 'This email was previously registered on Firebase with another password. Firebase blocks sending verification emails without matching credentials. You can activate directly via Option 2 below, or request a password reset email.'
-                      : 'Email này đã từng được tạo trên Firebase Authentication từ trước với mật khẩu cũ. Vì lý do bảo mật, Firebase chặn phát lệnh gửi thư xác thực mới. Bạn có thể kích hoạt trực tiếp ngay bằng Cách 2 bên dưới, hoặc gửi email đặt lại mật khẩu.'}
+                      ? 'This email was previously registered on Firebase with another password. You can request a password reset email below to reset your password and verify.'
+                      : 'Email này đã từng được tạo trên Firebase Authentication từ trước với mật khẩu cũ. Bạn có thể bấm nút gửi email đặt lại mật khẩu bên dưới để cập nhật mật khẩu mới.'}
                   </p>
                   <div className="flex items-center gap-2 pt-0.5">
                     <button
@@ -2416,7 +2043,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-1">
-                {/* Way 1: Verification Link in Email */}
                 <button
                   type="button"
                   onClick={handleCheckEmailVerification}
@@ -2428,42 +2054,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                      <span>{localLanguage !== 'vi' ? 'Option 1: I Have Clicked the Verification Link' : 'Cách 1: Tôi Đã Bấm Link Xác Thực Trong Email'}</span>
+                      <span>{localLanguage !== 'vi' ? 'I Have Clicked the Verification Link' : 'Tôi Đã Bấm Link Xác Thực Trong Email'}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
-
-                {/* Way 2: 6-Digit Code / BTI2026 Activation */}
-                <div className="p-2.5 sm:p-3 bg-black/50 border border-sky-500/30 rounded-[2px] space-y-1.5 text-left">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-sky-300 flex items-center gap-1.5">
-                      <KeyRound className="w-3.5 h-3.5 text-sky-400" />
-                      <span>{localLanguage !== 'vi' ? 'Option 2: Enter 6-digit code or BTI2026 event code:' : 'Cách 2: Nhập Mã Kích Hoạt 6 số (hoặc mã BTI2026):'}</span>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="text"
-                      placeholder={localLanguage !== 'vi' ? 'e.g. 123456 or BTI2026' : 'VD: 123456 hoặc BTI2026'}
-                      value={quickActivationCode}
-                      onChange={(e) => setQuickActivationCode(e.target.value.toUpperCase())}
-                      className="flex-1 bg-[#0D0420] border border-white/20 hover:border-sky-400 focus:border-sky-400 font-mono text-xs text-white px-2.5 py-1.5 rounded-[2px] outline-none transition uppercase tracking-wider"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleQuickCodeActivate}
-                      disabled={!quickActivationCode.trim() || isQuickActivating}
-                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-mono font-bold text-xs rounded-[2px] transition cursor-pointer shrink-0 shadow-sm"
-                    >
-                      {isQuickActivating ? (
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <span>{localLanguage !== 'vi' ? 'Verify Code' : 'Xác Nhận Mã'}</span>
-                      )}
-                    </button>
-                  </div>
-                </div>
 
                 {/* 4. Resend Verification Email */}
                 <button

@@ -626,6 +626,7 @@ export interface AdminUser {
   status: AdminStatus;
   authProvider: 'local' | 'google';
   email?: string;
+  emailVerified?: boolean;
   createdAt: number;
   approvedAt?: number;
   approvedBy?: string;

@@ -97,6 +97,7 @@ async function startServer() {
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED';
     authProvider: 'local' | 'google';
     email?: string;
+    emailVerified?: boolean;
     passwordHash?: string;
     salt?: string;
     createdAt: number;
@@ -183,7 +184,7 @@ async function startServer() {
   }
 
   function sanitizeAdminUser(u: StoredAdminUser) {
-    const { passwordHash, salt, ...safe } = u;
+    const { passwordHash, salt, activationCode, resetCode, ...safe } = u;
     return safe;
   }
 
@@ -282,7 +283,7 @@ async function startServer() {
   }
 
   function sanitizeAudienceUser(u: StoredAudienceUser) {
-    const { passwordHash, salt, ...safe } = u;
+    const { passwordHash, salt, activationCode, resetCode, ...safe } = u;
     return safe;
   }
 
@@ -399,7 +400,6 @@ async function startServer() {
         message: cleanEmail && !emailVerified
           ? "Đăng ký tài khoản thành công! Vui lòng kiểm tra email và bấm link xác nhận Firebase để kích hoạt tài khoản."
           : "Đăng ký tài khoản khán giả thành công! Chào mừng bạn đến với BTI 2026.",
-        activationCode,
         requiresEmailVerification: cleanEmail ? !emailVerified : false,
         email: cleanEmail,
         user: sanitizeAudienceUser(newUser)
@@ -908,7 +908,7 @@ async function startServer() {
   // 2. Register Technical Admin Account
   app.post("/api/admin/register", loginLimiter, (req, res) => {
     try {
-      const { fullName, username, password, technicalRole, email, note, captchaId, captchaAnswer } = req.body;
+      const { fullName, username, password, technicalRole, email, emailVerified, note, captchaId, captchaAnswer } = req.body;
 
       if (!verifyCaptcha(captchaId, captchaAnswer)) {
         return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng bấm làm mới." });
@@ -927,6 +927,11 @@ async function startServer() {
         return res.status(400).json({ error: "Mật khẩu phải có độ dài tối thiểu 6 ký tự." });
       }
 
+      const cleanEmail = String(email || '').trim().toLowerCase();
+      if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        return res.status(400).json({ error: "Vui lòng nhập địa chỉ Email hợp lệ để nhận liên kết xác thực tài khoản." });
+      }
+
       const validRoles = ['SERVER_OPERATOR', 'LED_OPERATOR', 'STAGE_COORDINATOR'];
       if (!technicalRole || !validRoles.includes(technicalRole)) {
         return res.status(400).json({ error: "Vui lòng chọn vị trí chuyên trách hợp lệ thuộc Ban Kỹ Thuật." });
@@ -936,10 +941,12 @@ async function startServer() {
       if (users.some(u => u.username === cleanUsername)) {
         return res.status(409).json({ error: "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác." });
       }
+      if (users.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
+        return res.status(409).json({ error: "Địa chỉ Email này đã được đăng ký cho một tài khoản kỹ thuật khác." });
+      }
 
       const salt = crypto.randomBytes(16).toString('hex');
       const passwordHash = hashPassword(password, salt);
-      const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const newUser: StoredAdminUser = {
         id: `tech_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -949,12 +956,12 @@ async function startServer() {
         role: 'OPERATOR',
         status: 'PENDING',
         authProvider: 'local',
-        email: email ? String(email).trim() : undefined,
+        email: cleanEmail,
+        emailVerified: Boolean(emailVerified),
         passwordHash,
         salt,
         createdAt: Date.now(),
-        note: note ? String(note).trim().slice(0, 300) : '',
-        activationCode
+        note: note ? String(note).trim().slice(0, 300) : ''
       };
 
       users.push(newUser);
@@ -962,8 +969,9 @@ async function startServer() {
 
       return res.status(201).json({
         success: true,
-        message: "Đăng ký thành công! Bạn có thể kích hoạt tài khoản bằng mã hoặc chờ Trưởng Ban Kỹ Thuật phê duyệt.",
-        activationCode,
+        message: "Đăng ký thành công! Vui lòng kiểm tra email và bấm link xác nhận Firebase để hoàn tất xác thực.",
+        requiresEmailVerification: !emailVerified,
+        email: cleanEmail,
         user: sanitizeAdminUser(newUser)
       });
     } catch (err: any) {
@@ -972,42 +980,117 @@ async function startServer() {
     }
   });
 
-  // Admin: Request Forgot Password (Generates 6-Digit Reset Code)
+  // Admin: Email Verification Callback / Status Confirmation
+  app.post("/api/admin/verify-email", loginLimiter, (req, res) => {
+    try {
+      const { uid, email, username } = req.body;
+      const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+      const cleanUsername = username ? String(username).trim().toLowerCase() : '';
+
+      const users = loadAdminUsers();
+      const user = users.find(u =>
+        (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+        (cleanUsername && u.username.toLowerCase() === cleanUsername)
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên để xác thực email." });
+      }
+
+      user.emailVerified = true;
+      saveAdminUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Xác thực email kỹ thuật viên thành công!",
+        user: sanitizeAdminUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Admin Verify Email] Error:', err);
+      return res.status(500).json({ error: "Lỗi xử lý xác thực email." });
+    }
+  });
+
+  // Admin: Request Forgot Password (Dispatches Firebase Reset Email)
   app.post("/api/admin/forgot-password/request", loginLimiter, (req, res) => {
     try {
-      const { username, captchaId, captchaAnswer } = req.body;
+      const { email, username, captchaId, captchaAnswer } = req.body;
 
       if (!verifyCaptcha(captchaId, captchaAnswer)) {
         return res.status(400).json({ error: "Mã bảo vệ CAPTCHA không chính xác hoặc đã hết hạn. Vui lòng thử lại." });
       }
 
-      if (!username || typeof username !== 'string' || !username.trim()) {
-        return res.status(400).json({ error: "Vui lòng nhập Tên đăng nhập để khôi phục mật khẩu." });
+      const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+      const cleanUsername = username ? String(username).trim().toLowerCase() : '';
+
+      if (!cleanEmail && !cleanUsername) {
+        return res.status(400).json({ error: "Vui lòng nhập Email hoặc Tên đăng nhập để khôi phục mật khẩu." });
       }
 
-      const cleanUsername = username.trim().toLowerCase();
       const users = loadAdminUsers();
-      const user = users.find(u => u.username.toLowerCase() === cleanUsername && u.authProvider === 'local');
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+          (cleanUsername && u.username.toLowerCase() === cleanUsername)
+        )
+      );
 
-      if (!user) {
-        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên với tên đăng nhập này." });
+      if (!user || !user.email) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên có email liên kết phù hợp." });
       }
-
-      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-      user.resetCode = resetCode;
-      user.resetExpiresAt = Date.now() + 15 * 60 * 1000;
-      saveAdminUsers(users);
 
       return res.json({
         success: true,
-        message: `Mã xác thực 6 chữ số đặt lại mật khẩu đã được tạo cho Quản trị viên ${user.fullName}.`,
-        resetCode,
+        message: `Yêu cầu khôi phục mật khẩu hợp lệ cho Quản trị viên ${user.fullName}. Hệ thống sẽ gửi email đặt lại mật khẩu an toàn đến ${user.email}.`,
+        email: user.email,
         username: user.username,
         fullName: user.fullName
       });
     } catch (err: any) {
       console.error('[Admin Forgot Password Request] Error:', err);
       return res.status(500).json({ error: "Lỗi xử lý yêu cầu quên mật khẩu." });
+    }
+  });
+
+  // Admin: Sync Password After Firebase Email Reset
+  app.post("/api/admin/sync-password", loginLimiter, (req, res) => {
+    try {
+      const { email, username, newPassword } = req.body;
+      if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu mới phải có tối thiểu 6 ký tự." });
+      }
+
+      const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+      const cleanUsername = username ? String(username).trim().toLowerCase() : '';
+
+      const users = loadAdminUsers();
+      const user = users.find(u =>
+        u.authProvider === 'local' && (
+          (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+          (cleanUsername && u.username.toLowerCase() === cleanUsername)
+        )
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên để đồng bộ mật khẩu." });
+      }
+
+      const newSalt = crypto.randomBytes(16).toString('hex');
+      user.salt = newSalt;
+      user.passwordHash = hashPassword(newPassword, newSalt);
+      user.emailVerified = true;
+      delete user.resetCode;
+      delete user.resetExpiresAt;
+      saveAdminUsers(users);
+
+      return res.json({
+        success: true,
+        message: "Đồng bộ mật khẩu quản trị viên thành công.",
+        user: sanitizeAdminUser(user)
+      });
+    } catch (err: any) {
+      console.error('[Admin Sync Password] Error:', err);
+      return res.status(500).json({ error: "Lỗi đồng bộ mật khẩu." });
     }
   });
 
@@ -1090,11 +1173,7 @@ async function startServer() {
         return res.status(404).json({ error: "Không tìm thấy hồ sơ kỹ thuật viên." });
       }
 
-      const adminPasscode = (process.env.ADMIN_PASSCODE || "BTI2026Admin").toUpperCase();
-      const isValid = (user.activationCode && user.activationCode.toUpperCase() === codeClean) ||
-        codeClean === 'BTI2026-TECH-ACTIVE' ||
-        codeClean === 'TECH2026' ||
-        codeClean === adminPasscode;
+      const isValid = (user.activationCode && user.activationCode.toUpperCase() === codeClean);
 
       if (!isValid) {
         return res.status(400).json({ error: "Mã kích hoạt không hợp lệ. Vui lòng kiểm tra lại mã hoặc liên hệ Trưởng Ban Kỹ Thuật." });
@@ -1143,6 +1222,16 @@ async function startServer() {
       // Auto-upgrade legacy hash to modern scrypt hash seamlessly
       if (pwdCheck.needsRehash && user.salt) {
         user.passwordHash = hashPassword(password, user.salt);
+      }
+
+      if (user.email && user.emailVerified === false) {
+        return res.status(403).json({
+          success: false,
+          requiresEmailVerification: true,
+          email: user.email,
+          username: user.username,
+          error: "Tài khoản kỹ thuật của bạn chưa được xác thực email. Vui lòng kiểm tra email và bấm liên kết xác thực do Firebase gửi."
+        });
       }
 
       if (user.status === 'PENDING') {
