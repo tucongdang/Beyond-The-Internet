@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Tự động quét và cập nhật thư viện npm (React, Vite, Express,...)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Tự động quét và cập nhật các workflow GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
