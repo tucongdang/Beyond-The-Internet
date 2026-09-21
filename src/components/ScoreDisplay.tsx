@@ -167,7 +167,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
 
 
   return (
-    <div id="bti-score-display" className={`fluent-box border-b border-white/10 text-white sticky top-0 z-40 shadow-xl max-w-full overflow-x-hidden ${className}`}>
+    <div id="bti-score-display" className={`fluent-box border-b border-white/10 text-white sticky top-0 z-40 shadow-xl overflow-visible scrollbar-none ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
         <div 
           className="flex items-center justify-between cursor-pointer select-none active:opacity-80"
