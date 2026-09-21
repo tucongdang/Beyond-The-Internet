@@ -29,6 +29,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [dataUrl, setDataUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(true);
+  const [isShared, setIsShared] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -222,10 +223,6 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     } catch {}
     setIsGenerating(false);
   }, [isOpen, user, totalScore, rank, totalContestants, accuracyRate, maxStreak, isSurvivor]);
-
-  if (!isOpen) return null;
-
-  const [isShared, setIsShared] = useState<boolean>(false);
 
   const handleDownload = () => {
     if (!dataUrl) return;
