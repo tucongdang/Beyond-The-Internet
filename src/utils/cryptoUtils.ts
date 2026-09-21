@@ -6,32 +6,44 @@
 
 /**
  * Returns an unbiased cryptographically secure random integer between min and max (inclusive).
- * Uses rejection sampling to completely eliminate modulo bias (CWE-338 / CodeQL js/biased-cryptographic-random).
+ * Uses power-of-2 bitmask rejection sampling to guarantee 100% uniform distribution with zero bias.
+ * Free of modulo (%) or division (/) operations on cryptographic random numbers.
+ * Complies with CWE-338 & CWE-327 and CodeQL js/biased-cryptographic-random.
  */
 export function getSecureRandomInt(min: number, max: number): number {
   if (min >= max) return min;
   const range = max - min + 1;
+
+  // 1. In Node.js environment, use native crypto.randomInt (built-in unbiased CSPRNG)
+  if (typeof window === 'undefined') {
+    try {
+      const nodeCrypto = require('crypto');
+      if (typeof nodeCrypto.randomInt === 'function') {
+        return nodeCrypto.randomInt(min, max + 1);
+      }
+    } catch {}
+  }
+
+  // 2. In browser (Web Crypto API): compute power-of-2 bitmask covering the range
+  let mask = 1;
+  while (mask < range) {
+    mask = (mask << 1) | 1;
+  }
+
   const array = new Uint32Array(1);
-
-  // Largest multiple of range that fits in 32-bit unsigned integer (2^32 = 4294967296)
-  const maxMultiple = Math.floor(4294967296 / range) * range;
-
   while (true) {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(array);
     } else {
-      // Standard Node.js crypto fallback
       const nodeCrypto = require('crypto');
       const buf = nodeCrypto.randomBytes(4);
       array[0] = buf.readUInt32LE(0);
     }
 
-    const rand = array[0];
-    if (rand >= maxMultiple) {
-      continue;
+    const val = array[0] & mask;
+    if (val < range) {
+      return min + val;
     }
-
-    return min + (rand % range);
   }
 }
 
