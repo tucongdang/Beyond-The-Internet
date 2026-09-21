@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
 import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { syncService } from '../services/syncService';
@@ -203,6 +203,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
   // AI Voice TTS state
   const [isSpeakingQuestion, setIsSpeakingQuestion] = useState<boolean>(false);
+  const [autoSpeakAnswer, setAutoSpeakAnswer] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_auto_speak_answer');
+      if (saved !== null) return saved === 'true';
+    }
+    return true; // Auto read out correct answer by default
+  });
+  const lastSpokenCorrectAnswerQIdRef = useRef<string | null>(null);
 
   // AI Instant Explanation state ("Hỏi Nhanh Vì Sao")
   const [aiExplanation, setAiExplanation] = useState<string>('');
@@ -224,9 +232,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
-  const [shortAnswerTranslationVi, setShortAnswerTranslationVi] = useState<string>('');
+  const [shortAnswerTranslation, setShortAnswerTranslation] = useState<{ text: string; lang: string }>({ text: '', lang: '' });
   const [isTranslatingShortAnswer, setIsTranslatingShortAnswer] = useState<boolean>(false);
-  const [revealShortAnswerTranslationVi, setRevealShortAnswerTranslationVi] = useState<string>('');
+  const [revealShortAnswerTranslation, setRevealShortAnswerTranslation] = useState<{ text: string; lang: string; flag: string }>({ text: '', lang: '', flag: '' });
+
+  const getLangFlag = (code: string) => {
+    if (code === 'vi') return '🇻🇳';
+    const found = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === code);
+    return found?.flag || '🌐';
+  };
 
   // Synchronize translation:
   // When in Vietnamese ('vi'), clear translation and never translate
@@ -283,15 +297,20 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     setLocalTranslation(null);
   }, [gameState.question_id, gameState.question_text, gameState.options, gameState.explanation, gameState.translations, localLanguage]);
 
-  // Auto translate correct short answer to Vietnamese during REVEAL
+  // Auto translate correct short answer to player's target language during REVEAL
   useEffect(() => {
     const isShort = gameState.round_type === 'SHORT_ANSWER' || gameState.round_type === 'FILL_IN_BLANK' || gameState.round_type === 'VCNV';
     if (gameState.status === 'REVEAL' && isShort && gameState.correct_key) {
       let isCancelled = false;
-      translationService.translateShortAnswerToVietnamese(gameState.correct_key)
+      const targetLang = localLanguage !== 'vi' ? localLanguage : 'vi';
+      translationService.translateShortAnswer(gameState.correct_key, targetLang)
         .then((translated) => {
           if (!isCancelled && translated && translated.trim().toLowerCase() !== gameState.correct_key.trim().toLowerCase()) {
-            setRevealShortAnswerTranslationVi(translated);
+            setRevealShortAnswerTranslation({
+              text: translated,
+              lang: targetLang,
+              flag: getLangFlag(targetLang)
+            });
           }
         })
         .catch(() => {});
@@ -299,16 +318,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         isCancelled = true;
       };
     } else {
-      setRevealShortAnswerTranslationVi('');
+      setRevealShortAnswerTranslation({ text: '', lang: '', flag: '' });
     }
-  }, [gameState.status, gameState.round_type, gameState.correct_key]);
+  }, [gameState.status, gameState.round_type, gameState.correct_key, localLanguage]);
 
-  const handleTranslateShortAnswerToVi = async () => {
+  const handleTranslateShortAnswer = async (targetLang?: string) => {
     if (!shortAnswerText.trim() || isTranslatingShortAnswer) return;
     setIsTranslatingShortAnswer(true);
+    const langToUse = targetLang || (localLanguage !== 'vi' ? localLanguage : 'en');
     try {
-      const translated = await translationService.translateShortAnswerToVietnamese(shortAnswerText.trim());
-      setShortAnswerTranslationVi(translated);
+      const translated = await translationService.translateShortAnswer(shortAnswerText.trim(), langToUse);
+      setShortAnswerTranslation({ text: translated, lang: langToUse });
       soundFx.playTing();
       vibrateTap();
     } catch (err) {
@@ -353,12 +373,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     ? localTranslation.explanation
     : gameState.explanation;
 
-  // Helper to detect CJK / East Asian characters (Hangul, Hanzi, Kanji, Kana) for typography breathing room
+  // Helper to detect CJK / East Asian / Non-Latin characters for typography breathing room
   const isCjk = (text?: unknown, lang?: string): boolean => {
-    if (lang && ['ko', 'zh', 'ja', 'th'].includes(lang)) return true;
+    if (lang && ['ko', 'zh', 'ja', 'th', 'lo', 'km'].includes(lang)) return true;
     if (!text) return false;
-    const str = typeof text === 'string' ? text : String(text);
-    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(str);
+    return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u0e00-\u0e7f\u0e80-\u0eff\u1780-\u17ff]/.test(String(text));
   };
   const isCjkQuestion = isCjk(activeQuestionText, localLanguage);
 
@@ -366,8 +385,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const isKorean = (text?: unknown, lang?: string): boolean => {
     if (lang === 'ko') return true;
     if (!text) return false;
-    const str = typeof text === 'string' ? text : String(text);
-    return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(str);
+    return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(String(text));
   };
   const isKoreanQuestion = isKorean(activeQuestionText, localLanguage);
 
@@ -811,10 +829,59 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         activeQuestionText,
         localLanguage,
         () => setIsSpeakingQuestion(false),
-        () => setIsSpeakingQuestion(false)
+        () => setIsSpeakingQuestion(false),
+        {
+          options: activeOptions || gameState.options,
+          roundType: gameState.round_type,
+          eliminatedOptions: gameState.eliminated_options,
+          correctKey: gameState.correct_key,
+          explanation: activeExplanation,
+          isReveal: gameState.status === 'REVEAL'
+        }
       );
     }
   };
+
+  // Automatically trigger reading of correct answer after timer expires or when revealed by Admin
+  const triggerAutoSpeakCorrectAnswer = useCallback(() => {
+    if (!autoSpeakAnswer) return;
+    const qId = gameState.question_id;
+    if (!qId || !gameState.correct_key) return;
+    if (lastSpokenCorrectAnswerQIdRef.current === qId) return;
+
+    lastSpokenCorrectAnswerQIdRef.current = qId;
+    setIsSpeakingQuestion(true);
+
+    // Allow reveal chime / fanfare sound effects to lead before AI voice begins
+    setTimeout(() => {
+      aiExplanationService.speakCorrectAnswer(
+        {
+          options: activeOptions || gameState.options,
+          roundType: gameState.round_type,
+          correctKey: gameState.correct_key,
+          explanation: activeExplanation || gameState.explanation
+        },
+        localLanguage,
+        () => setIsSpeakingQuestion(false),
+        () => setIsSpeakingQuestion(false)
+      );
+    }, 450);
+  }, [autoSpeakAnswer, gameState.question_id, gameState.correct_key, gameState.options, gameState.round_type, gameState.explanation, activeOptions, activeExplanation, localLanguage]);
+
+  // Automatic Answer TTS Effect: Triggers after timer expiration or when Admin reveals answer
+  useEffect(() => {
+    if (gameState.status === 'ACTIVE') {
+      lastSpokenCorrectAnswerQIdRef.current = null;
+      return;
+    }
+
+    const isTimerExpired = timeLeft <= 0 && (gameState.status === 'ACTIVE' || gameState.status === 'LOCKED');
+    const isRevealed = gameState.status === 'REVEAL';
+
+    if ((isRevealed || isTimerExpired) && gameState.correct_key) {
+      triggerAutoSpeakCorrectAnswer();
+    }
+  }, [gameState.status, gameState.correct_key, timeLeft, gameState.question_id, triggerAutoSpeakCorrectAnswer]);
 
   // AI Instant Explanation trigger
   const handleRequestAiExplanation = async () => {
@@ -852,6 +919,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       setSelectedChoice(responses[user.uid].choice);
       setShortAnswerText(responses[user.uid].choice);
       setHasVotedThisQuestion(true);
+      if (responses[user.uid].isDoubleDown) {
+        setIsDoubleDownActive(true);
+      }
     } else if (prevQuestionIdRef.current !== gameState.question_id) {
       // Distinct long-pulse haptic feedback upon receiving a new question
       vibrateNewQuestion();
@@ -2532,7 +2602,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
                               : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
                           }`}
-                          title={isSpeakingQuestion ? 'Dừng đọc AI Voice' : 'Đọc câu hỏi bằng AI Voice'}
+                          title={isSpeakingQuestion ? t("view_tts_stop", localLanguage) : t("view_tts_start", localLanguage)}
                         >
                           {isSpeakingQuestion ? (
                             <VolumeX className="w-4 h-4 text-emerald-400 animate-pulse" />
@@ -2593,7 +2663,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               {/* RIGHT Column: Input Controls & Choice Confirmation */}
               <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col justify-between gap-4" : "lg:col-span-7 flex flex-col justify-between gap-4"}>
                 <div className="flex-1">
-                  {/* Round 4 (Về đích) Double Down / All-In Risk Mode Toggle */}
+                  {/* Round 4 (Về đích) Double Down / All-In Risk Mode Toggle & Lock */}
                   {isVeDichRound && (
                     <div className={`p-3 sm:p-3.5 rounded-[2px] border transition-all mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                       isDoubleDownActive
@@ -2605,45 +2675,49 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           <Flame className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-black text-xs sm:text-sm text-white tracking-wide">
-                              🔥 NHÂN ĐÔI ĐIỂM (ALL-IN RISK)
+                              {t("view_bet_title", localLanguage)}
                             </span>
                             {isDoubleDownActive && (
-                              <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-amber-400 text-black rounded-[2px]">
-                                ĐANG BẬT (+80 / -40)
+                              <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-amber-400 text-black rounded-[2px] flex items-center gap-1 shadow-sm">
+                                <Lock className="w-3 h-3" />
+                                {t("view_bet_locked_badge", localLanguage)}
                               </span>
                             )}
                           </div>
                           <p className="text-[11px] text-amber-200/90 leading-tight mt-0.5">
                             {isDoubleDownActive 
-                              ? 'Chế độ mạo hiểm Về Đích: Trả lời đúng nhận +80 điểm, trả lời sai bị trừ 100% (-40 điểm)!'
-                              : 'Vòng Về Đích: Kích hoạt để mạo hiểm (+80 điểm khi đúng, trừ 100% -40 điểm khi sai).'}
+                              ? t("view_bet_desc_locked", localLanguage)
+                              : t("view_bet_desc_default", localLanguage)}
                           </p>
+                          {isDoubleDownActive && (
+                            <span className="text-[10px] font-mono text-amber-300/80 flex items-center gap-1 mt-1">
+                              <Lock className="w-3 h-3 text-amber-400 shrink-0" />
+                              {t("view_bet_locked_notice", localLanguage)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <button
                         type="button"
-                        disabled={hasVotedThisQuestion}
+                        disabled={isDoubleDownActive || hasVotedThisQuestion}
                         onClick={() => {
-                          if (hasVotedThisQuestion) return;
-                          const nextState = !isDoubleDownActive;
-                          setIsDoubleDownActive(nextState);
-                          if (nextState) {
-                            soundFx.playAllInActivation();
-                            vibrateLifeline();
-                          } else {
-                            soundFx.playClick();
-                            vibrateTap();
-                          }
+                          if (isDoubleDownActive || hasVotedThisQuestion) return;
+                          setIsDoubleDownActive(true);
+                          soundFx.playAllInActivation();
+                          vibrateLifeline();
                         }}
-                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border cursor-pointer shrink-0 text-center ${
+                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border shrink-0 text-center flex items-center justify-center gap-1.5 ${
                           isDoubleDownActive
-                            ? 'bg-amber-400 text-black border-amber-300 shadow-md hover:bg-amber-300'
-                            : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-                        } ${hasVotedThisQuestion ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            ? 'bg-amber-400 text-black border-amber-300 shadow-md cursor-not-allowed opacity-95'
+                            : 'bg-gradient-to-r from-amber-500 to-amber-400 text-black border-amber-300 hover:from-amber-400 hover:to-amber-300 cursor-pointer shadow-lg active:scale-95'
+                        } ${hasVotedThisQuestion && !isDoubleDownActive ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        {isDoubleDownActive ? 'TẮT RỦI RO' : 'BẬT RỦI RO'}
+                        {isDoubleDownActive && <Lock className="w-3.5 h-3.5" />}
+                        {isDoubleDownActive 
+                          ? t("view_bet_btn_locked", localLanguage) 
+                          : t("view_bet_btn_action", localLanguage)}
                       </button>
                     </div>
                   )}
@@ -2832,7 +2906,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           value={shortAnswerText}
                           onChange={(e) => {
                             setShortAnswerText(e.target.value);
-                            if (shortAnswerTranslationVi) setShortAnswerTranslationVi('');
+                            if (shortAnswerTranslation.text) setShortAnswerTranslation({ text: '', lang: '' });
                           }}
                           disabled={hasVotedThisQuestion}
                           className={`flex-1 fluent-box-nested text-white px-4 py-3.5 rounded-[2px] font-mono text-base outline-none uppercase transition-all ${
@@ -2862,29 +2936,44 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </button>
                       </div>
 
-                      {/* AI Short Answer Translation to Vietnamese helper */}
+                      {/* AI Multilingual Short Answer Translation helper */}
                       {shortAnswerText.trim() && !hasVotedThisQuestion && (
                         <div className="flex items-center flex-wrap gap-2 text-xs pt-0.5 animate-fadeIn">
                           <button
                             type="button"
-                            onClick={handleTranslateShortAnswerToVi}
+                            onClick={() => handleTranslateShortAnswer(localLanguage !== 'vi' ? localLanguage : 'en')}
                             disabled={isTranslatingShortAnswer}
                             className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-200 flex items-center gap-1.5 transition cursor-pointer"
-                            title="Dịch câu trả lời ngắn sang Tiếng Việt bằng Gemini AI"
+                            title="Dịch câu trả lời AI sang ngôn ngữ mục tiêu"
                           >
                             <Sparkles className="w-3 h-3 text-sky-300" />
-                            <span>{isTranslatingShortAnswer ? 'Đang dịch AI...' : 'Dịch câu trả lời sang Tiếng Việt'}</span>
+                            <span>
+                              {isTranslatingShortAnswer 
+                                ? t("view_translating", localLanguage) 
+                                : `${getLangFlag(localLanguage !== 'vi' ? localLanguage : 'en')} ${t("view_translate_short", localLanguage).replace('{lang}', (localLanguage !== 'vi' ? localLanguage : 'EN').toUpperCase())}`}
+                            </span>
                           </button>
-                          {shortAnswerTranslationVi && (
+                          {localLanguage !== 'vi' && (
+                            <button
+                              type="button"
+                              onClick={() => handleTranslateShortAnswer('vi')}
+                              disabled={isTranslatingShortAnswer}
+                              className="text-[11px] font-mono font-semibold px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/15 border border-white/20 text-slate-200 flex items-center gap-1 transition cursor-pointer"
+                              title="Dịch sang Tiếng Việt"
+                            >
+                              <span>🇻🇳 VI</span>
+                            </button>
+                          )}
+                          {shortAnswerTranslation.text && (
                             <div className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-mono bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1 rounded-[2px]">
-                              <span>🇻🇳 Dịch: <strong>{shortAnswerTranslationVi}</strong></span>
+                              <span>{getLangFlag(shortAnswerTranslation.lang)} {t("view_translated_label", localLanguage)} <strong>{shortAnswerTranslation.text}</strong></span>
                               <button
                                 type="button"
-                                onClick={() => setShortAnswerText(shortAnswerTranslationVi)}
+                                onClick={() => setShortAnswerText(shortAnswerTranslation.text)}
                                 className="ml-1 underline text-[10px] text-emerald-200 hover:text-white cursor-pointer"
                                 title="Điền từ này vào ô trả lời"
                               >
-                                (Dùng từ này)
+                                ({t("view_use_translated", localLanguage)})
                               </button>
                             </div>
                           )}
@@ -3446,11 +3535,30 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <strong className="font-mono text-base font-black text-emerald-300">
                   [{correctKey}]
                 </strong>
-                {revealShortAnswerTranslationVi && (
+                {revealShortAnswerTranslation.text && (
                   <span className="block text-[11px] text-emerald-200 mt-1 font-sans">
-                    🇻🇳 Dịch: <strong>{revealShortAnswerTranslationVi}</strong>
+                    {revealShortAnswerTranslation.flag} {t("view_translated_label", localLanguage)} <strong>{revealShortAnswerTranslation.text}</strong>
                   </span>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Round 4 All-In Bet Outcome Badge */}
+          {isVeDichRound && responses[user?.uid || '']?.isDoubleDown && (
+            <div className="mt-3 flex items-center justify-center">
+              <div className={`px-3.5 py-1.5 rounded-[2px] font-mono font-black text-xs flex items-center gap-2 border shadow-lg ${
+                isCorrect
+                  ? 'bg-amber-400 text-black border-amber-300 shadow-amber-400/20'
+                  : 'bg-rose-950/90 text-rose-200 border-rose-500/60 shadow-rose-950/40'
+              }`}>
+                <Flame className={`w-4 h-4 shrink-0 ${isCorrect ? 'text-black' : 'text-rose-400'}`} />
+                <span>
+                  {t("view_bet_reveal_badge", localLanguage)}{' '}
+                  <strong className={isCorrect ? 'text-black underline' : 'text-rose-200 underline'}>
+                    {isCorrect ? t("view_bet_outcome_win", localLanguage) : t("view_bet_outcome_loss", localLanguage)}
+                  </strong>
+                </span>
               </div>
             </div>
           )}
@@ -3468,9 +3576,27 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         </div>
         {/* ORIGINAL QUESTION & OPTIONS (Injected to fix "che rùi" issue) */}
         <div className="fluent-box rounded-[2px] p-5 sm:p-6 shadow-xl mb-6">
-          <h3 className={`text-lg sm:text-xl font-black text-white mb-4 ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
-            {activeQuestionText}
-          </h3>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <h3 className={`text-lg sm:text-xl font-black text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
+              {activeQuestionText}
+            </h3>
+            <button
+              type="button"
+              onClick={handleToggleSpeakQuestion}
+              className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer shrink-0 ${
+                isSpeakingQuestion
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
+                  : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
+              }`}
+              title={isSpeakingQuestion ? t("view_tts_stop", localLanguage) : t("view_tts_start", localLanguage)}
+            >
+              {isSpeakingQuestion ? (
+                <VolumeX className="w-4 h-4 text-emerald-400 animate-pulse" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
+              )}
+            </button>
+          </div>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
             {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
               const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();

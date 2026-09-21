@@ -1,17 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Play, AlertCircle, Bell, Music, Check, X, Clock, Zap, Heart, Flame, RotateCcw, Sparkles, Activity } from 'lucide-react';
+import { Volume2, Volume1, VolumeX, Play, AlertCircle, Bell, Music, Check, X, Clock, Zap, Heart, Flame, RotateCcw, Sparkles, Activity, Sliders, Mic } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
+import { aiExplanationService } from '../services/aiExplanationService';
 import { cheerService } from '../services/cheerService';
 import { CheerIntensityData } from '../types';
 
 export const SoundFxAdmin: React.FC = () => {
   const [cheerData, setCheerData] = useState<CheerIntensityData>(cheerService.getCurrentIntensityData());
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [sfxVolume, setSfxVolume] = useState<number>(() => soundFx.getVolume());
+  const [ttsVolume, setTtsVolume] = useState<number>(() => aiExplanationService.getTtsVolume());
+  const [ttsPitch, setTtsPitch] = useState<number>(() => aiExplanationService.getTtsPitch());
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>(() => aiExplanationService.getSelectedVoiceURI());
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
+    const updateVoices = () => {
+      setAvailableVoices(aiExplanationService.getAvailableVoices());
+    };
+    updateVoices();
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+    }
+
     const unsub = cheerService.subscribe(setCheerData);
-    return () => unsub();
+    const unsubSfx = soundFx.subscribeVolume((vol) => setSfxVolume(vol));
+    const unsubTts = aiExplanationService.subscribeTtsVolume((vol) => setTtsVolume(vol));
+    const unsubPitch = aiExplanationService.subscribeTtsPitch((pitch) => setTtsPitch(pitch));
+    const unsubVoice = aiExplanationService.subscribeSelectedVoice((uri) => setSelectedVoiceURI(uri));
+    return () => {
+      unsub();
+      unsubSfx();
+      unsubTts();
+      unsubPitch();
+      unsubVoice();
+    };
   }, []);
+
+  const handleSfxVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setSfxVolume(val);
+    soundFx.setVolume(val);
+  };
+
+  const handleTtsVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setTtsVolume(val);
+    aiExplanationService.setTtsVolume(val);
+  };
+
+  const handleTtsPitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setTtsPitch(val);
+    aiExplanationService.setTtsPitch(val);
+  };
+
+  const handleVoiceSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedVoiceURI(val);
+    aiExplanationService.setSelectedVoiceURI(val);
+  };
   return (
     <div className="fluent-box border border-white/10 rounded-[2px] p-6 space-y-6 text-white shadow-2xl">
       <div className="flex items-center gap-3 pb-4 border-b border-white/10">
@@ -19,8 +68,153 @@ export const SoundFxAdmin: React.FC = () => {
           <Volume2 className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white tracking-wider font-mono">SOUND FX CONTROL</h2>
-          <p className="text-white/50 text-xs mt-0.5">Điều khiển hiệu ứng âm thanh trực tiếp trên thiết bị Admin.</p>
+          <h2 className="text-lg font-bold text-white tracking-wider font-mono">SOUND FX & AI VOICE CONTROL</h2>
+          <p className="text-white/50 text-xs mt-0.5">Điều khiển hiệu ứng âm thanh và âm lượng giọng đọc AI trực tiếp trên Admin.</p>
+        </div>
+      </div>
+
+      {/* Volume & Tone Control Sliders Panel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-[2px] fluent-box-nested border border-white/10 bg-white/5">
+        {/* Sound FX Volume */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-sky-400" />
+              <span className="text-white font-bold">Sound FX Volume</span>
+            </div>
+            <span className="px-1.5 py-0.5 rounded-[1px] bg-sky-500/20 text-sky-300 border border-sky-400/30">
+              {Math.round(sfxVolume * 100)}%
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={sfxVolume}
+              onChange={handleSfxVolumeChange}
+              className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-sky-400"
+            />
+            <button
+              type="button"
+              onClick={() => soundFx.playTing()}
+              className="px-2.5 py-1 text-[11px] font-mono rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 text-sky-300 shrink-0 cursor-pointer"
+            >
+              Test SFX
+            </button>
+          </div>
+        </div>
+
+        {/* TTS Voice Volume */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span className="text-white font-bold">AI Voice Volume</span>
+            </div>
+            <span className="px-1.5 py-0.5 rounded-[1px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              {Math.round(ttsVolume * 100)}%
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={ttsVolume}
+              onChange={handleTtsVolumeChange}
+              className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-emerald-400"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                aiExplanationService.speakQuestionText(
+                  `Thử nghiệm giọng đọc AI với cao độ ${ttsPitch.toFixed(2)}.`,
+                  'vi'
+                );
+              }}
+              className="px-2.5 py-1 text-[11px] font-mono rounded-[2px] bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-300 shrink-0 cursor-pointer"
+            >
+              Test TTS
+            </button>
+          </div>
+        </div>
+
+        {/* TTS Voice Pitch */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <Music className="w-4 h-4 text-purple-400" />
+              <span className="text-white font-bold">AI Voice Pitch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="px-1.5 py-0.5 rounded-[1px] bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                {ttsPitch.toFixed(2)}x
+              </span>
+              {ttsPitch !== 1.0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTtsPitch(1.0);
+                    aiExplanationService.setTtsPitch(1.0);
+                  }}
+                  className="p-1 rounded-[1px] bg-white/10 hover:bg-white/20 text-white/70"
+                  title="Reset 1.0x"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-white/40">0.5x</span>
+            <input
+              type="range"
+              min="0.5"
+              max="2.0"
+              step="0.05"
+              value={ttsPitch}
+              onChange={handleTtsPitchChange}
+              className="w-full h-2 bg-white/10 rounded-[1px] appearance-none cursor-pointer accent-purple-400"
+            />
+            <span className="text-[10px] font-mono text-white/40">2.0x</span>
+          </div>
+        </div>
+
+        {/* System Voice Selection */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <Mic className="w-4 h-4 text-emerald-400" />
+              <span className="text-white font-bold">System Voice</span>
+            </div>
+            <span className="text-[10px] font-mono text-white/50">
+              {availableVoices.length > 0 ? `${availableVoices.length} voices` : '0'}
+            </span>
+          </div>
+          <div className="relative">
+            <select
+              value={selectedVoiceURI}
+              onChange={handleVoiceSelectChange}
+              className="w-full text-xs font-mono bg-black/40 border border-white/15 rounded-[2px] px-2 py-1.5 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
+            >
+              <option value="auto" className="bg-slate-900 text-white">
+                Auto (Language Default)
+              </option>
+              {availableVoices.map((voice) => (
+                <option
+                  key={voice.voiceURI || voice.name}
+                  value={voice.voiceURI || voice.name}
+                  className="bg-slate-900 text-white"
+                >
+                  {voice.name} ({voice.lang})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

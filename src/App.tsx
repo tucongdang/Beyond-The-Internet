@@ -31,6 +31,8 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { InstallAppModal } from './components/InstallAppModal';
 import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
+import { LiveSubtitleOverlay } from './components/LiveSubtitleOverlay';
+import { LoudEnvironmentAlert } from './components/LoudEnvironmentAlert';
 import { applyBatterySaverClasses, getBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 
@@ -467,6 +469,11 @@ export default function App() {
     soundFx.setEnabled(next);
     if (next) soundFx.playClick();
   };
+
+  // Completely disable sound FX on Admin screen
+  useEffect(() => {
+    soundFx.setAdminMuted(currentView === 'admin');
+  }, [currentView]);
 
   // Global Escape key listener to close modals
   useEffect(() => {
@@ -909,6 +916,12 @@ export default function App() {
 
       {/* Global Fluent UI 2 Tooltip Overlay */}
       <FluentTooltip />
+
+      {/* Live Speech Subtitles Overlay */}
+      <LiveSubtitleOverlay />
+
+      {/* Smart Loud Environment Detection Banner */}
+      <LoudEnvironmentAlert />
     </div>
   );
 }

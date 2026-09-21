@@ -20,8 +20,9 @@ import { AudienceShoutMarquee } from './AudienceShoutMarquee';
 import { syncService } from '../services/syncService';
 import { snapshotService } from '../services/snapshotService';
 import { soundFx } from '../services/audioEffects';
+import { aiExplanationService } from '../services/aiExplanationService';
 import { vibrateCopy, vibrateShare, vibrateTap } from '../utils/hapticUtils';
-import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw } from 'lucide-react';
+import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 interface ProjectorViewProps {
   gameState: GameState;
@@ -53,6 +54,17 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const [isCapturingSnapshot, setIsCapturingSnapshot] = useState<boolean>(false);
   const [snapshotFlash, setSnapshotFlash] = useState<boolean>(false);
+
+  // Projector AI Voice TTS state (automatically reads out correct answer)
+  const [isProjectorTtsEnabled, setIsProjectorTtsEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_projector_tts_enabled');
+      if (saved !== null) return saved === 'true';
+    }
+    return true; // Auto read out correct answer by default
+  });
+  const [isProjectorSpeaking, setIsProjectorSpeaking] = useState<boolean>(false);
+  const lastSpokenProjectorQIdRef = useRef<string | null>(null);
 
   // Viewport & Stage Scaling State (to prevent projector scrolling)
   const [stageScale, setStageScale] = useState<number>(() => {
@@ -434,6 +446,38 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
     return () => clearInterval(interval);
   }, [gameState.status, gameState.server_start_time, gameState.time_limit, gameState.is_timer_paused, gameState.paused_remaining_seconds]);
+
+  // Auto read out correct answer on Projector when timer expires or answer is revealed by Admin
+  useEffect(() => {
+    if (gameState.status === 'ACTIVE') {
+      lastSpokenProjectorQIdRef.current = null;
+      return;
+    }
+
+    const isTimerExpired = timeLeft <= 0 && (gameState.status === 'ACTIVE' || gameState.status === 'LOCKED');
+    const isRevealed = gameState.status === 'REVEAL';
+
+    if ((isRevealed || isTimerExpired) && gameState.correct_key && isProjectorTtsEnabled) {
+      const qId = gameState.question_id;
+      if (qId && lastSpokenProjectorQIdRef.current !== qId) {
+        lastSpokenProjectorQIdRef.current = qId;
+        setIsProjectorSpeaking(true);
+        setTimeout(() => {
+          aiExplanationService.speakCorrectAnswer(
+            {
+              options: gameState.options,
+              roundType: gameState.round_type,
+              correctKey: gameState.correct_key,
+              explanation: gameState.explanation
+            },
+            'vi',
+            () => setIsProjectorSpeaking(false),
+            () => setIsProjectorSpeaking(false)
+          );
+        }, 500);
+      }
+    }
+  }, [gameState.status, gameState.correct_key, timeLeft, gameState.question_id, isProjectorTtsEnabled, gameState.options, gameState.round_type, gameState.explanation]);
 
   // Vote statistics
   const voteStats = useMemo(() => {
@@ -824,6 +868,44 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             <kbd className="px-1.5 py-0.5 text-[9px] rounded-[2px] border fluent-box-nested border-white/20 text-purple-200">
               P
             </kbd>
+          </button>
+
+          {/* AI Voice Announcer Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const next = !isProjectorTtsEnabled;
+              setIsProjectorTtsEnabled(next);
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('bti_projector_tts_enabled', String(next));
+              }
+              if (!next && isProjectorSpeaking) {
+                aiExplanationService.stopSpeech();
+                setIsProjectorSpeaking(false);
+              }
+              soundFx.playClick();
+              vibrateTap();
+            }}
+            className={`px-3 py-1.5 rounded-[2px] border transition cursor-pointer flex items-center gap-1.5 font-mono text-[11px] ${
+              isProjectorSpeaking
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
+                : isProjectorTtsEnabled
+                ? 'bg-white/5 hover:bg-white/10 text-white/80 border-white/10'
+                : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300/70 border-rose-500/30'
+            }`}
+            title={isProjectorTtsEnabled ? 'AI Voice: BẬT tự động đọc đáp án (bấm để tắt)' : 'AI Voice: TẮT (bấm để bật)'}
+          >
+            {isProjectorTtsEnabled ? (
+              <>
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">AI Voice: BẬT</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                <span className="hidden sm:inline">AI Voice: TẮT</span>
+              </>
+            )}
           </button>
 
           </div>

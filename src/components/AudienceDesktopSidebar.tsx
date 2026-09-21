@@ -27,7 +27,8 @@ import {
   Wrench,
   BarChart3,
   Flame,
-  HelpCircle
+  HelpCircle,
+  Sliders
 } from 'lucide-react';
 import { t } from '../utils/i18n';
 import { soundFx } from '../services/audioEffects';
@@ -35,6 +36,7 @@ import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { getUserDisplayUid } from '../utils/uidUtils';
 import { useBatterySaver } from '../utils/batterySaverUtils';
 import { BatterySaverModal } from './BatterySaverModal';
+import { AudioSettingsModal } from './AudioSettingsModal';
 import { AudienceCheerButton } from './AudienceCheerButton';
 import { AudienceQAWidget } from './AudienceQAWidget';
 import { QuestionLikeButton } from './QuestionLikeButton';
@@ -93,6 +95,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
   const [isDockCollapsed, setIsDockCollapsed] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TabType>('PROFILE');
   const [isBatterySaverModalOpen, setIsBatterySaverModalOpen] = useState(false);
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(soundFx.isEnabled());
   const [isFullscreen, setIsFullscreen] = useState<boolean>(Boolean(document.fullscreenElement));
 
@@ -651,6 +654,25 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     </span>
                   </button>
 
+                  {/* Audio & AI Voice Volume Sliders Modal Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      vibrateTap();
+                      setIsAudioSettingsOpen(true);
+                    }}
+                    className="w-full p-3 rounded-[2px] border border-sky-500/30 bg-sky-950/20 hover:bg-sky-900/30 text-sky-200 text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sliders className="w-4 h-4 text-sky-400" />
+                      <span>{localLanguage !== 'vi' ? 'Audio & Voice Volumes' : 'Cài Đặt Âm Lượng'}</span>
+                    </div>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-[2px] bg-sky-900/40 border border-sky-400/30 text-sky-300">
+                      Sliders
+                    </span>
+                  </button>
+
                   {/* Wake Lock Screen */}
                   {isWakeLockSupported !== false && onToggleWakeLock && (
                     <button
@@ -770,6 +792,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
       )}
 
       <BatterySaverModal isOpen={isBatterySaverModalOpen} onClose={() => setIsBatterySaverModalOpen(false)} />
+      <AudioSettingsModal isOpen={isAudioSettingsOpen} onClose={() => setIsAudioSettingsOpen(false)} />
     </>
   );
 

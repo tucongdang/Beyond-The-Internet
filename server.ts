@@ -229,6 +229,22 @@ ${JSON.stringify({
         }
       });
 
+      const targetLangNames: Record<string, string> = {
+        vi: "Vietnamese (Tiếng Việt)",
+        en: "English",
+        zh: "Chinese (中文)",
+        ja: "Japanese (日本語)",
+        ko: "Korean (한국어)",
+        fr: "French (Français)",
+        es: "Spanish (Español)",
+        de: "German (Deutsch)",
+        th: "Thai (ไทย)",
+        lo: "Lao (ພາສາລາວ)",
+        km: "Khmer (ភាសាខ្មែរ)",
+        ru: "Russian (Русский)"
+      };
+
+      const langName = targetLangNames[target_lang] || target_lang;
       const isToVietnamese = target_lang === 'vi';
       const prompt = isToVietnamese
         ? `Translate this short answer, response, phrase, or cybersecurity term into natural, precise Vietnamese (Tiếng Việt).
@@ -240,9 +256,14 @@ Guidelines:
 - Preserve standard acronyms if widely used in Vietnamese IT (e.g. OTP, DDoS, HTTPS, API, SQL), but explain or translate the concept naturally.
 - Keep the translation concise, direct, and ideal for short-answer gameshow scoring.
 Return strictly JSON.`
-        : `Translate this short answer or term into the target language "${target_lang}".
+        : `Translate this short answer, response, phrase, or cybersecurity term into ${langName} (${target_lang}).
 Original text: "${text.trim()}"
 ${context ? `Context: ${context}` : ''}
+Guidelines:
+- If it is already in ${langName}, return it cleaned up.
+- Translate accurately, naturally, and concisely into ${langName}.
+- Preserve standard IT and cybersecurity acronyms if standard in ${langName}.
+- Keep the translation concise, direct, and suitable for short-answer gameshow scoring.
 Return strictly JSON.`;
 
       const response = await generateWithFallback(ai, {

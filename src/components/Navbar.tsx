@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, UserInfo, PingInfo } from '../types';
-import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe } from 'lucide-react';
+import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
 import { BatteryIndicator } from './BatteryIndicator';
 import { useLanguage } from '../hooks/useLanguage';
+import { AudioSettingsModal } from './AudioSettingsModal';
 
 interface NavbarProps {
   currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector';
@@ -44,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Admin Portal strictly retains Vietnamese navigation bar
   const effectiveLanguage = currentView === 'admin' ? 'vi' : localLanguage;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
 
   // Fullscreen State & Change Listeners
   const [isFullscreen, setIsFullscreen] = useState<boolean>(() => {
@@ -444,29 +446,47 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {localLanguage.toUpperCase()}
               </span>
             </button>
-            {/* Sound Toggle */}
-            <button
-              id="btn-toggle-sound"
-              onClick={() => {
-                vibrateSelection();
-                onToggleSound();
-              }}
-              data-tooltip={
-                soundEnabled
-                  ? (effectiveLanguage === 'en' ? 'Mute all sound effects' : 'Tắt toàn bộ hiệu ứng âm thanh')
-                  : (effectiveLanguage === 'en' ? 'Enable arena sound effects' : 'Bật hiệu ứng âm thanh sàn đấu')
-              }
-              data-tooltip-title={effectiveLanguage === 'en' ? 'System Sound' : 'Âm Thanh Hệ Thống'}
-              data-tooltip-hotkey="M"
-              data-tooltip-placement="bottom"
-              className="has-tooltip fluent-action-btn text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border-white/10"
-            >
-              {soundEnabled ? (
-                <Volume2 className="w-3.5 h-3.5 text-sky-300" />
-              ) : (
-                <VolumeX className="w-3.5 h-3.5 text-white/40" />
-              )}
-            </button>
+            {/* Sound Toggle & Audio Settings */}
+            <div className="flex items-center rounded-[2px] bg-white/5 border border-white/10 p-0.5">
+              <button
+                id="btn-toggle-sound"
+                type="button"
+                onClick={() => {
+                  vibrateSelection();
+                  onToggleSound();
+                }}
+                data-tooltip={
+                  soundEnabled
+                    ? (effectiveLanguage === 'en' ? 'Mute all sound effects' : 'Tắt toàn bộ hiệu ứng âm thanh')
+                    : (effectiveLanguage === 'en' ? 'Enable arena sound effects' : 'Bật hiệu ứng âm thanh sàn đấu')
+                }
+                data-tooltip-title={effectiveLanguage === 'en' ? 'System Sound' : 'Âm Thanh Hệ Thống'}
+                data-tooltip-hotkey="M"
+                data-tooltip-placement="bottom"
+                className="has-tooltip p-1.5 rounded-[1px] text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                {soundEnabled ? (
+                  <Volume2 className="w-3.5 h-3.5 text-sky-300" />
+                ) : (
+                  <VolumeX className="w-3.5 h-3.5 text-white/40" />
+                )}
+              </button>
+              <button
+                id="btn-open-audio-settings"
+                type="button"
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playClick();
+                  setIsAudioSettingsOpen(true);
+                }}
+                data-tooltip={effectiveLanguage === 'en' ? 'Adjust TTS & Sound FX volume' : 'Chỉnh âm lượng Giọng đọc AI & Hiệu ứng'}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng'}
+                data-tooltip-placement="bottom"
+                className="has-tooltip p-1.5 rounded-[1px] text-white/50 hover:text-white hover:bg-white/10 transition cursor-pointer border-l border-white/10"
+              >
+                <Sliders className="w-3 h-3 text-sky-300/80 hover:text-sky-300" />
+              </button>
+            </div>
 
             {/* Fullscreen Toggle */}
             <button
@@ -735,6 +755,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </button>
 
+              {/* Mobile Audio Settings in Admin menu */}
+              <button
+                id="btn-mobile-audio-settings-admin"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  setIsAudioSettingsOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sliders className="w-4 h-4 text-sky-300" />
+                  <span>{effectiveLanguage === 'en' ? 'Audio & AI Voice Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
+                </div>
+                <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/40 text-sky-200 border border-sky-500/30">
+                  Sliders
+                </span>
+              </button>
+
               {/* Mobile Fullscreen Toggle in Admin menu */}
               <button
                 id="btn-mobile-fullscreen-admin"
@@ -809,6 +849,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                     EN
                   </span>
                 </div>
+              </button>
+
+              {/* Mobile Audio Settings in Audience menu */}
+              <button
+                id="btn-mobile-audio-settings-user"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  setIsAudioSettingsOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between font-semibold text-left transition text-xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sliders className="w-4 h-4 text-sky-300" />
+                  <span>{effectiveLanguage === 'en' ? 'Audio & Voice Volume Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
+                </div>
+                <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-[2px] bg-sky-900/40 text-sky-200 border border-sky-500/30">
+                  Sliders
+                </span>
               </button>
 
               {/* Fullscreen Quick Toggle */}
@@ -908,6 +968,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       )}
+
+      {/* Independent Audio & AI Voice Settings Modal */}
+      <AudioSettingsModal
+        isOpen={isAudioSettingsOpen}
+        onClose={() => setIsAudioSettingsOpen(false)}
+      />
     </header>
   );
 };

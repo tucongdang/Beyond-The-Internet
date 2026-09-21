@@ -6,8 +6,16 @@ class AudioQueueManager {
   private queue: Array<{ playFn: () => void; durationMs: number }> = [];
   private isPlaying = false;
   private timer: any = null;
+  private isSuppressed?: () => boolean;
+
+  constructor(isSuppressed?: () => boolean) {
+    this.isSuppressed = isSuppressed;
+  }
 
   public enqueue(playFn: () => void, durationMs: number) {
+    if (this.isSuppressed && this.isSuppressed()) {
+      return;
+    }
     this.queue.push({ playFn, durationMs });
     if (!this.isPlaying) {
       this.playNext();
@@ -24,6 +32,10 @@ class AudioQueueManager {
   }
 
   private playNext() {
+    if (this.isSuppressed && this.isSuppressed()) {
+      this.clear();
+      return;
+    }
     if (this.queue.length === 0) {
       this.isPlaying = false;
       return;
@@ -33,7 +45,9 @@ class AudioQueueManager {
     const task = this.queue.shift();
     if (task) {
       try {
-        task.playFn();
+        if (!this.isSuppressed || !this.isSuppressed()) {
+          task.playFn();
+        }
       } catch (e) {
         console.error("AudioQueue error", e);
       }
@@ -47,14 +61,107 @@ class AudioQueueManager {
 class SoundEffectsService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
-  private queueManager = new AudioQueueManager();
+  private adminMuted: boolean = false;
+  private ttsActive: boolean = false;
+  private queueManager = new AudioQueueManager(() => this.shouldSuppressAudio());
+  private masterGain: GainNode | null = null;
+  private volume: number = (() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_soundfx_volume');
+      if (saved !== null) {
+        const val = parseFloat(saved);
+        if (!isNaN(val)) return Math.max(0, Math.min(1, val));
+      }
+    }
+    return 0.8;
+  })();
+  private volumeListeners: Set<(vol: number) => void> = new Set();
+
+  public getVolume(): number {
+    return this.volume;
+  }
+
+  public setVolume(vol: number): void {
+    this.volume = Math.max(0, Math.min(1, vol));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bti_soundfx_volume', String(this.volume));
+    }
+    if (this.ctx && this.masterGain) {
+      try {
+        this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+      } catch {}
+    }
+    this.volumeListeners.forEach(listener => {
+      try {
+        listener(this.volume);
+      } catch {}
+    });
+  }
+
+  public subscribeVolume(listener: (vol: number) => void): () => void {
+    this.volumeListeners.add(listener);
+    return () => {
+      this.volumeListeners.delete(listener);
+    };
+  }
+
+  public getDestination(ctx: AudioContext): AudioNode {
+    if (!this.masterGain || this.masterGain.context !== ctx) {
+      this.masterGain = ctx.createGain();
+      this.masterGain.gain.setValueAtTime(this.volume, ctx.currentTime);
+      this.masterGain.connect(ctx.destination);
+    }
+    return this.masterGain;
+  }
 
   public clearQueue() {
     this.queueManager.clear();
   }
 
+  /**
+   * Completely mute all sound effects on Admin screen
+   */
+  public setAdminMuted(muted: boolean) {
+    this.adminMuted = muted;
+    if (muted) {
+      this.clearQueue();
+    }
+  }
+
+  public isAdminMuted(): boolean {
+    return this.adminMuted;
+  }
+
+  /**
+   * Temporarily mute sound effects when TTS / speech synthesis is active
+   */
+  public setTtsActive(active: boolean) {
+    this.ttsActive = active;
+    if (active) {
+      this.clearQueue();
+    }
+  }
+
+  public isTtsSpeaking(): boolean {
+    if (this.ttsActive) return true;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      return Boolean(window.speechSynthesis.speaking);
+    }
+    return false;
+  }
+
+  /**
+   * Check if sound effects should be silenced (disabled, admin screen, or TTS speaking)
+   */
+  public shouldSuppressAudio(): boolean {
+    if (!this.enabled) return true;
+    if (this.adminMuted) return true;
+    if (this.isTtsSpeaking()) return true;
+    return false;
+  }
+
   private getAudioContext(): AudioContext | null {
-    if (!this.enabled) return null;
+    if (this.shouldSuppressAudio()) return null;
     if (typeof window === 'undefined') return null;
 
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -98,7 +205,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
       
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
       osc.start();
       osc.stop(ctx.currentTime + 0.15);
     } catch {
@@ -124,7 +231,7 @@ class SoundEffectsService {
         gain.gain.setValueAtTime(0.25, now + i * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.01, now + (i + 1) * 0.1);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getDestination(ctx));
         osc.start(now + i * 0.1);
         osc.stop(now + (i + 1) * 0.1);
       });
@@ -155,7 +262,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
 
       osc.start();
       osc.stop(ctx.currentTime + 0.05);
@@ -186,7 +293,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
 
       osc.start();
       osc.stop(ctx.currentTime + duration);
@@ -214,7 +321,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
 
       osc.start();
       osc.stop(ctx.currentTime + 0.4);
@@ -256,7 +363,7 @@ class SoundEffectsService {
           gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
 
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(this.getDestination(ctx));
 
           osc.start(start);
           osc.stop(start + 0.4);
@@ -276,7 +383,7 @@ class SoundEffectsService {
           gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
 
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(this.getDestination(ctx));
 
           osc.start(start);
           osc.stop(start + 0.3);
@@ -307,7 +414,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
 
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
@@ -356,7 +463,7 @@ class SoundEffectsService {
       noise.connect(filter);
       filter.connect(oscGain);
       oscGain.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
 
       noise.start();
     } catch {}
@@ -383,7 +490,7 @@ class SoundEffectsService {
         gain.gain.exponentialRampToValueAtTime(0.01, start + 0.4);
 
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getDestination(ctx));
 
         osc.start(start);
         osc.stop(start + 0.4);
@@ -428,7 +535,7 @@ class SoundEffectsService {
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getDestination(ctx));
 
         osc.start(startTime);
         osc.stop(startTime + duration);
@@ -456,7 +563,7 @@ class SoundEffectsService {
       gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
       osc1.connect(gain1);
-      gain1.connect(ctx.destination);
+      gain1.connect(this.getDestination(ctx));
       osc1.start(now);
       osc1.stop(now + 0.08);
 
@@ -472,7 +579,7 @@ class SoundEffectsService {
       gain2.gain.exponentialRampToValueAtTime(0.001, dubTime + 0.09);
 
       osc2.connect(gain2);
-      gain2.connect(ctx.destination);
+      gain2.connect(this.getDestination(ctx));
       osc2.start(dubTime);
       osc2.stop(dubTime + 0.09);
     } catch {}
@@ -512,7 +619,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
       osc.start(now);
       osc.stop(now + 0.07);
     } catch {}
@@ -540,7 +647,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
       
       osc.start(now);
       osc.stop(now + 0.1);
@@ -563,7 +670,7 @@ class SoundEffectsService {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getDestination(ctx));
       osc.start(now);
       osc.stop(now + 0.09);
     } catch {}
@@ -585,7 +692,7 @@ class SoundEffectsService {
       gain1.gain.setValueAtTime(0.25, now);
       gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
       osc1.connect(gain1);
-      gain1.connect(ctx.destination);
+      gain1.connect(this.getDestination(ctx));
       osc1.start(now);
       osc1.stop(now + 0.04);
 
@@ -598,7 +705,7 @@ class SoundEffectsService {
       gain2.gain.setValueAtTime(0.3, now + 0.05);
       gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
       osc2.connect(gain2);
-      gain2.connect(ctx.destination);
+      gain2.connect(this.getDestination(ctx));
       osc2.start(now + 0.05);
       osc2.stop(now + 0.12);
 
@@ -611,7 +718,7 @@ class SoundEffectsService {
       gain3.gain.setValueAtTime(0.2, now + 0.13);
       gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
       osc3.connect(gain3);
-      gain3.connect(ctx.destination);
+      gain3.connect(this.getDestination(ctx));
       osc3.start(now + 0.13);
       osc3.stop(now + 0.25);
     } catch {}
@@ -637,7 +744,7 @@ class SoundEffectsService {
         gain.gain.setValueAtTime(0.2, now + idx * step);
         gain.gain.exponentialRampToValueAtTime(0.001, now + (idx + 1) * step + 0.12);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getDestination(ctx));
         osc.start(now + idx * step);
         osc.stop(now + (idx + 1) * step + 0.12);
       });
@@ -663,7 +770,7 @@ class SoundEffectsService {
         gain.gain.linearRampToValueAtTime(0.16, now + 0.06);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(this.getDestination(ctx));
         osc.start(now);
         osc.stop(now + 0.32);
       });
