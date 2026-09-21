@@ -72,7 +72,8 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
         body: JSON.stringify({
           userId,
           status: newStatus,
-          approvedBy: currentUser?.fullName || 'Trưởng Ban Kỹ Thuật'
+          approvedBy: currentUser?.fullName || 'Trưởng Ban Kỹ Thuật',
+          callerRole: currentUser?.role || 'OPERATOR'
         })
       });
 
@@ -115,7 +116,7 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ userId, callerRole: currentUser?.role || 'OPERATOR' })
       });
 
       if (res.ok) {
@@ -137,6 +138,7 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
   };
 
   const pendingCount = users.filter(u => u.status === 'PENDING').length;
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   const filteredUsers = users.filter(u => {
     if (filter !== 'ALL' && u.status !== filter) return false;
@@ -411,20 +413,20 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
                         </>
                       )}
 
-                      {u.status === 'APPROVED' && (
+                      {u.status === 'APPROVED' && isSuperAdmin && (
                         <button
                           type="button"
                           onClick={() => handleUpdateStatus(u.id, 'REVOKED')}
                           disabled={isProcessing}
                           className="px-2.5 py-1.5 bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border border-amber-500/30 text-xs rounded-[2px] flex items-center gap-1 transition cursor-pointer disabled:opacity-50"
-                          title="Khóa quyền truy cập của tài khoản này"
+                          title="Tạm ngưng quyền truy cập (chỉ Super Admin)"
                         >
                           <Ban className="w-3.5 h-3.5" />
                           <span>Thu Hồi Quyền</span>
                         </button>
                       )}
 
-                      {(u.status === 'REJECTED' || u.status === 'REVOKED') && (
+                      {u.status === 'REJECTED' && (
                         <button
                           type="button"
                           onClick={() => handleUpdateStatus(u.id, 'APPROVED')}
@@ -436,15 +438,30 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
                         </button>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteUser(u.id, u.fullName)}
-                        disabled={isProcessing}
-                        className="p-1.5 text-white/40 hover:text-rose-400 hover:bg-rose-950/30 rounded-[2px] transition cursor-pointer disabled:opacity-30 border border-transparent hover:border-rose-500/30"
-                        title="Xóa vĩnh viễn hồ sơ"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {u.status === 'REVOKED' && isSuperAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStatus(u.id, 'APPROVED')}
+                          disabled={isProcessing}
+                          className="px-3 py-1.5 bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs rounded-[2px] flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
+                          title="Khôi phục quyền truy cập (chỉ Super Admin)"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Kích Hoạt Lại</span>
+                        </button>
+                      )}
+
+                      {isSuperAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUser(u.id, u.fullName)}
+                          disabled={isProcessing}
+                          className="p-1.5 text-white/40 hover:text-rose-400 hover:bg-rose-950/30 rounded-[2px] transition cursor-pointer disabled:opacity-30 border border-transparent hover:border-rose-500/30"
+                          title="Xóa vĩnh viễn hồ sơ (chỉ Super Admin)"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

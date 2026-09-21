@@ -7703,6 +7703,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       <AdminApprovalModal
         isOpen={isApprovalModalOpen}
         onClose={() => setIsApprovalModalOpen(false)}
+        currentUser={adminUser}
       />
       </div>
     </FluentProvider>

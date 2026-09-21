@@ -294,7 +294,7 @@ async function startServer() {
         return res.status(403).json({
           success: false,
           status: 'REVOKED',
-          error: "Quyền truy cập của tài khoản này đã bị thu hồi hoặc tạm khóa. Vui lòng liên hệ Trưởng Ban Kỹ Thuật."
+          error: "Tài khoản này đã được Trưởng Ban Kỹ Thuật tạm ngưng quyền truy cập theo quyết định điều phối nhân sự sự kiện. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ trực tiếp Trưởng Ban Kỹ Thuật để được hỗ trợ."
         });
       }
 
@@ -368,11 +368,19 @@ async function startServer() {
         });
       }
 
-      if (user.status === 'REJECTED' || user.status === 'REVOKED') {
+      if (user.status === 'REJECTED') {
         return res.status(403).json({
           success: false,
-          status: user.status,
-          error: "Quyền truy cập của tài khoản này đã bị từ chối hoặc thu hồi."
+          status: 'REJECTED',
+          error: "Hồ sơ của bạn đã bị từ chối cấp quyền truy cập Ban Kỹ Thuật."
+        });
+      }
+
+      if (user.status === 'REVOKED') {
+        return res.status(403).json({
+          success: false,
+          status: 'REVOKED',
+          error: "Tài khoản này đã được Trưởng Ban Kỹ Thuật tạm ngưng quyền truy cập theo quyết định điều phối nhân sự sự kiện. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ trực tiếp Trưởng Ban Kỹ Thuật để được hỗ trợ."
         });
       }
 
@@ -456,10 +464,17 @@ async function startServer() {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { userId, status, approvedBy } = req.body;
+    const { userId, status, approvedBy, callerRole } = req.body;
     const validStatuses = ['APPROVED', 'REJECTED', 'REVOKED'];
     if (!userId || !status || !validStatuses.includes(status)) {
       return res.status(400).json({ error: "Dữ liệu trạng thái không hợp lệ." });
+    }
+
+    // REVOKE action is restricted to Super Admin (Master Key) only to prevent personal grudge abuse
+    if (status === 'REVOKED' && callerRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({
+        error: "Chức năng Thu Hồi Quyền chỉ dành cho Trưởng Ban Kỹ Thuật (Super Admin). Thao tác này được giới hạn để đảm bảo tính công bằng và minh bạch trong quản lý nhân sự."
+      });
     }
 
     const users = loadAdminUsers();
@@ -473,12 +488,16 @@ async function startServer() {
       user.approvedAt = Date.now();
       user.approvedBy = approvedBy || 'Trưởng Ban Kỹ Thuật';
     }
+    if (status === 'REVOKED') {
+      (user as any).revokedAt = Date.now();
+      (user as any).revokedBy = approvedBy || 'Trưởng Ban Kỹ Thuật (Master Key)';
+    }
     saveAdminUsers(users);
 
     return res.json({ success: true, user: sanitizeAdminUser(user) });
   });
 
-  // 9. Delete User Profile
+  // 9. Delete User Profile (Super Admin Only)
   app.post("/api/admin/delete-user", (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace("Bearer ", "");
@@ -487,9 +506,16 @@ async function startServer() {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { userId } = req.body;
+    const { userId, callerRole } = req.body;
     if (!userId) {
       return res.status(400).json({ error: "Thiếu userId." });
+    }
+
+    // Restrict delete to Super Admin only
+    if (callerRole !== 'SUPER_ADMIN') {
+      return res.status(403).json({
+        error: "Chức năng Xóa Tài Khoản chỉ dành cho Trưởng Ban Kỹ Thuật (Super Admin)."
+      });
     }
 
     let users = loadAdminUsers();
