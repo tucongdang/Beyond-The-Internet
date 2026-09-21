@@ -21,21 +21,35 @@ async function startServer() {
 
   app.use(express.json({ limit: '100kb' }));
 
+  const isDev = process.env.NODE_ENV !== 'production';
+
   // Global rate limiter to protect static file serving & SPA routes (CodeQL js/missing-rate-limiting)
   const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 2000,
+    max: 10000,
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: (req) => {
+      if (isDev) return true;
+      const ip = req.ip || req.socket.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    }
   });
   app.use(globalLimiter);
 
-  // Stricter rate limiter for API endpoints to prevent abuse & quota exhaustion
+  // Rate limiter for API endpoints to prevent abuse & quota exhaustion
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300,
+    max: 3000,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      if (isDev) return true;
+      const ip = req.ip || req.socket.remoteAddress || '';
+      if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return true;
+      if (req.path.includes('/captcha') || req.path.includes('/health')) return true;
+      return false;
+    },
     message: {
       error: "Quá nhiều yêu cầu từ địa chỉ IP này. Vui lòng thử lại sau ít phút."
     }
@@ -60,9 +74,14 @@ async function startServer() {
   // Dedicated rate limiter for admin authentication to prevent brute force
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10,
+    max: 50,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      if (isDev) return true;
+      const ip = req.ip || req.socket.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    },
     message: { error: "Quá nhiều lần thử đăng nhập thất bại. Vui lòng thử lại sau 15 phút." }
   });
 

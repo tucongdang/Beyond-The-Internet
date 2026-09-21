@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Lock, ArrowRight, ShieldAlert, KeyRound, Eye, EyeOff, UserPlus, LogIn, Search, CheckCircle2, Clock, AlertCircle, Shield, Sparkles } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateError } from '../utils/hapticUtils';
@@ -40,6 +40,17 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const [regNote, setRegNote] = useState('');
   const [regCaptchaId, setRegCaptchaId] = useState('');
   const [regCaptchaAnswer, setRegCaptchaAnswer] = useState('');
+
+  // Stable CAPTCHA Callbacks
+  const handleLoginCaptchaChange = useCallback((id: string, val: string) => {
+    setLoginCaptchaId(id);
+    setLoginCaptchaAnswer(val);
+  }, []);
+
+  const handleRegCaptchaChange = useCallback((id: string, val: string) => {
+    setRegCaptchaId(id);
+    setRegCaptchaAnswer(val);
+  }, []);
 
   // Status Check State
   const [checkQuery, setCheckQuery] = useState('');
@@ -429,10 +440,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
             <CaptchaChallenge
               value={loginCaptchaAnswer}
               captchaId={loginCaptchaId}
-              onChange={(id, val) => {
-                setLoginCaptchaId(id);
-                setLoginCaptchaAnswer(val);
-              }}
+              onChange={handleLoginCaptchaChange}
               disabled={isSubmitting}
             />
 
@@ -580,10 +588,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
             <CaptchaChallenge
               value={regCaptchaAnswer}
               captchaId={regCaptchaId}
-              onChange={(id, val) => {
-                setRegCaptchaId(id);
-                setRegCaptchaAnswer(val);
-              }}
+              onChange={handleRegCaptchaChange}
               disabled={isSubmitting}
             />
 

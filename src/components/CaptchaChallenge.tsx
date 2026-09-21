@@ -20,6 +20,9 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
   const fetchCaptcha = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -27,7 +30,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
       const data = await res.json();
       if (data.captchaId && data.question) {
         setQuestion(data.question);
-        onChange(data.captchaId, '');
+        onChangeRef.current(data.captchaId, '');
       }
     } catch (err) {
       console.warn('Could not fetch CAPTCHA challenge:', err);
@@ -36,11 +39,11 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
       const num2 = Math.floor(Math.random() * 10) + 1;
       const q = `${num1} + ${num2}`;
       setQuestion(q);
-      onChange('local_fallback_' + (num1 + num2), '');
+      onChangeRef.current('local_fallback_' + (num1 + num2), '');
     } finally {
       setIsLoading(false);
     }
-  }, [onChange]);
+  }, []);
 
   useEffect(() => {
     fetchCaptcha();
