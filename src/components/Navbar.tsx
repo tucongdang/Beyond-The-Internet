@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, PingInfo } from '../types';
-import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders } from 'lucide-react';
+import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
@@ -45,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { localLanguage, toggleLanguage } = useLanguage();
   // Admin Portal strictly retains Vietnamese navigation bar
   const effectiveLanguage = currentView === 'admin' ? 'vi' : localLanguage;
+  const isLanding = currentView === 'landing';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
 
@@ -267,9 +268,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          <div className="hidden lg:flex items-center">
-            {getStatusBadge()}
-          </div>
+          {!isLanding && (
+            <div className="hidden lg:flex items-center">
+              {getStatusBadge()}
+            </div>
+          )}
         </div>
 
         {/* Right: Telemetry & Controls */}
@@ -352,76 +355,78 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {/* Telemetry Group: Ping, Battery, Connected Count */}
-          <div className="hidden lg:inline-flex fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
-            {/* Ping / Latency Indicator */}
-            <button
-              id="btn-ping-latency-indicator"
-              onClick={handleManualPing}
-              disabled={isMeasuringPing}
-              data-tooltip={
-                pingInfo.latencyMs !== null
-                  ? (effectiveLanguage === 'en'
-                      ? `Firebase latency: ${pingInfo.latencyMs}ms (${pingBadge.description}). Click to check again.`
-                      : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để kiểm tra lại ngay.`)
-                  : (effectiveLanguage === 'en'
-                      ? 'Realtime sync offline. Click to reconnect.'
-                      : 'Mất kết nối thời gian thực. Bấm để thử đồng bộ lại.')
-              }
-              data-tooltip-title={effectiveLanguage === 'en' ? 'Network Latency (RTT)' : 'Độ Trễ Mạng (Ping RTT)'}
-              data-tooltip-placement="bottom"
-              className={`hidden sm:flex has-tooltip fluent-action-btn ${pingBadge.container}`}
-              aria-label={effectiveLanguage === 'en' ? `Firebase latency: ${pingBadge.label}` : `Độ trễ Firebase: ${pingBadge.label}`}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  {pingInfo.latencyMs !== null && pingInfo.quality === 'excellent' && (
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400" />
-                  )}
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${pingBadge.dot}`} />
-                </span>
-                <Activity className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
-              </div>
-              <div className="flex flex-col items-start leading-none font-mono">
-                <span className="text-[8px] uppercase tracking-wider font-bold opacity-75">
-                  Ping
-                </span>
-                <span className="text-xs font-bold tracking-tight">
-                  {isMeasuringPing ? (
-                    <span className="animate-pulse">...</span>
-                  ) : pingInfo.latencyMs !== null ? (
-                    `${pingInfo.latencyMs}ms`
-                  ) : (
-                    'Off'
-                  )}
-                </span>
-              </div>
-            </button>
+          {/* Telemetry Group: Ping, Battery, Connected Count - Only shown during active matches */}
+          {!isLanding && (
+            <div className="hidden lg:inline-flex fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
+              {/* Ping / Latency Indicator */}
+              <button
+                id="btn-ping-latency-indicator"
+                onClick={handleManualPing}
+                disabled={isMeasuringPing}
+                data-tooltip={
+                  pingInfo.latencyMs !== null
+                    ? (effectiveLanguage === 'en'
+                        ? `Firebase latency: ${pingInfo.latencyMs}ms (${pingBadge.description}). Click to check again.`
+                        : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để kiểm tra lại ngay.`)
+                    : (effectiveLanguage === 'en'
+                        ? 'Realtime sync offline. Click to reconnect.'
+                        : 'Mất kết nối thời gian thực. Bấm để thử đồng bộ lại.')
+                }
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Network Latency (RTT)' : 'Độ Trễ Mạng (Ping RTT)'}
+                data-tooltip-placement="bottom"
+                className={`hidden sm:flex has-tooltip fluent-action-btn ${pingBadge.container}`}
+                aria-label={effectiveLanguage === 'en' ? `Firebase latency: ${pingBadge.label}` : `Độ trễ Firebase: ${pingBadge.label}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-2 w-2">
+                    {pingInfo.latencyMs !== null && pingInfo.quality === 'excellent' && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400" />
+                    )}
+                    <span className={`relative inline-flex rounded-full h-2 w-2 ${pingBadge.dot}`} />
+                  </span>
+                  <Activity className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
+                </div>
+                <div className="flex flex-col items-start leading-none font-mono">
+                  <span className="text-[8px] uppercase tracking-wider font-bold opacity-75">
+                    Ping
+                  </span>
+                  <span className="text-xs font-bold tracking-tight">
+                    {isMeasuringPing ? (
+                      <span className="animate-pulse">...</span>
+                    ) : pingInfo.latencyMs !== null ? (
+                      `${pingInfo.latencyMs}ms`
+                    ) : (
+                      'Off'
+                    )}
+                  </span>
+                </div>
+              </button>
 
-            {/* Battery Status Indicator */}
-            <div className="hidden sm:block">
-              <BatteryIndicator forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
-            </div>
+              {/* Battery Status Indicator */}
+              <div className="hidden sm:block">
+                <BatteryIndicator forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+              </div>
 
-            {/* Connected Audience Metric */}
-            <div
-              data-tooltip={
-                effectiveLanguage === 'en'
-                  ? 'Total online users currently in the game room'
-                  : 'Tổng số người dùng đang trực tuyến trong phòng thi'
-              }
-              data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
-              data-tooltip-placement="bottom"
-              className="has-tooltip hidden sm:flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
-            >
-              <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
-                {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}
-              </span>
-              <span className="text-xs sm:text-sm font-mono font-extrabold text-emerald-400 leading-none">
-                {activeCount}
-              </span>
+              {/* Connected Audience Metric */}
+              <div
+                data-tooltip={
+                  effectiveLanguage === 'en'
+                    ? 'Total online users currently in the game room'
+                    : 'Tổng số người dùng đang trực tuyến trong phòng thi'
+                }
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Online Audience' : 'Khán Giả Trực Tuyến'}
+                data-tooltip-placement="bottom"
+                className="has-tooltip hidden sm:flex flex-col items-end justify-center px-2 sm:px-2.5 min-h-[34px] bg-white/5 border border-white/10 rounded-[2px] shrink-0 whitespace-nowrap"
+              >
+                <span className="text-[8px] text-white/50 uppercase font-bold tracking-wider font-mono">
+                  {effectiveLanguage === 'en' ? 'Connected' : 'Trực Tuyến'}
+                </span>
+                <span className="text-xs sm:text-sm font-mono font-extrabold text-emerald-400 leading-none">
+                  {activeCount}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="fluent-action-group bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-[2px]">
             {/* Quick Language Toggle */}
@@ -555,11 +560,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
           ) : user ? (
-            <div className="hidden lg:flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5">
               <button
                 id="btn-user-profile"
                 onClick={() => {
                   vibrateTap();
+                  soundFx.playClick();
                   onOpenProfile();
                 }}
                 className="flex items-center gap-2 px-2.5 py-1 fluent-box-nested border border-white/10 hover:border-sky-500/40 rounded-[2px] text-xs transition cursor-pointer"
@@ -567,7 +573,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px]">
                   {user.name.slice(0, 1).toUpperCase()}
                 </div>
-                <div className="flex flex-col items-start font-mono">
+                <div className="hidden sm:flex flex-col items-start font-mono">
                   <span className="font-bold text-white text-[10px] leading-tight truncate max-w-[100px]">{user.name}</span>
                   <span className="text-emerald-400 font-bold text-[8px] leading-tight">{user.mssv}</span>
                 </div>
@@ -588,13 +594,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           ) : (
             <button
+              id="btn-navbar-signin"
               onClick={() => {
                 vibrateTap();
+                soundFx.playClick();
                 onOpenProfile();
               }}
-              className="hidden lg:block px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-[2px] text-[11px] sm:text-xs uppercase tracking-wider transition shadow-md shadow-blue-950/40 border border-blue-400/40 cursor-pointer"
             >
-              {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
+              <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-200" />
+              <span>{effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}</span>
             </button>
           )}
 
@@ -651,53 +660,124 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
 
-            {/* Mobile Connection & Latency Telemetry Card */}
-            <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between shadow-inner">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${pingBadge.container}`}>
-                  <Activity className={`w-4 h-4 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
-                    <span>{effectiveLanguage === 'en' ? 'Server Latency' : 'Độ Trễ Máy Chủ'}</span>
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded-[2px] font-mono font-bold uppercase tracking-wider ${
-                      pingInfo.quality === 'excellent'
-                        ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
-                        : pingInfo.quality === 'good'
-                        ? 'bg-sky-950/60 text-sky-300 border border-sky-500/30'
-                        : pingInfo.quality === 'fair'
-                        ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
-                        : pingInfo.quality === 'poor'
-                        ? 'bg-rose-950/60 text-rose-300 border border-rose-500/30'
-                        : 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30'
-                    }`}>
-                      {pingBadge.qualityText}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-white/70 flex items-center gap-1.5 mt-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
-                    <span>RTT: <strong className="text-white font-bold">{pingInfo.latencyMs !== null ? `${pingInfo.latencyMs} ms` : (effectiveLanguage === 'en' ? 'Disconnected' : 'Mất kết nối')}</strong></span>
-                    {pingInfo.lastChecked > 0 && (
-                      <span className="text-white/40 text-[9px]">
-                        • {new Date(pingInfo.lastChecked).toLocaleTimeString(effectiveLanguage === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </span>
+            {/* Landing Page Welcome / Account Card */}
+            {isLanding && (
+              <div className="p-3.5 fluent-box-nested border border-sky-500/30 bg-sky-950/20 rounded-[2px] space-y-2.5">
+                {user ? (
+                  <div className="flex items-center justify-between w-full">
+                    <button
+                      onClick={() => {
+                        vibrateTap();
+                        soundFx.playClick();
+                        onOpenProfile();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2.5 text-left cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono border border-blue-400/40">
+                        {user.name.slice(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white font-mono">{user.name}</div>
+                        <div className="text-[9px] text-emerald-400 font-mono tracking-widest">{user.mssv}</div>
+                      </div>
+                    </button>
+                    {onLogout && (
+                      <button
+                        onClick={() => {
+                          vibrateTap();
+                          soundFx.playClick();
+                          onLogout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
+                        title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                      </button>
                     )}
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-sky-300">
+                      <Sparkles className="w-4 h-4" />
+                      <span className="text-xs font-bold font-mono uppercase tracking-wider">
+                        {effectiveLanguage === 'en' ? 'Welcome to BTI 2026' : 'Chào Mừng Đến Với BTI 2026'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/70 leading-relaxed font-sans">
+                      {effectiveLanguage === 'en'
+                        ? 'Sign in with your Name and Student ID to record points, participate in live voting, and compete on the leaderboard.'
+                        : 'Đăng nhập với Họ tên và MSSV để lưu điểm số, tham gia bình chọn và tranh tài trên bảng xếp hạng.'}
+                    </p>
+                    <button
+                      onClick={() => {
+                        vibrateTap();
+                        soundFx.playClick();
+                        onOpenProfile();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full py-2.5 px-3 fluent-acrylic-surface text-white rounded-[2px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md border border-blue-400/40 cursor-pointer"
+                    >
+                      <User className="w-3.5 h-3.5 text-sky-200" />
+                      <span>{effectiveLanguage === 'en' ? 'Sign In / Register' : 'Đăng Nhập / Đăng Ký'}</span>
+                    </button>
+                  </>
+                )}
               </div>
-              <button
-                onClick={handleManualPing}
-                disabled={isMeasuringPing}
-                className="px-2.5 py-1.5 fluent-action-btn text-xs font-mono font-bold border border-white/10 shrink-0"
-                title={effectiveLanguage === 'en' ? 'Re-check latency now' : 'Đo lại độ trễ ngay'}
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin' : ''}`} />
-                <span className="text-[11px]">{isMeasuringPing ? (effectiveLanguage === 'en' ? 'Testing' : 'Đang đo') : (effectiveLanguage === 'en' ? 'Re-test' : 'Đo lại')}</span>
-              </button>
-            </div>
+            )}
 
-            {/* Mobile Battery Status Card */}
-            <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+            {/* Mobile Connection & Latency Telemetry Card - Only when in active match */}
+            {!isLanding && (
+              <>
+                <div className="p-3 fluent-box-nested border border-white/10 rounded-[2px] flex items-center justify-between shadow-inner">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${pingBadge.container}`}>
+                      <Activity className={`w-4 h-4 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.icon}`} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
+                        <span>{effectiveLanguage === 'en' ? 'Server Latency' : 'Độ Trễ Máy Chủ'}</span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-[2px] font-mono font-bold uppercase tracking-wider ${
+                          pingInfo.quality === 'excellent'
+                            ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
+                            : pingInfo.quality === 'good'
+                            ? 'bg-sky-950/60 text-sky-300 border border-sky-500/30'
+                            : pingInfo.quality === 'fair'
+                            ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
+                            : pingInfo.quality === 'poor'
+                            ? 'bg-rose-950/60 text-rose-300 border border-rose-500/30'
+                            : 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30'
+                        }`}>
+                          {pingBadge.qualityText}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-mono text-white/70 flex items-center gap-1.5 mt-0.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
+                        <span>RTT: <strong className="text-white font-bold">{pingInfo.latencyMs !== null ? `${pingInfo.latencyMs} ms` : (effectiveLanguage === 'en' ? 'Disconnected' : 'Mất kết nối')}</strong></span>
+                        {pingInfo.lastChecked > 0 && (
+                          <span className="text-white/40 text-[9px]">
+                            • {new Date(pingInfo.lastChecked).toLocaleTimeString(effectiveLanguage === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleManualPing}
+                    disabled={isMeasuringPing}
+                    className="px-2.5 py-1.5 fluent-action-btn text-xs font-mono font-bold border border-white/10 shrink-0"
+                    title={effectiveLanguage === 'en' ? 'Re-check latency now' : 'Đo lại độ trễ ngay'}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isMeasuringPing ? 'animate-spin' : ''}`} />
+                    <span className="text-[11px]">{isMeasuringPing ? (effectiveLanguage === 'en' ? 'Testing' : 'Đang đo') : (effectiveLanguage === 'en' ? 'Re-test' : 'Đo lại')}</span>
+                  </button>
+                </div>
+
+                {/* Mobile Battery Status Card */}
+                <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+              </>
+            )}
 
             {currentView === 'admin' && (
               <div className="flex flex-col gap-2">
@@ -957,50 +1037,52 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 )}
 
-                {user ? (
-                  <div className="flex items-center justify-between p-2.5 fluent-box-nested rounded-[2px] border border-white/10">
+                {!isLanding && (
+                  user ? (
+                    <div className="flex items-center justify-between p-2.5 fluent-box-nested rounded-[2px] border border-white/10">
+                      <button
+                        onClick={() => {
+                          vibrateTap();
+                          onOpenProfile();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-2.5 text-left"
+                      >
+                        <div className="w-7 h-7 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
+                          {user.name.slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white font-mono">{user.name}</div>
+                          <div className="text-[9px] text-emerald-400 font-mono tracking-widest">{user.mssv}</div>
+                        </div>
+                      </button>
+                      {onLogout && (
+                        <button
+                          onClick={() => {
+                            vibrateTap();
+                            soundFx.playClick();
+                            onLogout();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
+                          title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
                     <button
                       onClick={() => {
                         vibrateTap();
                         onOpenProfile();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-2.5 text-left"
+                      className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] flex items-center justify-center font-bold text-xs shadow-md"
                     >
-                      <div className="w-7 h-7 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center text-xs font-bold font-mono">
-                        {user.name.slice(0, 1).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white font-mono">{user.name}</div>
-                        <div className="text-[9px] text-emerald-400 font-mono tracking-widest">{user.mssv}</div>
-                      </div>
+                      {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
                     </button>
-                    {onLogout && (
-                      <button
-                        onClick={() => {
-                          vibrateTap();
-                          soundFx.playClick();
-                          onLogout();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="p-2 fluent-action-btn text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30 rounded-[2px]"
-                        title={effectiveLanguage === 'en' ? 'Sign out' : 'Đăng xuất'}
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      vibrateTap();
-                      onOpenProfile();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2.5 fluent-acrylic-surface hover:from-blue-500 hover:to-indigo-500 text-white rounded-[2px] flex items-center justify-center font-bold text-xs shadow-md"
-                  >
-                    {effectiveLanguage === 'en' ? 'Sign In' : 'Đăng nhập'}
-                  </button>
+                  )
                 )}
               </div>
             )}
