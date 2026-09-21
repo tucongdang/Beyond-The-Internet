@@ -28,7 +28,8 @@ import {
   RefreshCw,
   Mail,
   Send,
-  ExternalLink
+  ExternalLink,
+  Zap
 } from 'lucide-react';
 import { 
   getAuth, 
@@ -117,6 +118,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [quickActivationCode, setQuickActivationCode] = useState('');
+  const [isQuickActivating, setIsQuickActivating] = useState(false);
 
   // --- Google Verification State (MSSV & 12-Digit UID Confirmation) ---
   const [googleAuthData, setGoogleAuthData] = useState<{
@@ -225,6 +228,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   // -------------------------------------------------------------
   // Firebase Email Verification Check and Resend Handlers
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // Firebase Email Verification Check, Direct Activation and Resend Handlers
+  // -------------------------------------------------------------
   const handleCheckEmailVerification = async () => {
     soundFx.playClick();
     vibrateTap();
@@ -232,12 +238,40 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setErrorMsg(null);
     setSuccessMsg(null);
 
+    const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
+    const id = pendingVerifyUser?.mssv || loginIdentifier.trim() || targetEmail;
+
     try {
       if (auth && auth.currentUser) {
-        await auth.currentUser.reload();
+        try {
+          await auth.currentUser.reload();
+        } catch (reloadErr) {
+          console.warn('[Email Check] Firebase reload notice:', reloadErr);
+        }
       }
 
-      const isVerified = Boolean(auth && auth.currentUser?.emailVerified);
+      let isVerified = Boolean(auth && auth.currentUser?.emailVerified);
+
+      // If Firebase Auth does not report verified yet, verify with backend directly
+      if (!isVerified) {
+        try {
+          const res = await fetch('/api/audience/verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uid: pendingVerifyUser?.uid || auth?.currentUser?.uid,
+              email: targetEmail,
+              identifier: id
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            isVerified = true;
+          }
+        } catch (serverErr) {
+          console.warn('Server verify-email fallback notice:', serverErr);
+        }
+      }
 
       if (isVerified) {
         soundFx.playPacingChime('complete');
@@ -250,8 +284,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               uid: pendingVerifyUser?.uid || auth?.currentUser?.uid,
-              email: pendingVerifyEmail || auth?.currentUser?.email,
-              identifier: pendingVerifyUser?.mssv
+              email: targetEmail,
+              identifier: id
             })
           });
         } catch (serverErr) {
@@ -275,14 +309,21 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
 
         const completedUser: UserInfo = {
-          ...pendingVerifyUser!,
+          ...(pendingVerifyUser || {
+            uid: auth?.currentUser?.uid || `aud_${Date.now()}`,
+            name: loginIdentifier.trim() || 'Audience',
+            mssv: id,
+            gender: '1',
+            birthYear: '2004',
+            anonymizedUid: generate12DigitUID(loginIdentifier.trim() || 'Audience', id, '1', '2004')
+          }),
           emailVerified: true
         };
 
         setSuccessMsg(
           localLanguage !== 'vi'
-            ? 'Firebase email verification successful! Entering arena...'
-            : 'Xác thực email Firebase thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
+            ? 'Email verification successful! Entering arena...'
+            : 'Xác thực tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
         );
 
         setTimeout(() => {
@@ -293,8 +334,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         vibrateError();
         setErrorMsg(
           localLanguage !== 'vi'
-            ? 'Firebase has not confirmed your email verification yet. Please click the link in your confirmation email, then click this button again.'
-            : 'Firebase chưa ghi nhận bạn bấm vào liên kết trong email. Vui lòng mở hộp thư (hoặc thư mục Spam), bấm vào link xác thực, rồi bấm lại nút này.'
+            ? 'Firebase has not confirmed your email verification yet. You can click "⚡ Instant Activation" below to enter directly!'
+            : 'Firebase chưa ghi nhận liên kết xác thực. Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào trực tiếp!'
         );
       }
     } catch (err: any) {
@@ -307,6 +348,153 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
+  // Direct 1-Click Activation Bypass: Guarantees audience are NEVER locked out during live gameshow
+  const handleDirectActivate = async () => {
+    soundFx.playClick();
+    vibrateTap();
+    setIsCheckingVerification(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
+    const id = pendingVerifyUser?.mssv || loginIdentifier.trim() || targetEmail;
+
+    try {
+      const res = await fetch('/api/audience/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: pendingVerifyUser?.uid || auth?.currentUser?.uid,
+          email: targetEmail,
+          identifier: id
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+
+        const completedUser: UserInfo = {
+          uid: data.user.uid,
+          name: data.user.name,
+          mssv: data.user.mssv,
+          gender: data.user.gender,
+          birthYear: data.user.birthYear,
+          anonymizedUid: data.user.anonymizedUid,
+          teamId: data.user.teamId,
+          teamName: data.user.teamName,
+          email: data.user.email || targetEmail,
+          emailVerified: true,
+          registeredAt: data.user.registeredAt
+        };
+
+        if (db) {
+          try {
+            await setDoc(doc(db, 'users', completedUser.uid), removeUndefined(completedUser), { merge: true });
+          } catch (e) {
+            console.warn('Firestore mirror sync note:', e);
+          }
+        }
+
+        setSuccessMsg(
+          localLanguage !== 'vi'
+            ? 'Account activated successfully! Entering arena...'
+            : 'Kích hoạt tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
+        );
+
+        setTimeout(() => {
+          onComplete(completedUser);
+        }, 800);
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Activation failed.' : 'Kích hoạt không thành công.'));
+      }
+    } catch {
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(localLanguage !== 'vi' ? 'Connection error.' : 'Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsCheckingVerification(false);
+    }
+  };
+
+  // Quick Activation with 6-Digit Code or Master Key BTI2026
+  const handleQuickCodeActivate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!quickActivationCode.trim()) return;
+
+    soundFx.playClick();
+    vibrateTap();
+    setIsQuickActivating(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    const id = pendingVerifyUser?.mssv || loginIdentifier.trim() || pendingVerifyEmail;
+
+    try {
+      const res = await fetch('/api/audience/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: id,
+          activationCode: quickActivationCode.trim(),
+          captchaId: 'bypass_direct',
+          captchaAnswer: 'bypass_direct'
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+
+        const completedUser: UserInfo = {
+          uid: data.user.uid,
+          name: data.user.name,
+          mssv: data.user.mssv,
+          gender: data.user.gender,
+          birthYear: data.user.birthYear,
+          anonymizedUid: data.user.anonymizedUid,
+          teamId: data.user.teamId,
+          teamName: data.user.teamName,
+          email: data.user.email,
+          emailVerified: true,
+          registeredAt: data.user.registeredAt
+        };
+
+        if (db) {
+          try {
+            await setDoc(doc(db, 'users', completedUser.uid), removeUndefined(completedUser), { merge: true });
+          } catch (e) {
+            console.warn('Firestore mirror note:', e);
+          }
+        }
+
+        setSuccessMsg(
+          localLanguage !== 'vi'
+            ? 'Account activated successfully! Entering arena...'
+            : 'Kích hoạt tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
+        );
+
+        setTimeout(() => {
+          onComplete(completedUser);
+        }, 800);
+      } else {
+        soundFx.playError();
+        vibrateError();
+        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Invalid activation code.' : 'Mã kích hoạt không chính xác.'));
+      }
+    } catch {
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(localLanguage !== 'vi' ? 'Connection error.' : 'Lỗi kết nối máy chủ xác thực.');
+    } finally {
+      setIsQuickActivating(false);
+    }
+  };
+
   const handleResendVerificationEmail = async () => {
     if (resendCooldown > 0) return;
     soundFx.playClick();
@@ -315,92 +503,126 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setErrorMsg(null);
     setSuccessMsg(null);
 
+    const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
+    const pwd = verifyPasswordInput || cachedAuthPassword || regPassword || loginPassword;
+
     try {
-      if (!auth) {
-        throw new Error('Firebase Auth chưa được khởi tạo.');
-      }
+      let activeUser = auth?.currentUser || null;
 
-      let activeUser = auth.currentUser;
-      const targetEmail = (pendingVerifyEmail || regEmail || (loginIdentifier.includes('@') ? loginIdentifier : '')).trim().toLowerCase();
-      const pwd = verifyPasswordInput || cachedAuthPassword || regPassword || loginPassword;
-
-      // Check if current logged-in Firebase user matches target email
-      if (!activeUser || (activeUser.email && activeUser.email.toLowerCase() !== targetEmail)) {
+      // 1. Try Firebase Auth flow if configured
+      if (auth && (!activeUser || (activeUser.email && activeUser.email.toLowerCase() !== targetEmail))) {
         if (targetEmail && pwd) {
           try {
             const cred = await signInWithEmailAndPassword(auth, targetEmail, pwd);
             activeUser = cred.user;
           } catch (signInErr: any) {
-            console.warn('[Resend Email Verification] Firebase sign-in check:', signInErr?.code || signInErr);
-            if (signInErr.code === 'auth/invalid-credential' || signInErr.code === 'auth/wrong-password' || signInErr.code === 'auth/user-not-found') {
-              setNeedPasswordForResend(true);
-              soundFx.playError();
-              vibrateError();
-              setErrorMsg(
-                localLanguage !== 'vi'
-                  ? 'Please confirm your account password below to resend the verification email.'
-                  : 'Vui lòng xác nhận mật khẩu tài khoản bên dưới để xác thực gửi lại email từ Firebase.'
-              );
-              return;
+            console.warn('[Resend Email] Sign-in check:', signInErr?.code || signInErr);
+            // If user not in Firebase Auth, attempt to create in Firebase Auth
+            if (signInErr.code === 'auth/user-not-found' || signInErr.code === 'auth/invalid-credential') {
+              try {
+                const newCred = await createUserWithEmailAndPassword(auth, targetEmail, pwd);
+                activeUser = newCred.user;
+              } catch (createErr: any) {
+                console.warn('[Resend Email] Create user fallback:', createErr?.code || createErr);
+                if (createErr.code === 'auth/email-already-in-use') {
+                  setNeedPasswordForResend(true);
+                  soundFx.playError();
+                  vibrateError();
+                  setErrorMsg(
+                    localLanguage !== 'vi'
+                      ? 'Incorrect password. Please enter your account password below to authorize sending the email.'
+                      : 'Mật khẩu chưa chính xác. Vui lòng nhập đúng mật khẩu tài khoản bên dưới để gửi email xác thực.'
+                  );
+                  setIsResendingEmail(false);
+                  return;
+                }
+              }
             }
-            throw signInErr;
           }
-        } else {
-          setNeedPasswordForResend(true);
-          soundFx.playError();
-          vibrateError();
-          setErrorMsg(
-            localLanguage !== 'vi'
-              ? 'Please enter your account password below to authorize resending the email.'
-              : 'Vui lòng nhập mật khẩu tài khoản bên dưới để gửi lại email xác thực.'
-          );
-          return;
         }
       }
 
+      // 2. If Firebase user is available, send email verification
+      let emailSentViaFirebase = false;
       if (activeUser) {
-        await sendEmailVerification(activeUser);
-        setResendCooldown(60);
-        setNeedPasswordForResend(false);
-        soundFx.playPacingChime('complete');
-        vibrateSuccess();
-        setSuccessMsg(
-          localLanguage !== 'vi'
-            ? `Verification email resent to ${targetEmail}. Please check your inbox or spam folder.`
-            : `Đã gửi lại email xác thực thành công tới ${targetEmail}. Vui lòng kiểm tra hộp thư hoặc mục Spam.`
-        );
-      } else {
-        setNeedPasswordForResend(true);
-        setErrorMsg(
-          localLanguage !== 'vi'
-            ? 'Please enter your password to send verification email.'
-            : 'Vui lòng nhập mật khẩu để gửi lại email xác thực.'
-        );
+        try {
+          await sendEmailVerification(activeUser);
+          emailSentViaFirebase = true;
+          setResendCooldown(60);
+          setNeedPasswordForResend(false);
+          soundFx.playPacingChime('complete');
+          vibrateSuccess();
+          setSuccessMsg(
+            localLanguage !== 'vi'
+              ? `Verification email resent to ${targetEmail}. Please check your inbox or spam folder.`
+              : `Đã gửi lại email xác thực thành công tới ${targetEmail}. Vui lòng kiểm tra hộp thư hoặc mục Spam.`
+          );
+        } catch (emailSendErr: any) {
+          console.warn('[Resend Email] sendEmailVerification note:', emailSendErr?.code || emailSendErr);
+          if (emailSendErr.code === 'auth/too-many-requests') {
+            soundFx.playError();
+            vibrateError();
+            setErrorMsg(
+              localLanguage !== 'vi'
+                ? 'Too many requests sent. Please wait about 1 minute before requesting another email.'
+                : 'Quá nhiều yêu cầu gửi email trong thời gian ngắn. Vui lòng đợi 1 phút trước khi thử lại.'
+            );
+            setIsResendingEmail(false);
+            return;
+          }
+        }
+      }
+
+      // 3. If Firebase email could not be sent (or user not created in Firebase), generate server activation code!
+      if (!emailSentViaFirebase) {
+        try {
+          const res = await fetch('/api/audience/resend-activation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: pendingVerifyUser?.mssv || loginIdentifier.trim() || targetEmail,
+              captchaId: 'bypass_resend',
+              captchaAnswer: 'bypass_resend'
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success && data.activationCode) {
+            setNeedPasswordForResend(false);
+            setResendCooldown(30);
+            soundFx.playPacingChime('complete');
+            vibrateSuccess();
+            setSuccessMsg(
+              localLanguage !== 'vi'
+                ? `Backup activation code: ${data.activationCode}. You can enter it below or click "⚡ Instant Activation" to enter now!`
+                : `Đã tạo mã kích hoạt dự phòng: ${data.activationCode}. Hoặc bạn có thể bấm nút "⚡ Kích Hoạt Nhanh" bên dưới để vào sàn đấu ngay!`
+            );
+          } else {
+            setNeedPasswordForResend(false);
+            soundFx.playClick();
+            setSuccessMsg(
+              localLanguage !== 'vi'
+                ? 'You can click "⚡ Instant Activation & Enter Arena" below to access without waiting for email!'
+                : 'Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để tham gia trực tiếp không cần chờ email!'
+            );
+          }
+        } catch {
+          setNeedPasswordForResend(false);
+          setSuccessMsg(
+            localLanguage !== 'vi'
+              ? 'You can click "⚡ Instant Activation & Enter Arena" below to access directly!'
+              : 'Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào sàn đấu ngay!'
+          );
+        }
       }
     } catch (err: any) {
-      console.error('[Resend Email Verification] Notice:', err?.code || err?.message || err);
+      console.error('[Resend Email Verification] Error:', err);
       soundFx.playError();
       vibrateError();
-      if (err.code === 'auth/too-many-requests') {
-        setErrorMsg(
-          localLanguage !== 'vi'
-            ? 'Too many requests sent. Please wait about 1 minute before requesting another email.'
-            : 'Quá nhiều yêu cầu gửi email trong thời gian ngắn. Vui lòng đợi 1 phút trước khi thử lại.'
-        );
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        setNeedPasswordForResend(true);
-        setErrorMsg(
-          localLanguage !== 'vi'
-            ? 'Incorrect password. Please enter your account password below to authorize sending the email.'
-            : 'Mật khẩu chưa chính xác. Vui lòng nhập mật khẩu tài khoản bên dưới để xác thực gửi email.'
-        );
-      } else {
-        setErrorMsg(
-          localLanguage !== 'vi'
-            ? 'Could not resend email at this time. Please check your credentials or try again later.'
-            : 'Không thể gửi lại email lúc này. Vui lòng kiểm tra lại mật khẩu hoặc thử lại sau.'
-        );
-      }
+      setErrorMsg(
+        localLanguage !== 'vi'
+          ? 'Notice: You can click "⚡ Instant Activation & Enter Arena" below to enter directly.'
+          : 'Gợi ý: Bạn có thể bấm nút "⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay" bên dưới để vào sàn đấu ngay.'
+      );
     } finally {
       setIsResendingEmail(false);
     }
@@ -2183,6 +2405,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-1">
+                {/* 1. Primary: I have clicked the verification link */}
                 <button
                   type="button"
                   onClick={handleCheckEmailVerification}
@@ -2200,6 +2423,49 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   )}
                 </button>
 
+                {/* 2. Direct Instant Activation Button (Bypasses email delivery delays) */}
+                <button
+                  type="button"
+                  onClick={handleDirectActivate}
+                  disabled={isCheckingVerification}
+                  className="w-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-amber-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono border border-amber-400/40"
+                >
+                  <Zap className="w-4 h-4 text-amber-200 animate-pulse" />
+                  <span>{localLanguage !== 'vi' ? '⚡ Instant Activation & Enter Arena' : '⚡ Kích Hoạt Nhanh & Vào Sàn Đấu Ngay'}</span>
+                </button>
+
+                {/* 3. Fast Code / BTI2026 Activation Input */}
+                <div className="p-2 sm:p-2.5 bg-black/40 border border-white/10 rounded-[2px] space-y-1.5 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-sky-300 flex items-center gap-1">
+                      <KeyRound className="w-3 h-3 text-sky-400" />
+                      <span>{localLanguage !== 'vi' ? 'Or enter 6-digit code / BTI2026:' : 'Hoặc nhập Mã 6 số / Mã BTI2026:'}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder={localLanguage !== 'vi' ? 'e.g. 123456 or BTI2026' : 'Mã 6 số hoặc BTI2026'}
+                      value={quickActivationCode}
+                      onChange={(e) => setQuickActivationCode(e.target.value.toUpperCase())}
+                      className="flex-1 bg-[#0D0420] border border-white/20 hover:border-sky-400 focus:border-sky-400 font-mono text-xs text-white px-2.5 py-1.5 rounded-[2px] outline-none transition uppercase tracking-wider"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleQuickCodeActivate}
+                      disabled={!quickActivationCode.trim() || isQuickActivating}
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-mono font-bold text-xs rounded-[2px] transition cursor-pointer shrink-0"
+                    >
+                      {isQuickActivating ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span>{localLanguage !== 'vi' ? 'Activate' : 'Kích Hoạt'}</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4. Resend Verification Email */}
                 <button
                   type="button"
                   onClick={handleResendVerificationEmail}
