@@ -1,6 +1,6 @@
 import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useMemo, useEffect } from 'react';
-import { GameState, UserResponse, QuestionItem } from '../types';
+import { GameState, UserResponse, QuestionItem, GrandFinaleWinner } from '../types';
 import { calculateLeaderboard, UserScoreSummary } from '../utils/leaderboardUtils';
 import { syncService } from '../services/syncService';
 import { exportLeaderboardToCSV } from '../utils/exportUtils';
@@ -154,6 +154,84 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
 
 
+  // Toggle Grand Finale Honors Ceremony on Projector & Audience Screens
+  const handleToggleGrandFinale = () => {
+    if (gameState.grand_finale?.active) {
+      soundFx.playLock();
+      syncService.updateGameState({
+        grand_finale: null
+      });
+      return;
+    }
+
+    if (!rank1) {
+      triggerConfetti();
+      return;
+    }
+
+    soundFx.playStartRound();
+    vibrateGrandCelebration();
+
+    const winnerData: GrandFinaleWinner = {
+      uid: rank1.uid,
+      name: rank1.name,
+      mssv: rank1.mssv,
+      totalScore: rank1.totalScore,
+      rank: 1,
+      accuracyRate: rank1.accuracyRate,
+      correctAnswersCount: rank1.correctAnswersCount,
+      totalAnswered: rank1.totalAnswered,
+      avgLatency: rank1.avgLatency,
+      teamName: rank1.teamId
+        ? gameState.teams?.find(t => t.id === rank1.teamId)?.name || rank1.teamId
+        : undefined
+    };
+
+    const runners: GrandFinaleWinner[] = [];
+    if (rank2) {
+      runners.push({
+        uid: rank2.uid,
+        name: rank2.name,
+        mssv: rank2.mssv,
+        totalScore: rank2.totalScore,
+        rank: 2,
+        teamName: rank2.teamId
+          ? gameState.teams?.find(t => t.id === rank2.teamId)?.name || rank2.teamId
+          : undefined
+      });
+    }
+    if (rank3) {
+      runners.push({
+        uid: rank3.uid,
+        name: rank3.name,
+        mssv: rank3.mssv,
+        totalScore: rank3.totalScore,
+        rank: 3,
+        teamName: rank3.teamId
+          ? gameState.teams?.find(t => t.id === rank3.teamId)?.name || rank3.teamId
+          : undefined
+      });
+    }
+
+    syncService.updateGameState({
+      grand_finale: {
+        active: true,
+        winner: winnerData,
+        runnersUp: runners,
+        stageTheme: 'ROYAL_GOLD',
+        timestamp: Date.now()
+      },
+      audience_light_show: {
+        active: true,
+        pattern: 'GOLDEN_CHAMPION',
+        speed: 'NORMAL',
+        message: `CHÀO ĐÓN NHÀ VÔ ĐỊCH: ${rank1.name.toUpperCase()}!`,
+        timestamp: Date.now(),
+        auto_dismiss_seconds: 60
+      }
+    });
+  };
+
   // Export current leaderboard ranking to CSV
   const handleExportCSV = () => {
     vibrateCopy();
@@ -225,6 +303,21 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             <span>{localLanguage !== 'vi' ? 'Export CSV' : 'Xuất CSV'}</span>
           </button>
 
+          {/* Grand Finale Honors Ceremony Trigger */}
+          <button
+            type="button"
+            onClick={handleToggleGrandFinale}
+            className={`fluent-btn px-3.5 py-2 rounded-[2px] font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer ${
+              gameState.grand_finale?.active
+                ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
+                : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 hover:brightness-110 text-slate-950 ring-1 ring-amber-300'
+            }`}
+            title={gameState.grand_finale?.active ? 'Dừng Lễ Đăng Quang trên màn chiếu' : 'Kích hoạt Lễ Đăng Quang Quán Quân toàn màn chiếu'}
+          >
+            <Trophy className="w-4 h-4 fill-current" />
+            <span>{gameState.grand_finale?.active ? 'DỪNG ĐĂNG QUANG' : 'LỄ ĐĂNG QUANG (FINALE)'}</span>
+          </button>
+
           {/* Confetti Trigger */}
           <button
             type="button"
@@ -236,7 +329,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             title={localLanguage !== 'vi' ? 'Firework' : 'Bắn pháo hoa vinh danh'}
           >
             <Sparkles className="w-4 h-4 fill-current" />
-            {localLanguage !== 'vi' ? 'Celebrate Top 1' : 'Vinh Danh Top 1'}
+            {localLanguage !== 'vi' ? 'Celebrate Top 1' : 'Pháo Hoa Top 1'}
           </button>
 
           {/* View Mode Toggle */}

@@ -7,6 +7,7 @@ import { calculateSurvivalStats } from '../utils/leaderboardUtils';
 import { getProjectorTheme } from '../utils/themeUtils';
 import { Leaderboard } from './Leaderboard';
 import { LuckyDrawProjector } from './LuckyDrawProjector';
+import { GrandFinaleProjectorOverlay } from './GrandFinaleProjectorOverlay';
 import { EmergencyPollProjector } from './EmergencyPollProjector';
 import { ProjectorResponseList } from './ProjectorResponseList';
 import { ProjectorWordCloud } from './ProjectorWordCloud';
@@ -600,6 +601,24 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* Screen flash on capture */}
       {snapshotFlash && (
         <div className="fixed inset-0 z-[100] bg-white/70 pointer-events-none transition-opacity duration-300 animate-fadeOut" />
+      )}
+
+      {/* Audience Light Show Stage Indicator */}
+      {gameState.audience_light_show?.active && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 animate-pulse flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/90 backdrop-blur-md border border-amber-400/50 text-amber-300 font-mono text-xs shadow-2xl">
+          <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+          <span className="font-bold uppercase tracking-wider">
+            🌟 BIỂN ÁNH SÁNG KHÁN PHÒNG: {gameState.audience_light_show.message || 'HÒA NHỊP CÙNG SÂN KHẤU'}
+          </span>
+        </div>
+      )}
+
+      {/* Grand Finale Full-Screen Stage Honors Ceremony */}
+      {gameState.grand_finale?.active && (
+        <GrandFinaleProjectorOverlay
+          grandFinale={gameState.grand_finale}
+          onClose={() => syncService.updateGameState({ grand_finale: null })}
+        />
       )}
 
       {/* Stage Header (Bento Style) */}

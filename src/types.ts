@@ -147,6 +147,40 @@ export interface AnnouncerOverlay {
   updated_at?: number;
 }
 
+export type LightShowPattern = 'COSMIC_PULSE' | 'GOLDEN_CHAMPION' | 'NEON_STROBE' | 'RAINBOW_WAVE' | 'HEARTBEAT_RED';
+export type LightShowSpeed = 'SLOW' | 'NORMAL' | 'FAST' | 'HYPER';
+
+export interface AudienceLightShowState {
+  active: boolean;
+  pattern: LightShowPattern;
+  speed: LightShowSpeed;
+  message?: string;
+  timestamp: number;
+  auto_dismiss_seconds?: number;
+}
+
+export interface GrandFinaleWinner {
+  uid: string;
+  name: string;
+  mssv: string;
+  totalScore: number;
+  rank: number;
+  accuracyRate?: number;
+  correctAnswersCount?: number;
+  totalAnswered?: number;
+  avgLatency?: number;
+  teamName?: string;
+  avatarSeed?: string;
+}
+
+export interface GrandFinaleState {
+  active: boolean;
+  winner: GrandFinaleWinner | null;
+  runnersUp?: GrandFinaleWinner[];
+  stageTheme?: 'ROYAL_GOLD' | 'CYBER_NEON' | 'COSMIC_VICTORY';
+  timestamp: number;
+}
+
 export interface LuckyDrawState {
   status: 'IDLE' | 'SPINNING' | 'REVEALED';
   winner: UserInfo | null;
@@ -156,6 +190,8 @@ export interface GameState {
   language?: 'vi' | 'en';
   active_module?: 'GAME' | 'LUCKY_DRAW';
   lucky_draw?: LuckyDrawState;
+  audience_light_show?: AudienceLightShowState | null;
+  grand_finale?: GrandFinaleState | null;
   announcer_overlay?: AnnouncerOverlay | null;
   projector_effect?: { type: 'CONFETTI' | 'ALARM' | 'FIREWORKS' | 'TING', timestamp: number, message?: string } | null;
   round_name: string;

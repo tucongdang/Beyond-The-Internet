@@ -88,6 +88,7 @@ import { EmergencyPollAudience } from './EmergencyPollAudience';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import { AudienceQuestionLogModal } from './AudienceQuestionLogModal';
 import { AudienceCheerModal } from './AudienceCheerModal';
+import { AudienceLightShowOverlay } from './AudienceLightShowOverlay';
 import { AudienceCheerButton } from './AudienceCheerButton';
 import { AudienceQAModal } from './AudienceQAModal';
 import { AudienceHighlightedQuestionToast } from './AudienceHighlightedQuestionToast';
@@ -4689,6 +4690,37 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
 
 
       
+
+      {/* Synchronized Audience Light Show / Flash Mob Overlay */}
+      <AudienceLightShowOverlay
+        lightShow={props.gameState.audience_light_show}
+      />
+
+      {/* Grand Finale Celebration Banner on Audience Screen */}
+      {props.gameState.grand_finale?.active && props.gameState.grand_finale.winner && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-slate-950 p-3.5 rounded-[4px] shadow-2xl border-2 border-yellow-200 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <Trophy className="w-6 h-6 text-slate-950 fill-current shrink-0 animate-bounce" />
+              <div>
+                <div className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-900">
+                  {props.user?.uid === props.gameState.grand_finale.winner.uid ? '🎉 BẠN LÀ NHÀ VÔ ĐỊCH!' : '🏆 QUÁN QUÂN BTI 2026:'}
+                </div>
+                <div className="text-sm font-black text-slate-950 truncate max-w-[200px]">
+                  {props.gameState.grand_finale.winner.name} ({props.gameState.grand_finale.winner.totalScore} đ)
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPostMatchModalOpen(true)}
+              className="px-2.5 py-1.5 rounded-[2px] bg-slate-950 text-amber-300 hover:bg-slate-900 font-mono text-[11px] font-bold shrink-0 transition shadow cursor-pointer"
+            >
+              Xem Thẻ
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Live Broadcast Announcer Overlay */}
       <AnnouncerOverlay overlay={props.gameState.announcer_overlay} mode="audience" isHighContrast={isHighContrast} />

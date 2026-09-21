@@ -19,6 +19,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     status: 'IDLE',
     winner: null
   },
+  audience_light_show: null,
+  grand_finale: null,
   round_name: INITIAL_QUESTION_BANK[0].round_name,
   round_type: INITIAL_QUESTION_BANK[0].round_type,
   question_id: INITIAL_QUESTION_BANK[0].id,
