@@ -44,6 +44,8 @@ import { AdminActivityLog } from './AdminActivityLog';
 import { AdminContextMenu } from './AdminContextMenu';
 import { AdminDashboard } from './AdminDashboard';
 import { QuickActionsPanel } from './QuickActionsPanel';
+import { ProjectorControlHub } from './ProjectorControlHub';
+import { LightShowControlModal } from './LightShowControlModal';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
 import { AiTranslationModal } from './AiTranslationModal';
 import { AdminApprovalModal } from './AdminApprovalModal';
@@ -430,6 +432,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showEmergencyPollModal, setShowEmergencyPollModal] = useState(false);
   const [showAnnouncerModal, setShowAnnouncerModal] = useState(false);
   const [showMcCoPilotModal, setShowMcCoPilotModal] = useState(false);
+  const [showLightShowModal, setShowLightShowModal] = useState(false);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
 
   // Fluent UI 2 Context Menu State
@@ -2996,6 +2999,83 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
+      {/* Grand Finale Active Stage Control Banner */}
+      {gameState.grand_finale?.active && (
+        <div 
+          id="admin-grand-finale-live-banner"
+          className="fluent-box p-3 bg-gradient-to-r from-amber-950/90 via-yellow-950/70 to-purple-950/90 border-2 border-amber-400/60 rounded-[2px] shadow-2xl flex flex-wrap items-center justify-between gap-3 animate-fadeIn mb-2"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[2px] bg-amber-400 text-slate-950 flex items-center justify-center font-bold shadow-md shrink-0 animate-bounce">
+              <Trophy className="w-5 h-5 fill-current" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300 font-bold">
+                  SÂN KHẤU MÀN CHIẾU ĐANG PHÁT LỄ ĐĂNG QUANG
+                </span>
+                <span className="w-2 h-2 rounded-[2px] bg-amber-400 animate-ping" />
+              </div>
+              <div className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Quán Quân:</span>
+                <span className="text-amber-300 font-mono text-base font-black">
+                  {gameState.grand_finale.winner?.name || 'Vô địch'}
+                </span>
+                {gameState.grand_finale.winner?.mssv && (
+                  <span className="text-xs text-white/50 font-mono">
+                    ({gameState.grand_finale.winner.mssv})
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="btn-admin-shoot-grand-finale-fireworks"
+              onClick={() => {
+                vibrateSuccess();
+                soundFx.playReveal(true);
+                const effectTimestamp = Date.now();
+                syncService.updateGameState({
+                  projector_effect: {
+                    type: 'CONFETTI',
+                    timestamp: effectTimestamp
+                  },
+                  grand_finale: {
+                    ...gameState.grand_finale!,
+                    timestamp: effectTimestamp
+                  }
+                });
+              }}
+              className="fluent-btn px-4 py-2 rounded-[2px] bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-300 hover:to-yellow-200 text-slate-950 font-mono text-xs font-black shadow-lg flex items-center gap-2 cursor-pointer transition hover:scale-105 active:scale-95"
+              title="Bắn pháo hoa ăn mừng lên màn chiếu ngay lập tức"
+            >
+              <Sparkles className="w-4 h-4 fill-current" />
+              <span>Thả Pháo Hoa Màn Chiếu</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-admin-stop-grand-finale"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playLock();
+                syncService.updateGameState({
+                  grand_finale: null
+                });
+              }}
+              className="fluent-btn px-3 py-2 rounded-[2px] bg-rose-600/80 hover:bg-rose-500 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              title="Dừng Lễ Đăng Quang trên màn chiếu"
+            >
+              <X className="w-4 h-4" />
+              <span>Dừng Đăng Quang</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TWO-TIER TAB NAVIGATION */}
       <div className="flex flex-col gap-1.5 mb-2">
         {/* Tier 1: Top Level Categories */}
@@ -3129,6 +3209,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           activeAudienceCount={activeCount} 
         />
       )}
+
+      {/* ================= STAGE PROJECTOR REMOTE CONTROL HUB ================= */}
+      <ProjectorControlHub
+        gameState={gameState}
+        activeCount={activeCount}
+        triggerHudToast={triggerHudToast}
+        openConfirm={openConfirm}
+        onOpenLightShow={() => setShowLightShowModal(true)}
+        onOpenGrandFinale={() => {
+          syncService.updateGameState({ show_summary: true, projector_view_mode: 'LEADERBOARD' });
+          triggerHudToast('FINALE', 'Đã kích hoạt Lễ Đăng Quang (Grand Finale)!');
+        }}
+        onOpenLuckyDraw={() => {
+          setActiveAdminTab('LUCKY_DRAW');
+          syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
+        }}
+        onOpenEmergencyPoll={() => setShowEmergencyPollModal(true)}
+      />
 
       {/* ================= QUICK ACTIONS PANEL (RESET QUESTION, FORCE LOCK, URGENT BROADCAST, PAUSE TIMER, RESET SCORES, LOBBY LOCK) ================= */}
       <QuickActionsPanel
@@ -7549,6 +7647,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={showAnnouncerModal}
         onClose={() => setShowAnnouncerModal(false)}
         gameState={gameState}
+      />
+
+      {/* Audience Light Show Control Modal */}
+      <LightShowControlModal
+        isOpen={showLightShowModal}
+        onClose={() => setShowLightShowModal(false)}
+        gameState={gameState}
+        activeCount={activeCount}
       />
 
       {/* AI MC Co-pilot Live Advice Modal */}

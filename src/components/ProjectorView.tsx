@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import QRCode from 'qrcode';
-import confetti from 'canvas-confetti';
+import confetti from '../utils/confetti';
 import { GameState, UserResponse, QR_PALETTES, QrPaletteId } from '../types';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
 import { calculateSurvivalStats } from '../utils/leaderboardUtils';
@@ -21,8 +21,9 @@ import { AudienceShoutMarquee } from './AudienceShoutMarquee';
 import { syncService } from '../services/syncService';
 import { snapshotService } from '../services/snapshotService';
 import { soundFx } from '../services/audioEffects';
-import { vibrateCopy, vibrateShare, vibrateTap } from '../utils/hapticUtils';
-import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw } from 'lucide-react';
+import { vibrateCopy, vibrateShare, vibrateTap, vibrateGrandCelebration } from '../utils/hapticUtils';
+import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
+import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal } from 'lucide-react';
 
 interface ProjectorViewProps {
   gameState: GameState;
@@ -40,129 +41,42 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   isVirtual = false
 }) => {
   const [timeLeft, setTimeLeft] = useState<number>(gameState.time_limit);
-  const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
   const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
   const [showResponseList, setShowResponseList] = useState<boolean>(false);
   const [showWordCloud, setShowWordCloud] = useState<boolean>(false);
   const [showBarChart, setShowBarChart] = useState<boolean>(false);
+  const [isControlsVisible, setIsControlsVisible] = useState<boolean>(false);
   const [optionsDisplayMode, setOptionsDisplayMode] = useState<'CARDS' | 'CHART'>('CARDS');
   const [showCheerMeter, setShowCheerMeter] = useState<boolean>(true);
   const [showShoutMarquee, setShowShoutMarquee] = useState<boolean>(true);
-  const isLeaderboardVisible = showLeaderboard || gameState.show_summary;
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [audienceJoinUrl, setAudienceJoinUrl] = useState<string>('');
   const [isCopiedUrl, setIsCopiedUrl] = useState<boolean>(false);
   const isLongQuestion = (gameState?.question_text || '').length > 180;
+  const {
+    containerRef: questionContainerRef,
+    textRef: questionTextRef,
+    style: optimalQuestionStyle
+  } = useAdaptiveFontSize(gameState?.question_text || '', {
+    minFontSize: 18,
+    maxFontSize: 46,
+    checkHeight: true,
+    lineHeight: 1.3
+  });
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const [isCapturingSnapshot, setIsCapturingSnapshot] = useState<boolean>(false);
   const [snapshotFlash, setSnapshotFlash] = useState<boolean>(false);
 
-
-  // Viewport & Stage Scaling State (to prevent projector scrolling)
-  const [stageScale, setStageScale] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bti_projector_scale');
-      if (saved) {
-        const num = parseFloat(saved);
-        if (!isNaN(num) && num >= 0.5 && num <= 1.3) return num;
-      }
-    }
-    return 1;
-  });
-  const [isAutoFit, setIsAutoFit] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bti_projector_autofit');
-      if (saved !== null) return saved === 'true';
-    }
-    return true; // Default auto-fit enabled to prevent vertical scrolling
-  });
-  const [calculatedAutoFitScale, setCalculatedAutoFitScale] = useState<number>(1);
-  const [showScaleMenu, setShowScaleMenu] = useState<boolean>(false);
-  const stageWrapperRef = useRef<HTMLElement | null>(null);
-  const stageContentRef = useRef<HTMLDivElement | null>(null);
-
-  const effectiveScale = isAutoFit ? calculatedAutoFitScale : stageScale;
-
-  const handleSetScale = (newScale: number) => {
-    const clamped = Math.max(0.5, Math.min(1.3, Number(newScale.toFixed(2))));
-    setStageScale(clamped);
-    setIsAutoFit(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('bti_projector_scale', String(clamped));
-      localStorage.setItem('bti_projector_autofit', 'false');
-    }
-    soundFx.playClick();
-    vibrateTap();
-  };
-
-  const handleToggleAutoFit = () => {
-    setIsAutoFit(prev => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bti_projector_autofit', String(next));
-      }
-      return next;
-    });
-    soundFx.playClick();
-    vibrateTap();
-  };
-
-  // Calculate Auto-Fit Scale dynamically to eliminate all page vertical scrolling
-  useEffect(() => {
-    if (!isAutoFit) return;
-
-    const calculateScale = () => {
-      const wrapper = stageWrapperRef.current;
-      const content = stageContentRef.current;
-      if (!wrapper || !content) return;
-
-      const availHeight = wrapper.clientHeight;
-      const availWidth = wrapper.clientWidth;
-      const scrollHeight = content.scrollHeight;
-      const scrollWidth = content.scrollWidth;
-
-      if (scrollHeight > availHeight || scrollWidth > availWidth) {
-        const scaleH = (availHeight - 8) / Math.max(scrollHeight, 1);
-        const scaleW = (availWidth - 8) / Math.max(scrollWidth, 1);
-        const bestScale = Math.min(scaleH, scaleW, 1);
-        setCalculatedAutoFitScale(Math.max(0.6, Number(bestScale.toFixed(2))));
-      } else {
-        setCalculatedAutoFitScale(1);
-      }
-    };
-
-    calculateScale();
-
-    let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => {
-        calculateScale();
-      });
-      if (stageWrapperRef.current) ro.observe(stageWrapperRef.current);
-      if (stageContentRef.current) ro.observe(stageContentRef.current);
-    }
-    window.addEventListener('resize', calculateScale);
-
-    const t = setTimeout(calculateScale, 120);
-
-    return () => {
-      if (ro) ro.disconnect();
-      window.removeEventListener('resize', calculateScale);
-      clearTimeout(t);
-    };
-  }, [
-    isAutoFit,
-    gameState.question_id,
-    gameState.status,
-    gameState.round_type,
-    gameState.question_text,
-    gameState.active_module,
-    showBarChart,
-    showWordCloud,
-    showResponseList,
-    isLeaderboardVisible,
-    optionsDisplayMode
-  ]);
+  const activeProjectorMode = gameState.projector_view_mode || (
+    gameState.show_summary ? 'LEADERBOARD' :
+    gameState.show_word_cloud ? 'WORD_CLOUD' :
+    showBarChart ? 'BAR_CHART' :
+    showWordCloud ? 'WORD_CLOUD' :
+    showResponseList ? 'RESPONSE_LIST' :
+    showHeatmap ? 'HEATMAP' :
+    'DEFAULT'
+  );
+  const isLeaderboardVisible = activeProjectorMode === 'LEADERBOARD';
 
   const handleCopyAudienceUrl = () => {
     if (!audienceJoinUrl) return;
@@ -227,31 +141,43 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     }
   }, [gameState.status, gameState.question_id, gameState.media_autoplay, gameState.server_start_time]);
 
-  // Projector Visual/Audio Effects
-  const prevEffectRef = useRef<number>(0);
+  // Projector Visual/Audio Effects (Confetti, Fireworks, Fanfare)
+  const prevEffectRef = useRef<number>(Date.now() - 2000);
   useEffect(() => {
     if (gameState.projector_effect) {
       const effect = gameState.projector_effect;
       if (effect.timestamp > prevEffectRef.current) {
         prevEffectRef.current = effect.timestamp;
         
-        if (effect.type === 'CONFETTI') {
-          const duration = 3 * 1000;
+        if (effect.type === 'CONFETTI' || effect.type === 'FIREWORKS') {
+          soundFx.playReveal(true);
+          vibrateGrandCelebration();
+
+          // Big central celebratory burst
+          confetti({
+            particleCount: 120,
+            spread: 90,
+            origin: { x: 0.5, y: 0.55 },
+            colors: ['#ffb703', '#fb8500', '#8338ec', '#ff006e', '#06d6a0', '#ffd166', '#ffffff']
+          });
+
+          // Continuous dual-side cannons for 4 seconds
+          const duration = 4 * 1000;
           const end = Date.now() + duration;
           const frame = () => {
             confetti({
-              particleCount: 5,
+              particleCount: 6,
               angle: 60,
-              spread: 55,
-              origin: { x: 0 },
-              colors: ['#ffb703', '#fb8500', '#8338ec', '#ff006e']
+              spread: 60,
+              origin: { x: 0, y: 0.75 },
+              colors: ['#ffb703', '#fb8500', '#8338ec', '#ff006e', '#06d6a0', '#ffffff']
             });
             confetti({
-              particleCount: 5,
+              particleCount: 6,
               angle: 120,
-              spread: 55,
-              origin: { x: 1 },
-              colors: ['#ffb703', '#fb8500', '#8338ec', '#ff006e']
+              spread: 60,
+              origin: { x: 1, y: 0.75 },
+              colors: ['#ffb703', '#fb8500', '#8338ec', '#ff006e', '#06d6a0', '#ffffff']
             });
             if (Date.now() < end) {
               requestAnimationFrame(frame);
@@ -308,7 +234,6 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         setShowBarChart(prev => {
           const next = !prev;
           if (next) {
-            setShowLeaderboard(false);
             setShowHeatmap(false);
             setShowResponseList(false);
             setShowWordCloud(false);
@@ -318,23 +243,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       }
       if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        setShowLeaderboard(prev => {
-          const next = !prev;
-          if (next) {
-            setShowBarChart(false);
-            setShowHeatmap(false);
-            setShowResponseList(false);
-            setShowWordCloud(false);
-          }
-          return next;
-        });
+        syncService.updateGameState({ show_summary: !gameState.show_summary });
       }
       if ((e.key === 'h' || e.key === 'H') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         setShowHeatmap(prev => {
           const next = !prev;
           if (next) {
-            setShowLeaderboard(false);
             setShowBarChart(false);
             setShowResponseList(false);
             setShowWordCloud(false);
@@ -347,7 +262,6 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         setShowResponseList(prev => {
           const next = !prev;
           if (next) {
-            setShowLeaderboard(false);
             setShowBarChart(false);
             setShowHeatmap(false);
             setShowWordCloud(false);
@@ -360,7 +274,6 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         setShowWordCloud(prev => {
           const next = !prev;
           if (next) {
-            setShowLeaderboard(false);
             setShowBarChart(false);
             setShowHeatmap(false);
             setShowResponseList(false);
@@ -387,26 +300,14 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         e.preventDefault();
         handleCaptureProjectorSnapshot();
       }
-      if ((e.key === '[' || e.key === '{') && !e.ctrlKey && !e.metaKey) {
+      if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleSetScale(effectiveScale - 0.05);
-      }
-      if ((e.key === ']' || e.key === '}') && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        handleSetScale(effectiveScale + 0.05);
-      }
-      if (e.key === '0' && (e.ctrlKey || e.altKey || e.metaKey)) {
-        e.preventDefault();
-        handleSetScale(1);
-      }
-      if ((e.key === 'f' || e.key === 'F') && (e.altKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleToggleAutoFit();
+        setIsControlsVisible(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, responses, activeCount, effectiveScale, isAutoFit]);
+  }, [gameState, responses, activeCount]);
 
   useEffect(() => {
     if (gameState.status !== 'ACTIVE') {
@@ -605,27 +506,18 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         <div className="fixed inset-0 z-[100] bg-white/70 pointer-events-none transition-opacity duration-300 animate-fadeOut" />
       )}
 
-      {/* Audience Light Show Stage Indicator */}
-      {gameState.audience_light_show?.active && !isVirtual && (
-        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 animate-pulse flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/90 backdrop-blur-md border border-amber-400/50 text-amber-300 font-mono text-xs shadow-2xl">
-          <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
-          <span className="font-bold uppercase tracking-wider">
-            🌟 BIỂN ÁNH SÁNG KHÁN PHÒNG: {gameState.audience_light_show.message || 'HÒA NHỊP CÙNG SÂN KHẤU'}
-          </span>
-        </div>
-      )}
-
       {/* Grand Finale Full-Screen Stage Honors Ceremony */}
       {gameState.grand_finale?.active && !isVirtual && (
         <GrandFinaleProjectorOverlay
           grandFinale={gameState.grand_finale}
+          projectorEffect={gameState.projector_effect}
           onClose={() => syncService.updateGameState({ grand_finale: null })}
         />
       )}
 
       {/* Stage Header (Bento Style) */}
       <header className={`relative z-10 fluent-box p-2.5 px-3.5 sm:px-4 flex items-center justify-between gap-3 transition-all duration-500 group shrink-0`}>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className={`w-8 h-8 shrink-0 rounded-[2px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold shadow-lg`}>
             <Radio className="w-4 h-4 animate-pulse" />
           </div>
@@ -639,221 +531,9 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Stage Viewport Scale Controller */}
-          <div 
-            id="projector-scale-control-pill"
-            className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-[2px] p-1 border border-white/15 shadow-inner"
-            title="Điều chỉnh tỷ lệ màn chiếu LED để không bao giờ bị tràn/cuộn"
-          >
-            <button
-              type="button"
-              id="btn-projector-zoom-out"
-              onClick={() => handleSetScale(effectiveScale - 0.05)}
-              className="p-1 rounded-[2px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
-              title="Thu nhỏ tỷ lệ màn chiếu (Phím [)"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              id="btn-projector-scale-reset"
-              onClick={() => handleSetScale(1)}
-              className={`px-1.5 py-0.5 rounded-[2px] font-mono text-[10px] sm:text-[11px] font-bold transition ${
-                effectiveScale === 1 && !isAutoFit
-                  ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                  : 'text-white/85 hover:bg-white/10'
-              }`}
-              title="Đặt về tỷ lệ 100% (Phím 0)"
-            >
-              {Math.round(effectiveScale * 100)}%
-            </button>
-
-            <button
-              type="button"
-              id="btn-projector-zoom-in"
-              onClick={() => handleSetScale(effectiveScale + 0.05)}
-              className="p-1 rounded-[2px] hover:bg-white/15 text-white/70 hover:text-white transition cursor-pointer"
-              title="Phóng to tỷ lệ màn chiếu (Phím ])"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-
-            <div className="w-[1px] h-3 bg-white/20 mx-0.5" />
-
-            <button
-              type="button"
-              id="btn-projector-toggle-autofit"
-              onClick={handleToggleAutoFit}
-              className={`px-2 py-0.5 rounded-[2px] font-mono text-[10px] font-bold transition flex items-center gap-1 border cursor-pointer ${
-                isAutoFit
-                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-sm'
-                  : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/15 hover:text-white'
-              }`}
-              title="Tự động tính toán tỷ lệ theo màn hình để triệt tiêu cuộn (Phím Alt+F)"
-            >
-              <Scaling className="w-3 h-3" />
-              <span className="hidden sm:inline">{isAutoFit ? 'Khít Màn' : 'Tự Do'}</span>
-            </button>
-          </div>
-
-          {/* Action buttons (hidden by default) */}
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Toggle Realtime Recharts Bar Chart */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowBarChart(!showBarChart);
-              if (!showBarChart) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-              }
-            }}
-            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-              showBarChart
-                ? 'bg-purple-600 text-white border-purple-400 ring-2 ring-purple-400/40'
-                : 'fluent-acrylic-surface text-purple-300 border-purple-500/40 hover:fluent-box-nested'
-            }`}
-            title="Bật/Tắt Biểu Đồ Cột Phân Bố Khán Giả (Phím tắt: B)"
-          >
-            <BarChart2 className={`w-4 h-4 ${showBarChart ? 'text-white animate-bounce' : 'text-purple-400'}`} />
-            <span>{showBarChart ? 'Quay lại Câu hỏi' : 'Biểu Đồ Cột'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showBarChart ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-purple-200'}`}>
-              B
-            </kbd>
-          </button>
-
-          {/* Toggle Live Response Stream / List */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowResponseList(!showResponseList);
-              if (!showResponseList) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-                setShowWordCloud(false);
-                setShowBarChart(false);
-              }
-            }}
-            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-              showResponseList
-                ? 'bg-sky-500 text-slate-950 border-sky-400 ring-2 ring-sky-400/40'
-                : 'fluent-acrylic-surface text-sky-300 border-sky-500/40 hover:fluent-box-nested'
-            }`}
-            title="Bật/Tắt Danh Sách Phản Hồi Trực Tiếp (Phím tắt: R)"
-          >
-            <ListFilter className={`w-4 h-4 ${showResponseList ? 'text-slate-950' : 'text-sky-400'}`} />
-            <span>{showResponseList ? 'Quay lại Câu hỏi' : `DS Phản Hồi (${voteStats.total})`}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showResponseList ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-sky-200'}`}>
-              R
-            </kbd>
-          </button>
-
-          {/* Toggle Live Response Heatmap */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowHeatmap(!showHeatmap);
-              if (!showHeatmap) {
-                setShowLeaderboard(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-                setShowBarChart(false);
-              }
-            }}
-            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-              showHeatmap
-                ? 'bg-rose-500 text-white border-rose-400 ring-2 ring-rose-400/40'
-                : 'bg-gradient-to-r from-rose-500/20 to-orange-500/20 text-rose-300 border-rose-500/40 hover:fluent-box-nested'
-            }`}
-            title="Bật/Tắt Bản Đồ Nhiệt Phân Phối (Phím tắt: H)"
-          >
-            <BarChart3 className={`w-4 h-4 ${showHeatmap ? 'text-white' : 'text-rose-400'}`} />
-            <span>{showHeatmap ? 'Quay lại Câu hỏi' : 'Bản Đồ Nhiệt'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showHeatmap ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-white' : 'fluent-box-nested border-white/20 text-rose-200'}`}>
-              H
-            </kbd>
-          </button>
-
-          {/* Toggle Top 5 Leaderboard on Stage */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowLeaderboard(!showLeaderboard);
-              if (!showLeaderboard) {
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-                setShowBarChart(false);
-              }
-            }}
-            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-              isLeaderboardVisible
-                ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-400/40'
-                : 'fluent-acrylic-surface text-amber-300 border-amber-500/40 hover:fluent-box-nested'
-            }`}
-            title="Bật/Tắt Bảng Xếp Hạng Top 5 (Phím tắt: L)"
-          >
-            <Trophy className={`w-4 h-4 ${isLeaderboardVisible ? 'text-slate-950' : 'text-amber-400'}`} />
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${isLeaderboardVisible ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-amber-200'}`}>
-              L
-            </kbd>
-          </button>
-
-          {/* Toggle Word Cloud Visualization */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowWordCloud(!showWordCloud);
-              if (!showWordCloud) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowBarChart(false);
-              }
-            }}
-            className={`px-4 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-              showWordCloud
-                ? 'bg-[#F7CAC9] text-[#190839] border-[#F7CAC9] ring-2 ring-[#F7CAC9]/40'
-                : 'fluent-acrylic-surface text-pink-300 border-pink-500/40 hover:fluent-box-nested'
-            }`}
-            title="Bật/Tắt Đám Mây Từ Khóa Trực Tiếp (Phím tắt: W)"
-          >
-            <Cloud className={`w-4 h-4 ${showWordCloud ? 'text-[#190839]' : 'text-[#F7CAC9]'}`} />
-            <span>{showWordCloud ? 'Quay lại Câu hỏi' : 'Đám Mây Từ Khóa'}</span>
-            <kbd className={`px-1.5 py-0.5 text-[9px] rounded-[2px] border ${showWordCloud ? 'bg-black/50 backdrop-blur-[24px] saturate-150/20 border-black/30 text-black' : 'fluent-box-nested border-white/20 text-pink-200'}`}>
-              W
-            </kbd>
-          </button>
-
-          {/* Quick Snapshot Button on Stage Header */}
-          <button
-            type="button"
-            id="btn-projector-snap-stage"
-            onClick={handleCaptureProjectorSnapshot}
-            disabled={isCapturingSnapshot}
-            className={`px-3 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-1.5 border shadow-lg ${
-              isCapturingSnapshot
-                ? 'bg-purple-800 text-purple-200 border-purple-400 animate-pulse'
-                : 'fluent-box-nested hover:fluent-box-nested text-purple-200 border-white/20 hover:border-pink-400 hover:text-white cursor-pointer'
-            }`}
-            title="Chụp ảnh trạng thái màn chiếu sân khấu vào Biên bản phát sóng (Phím tắt: P)"
-          >
-            <Camera className={`w-4 h-4 ${isCapturingSnapshot ? 'animate-spin' : 'text-pink-300'}`} />
-            <span className="hidden xl:inline">{isCapturingSnapshot ? 'Đang Chụp...' : 'Snap Sân Khấu'}</span>
-            <kbd className="px-1.5 py-0.5 text-[9px] rounded-[2px] border fluent-box-nested border-white/20 text-purple-200">
-              P
-            </kbd>
-          </button>
-
-
-          </div>
-
-          <div className={`px-3 py-1.5 rounded-[2px] fluent-box flex items-center gap-2 font-mono text-[11px] text-white/70`}>
-            <Users className={`w-3.5 h-3.5 text-purple-300`} />
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+          <div className="px-3 py-1.5 rounded-[2px] fluent-box flex items-center gap-2 font-mono text-[11px] text-white/70">
+            <Users className="w-3.5 h-3.5 text-purple-300" />
             <span>
               Connected: <strong className="text-white font-bold">{voteStats.total}/{activeCount}</strong>
             </span>
@@ -881,19 +561,28 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         </div>
       </header>
 
+      {/* Audience Light Show Stage Indicator (Fluent UI Non-Overlapping Bar) */}
+      {gameState.audience_light_show?.active && !isVirtual && (
+        <div className="relative z-10 my-1 px-4 py-2 rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-150 border border-amber-400/60 text-amber-300 font-mono text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 animate-pulse">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-[2px] bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
+            </div>
+            <span className="font-bold uppercase tracking-wider text-amber-200">
+              🌟 BIỂN ÁNH SÁNG KHÁN PHÒNG: {gameState.audience_light_show.message || 'HÒA NHỊP CÙNG SÂN KHẤU'}
+            </span>
+          </div>
+          <div className="text-[10px] font-mono text-amber-300/70 hidden sm:inline">
+            Khán giả đang đồng bộ ánh sáng theo màn chiếu
+          </div>
+        </div>
+      )}
+
       {/* Next Question Wait Countdown Banner (if active) */}
       <NextQuestionCountdown gameState={gameState} className="relative z-10 my-2" />
 
-      {/* Stage Main Body with Viewport Scale Controller */}
-      <main ref={stageWrapperRef} className="relative z-10 flex-1 min-h-0 w-full flex flex-col justify-center items-center my-auto py-1 overflow-hidden">
-        <div 
-          ref={stageContentRef} 
-          className="w-full flex flex-col justify-center transition-transform duration-150 ease-out origin-center"
-          style={{
-            transform: effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined,
-            width: effectiveScale < 1 ? `${Math.min(100 / effectiveScale, 135).toFixed(1)}%` : '100%'
-          }}
-        >
+      {/* Stage Main Body */}
+      <main className="relative z-10 flex-1 min-h-0 w-full flex flex-col justify-center items-center my-auto py-0.5 overflow-hidden">
         {gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE') ? (
           <LuckyDrawProjector gameState={gameState} />
         ) : gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? (
@@ -902,41 +591,44 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             allResponses={allResponses}
             activeCount={activeCount}
           />
-        ) : showBarChart ? (
-          <div className="max-w-7xl xl:max-w-[95%] w-full mx-auto space-y-4 animate-fadeIn">
+        ) : activeProjectorMode === 'BAR_CHART' ? (
+          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
             <ProjectorResponseBarChart
               gameState={gameState}
               responses={responses}
               activeCount={activeCount}
-              onClose={() => setShowBarChart(false)}
             />
           </div>
-        ) : showWordCloud ? (
-          <ProjectorWordCloud
-            gameState={gameState}
-            responses={responses}
-            allResponses={allResponses}
-            onClose={() => setShowWordCloud(false)}
-          />
-        ) : showResponseList ? (
-          <ProjectorResponseList
-            responses={responses}
-            gameState={gameState}
-            activeCount={activeCount}
-            onClose={() => setShowResponseList(false)}
-          />
-        ) : isLeaderboardVisible ? (
-          <Leaderboard
-            allResponses={allResponses}
-            gameState={gameState}
-            activeCount={activeCount}
-            onClose={gameState.show_summary ? undefined : () => setShowLeaderboard(false)}
-          />
+        ) : activeProjectorMode === 'WORD_CLOUD' ? (
+          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+            <ProjectorWordCloud
+              gameState={gameState}
+              responses={responses}
+              allResponses={allResponses}
+            />
+          </div>
+        ) : activeProjectorMode === 'RESPONSE_LIST' ? (
+          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+            <ProjectorResponseList
+              responses={responses}
+              gameState={gameState}
+              activeCount={activeCount}
+            />
+          </div>
+        ) : (activeProjectorMode === 'LEADERBOARD') ? (
+          <div className="w-full max-w-[99vw] xl:max-w-[98vw] mx-auto animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+            <Leaderboard
+              allResponses={allResponses}
+              gameState={gameState}
+              activeCount={activeCount}
+              isAudienceView={true}
+            />
+          </div>
         ) : isVcnvRound ? (
           /* Dedicated Stage Visual for Round 2: Vượt Chướng Ngại Vật */
           !isVcnvOpened ? (
             /* Standby Stage Visual (Matching Client Landing) */
-            <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-10 shadow-2xl backdrop-blur-md animate-fadeIn">
+            <div className="text-center max-w-3xl mx-auto space-y-6 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-8 sm:p-12 shadow-2xl backdrop-blur-md animate-fadeIn flex-1 min-h-0 flex flex-col justify-center items-center my-auto">
               <div className="relative w-32 h-32 mx-auto mb-4 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-[2px] border-2 border-[#F7CAC9]/20 animate-ping" />
                 <div className="absolute inset-3 rounded-[2px] border border-[#F7CAC9]/40 animate-pulse" />
@@ -958,7 +650,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               </p>
             </div>
           ) : (
-            <div className="max-w-7xl xl:max-w-[95%] w-full mx-auto space-y-3 animate-fadeIn">
+            <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between">
                 <span className="px-4 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT
@@ -1223,25 +915,25 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           )
         ) : gameState.status === 'STANDBY' ? (
           /* Standby Stage Visual (Bento Style) */
-          <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-10">
+          <div className="text-center max-w-3xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-8 sm:p-12 lg:p-16 min-h-[45vh] md:min-h-[56vh] flex flex-col justify-center items-center shadow-2xl">
             <div className="w-24 h-24 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#F7CAC9]/30 flex items-center justify-center mx-auto text-[#F7CAC9] shadow-xl shadow-[#0D0420]/20">
               <Shield className="w-12 h-12 animate-pulse" />
             </div>
             <div className="inline-block px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9] text-[#190839] font-black">
               {gameState.round_name}
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
+            <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white tracking-tight leading-tight max-w-2xl">
               &ldquo;Hãy chú ý lắng nghe diễn biến trên sân khấu...&rdquo;
             </h2>
-            <p className="text-sm text-white/50">
+            <p className="text-sm sm:text-base text-white/50 max-w-md">
               Hệ thống đã sẵn sàng kết nối bình chọn cho tất cả khán giả qua thiết bị di động
             </p>
           </div>
         ) : (
           /* Active / Locked / Reveal Stage Display (Bento Grid) */
-          <div className="max-w-7xl xl:max-w-[95%] w-full mx-auto space-y-6 lg:space-y-8">
+          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-2.5 lg:space-y-3 flex-1 min-h-0 flex flex-col justify-between h-full">
             {/* Category & Timer row */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="px-3.5 py-1.5 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74] font-bold">
                   {gameState.category || gameState.round_name}
@@ -1297,7 +989,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
             {/* Tăng Tốc Energy Speed Track Bar */}
             {isTTRound && gameState.status === 'ACTIVE' && (
-              <div className="w-full h-2.5 fluent-box-nested rounded-[2px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 shadow-inner">
+              <div className="w-full h-2.5 fluent-box-nested rounded-[2px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 shadow-inner shrink-0">
                 <div
                   className={`h-full rounded-[2px] ${
                     timeLeft <= 3
@@ -1315,26 +1007,22 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             )}
 
             {/* Responsive Side-by-Side 2-Column layout for computers / tablets */}
-            <div className={`grid grid-cols-1 md:grid-cols-12 gap-3.5 lg:gap-5 ${isLongQuestion ? '' : 'items-stretch'}`}>
+            <div className={`grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 items-stretch flex-1 min-h-0 h-full`}>
               
               {/* LEFT Column: Question Bento Card */}
-              <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col" : "md:col-span-5 flex flex-col justify-start"}>
-                <div className={`fluent-question-box p-4 sm:p-5 lg:p-7 shadow-2xl flex flex-col justify-center relative ${
-                  isLongQuestion 
-                    ? 'min-h-[90px] md:min-h-[120px] w-full' 
-                    : 'min-h-[140px] md:min-h-[240px] h-full'
-                }`}>
-                  <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5 mb-2 relative z-10">
-                    <span className="text-[11px] uppercase text-[#F7CAC9] font-mono tracking-widest font-bold flex items-center gap-1.5">
+              <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col" : "md:col-span-5 flex flex-col h-full min-h-0"}>
+                <div className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 shadow-2xl flex flex-col justify-between relative h-full flex-1 min-h-0`}>
+                  <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-3 relative z-10 shrink-0">
+                    <span className="text-[11px] sm:text-xs uppercase text-[#F7CAC9] font-mono tracking-widest font-bold flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F7CAC9] animate-pulse" />
                       Payload • [{gameState.question_id}]
                     </span>
-                    <span className="text-[10px] font-mono text-white/50">
+                    <span className="text-[10px] sm:text-[11px] font-mono text-white/60 tracking-wider">
                       {gameState.round_name}
                     </span>
                   </div>
                   {gameState.round_type === 'BLIND_POLL' && gameState.status === 'ACTIVE' ? (
-                    <div className="text-center py-3 relative z-10">
+                    <div className="text-center py-4 my-auto relative z-10 flex-1 flex flex-col justify-center items-center">
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74]/80 mb-2">
                         <Sparkles className="w-3.5 h-3.5" /> Kịch Tình Huống AID (Blind Poll)
                       </div>
@@ -1343,21 +1031,26 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       </h2>
                     </div>
                   ) : (
-                    <h2 className={`font-bold text-white leading-relaxed relative z-10 tracking-tight ${
-                      (gameState.question_text || '').length > 140
-                        ? 'stage-fluid-title-long'
-                        : 'stage-fluid-title'
-                    }`}>
-                      {gameState.question_text}
-                    </h2>
+                    <div 
+                      ref={questionContainerRef}
+                      className="my-auto py-2 sm:py-3.5 relative z-10 flex-1 flex flex-col justify-center overflow-hidden"
+                    >
+                      <h2 
+                        ref={questionTextRef}
+                        style={optimalQuestionStyle}
+                        className="font-bold text-white leading-snug tracking-tight"
+                      >
+                        {gameState.question_text}
+                      </h2>
+                    </div>
                   )}
                   {gameState.media_type === 'IMAGE' && gameState.media_url && (
-                    <div className="mt-4 flex justify-center relative z-10">
+                    <div className="mt-2 flex justify-center relative z-10 shrink-0">
                       <img src={gameState.media_url} crossOrigin="anonymous" alt="Question Media" className="max-h-[22vh] rounded-[2px] object-contain border-2 border-white/20 shadow-2xl" />
                     </div>
                   )}
                   {gameState.media_type === 'VIDEO' && gameState.media_url && (
-                    <div className="mt-4 flex justify-center relative z-10">
+                    <div className="mt-2 flex justify-center relative z-10 shrink-0">
                       <video
                         ref={(el) => { mediaRef.current = el; }}
                         src={gameState.media_url}
@@ -1369,7 +1062,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     </div>
                   )}
                   {gameState.media_type === 'AUDIO' && gameState.media_url && (
-                    <div className="mt-4 flex justify-center relative z-10 w-full max-w-md mx-auto">
+                    <div className="mt-2 flex justify-center relative z-10 w-full max-w-md mx-auto shrink-0">
                       <audio
                         ref={(el) => { mediaRef.current = el; }}
                         src={gameState.media_url}
@@ -1379,13 +1072,18 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       />
                     </div>
                   )}
+
+                  <div className="pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/40 shrink-0">
+                    <span>BEYOND THE INTERNET 2026</span>
+                    <span>LIVE STAGE MATRIX</span>
+                  </div>
                 </div>
               </div>
 
               {/* RIGHT Column: Options & Live Heatmaps */}
-              <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col justify-center" : "md:col-span-7 flex flex-col justify-center"}>
+              <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col justify-center" : "md:col-span-7 flex flex-col justify-between h-full min-h-0 flex-1"}>
                 {gameState.round_type === 'TRUE_FALSE_4' ? (
-                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4`}>
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-2.5 sm:gap-3.5 h-full flex-1 min-h-0 auto-rows-fr`}>
                     {Object.entries(gameState.options || {}).map(([key, label]) => {
                       // Parse correct key for this sub-statement
                       let expectedAnswer = '';
@@ -1411,7 +1109,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       return (
                         <div
                           key={key}
-                          className={`p-5 rounded-[2px] border transition-all relative overflow-hidden flex flex-col justify-between ${
+                          className={`p-3.5 sm:p-4 md:p-5 rounded-[2px] border transition-all relative overflow-hidden flex flex-col justify-between h-full flex-1 min-h-[110px] sm:min-h-0 ${
                             isRevealed
                               ? isDung
                                 ? 'fluent-box-nested border-emerald-500/60 ring-1 ring-emerald-500/40'
@@ -1445,7 +1143,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                           {/* Integrated live heatmap inline visualization */}
                           {showHeatmap && !isRevealed && (
-                            <div className="mt-4 pt-3 border-t border-white/10 space-y-2">
+                            <div className="mt-3 pt-2.5 border-t border-white/10 space-y-1.5">
                               <div className="flex justify-between items-center text-[10px] font-mono text-rose-300 font-bold uppercase tracking-wider">
                                 <span>🔥 BẢN ĐỒ NHIỆT KHÁN GIẢ:</span>
                                 <span>{stat.total} phiếu</span>
@@ -1475,7 +1173,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   </div>
                 ) : (gameState.round_type === 'SHORT_ANSWER' || gameState.round_type === 'FILL_IN_BLANK') ? (
                   /* Dedicated display for SHORT_ANSWER / FILL_IN_BLANK */
-                  <div className="space-y-4">
+                  <div className="space-y-4 h-full flex flex-col justify-center">
                     {gameState.status === 'REVEAL' ? (
                       <div className="fluent-box border-emerald-500/50 rounded-[2px] p-6 lg:p-8 text-center space-y-3 shadow-2xl animate-fadeIn">
                         <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block">
@@ -1507,7 +1205,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                     {/* Live Integrated Heatmap predictions word cloud for Short Answer */}
                     {showHeatmap && shortStats && (
-                      <div className="fluent-box rounded-[2px] p-6 shadow-xl space-y-4 animate-fadeIn">
+                      <div className="fluent-box rounded-[2px] p-5 shadow-xl space-y-3 animate-fadeIn">
                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
                           <span className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5 animate-pulse text-rose-400" /> BẢN ĐỒ NHIỆT KHÁN GIẢ ({shortStats.total} câu trả lời)
@@ -1515,19 +1213,19 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         </div>
 
                         {shortStats.list.length === 0 ? (
-                          <p className="text-sm text-white/40 text-center py-6 font-mono">Đang chờ phản hồi của khán giả gửi về...</p>
+                          <p className="text-sm text-white/40 text-center py-4 font-mono">Đang chờ phản hồi của khán giả gửi về...</p>
                         ) : (
-                          <div className="flex flex-wrap gap-2.5 justify-center py-2">
+                          <div className="flex flex-wrap gap-2 justify-center py-2">
                             {shortStats.list.map((item, idx) => {
                               const percentage = shortStats.total > 0 ? Math.round((item.count / shortStats.total) * 100) : 0;
                               const heat = getHeatColor(percentage);
                               const sizeClass = percentage > 50
-                                ? 'text-xl py-2 px-4 rounded-[2px]'
+                                ? 'text-lg py-1.5 px-3.5 rounded-[2px]'
                                 : percentage > 25
-                                ? 'text-lg py-1.5 px-3 rounded-[2px]'
+                                ? 'text-base py-1 px-3 rounded-[2px]'
                                 : percentage > 10
-                                ? 'text-sm py-1 px-2.5 rounded-[2px]'
-                                : 'text-xs py-1 px-2 rounded-[2px]';
+                                ? 'text-xs py-1 px-2 rounded-[2px]'
+                                : 'text-[11px] py-0.5 px-1.5 rounded-[2px]';
 
                               return (
                                 <div
@@ -1548,7 +1246,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   </div>
                 ) : gameState.round_type === 'SEQUENCING' ? (
                   /* Dedicated display for SEQUENCING */
-                  <div className="space-y-4">
+                  <div className="space-y-4 h-full flex flex-col justify-center">
                     {gameState.status === 'REVEAL' ? (
                       <div className="fluent-box border-emerald-500/50 rounded-[2px] p-6 lg:p-8 text-center space-y-4 shadow-2xl animate-fadeIn">
                         <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold block">
@@ -1576,7 +1274,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs font-mono font-bold text-[#F7CAC9] px-1">
                           <span>DANH SÁCH CÁC MỤC CẦN SẮP XẾP TRÌNH TỰ:</span>
                           <span className="bg-white/10 px-3 py-1 rounded-[2px] text-white border border-white/10">Đã nhận: {voteStats.total} phản hồi</span>
@@ -1595,132 +1293,110 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     )}
                   </div>
                 ) : (
-                  <div>
-                    {/* Inline View Switcher for Multiple Choice (Cards vs Recharts Bar Chart) */}
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <div className="flex items-center gap-1.5 p-1 bg-black/50 border border-white/10 rounded-[2px]">
-                        <button
-                          type="button"
-                          onClick={() => setOptionsDisplayMode('CARDS')}
-                          className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
-                            optionsDisplayMode === 'CARDS'
-                              ? 'bg-[#F7CAC9] text-[#190839] shadow-sm'
-                              : 'text-white/60 hover:text-white hover:bg-white/10'
-                          }`}
-                        >
-                          <LayoutGrid className="w-3.5 h-3.5" />
-                          Thẻ Lựa Chọn
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOptionsDisplayMode('CHART')}
-                          className={`px-3 py-1 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 ${
-                            optionsDisplayMode === 'CHART'
-                              ? 'fluent-acrylic-surface text-white shadow-sm'
-                              : 'text-white/60 hover:text-white hover:bg-white/10'
-                          }`}
-                        >
-                          <BarChart2 className="w-3.5 h-3.5" />
-                          Biểu Đồ Cột (Recharts)
-                        </button>
+                  <div className="h-full flex flex-col justify-between flex-1 min-h-0">
+                    {/* Header line for Multiple Choice status (Display-Only) */}
+                    <div className="flex items-center justify-between mb-2 px-1 shrink-0">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] bg-white/5 border border-white/10 text-xs font-mono text-[#F7CAC9] font-bold">
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                        <span>CÁC PHƯƠNG ÁN LỰA CHỌN</span>
                       </div>
-                      <div className="text-[11px] font-mono text-white/50">
+                      <div className="text-xs font-mono text-white/60 bg-black/40 px-3 py-1 rounded-[2px] border border-white/10">
                         Đã nộp: <strong className="text-white font-bold">{voteStats.total}/{activeCount}</strong>
                       </div>
                     </div>
 
-                    {optionsDisplayMode === 'CHART' ? (
-                      <div className="fluent-box rounded-[2px] p-4 sm:p-5 shadow-2xl">
-                        <ProjectorResponseBarChart
-                          gameState={gameState}
-                          responses={responses}
-                          activeCount={activeCount}
-                        />
-                      </div>
-                    ) : (
-                      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-2.5 sm:gap-3`}>
-                        {Object.entries(gameState.options || {}).map(([key, label]) => {
-                          const count = voteStats.counts[key] || 0;
-                          const percent = voteStats.total > 0 ? Math.round((count / voteStats.total) * 100) : 0;
-                          const isCorrect = gameState.status === 'REVEAL' && key.toUpperCase() === (gameState.correct_key || '').toUpperCase();
-                          const isEliminated = (gameState.eliminated_options || []).includes(key);
+                    <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-2.5 sm:gap-3 md:gap-3.5 h-full flex-1 min-h-0 auto-rows-fr`}>
+                      {Object.entries(gameState.options || {}).map(([key, label]) => {
+                        const count = voteStats.counts[key] || 0;
+                        const percent = voteStats.total > 0 ? Math.round((count / voteStats.total) * 100) : 0;
+                        const isCorrect = gameState.status === 'REVEAL' && key.toUpperCase() === (gameState.correct_key || '').toUpperCase();
+                        const isEliminated = (gameState.eliminated_options || []).includes(key);
 
-                          return (
-                            <div
-                              key={key}
-                              className={`p-3 sm:p-3.5 lg:p-4 rounded-[2px] border transition-all relative overflow-hidden ${
-                                isEliminated
-                                  ? 'fluent-box-nested border-rose-500/30 opacity-45'
-                                  : isCorrect
-                                  ? 'fluent-box-nested border-emerald-500/60 ring-1 ring-emerald-500/40'
-                                  : 'fluent-box border-white/10'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-1.5 relative z-10">
-                                <div className="flex items-center gap-2.5 sm:gap-3.5">
-                                  <div
-                                    className={`w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 rounded-[2px] font-mono font-bold text-base sm:text-lg md:text-xl flex items-center justify-center shadow-md transition-colors ${
-                                      isEliminated
-                                        ? 'bg-rose-900/60 text-rose-300 border border-rose-500/40 line-through'
-                                        : isCorrect
-                                        ? 'bg-emerald-500 text-black'
-                                        : 'fluent-option-badge text-[#F5EFF9]'
-                                    }`}
-                                  >
-                                    {key}
-                                  </div>
-                                  <div>
-                                    {gameState.option_images?.[key] && (
-                                      <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-48 object-cover rounded-[2px] shadow-md border border-white/10 mb-2" />
-                                    )}
-                                    <span className={`stage-fluid-option text-base sm:text-lg md:text-xl font-bold tracking-tight ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
-                                      {label}
-                                    </span>
-                                    {isEliminated && (
-                                      <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-mono text-rose-400 bg-white/10 px-1.5 py-0.5 rounded-[2px] border border-rose-500/30 font-bold uppercase">
-                                        <XCircle className="w-3 h-3" /> Đã loại trừ
-                                      </span>
-                                    )}
-                                  </div>
+                        return (
+                          <div
+                            key={key}
+                            className={`p-3.5 sm:p-4 md:p-5 rounded-[2px] border transition-all relative overflow-hidden flex flex-col justify-between h-full flex-1 min-h-[90px] sm:min-h-0 ${
+                              isEliminated
+                                ? 'fluent-box-nested border-rose-500/30 opacity-45'
+                                : isCorrect
+                                ? 'fluent-box-nested border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-emerald-500/20 shadow-lg'
+                                : 'fluent-box border-white/10'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2 relative z-10">
+                              <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
+                                <div
+                                  className={`w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 rounded-[2px] font-mono font-bold text-base sm:text-lg md:text-xl flex items-center justify-center shadow-md transition-colors ${
+                                    isEliminated
+                                      ? 'bg-rose-900/60 text-rose-300 border border-rose-500/40 line-through'
+                                      : isCorrect
+                                      ? 'bg-emerald-500 text-black'
+                                      : 'fluent-option-badge text-[#F5EFF9]'
+                                  }`}
+                                >
+                                  {key}
                                 </div>
-
-                                {/* Vote Count & Percent */}
-                                {(gameState.status === 'REVEAL' || showHeatmap) && (
-                                  <div className="text-right font-mono">
-                                    <span className={`text-base sm:text-lg font-bold ${showHeatmap && gameState.status !== 'REVEAL' ? 'text-rose-300 font-black' : 'text-white'}`}>
-                                      {percent}%
+                                <div className="min-w-0 flex-1">
+                                  {gameState.option_images?.[key] && (
+                                    <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-40 object-cover rounded-[2px] shadow-md border border-white/10 mb-2" />
+                                  )}
+                                  <span className={`stage-fluid-option text-base sm:text-lg md:text-xl font-bold tracking-tight block ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
+                                    {label}
+                                  </span>
+                                  {isEliminated && (
+                                    <span className="mt-1 inline-flex items-center gap-1 text-[9px] font-mono text-rose-400 bg-white/10 px-1.5 py-0.5 rounded-[2px] border border-rose-500/30 font-bold uppercase">
+                                      <XCircle className="w-3 h-3" /> Đã loại trừ
                                     </span>
-                                    <span className="text-[9px] text-white/40 block">({count} phiếu)</span>
-                                  </div>
-                                )}
+                                  )}
+                                </div>
                               </div>
 
-                              {/* Progress Bar (Visible on REVEAL or HEATMAP) */}
+                              {/* Vote Count & Percent */}
                               {(gameState.status === 'REVEAL' || showHeatmap) && (
-                                <div className="w-full h-2 bg-black/50 rounded-[2px] overflow-hidden p-0.5 border border-white/5 mt-2">
-                                  <div
-                                    className={`h-full rounded-[1px] transition-all duration-500 ${
-                                      isCorrect
-                                        ? 'bg-emerald-400'
-                                        : showHeatmap && gameState.status !== 'REVEAL'
-                                        ? percent > 70
-                                          ? 'bg-gradient-to-r from-orange-500 to-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)] animate-pulse'
-                                          : percent > 40
-                                          ? 'bg-amber-400'
-                                          : percent > 15
-                                          ? 'bg-emerald-400/80'
-                                          : 'bg-blue-400/80'
-                                        : 'bg-[#E39A96]'
-                                    }`}
-                                    style={{ width: `${percent}%` }}
-                                  />
+                                <div className="text-right font-mono ml-2 shrink-0">
+                                  <span className={`text-base sm:text-lg font-bold ${showHeatmap && gameState.status !== 'REVEAL' ? 'text-rose-300 font-black' : 'text-white'}`}>
+                                    {percent}%
+                                  </span>
+                                  <span className="text-[9px] text-white/40 block">({count} phiếu)</span>
                                 </div>
                               )}
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+
+                            {/* Progress Bar (Visible on REVEAL or HEATMAP) */}
+                            {(gameState.status === 'REVEAL' || showHeatmap) && (
+                              <div className="w-full h-2 bg-black/50 rounded-[2px] overflow-hidden p-0.5 border border-white/5 mt-2 relative z-10 shrink-0">
+                                <div
+                                  className={`h-full rounded-[1px] transition-all duration-500 ${
+                                    isCorrect
+                                      ? 'bg-emerald-400 shadow-md shadow-emerald-400/50'
+                                      : isEliminated
+                                      ? 'bg-rose-600'
+                                      : showHeatmap && gameState.status !== 'REVEAL'
+                                      ? percent > 70
+                                        ? 'bg-gradient-to-r from-orange-500 to-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)] animate-pulse'
+                                        : percent > 40
+                                        ? 'bg-amber-400'
+                                        : percent > 15
+                                        ? 'bg-emerald-400/80'
+                                        : 'bg-blue-400/80'
+                                      : 'bg-[#E39A96]'
+                                  }`}
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                            )}
+
+                            {/* Subtle Ambient Heatmap Background Tint when Heatmap is active */}
+                            {showHeatmap && gameState.status !== 'REVEAL' && percent > 0 && (
+                              <div
+                                className="absolute inset-0 bg-rose-500/10 pointer-events-none transition-opacity duration-500"
+                                style={{ opacity: Math.min(0.35, percent / 100) }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1740,128 +1416,43 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             )}
           </div>
         )}
-        </div>
       </main>
 
       {/* Realtime Audience Cheer & Intensity Meter */}
-      {showCheerMeter && (
-        <div className="relative z-20 my-3 animate-fadeIn">
-          <ProjectorCheerMeter theme={gameState.projectorTheme} />
+      {(gameState.projector_show_cheer_meter !== false && showCheerMeter && activeProjectorMode !== 'LEADERBOARD' && !isLeaderboardVisible) && (
+        <div className="relative z-20 my-2.5 animate-fadeIn">
+          <ProjectorCheerMeter
+            theme={gameState.projectorTheme}
+            isProjector={true}
+            expanded={gameState.projector_cheer_expanded}
+          />
         </div>
       )}
 
       {/* Real-time Audience Shout Marquee Ticker */}
-      {showShoutMarquee && (
-        <div className="relative z-20 my-2 animate-fadeIn">
+      {(gameState.projector_show_shout_marquee !== false && showShoutMarquee && activeProjectorMode !== 'LEADERBOARD' && !isLeaderboardVisible) && (
+        <div className="relative z-20 my-1.5 animate-fadeIn">
           <AudienceShoutMarquee variant="projector" className="rounded-[2px]" />
         </div>
       )}
 
-      {/* Stage Footer (Bento Style - Compact Single Row to Prevent AutoFit Downscale) */}
+      {/* Stage Footer (Clean Fluent UI Telemetry Bar - Display Only) */}
       <footer className="relative z-10 flex items-center justify-between gap-3 border-t border-white/10 pt-2 text-[10px] text-white/40 font-mono whitespace-nowrap overflow-x-auto scrollbar-none shrink-0">
-        <div className="flex items-center gap-3">
-          <span>BEYOND THE INTERNET 2026 • LIVE STAGE ENGINE</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="font-bold text-white/70 tracking-wider">BEYOND THE INTERNET 2026</span>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => setShowShoutMarquee(!showShoutMarquee)}
-            className="text-pink-300/90 hover:text-pink-200 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <Megaphone className="w-3 h-3 text-pink-400" />
-            {showShoutMarquee ? '📣 Ẩn Tiếng Hô Khán Giả (Phím M)' : '📣 Hiện Tiếng Hô Khán Giả (Phím M)'}
-          </button>
+          <span className="text-purple-300">LIVE STAGE MATRIX</span>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => setShowCheerMeter(!showCheerMeter)}
-            className="text-pink-300/90 hover:text-pink-200 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <Heart className="w-3 h-3 text-rose-400 fill-current" />
-            {showCheerMeter ? '💓 Ẩn Nhịp Tim Cổ Vũ (Phím C)' : '💓 Hiện Nhịp Tim Cổ Vũ (Phím C)'}
-          </button>
-          <span>•</span>
-          <button
-            type="button"
-            onClick={() => {
-              setShowResponseList(!showResponseList);
-              if (!showResponseList) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-              }
-            }}
-            className="text-sky-300/80 hover:text-sky-300 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <ListFilter className="w-3 h-3" />
-            {showResponseList ? '↩ Trở về màn hình câu hỏi' : '📝 Xem Danh Sách Phản Hồi (Phím R)'}
-          </button>
-          <span>•</span>
-          <button
-            type="button"
-            onClick={() => {
-              setShowBarChart(!showBarChart);
-              if (!showBarChart) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-              }
-            }}
-            className="text-purple-300/80 hover:text-purple-300 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <BarChart2 className="w-3 h-3 text-purple-400" />
-            {showBarChart ? '↩ Trở về màn hình câu hỏi' : '📊 Biểu Đồ Cột Recharts (Phím B)'}
-          </button>
-          <span>•</span>
-          <button
-            type="button"
-            onClick={() => {
-              setShowWordCloud(!showWordCloud);
-              if (!showWordCloud) {
-                setShowLeaderboard(false);
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowBarChart(false);
-              }
-            }}
-            className="text-pink-300/80 hover:text-pink-300 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <Cloud className="w-3 h-3 text-[#F7CAC9]" />
-            {showWordCloud ? '↩ Trở về màn hình câu hỏi' : '☁️ Đám Mây Từ Khóa (Phím W)'}
-          </button>
-          <span>•</span>
-          <button
-            type="button"
-            onClick={() => {
-              setShowLeaderboard(!showLeaderboard);
-              if (!showLeaderboard) {
-                setShowHeatmap(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-              }
-            }}
-            className="text-amber-300/80 hover:text-amber-300 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <Trophy className="w-3 h-3" />
-            {isLeaderboardVisible ? '↩ Trở về màn hình câu hỏi' : '🏆 Xem Bảng Xếp Hạng Top 5 (Phím L)'}
-          </button>
-          <span>•</span>
-          <button
-            type="button"
-            onClick={() => {
-              setShowHeatmap(!showHeatmap);
-              if (!showHeatmap) {
-                setShowLeaderboard(false);
-                setShowResponseList(false);
-                setShowWordCloud(false);
-              }
-            }}
-            className="text-rose-300/80 hover:text-rose-300 underline transition cursor-pointer flex items-center gap-1"
-          >
-            <BarChart3 className="w-3 h-3" />
-            {showHeatmap ? '📊 Ẩn Bản Đồ Nhiệt Real-time (Phím H)' : '📊 Hiện Bản Đồ Nhiệt Real-time (Phím H)'}
-          </button>
+          <span className="text-emerald-400 font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-[1px] bg-emerald-400 animate-pulse inline-block" />
+            BROADCAST ACTIVE
+          </span>
         </div>
-        <span>LATENCY: &lt;100MS • SYNC RATE: 10HZ</span>
+        <div className="flex items-center gap-2 sm:gap-3 text-white/50">
+          <span>LATENCY: &lt;100MS</span>
+          <span>•</span>
+          <span>SYNC RATE: 10HZ</span>
+        </div>
       </footer>
 
       {/* MODAL: Audience QR Code Display (Sync with Admin Portal) */}

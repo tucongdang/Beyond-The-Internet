@@ -1,4 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
+import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
@@ -412,6 +413,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(String(text));
   };
   const isKoreanQuestion = isKorean(activeQuestionText, localLanguage);
+
+  // Dynamic optimal font-size calculation ensuring question never overflows on any device/screen width
+  const {
+    containerRef: audienceQuestionBoxRef,
+    textRef: audienceQuestionTextRef,
+    style: audienceOptimalQuestionStyle
+  } = useAdaptiveFontSize(activeQuestionText || '', {
+    minFontSize: 14,
+    maxFontSize: 24,
+    lineHeight: isCjkQuestion ? 1.6 : 1.35
+  });
 
   const hasAnnouncer = Boolean(gameState?.announcer_overlay?.active && gameState?.announcer_overlay?.text?.trim());
   
@@ -1637,7 +1649,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <Leaderboard
           allResponses={allResponses || {}}
           gameState={gameState}
-          activeCount={1} 
+          activeCount={1}
+          isAudienceView={true}
         />
       </div>
     );
@@ -2740,13 +2753,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             {/* LEFT Column: Question Box */}
             <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col" : "lg:col-span-5 flex flex-col justify-start"}>
                 {!isBlindPoll ? (
-                  <div className={`fluent-question-box p-5 sm:p-6 lg:p-8 flex flex-col justify-center relative group ${
+                  <div 
+                    ref={audienceQuestionBoxRef}
+                    className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 flex flex-col justify-center relative group ${
                     isLongQuestion 
                       ? 'min-h-[120px] md:min-h-[160px] w-full' 
                       : 'min-h-[160px] md:min-h-[280px] h-full'
                   }`}>
                     {/* Fluent UI Header Payload */}
-                    <div className="text-xs font-mono font-bold text-[#F7CAC9] uppercase tracking-wider mb-2.5 flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+                    <div className="text-xs font-mono font-bold text-[#F7CAC9] uppercase tracking-wider mb-3 sm:mb-4 flex items-center justify-between gap-2 border-b border-white/10 pb-2.5 sm:pb-3">
                       <span className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#F7CAC9] animate-pulse" />
                         {gameState.round_name} • {t("view_code", localLanguage)}: {gameState.question_id}
@@ -2917,16 +2932,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </button>
                       </div>
                     </div>
-                    <h2 className={`text-base sm:text-lg md:text-xl font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} data-question-text="true">
-                      {activeQuestionText}
-                    </h2>
+                    <div className="my-auto py-2 sm:py-3.5">
+                      <h2 
+                        ref={audienceQuestionTextRef}
+                        style={audienceOptimalQuestionStyle}
+                        className={`font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} 
+                        data-question-text="true"
+                      >
+                        {activeQuestionText}
+                      </h2>
+                    </div>
                     {gameState.media_type === 'IMAGE' && gameState.media_url && (
-                      <div className="mt-4 flex justify-center">
+                      <div className="mt-4 sm:mt-5 flex justify-center">
                         <img src={gameState.media_url} alt={t("view_media_alt", localLanguage)} className="max-h-52 rounded-[2px] object-contain border border-[#F7CAC9]/30 shadow-lg" />
                       </div>
                     )}
                     {gameState.media_type === 'VIDEO' && gameState.media_url && (
-                      <div className="mt-4 flex justify-center w-full">
+                      <div className="mt-4 sm:mt-5 flex justify-center w-full">
                         <video
                           ref={(el) => { audienceMediaRef.current = el; }}
                           src={gameState.media_url}
@@ -2937,7 +2959,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </div>
                     )}
                     {gameState.media_type === 'AUDIO' && gameState.media_url && (
-                      <div className="mt-4 flex justify-center w-full">
+                      <div className="mt-4 sm:mt-5 flex justify-center w-full">
                         <audio
                           ref={(el) => { audienceMediaRef.current = el; }}
                           src={gameState.media_url}
@@ -2950,7 +2972,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   </div>
                 ) : (
                   /* Round 4 BLIND POLLING MODE BANNER */
-                  <div className={`fluent-question-box p-5 text-center shadow-xl flex flex-col justify-center ${
+                  <div className={`fluent-question-box p-5 sm:p-6 lg:p-7 text-center shadow-xl flex flex-col justify-center ${
                     isLongQuestion 
                       ? 'min-h-[120px] md:min-h-[160px] w-full' 
                       : 'min-h-[160px] md:min-h-[280px] h-full'

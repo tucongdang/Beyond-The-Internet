@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import confetti from 'canvas-confetti';
+import confetti from '../utils/confetti';
 import { Trophy, Award, Sparkles, Flame, Zap, Target, X, Star, Crown, Shield, Heart } from 'lucide-react';
 import { GrandFinaleState } from '../types';
 import { soundFx } from '../services/audioEffects';
@@ -8,16 +8,21 @@ import { vibrateGrandCelebration } from '../utils/hapticUtils';
 interface GrandFinaleProjectorOverlayProps {
   grandFinale: GrandFinaleState | null | undefined;
   onClose?: () => void;
+  showControls?: boolean;
+  projectorEffect?: { type: 'CONFETTI' | 'ALARM' | 'FIREWORKS' | 'TING', timestamp: number } | null;
 }
 
 export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayProps> = ({
   grandFinale,
-  onClose
+  onClose,
+  showControls = false,
+  projectorEffect = null
 }) => {
   const winner = grandFinale?.winner;
   const runnersUp = grandFinale?.runnersUp || [];
   const runner1 = runnersUp[0];
   const runner2 = runnersUp[1];
+  const prevEffectRef = useRef<number>(Date.now() - 2000);
 
   // Continuous celebratory confetti cannons
   useEffect(() => {
@@ -69,19 +74,46 @@ export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayPr
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [grandFinale?.active, grandFinale?.timestamp]);
 
+  const triggerMoreConfetti = () => {
+    soundFx.playReveal(true);
+    vibrateGrandCelebration();
+    confetti({
+      particleCount: 120,
+      spread: 90,
+      origin: { y: 0.55 },
+      colors: ['#fbbf24', '#f59e0b', '#ec4899', '#8b5cf6', '#ffffff']
+    });
+
+    // Dual side bursts
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 }
+      });
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 }
+      });
+    }, 200);
+  };
+
+  // Listen to remote projector effects (e.g. from Admin clicking Pháo Hoa)
+  useEffect(() => {
+    if (projectorEffect && (projectorEffect.type === 'CONFETTI' || projectorEffect.type === 'FIREWORKS')) {
+      if (projectorEffect.timestamp > prevEffectRef.current) {
+        prevEffectRef.current = projectorEffect.timestamp;
+        triggerMoreConfetti();
+      }
+    }
+  }, [projectorEffect]);
+
   if (!grandFinale || !grandFinale.active || !winner) {
     return null;
   }
-
-  const triggerMoreConfetti = () => {
-    soundFx.playReveal(true);
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ['#fbbf24', '#f59e0b', '#ec4899', '#8b5cf6']
-    });
-  };
 
   return (
     <div
@@ -134,28 +166,36 @@ export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayPr
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={triggerMoreConfetti}
-            className="px-3 py-1.5 rounded-[2px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
-            title="Thả thêm pháo hoa ăn mừng"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span className="hidden sm:inline">Thả Pháo Hoa</span>
-          </button>
-
-          {onClose && (
+        {showControls ? (
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 transition cursor-pointer"
-              title="Đóng màn hình vinh danh (Phím Esc)"
+              onClick={triggerMoreConfetti}
+              className="px-3 py-1.5 rounded-[2px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              title="Thả thêm pháo hoa ăn mừng"
             >
-              <X className="w-5 h-5" />
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span className="hidden sm:inline">Thả Pháo Hoa</span>
             </button>
-          )}
-        </div>
+
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/70 hover:text-white border border-white/10 transition cursor-pointer"
+                title="Đóng màn hình vinh danh (Phím Esc)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-[2px] bg-amber-400/10 text-amber-300 border border-amber-400/30 font-mono text-xs font-bold uppercase tracking-wider shadow-sm">
+              CHAMPIONSHIP HONORS
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Main Center Area: Champion Showcase */}

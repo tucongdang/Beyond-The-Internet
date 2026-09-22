@@ -226,6 +226,14 @@ export interface GameState {
   show_qr?: boolean;
   show_word_cloud?: boolean;
   projector_dimmed?: boolean;
+  projector_view_mode?: 'DEFAULT' | 'BAR_CHART' | 'RESPONSE_LIST' | 'HEATMAP' | 'LEADERBOARD' | 'WORD_CLOUD';
+  leaderboard_view_mode?: 'PODIUM' | 'LIST';
+  leaderboard_round_filter?: 'ALL' | 'R1' | 'R2' | 'R3' | 'R4';
+  projector_scale?: number;
+  projector_autofit?: boolean;
+  projector_show_cheer_meter?: boolean;
+  projector_show_shout_marquee?: boolean;
+  projector_cheer_expanded?: boolean;
   
   // Global Event & Quick Action Controls
   panic_mode?: boolean;

@@ -8,6 +8,8 @@ import { getSecureRandomId } from '../utils/cryptoUtils';
 interface ProjectorCheerMeterProps {
   className?: string;
   theme?: string;
+  isProjector?: boolean;
+  expanded?: boolean;
 }
 
 interface FloatingParticle {
@@ -28,11 +30,22 @@ const CHEER_EMOJIS: Record<string, string> = {
   STAR: '⭐'
 };
 
-export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ className = '', theme }) => {
+export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({
+  className = '',
+  theme,
+  isProjector = true,
+  expanded
+}) => {
   const [data, setData] = useState<CheerIntensityData>(cheerService.getCurrentIntensityData());
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(expanded ?? false);
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (expanded !== undefined) {
+      setIsExpanded(expanded);
+    }
+  }, [expanded]);
   const miniCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const expandedCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const prevEventIdsRef = useRef<Set<string>>(new Set());
@@ -357,30 +370,32 @@ export const ProjectorCheerMeter: React.FC<ProjectorCheerMeterProps> = ({ classN
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`p-1.5 sm:p-2 rounded-[2px] border transition ${
-                  soundEnabled
-                    ? 'fluent-box-nested border-rose-500/50 text-rose-300'
-                    : 'fluent-box-nested border-white/10 text-white/40 hover:text-white'
-                }`}
-                title={soundEnabled ? 'Tắt âm thanh nhịp tim' : 'Bật âm thanh nhịp tim'}
-              >
-                {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-              </button>
+            {/* Action Buttons (Only shown in interactive / admin mode) */}
+            {!isProjector && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className={`p-1.5 sm:p-2 rounded-[2px] border transition ${
+                    soundEnabled
+                      ? 'fluent-box-nested border-rose-500/50 text-rose-300'
+                      : 'fluent-box-nested border-white/10 text-white/40 hover:text-white'
+                  }`}
+                  title={soundEnabled ? 'Tắt âm thanh nhịp tim' : 'Bật âm thanh nhịp tim'}
+                >
+                  {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1.5 sm:p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition cursor-pointer"
-                title={isExpanded ? 'Thu nhỏ bảng nhiệt (Phím C)' : 'Mở rộng bảng nhiệt chi tiết (Phím C)'}
-              >
-                {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="p-1.5 sm:p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/70 hover:text-white transition cursor-pointer"
+                  title={isExpanded ? 'Thu nhỏ bảng nhiệt (Phím C)' : 'Mở rộng bảng nhiệt chi tiết (Phím C)'}
+                >
+                  {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

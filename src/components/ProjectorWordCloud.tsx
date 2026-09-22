@@ -164,14 +164,14 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
   return (
     <div
       id="projector-word-cloud-container"
-      className="w-full max-w-7xl mx-auto rounded-[2px] fluent-box border-2 border-[#3E1D74] shadow-2xl p-5 sm:p-7 backdrop-blur-2xl text-white relative overflow-hidden transition-all duration-500 animate-fadeIn"
+      className="w-full max-w-[96vw] xl:max-w-[95vw] mx-auto rounded-[2px] fluent-box border border-[#3E1D74] shadow-2xl p-4 sm:p-6 lg:p-7 backdrop-blur-2xl text-white relative overflow-hidden transition-all duration-500 animate-fadeIn select-none"
     >
       {/* Decorative Glow Elements */}
       <div className="absolute -top-20 -left-20 w-80 h-80 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
       <div className="absolute -bottom-20 -right-20 w-80 h-80 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
 
-      {/* Top Header & Stage Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/10 relative z-10">
+      {/* Top Header & Stage Status */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-[2px] bg-gradient-to-tr from-[#F7CAC9] to-[#E39A96] text-[#190839] flex items-center justify-center font-black shadow-lg shadow-[#F7CAC9]/30">
             <Cloud className="w-6 h-6 animate-pulse" />
@@ -188,95 +188,16 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
               Đám Mây Từ Khóa Trực Tiếp
-              <span className="text-xs font-mono font-normal text-slate-400">
-                (Phím tắt: W)
-              </span>
             </h2>
           </div>
         </div>
 
-        {/* Filter Controls & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Source Filter Switcher */}
-          <div className="flex items-center fluent-box-nested border border-white/10 rounded-[2px] p-1 text-xs font-mono">
-            <button
-              type="button"
-              onClick={() => setSourceFilter('ALL')}
-              className={`px-3 py-1.5 rounded-[2px] font-bold transition ${
-                sourceFilter === 'ALL'
-                  ? 'bg-[#F7CAC9] text-[#190839] shadow'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Tất Cả ({rawSources.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSourceFilter('QA')}
-              className={`px-3 py-1.5 rounded-[2px] font-bold transition flex items-center gap-1.5 ${
-                sourceFilter === 'QA'
-                  ? 'bg-[#F7CAC9] text-[#190839] shadow'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              <MessageSquare className="w-3 h-3" />
-              Q&A ({qaQuestions.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSourceFilter('RESPONSES')}
-              className={`px-3 py-1.5 rounded-[2px] font-bold transition flex items-center gap-1.5 ${
-                sourceFilter === 'RESPONSES'
-                  ? 'bg-[#F7CAC9] text-[#190839] shadow'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              <Radio className="w-3 h-3" />
-              Bình Chọn / VCNV
-            </button>
+        {/* Live Stage Status Indicator */}
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-white/5 border border-white/10 text-[#F7CAC9] font-bold">
+            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <span>ĐỒNG BỘ TRỰC TIẾP KHÁN GIẢ & THÍ SINH</span>
           </div>
-
-          {/* Min occurrence filter */}
-          <div className="hidden sm:flex items-center gap-1.5 fluent-box-nested border border-white/10 px-3 py-1.5 rounded-[2px] text-xs font-mono text-white/70">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#F7CAC9]" />
-            <span>Tối thiểu:</span>
-            {[1, 2, 3].map((val) => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => setMinCount(val)}
-                className={`px-2 py-0.5 rounded-[2px] font-bold transition ${
-                  minCount === val
-                    ? 'bg-rose-500 text-white shadow-sm'
-                    : 'fluent-box-nested text-white/50 hover:text-white'
-                }`}
-              >
-                {val}+
-              </button>
-            ))}
-          </div>
-
-          {/* Re-shuffle / Re-layout Button */}
-          <button
-            type="button"
-            onClick={() => setLayoutKey((prev) => prev + 1)}
-            className="p-2 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white/70 hover:text-white border border-white/10 transition cursor-pointer"
-            title="Sắp xếp lại vị trí từ khóa"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-
-          {/* Close / Return Button */}
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3.5 py-1.5 rounded-[2px] fluent-box-nested hover:fluent-box-nested text-white font-mono text-xs font-bold transition flex items-center gap-1.5 border border-white/15 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-              <span>Đóng</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -323,32 +244,9 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
         </div>
       </div>
 
-      {/* Search & Quick Filter Bar */}
-      <div className="flex items-center gap-3 mb-5 relative z-10">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#F7CAC9]" />
-          <input
-            type="text"
-            placeholder="Tìm nhanh từ khóa trong đám mây (VD: Ransomware, Zero Trust, Bảo mật...)"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] pl-10 pr-9 py-2 rounded-[2px] text-xs sm:text-sm text-white placeholder:text-white/30 outline-none transition"
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Interactive Word Cloud Canvas */}
+      {/* Main Word Cloud Stage Canvas */}
       <div
-        className="min-h-[380px] sm:min-h-[40vh] max-h-[60vh] overflow-y-auto rounded-[2px] fluent-box-nested border border-white/10 p-6 sm:p-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4.5 content-center relative select-none scrollbar-thin scrollbar-thumb-white/20"
+        className="min-h-[480px] sm:min-h-[58vh] max-h-[72vh] xl:max-h-[76vh] overflow-y-auto rounded-[2px] fluent-box-nested border border-white/10 p-6 sm:p-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4.5 content-center relative select-none scrollbar-thin scrollbar-thumb-white/20"
         key={layoutKey}
       >
         {filteredWords.length === 0 ? (
