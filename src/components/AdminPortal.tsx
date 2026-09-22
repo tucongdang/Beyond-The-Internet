@@ -10,12 +10,7 @@ const fluentDarkTransparentTheme = {};
 
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { syncService, DEFAULT_GAME_STATE } from '../services/syncService';
-import { soundFx as realSoundFx } from '../services/audioEffects';
-
-// Completely remove all sound FX on the Admin screen as requested by user
-const soundFx = new Proxy({} as any, {
-  get: () => () => {}
-});
+import { soundFx } from '../services/audioEffects';
 import { generateSPSSData, exportToCSV, exportToJSON, exportLeaderboardToCSV, normalizeVcnvAnswer } from '../utils/exportUtils';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import { getSecureRandomId, secureShuffle } from '../utils/cryptoUtils';
@@ -47,6 +42,8 @@ import { QuickActionsPanel } from './QuickActionsPanel';
 import { ProjectorControlHub } from './ProjectorControlHub';
 import { LightShowControlModal } from './LightShowControlModal';
 import { AdminSurveyControlModal } from './AdminSurveyControlModal';
+import { AudioSettingsModal } from './AudioSettingsModal';
+import { aiExplanationService } from '../services/aiExplanationService';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
 import { AiTranslationModal } from './AiTranslationModal';
 import { AdminApprovalModal } from './AdminApprovalModal';
@@ -125,7 +122,7 @@ import { Timer,  Shield,
   Type,
   ScanLine,
   TrendingUp
- , Monitor, MonitorOff, Volume2, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings } from 'lucide-react';
+ , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings } from 'lucide-react';
 import { PROJECTOR_THEMES, getProjectorTheme } from '../utils/themeUtils';
 import {
   vibrateTap,
@@ -164,13 +161,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onLogout,
   adminUser
 }) => {
-  // Completely disable all sound FX on the Admin screen
-  useEffect(() => {
-    realSoundFx.setAdminMuted(true);
-    return () => {
-      realSoundFx.setAdminMuted(false);
-    };
-  }, []);
+  // Admin sound FX obeys global sound settings
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -435,7 +426,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showMcCoPilotModal, setShowMcCoPilotModal] = useState(false);
   const [showLightShowModal, setShowLightShowModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [showAudioSettingsModal, setShowAudioSettingsModal] = useState(false);
+  const [speechActive, setSpeechActive] = useState<boolean>(() => aiExplanationService.getActiveSpeechState().active);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
+
+  useEffect(() => {
+    return aiExplanationService.subscribeSpeechState((st) => setSpeechActive(st.active));
+  }, []);
 
   // Fluent UI 2 Context Menu State
   const [contextMenuState, setContextMenuState] = useState<{
@@ -2767,6 +2764,49 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               <span>Trợ Lý MC AI</span>
             </button>
+
+            {/* Audio Settings & TTS Control Button */}
+            <button
+              type="button"
+              id="btn-admin-header-audio-control"
+              onClick={() => {
+                vibrateTap();
+                setShowAudioSettingsModal(true);
+              }}
+              data-tooltip="Cài đặt âm lượng, chọn giọng đọc Gemini AI & điều khiển phát thanh"
+              data-tooltip-title="Âm Thanh & Giọng Đọc"
+              data-tooltip-variant="accent"
+              className={`has-tooltip fluent-action-btn ${
+                speechActive
+                  ? 'text-emerald-200 bg-emerald-950/80 border-emerald-500/70 shadow-md ring-1 ring-emerald-400 animate-pulse'
+                  : 'text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30'
+              }`}
+            >
+              <Volume2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${speechActive ? 'text-emerald-300 animate-bounce' : 'text-emerald-400'}`} />
+              <span>Âm Thanh & TTS</span>
+              {speechActive && (
+                <span className="w-2 h-2 rounded-[2px] bg-emerald-400 animate-ping" />
+              )}
+            </button>
+
+            {/* Emergency Stop Speech Button if Active */}
+            {speechActive && (
+              <button
+                type="button"
+                id="btn-admin-header-stop-speech"
+                onClick={() => {
+                  vibrateTap();
+                  aiExplanationService.stopSpeech();
+                }}
+                data-tooltip="Dừng ngay lập tức giọng đọc AI Gemini đang phát"
+                data-tooltip-title="Dừng Đọc AI"
+                data-tooltip-variant="danger"
+                className="has-tooltip fluent-action-btn text-rose-200 bg-rose-950/90 hover:bg-rose-900 border-rose-500 font-bold animate-pulse shadow-md"
+              >
+                <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
+                <span>⏹ Dừng TTS</span>
+              </button>
+            )}
           </div>
 
           {/* Group 2: An Ninh & Khảo Sát Khẩn (Security & Urgent Control) */}
@@ -7622,6 +7662,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         }}
         initialDraft={relaunchDraft}
         onClearInitialDraft={() => setRelaunchDraft(null)}
+      />
+
+      {/* Audio Settings & Gemini TTS Control Modal */}
+      <AudioSettingsModal
+        isOpen={showAudioSettingsModal}
+        onClose={() => setShowAudioSettingsModal(false)}
       />
 
       {/* Announcer Overlay Control Modal */}

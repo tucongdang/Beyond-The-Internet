@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GameState, AnnouncerOverlay as AnnouncerOverlayType } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
+import { aiExplanationService } from '../services/aiExplanationService';
 import { vibrateTap, vibrateSuccess, vibrateWarning } from '../utils/hapticUtils';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import {
@@ -141,6 +142,7 @@ export const AnnouncerControlModal: React.FC<AnnouncerControlModalProps> = ({
   const handleStopOverlay = async () => {
     vibrateWarning();
     soundFx.playClick();
+    aiExplanationService.stopSpeech();
 
     await syncService.updateGameState({
       announcer_overlay: null

@@ -23,6 +23,8 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
   const [sfxVolume, setSfxVolume] = useState<number>(() => soundFx.getVolume());
   const [ttsVolume, setTtsVolume] = useState<number>(() => aiExplanationService.getTtsVolume());
   const [ttsPitch, setTtsPitch] = useState<number>(() => aiExplanationService.getTtsPitch());
+  const [useGeminiTts, setUseGeminiTts] = useState<boolean>(() => aiExplanationService.isGeminiTtsEnabled());
+  const [geminiVoice, setGeminiVoice] = useState<string>(() => aiExplanationService.getGeminiVoice());
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>(() => aiExplanationService.getSelectedVoiceURI());
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [autoSpeakAnswer, setAutoSpeakAnswer] = useState<boolean>(() => {
@@ -48,6 +50,8 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
       setSfxVolume(soundFx.getVolume());
       setTtsVolume(aiExplanationService.getTtsVolume());
       setTtsPitch(aiExplanationService.getTtsPitch());
+      setUseGeminiTts(aiExplanationService.isGeminiTtsEnabled());
+      setGeminiVoice(aiExplanationService.getGeminiVoice());
       setSelectedVoiceURI(aiExplanationService.getSelectedVoiceURI());
       setAvailableVoices(aiExplanationService.getAvailableVoices());
       setSubtitlesEnabled(ambientNoiseService.isSubtitlesEnabled());
@@ -77,7 +81,10 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
     const unsubSfx = soundFx.subscribeVolume((vol) => setSfxVolume(vol));
     const unsubTts = aiExplanationService.subscribeTtsVolume((vol) => setTtsVolume(vol));
     const unsubPitch = aiExplanationService.subscribeTtsPitch((pitch) => setTtsPitch(pitch));
+    const unsubGeminiTts = aiExplanationService.subscribeGeminiTts((val) => setUseGeminiTts(val));
+    const unsubGeminiVoice = aiExplanationService.subscribeGeminiVoice((v) => setGeminiVoice(v));
     const unsubVoice = aiExplanationService.subscribeSelectedVoice((uri) => setSelectedVoiceURI(uri));
+    const unsubSpeech = aiExplanationService.subscribeSpeechState((st) => setIsTestingTts(st.active));
     const unsubSubs = ambientNoiseService.subscribeSubtitles((enabled) => setSubtitlesEnabled(enabled));
     const unsubNoise = ambientNoiseService.subscribeNoiseLevel((data) => setNoiseLevel(data));
 
@@ -85,7 +92,10 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
       unsubSfx();
       unsubTts();
       unsubPitch();
+      unsubGeminiTts();
+      unsubGeminiVoice();
       unsubVoice();
+      unsubSpeech();
       unsubSubs();
       unsubNoise();
     };
@@ -507,45 +517,101 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
               </div>
             </div>
 
-            {/* System Voice Selection Dropdown */}
-            <div className="space-y-1.5 pt-3 border-t border-white/5">
+            {/* System Voice Selection & Gemini Engine Dropdown */}
+            <div className="space-y-2 pt-3 border-t border-white/5">
               <div className="flex items-center justify-between">
-                <label htmlFor="select-tts-voice" className="flex items-center gap-1.5 text-xs font-mono text-white font-bold cursor-pointer">
-                  <Mic className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('audio_voice_select_title', localLanguage)}</span>
-                </label>
-                <span className="text-[10px] font-mono text-white/40">
-                  {availableVoices.length > 0 ? `${availableVoices.length} voices` : ''}
-                </span>
-              </div>
-              <div className="relative">
-                <select
-                  id="select-tts-voice"
-                  value={selectedVoiceURI}
-                  onChange={handleVoiceSelectChange}
-                  className="w-full text-base sm:text-xs font-mono bg-black/40 border border-white/15 rounded-[2px] px-2.5 py-1.5 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
+                <div className="flex items-center gap-1.5 text-xs font-mono text-white font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Cấu hình Công nghệ Giọng đọc</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !useGeminiTts;
+                    setUseGeminiTts(next);
+                    aiExplanationService.setGeminiTtsEnabled(next);
+                    soundFx.playClick();
+                    vibrateTap();
+                  }}
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded-[2px] border transition cursor-pointer flex items-center gap-1 ${
+                    useGeminiTts
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                      : 'bg-white/10 text-white/60 border-white/15'
+                  }`}
                 >
-                  <option value="auto" className="bg-slate-900 text-white">
-                    {t('audio_voice_auto', localLanguage)}
-                  </option>
-                  {availableVoices.length === 0 ? (
-                    <option value="" disabled className="bg-slate-900 text-white/50">
-                      {t('audio_voice_no_voices', localLanguage)}
-                    </option>
-                  ) : (
-                    availableVoices.map((voice) => (
-                      <option
-                        key={voice.voiceURI || voice.name}
-                        value={voice.voiceURI || voice.name}
-                        className="bg-slate-900 text-white"
-                      >
-                        {voice.name} ({voice.lang}){voice.default ? ' ★' : ''}
-                      </option>
-                    ))
-                  )}
-                </select>
+                  <span>{useGeminiTts ? '✦ Gemini AI TTS' : 'Mặc định Trình duyệt'}</span>
+                </button>
               </div>
+
+              {useGeminiTts ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="select-gemini-voice" className="text-[11px] font-mono text-emerald-300/90 flex items-center gap-1">
+                      <Mic className="w-3 h-3 text-emerald-400" />
+                      <span>Giọng đọc Gemini AI (gemini-3.1-flash-tts)</span>
+                    </label>
+                  </div>
+                  <select
+                    id="select-gemini-voice"
+                    value={geminiVoice}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setGeminiVoice(v);
+                      aiExplanationService.setGeminiVoice(v);
+                      soundFx.playClick();
+                      vibrateTap();
+                    }}
+                    className="w-full text-base sm:text-xs font-mono bg-black/40 border border-emerald-500/30 rounded-[2px] px-2.5 py-1.5 text-emerald-200 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
+                  >
+                    <option value="Kore" className="bg-slate-900 text-white">Kore (Nữ - Cân bằng, truyền cảm)</option>
+                    <option value="Puck" className="bg-slate-900 text-white">Puck (Nam - Trầm ấm, tự nhiên)</option>
+                    <option value="Charon" className="bg-slate-900 text-white">Charon (Nam - Uy quyền, phát thanh)</option>
+                    <option value="Fenrir" className="bg-slate-900 text-white">Fenrir (Nam - Năng động, sôi nổi)</option>
+                    <option value="Zephyr" className="bg-slate-900 text-white">Zephyr (Nữ - Nhẹ nhàng, mượt mà)</option>
+                  </select>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="select-tts-voice" className="flex items-center gap-1.5 text-xs font-mono text-white font-bold cursor-pointer">
+                      <Mic className="w-3.5 h-3.5 text-white/60" />
+                      <span>{t('audio_voice_select_title', localLanguage)}</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-white/40">
+                      {availableVoices.length > 0 ? `${availableVoices.length} voices` : ''}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <select
+                      id="select-tts-voice"
+                      value={selectedVoiceURI}
+                      onChange={handleVoiceSelectChange}
+                      className="w-full text-base sm:text-xs font-mono bg-black/40 border border-white/15 rounded-[2px] px-2.5 py-1.5 text-white/90 focus:outline-none focus:border-emerald-400 cursor-pointer appearance-none"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.25em 1.25em`, paddingRight: `2rem` }}
+                    >
+                      <option value="auto" className="bg-slate-900 text-white">
+                        {t('audio_voice_auto', localLanguage)}
+                      </option>
+                      {availableVoices.length === 0 ? (
+                        <option value="" disabled className="bg-slate-900 text-white/50">
+                          {t('audio_voice_no_voices', localLanguage)}
+                        </option>
+                      ) : (
+                        availableVoices.map((voice) => (
+                          <option
+                            key={voice.voiceURI || voice.name}
+                            value={voice.voiceURI || voice.name}
+                            className="bg-slate-900 text-white"
+                          >
+                            {voice.name} ({voice.lang}){voice.default ? ' ★' : ''}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Test Voice Button */}

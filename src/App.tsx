@@ -298,6 +298,11 @@ export default function App() {
       if (e.key === 'bti_battery_saver_mode' || e.key === 'bti_audience_high_contrast') {
         setIsHighContrast(getBatterySaverMode());
       }
+      if (e.key === 'bti_soundfx_enabled') {
+        const nextVal = e.newValue !== 'false';
+        setSoundEnabled(nextVal);
+        soundFx.setEnabled(nextVal);
+      }
     };
     window.addEventListener('bti_battery_saver_changed', handleBatterySaverChange);
     window.addEventListener('storage', handleStorageChange);
@@ -320,7 +325,7 @@ export default function App() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isFirebaseConfigOpen, setIsFirebaseConfigOpen] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => soundFx.isEnabled());
   const [isOfflineBannerDismissed, setIsOfflineBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
@@ -491,9 +496,17 @@ export default function App() {
     soundFx.setAdminMuted(currentView === 'admin');
   }, [currentView]);
 
-  // Global Escape key listener to close modals
+  // Global Escape key listener to close modals & 'M' hotkey to toggle sound
   useEffect(() => {
-    const handleGlobalEsc = (e: KeyboardEvent) => {
+    const handleGlobalKeys = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      );
+
       if (e.key === 'Escape') {
         let closed = false;
         if (isProfileModalOpen) {
@@ -524,12 +537,15 @@ export default function App() {
           vibrateTap();
           soundFx.playClick();
         }
+      } else if (!isInput && (e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleToggleSound();
       }
     };
 
-    window.addEventListener('keydown', handleGlobalEsc);
-    return () => window.removeEventListener('keydown', handleGlobalEsc);
-  }, [isProfileModalOpen, isFirebaseConfigOpen, isInstallModalOpen, isLocalAudienceQrOpen, gameState.show_qr, isAudienceQrDismissed, isOnboardingOpen, user]);
+    window.addEventListener('keydown', handleGlobalKeys);
+    return () => window.removeEventListener('keydown', handleGlobalKeys);
+  }, [isProfileModalOpen, isFirebaseConfigOpen, isInstallModalOpen, isLocalAudienceQrOpen, gameState.show_qr, isAudienceQrDismissed, isOnboardingOpen, user, soundEnabled]);
 
   const handleUserComplete = async (userInfo: UserInfo) => {
     if (!userInfo.uid) {

@@ -8,6 +8,55 @@ export interface McCoPilotResult {
 
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 
+function createWavBlobFromBase64Audio(base64Data: string, mimeType: string): string {
+  if (mimeType.includes('pcm') || (!mimeType.includes('wav') && !mimeType.includes('mp3') && !mimeType.includes('mpeg') && !mimeType.includes('ogg'))) {
+    let sampleRate = 24000;
+    const rateMatch = mimeType.match(/rate=(\d+)/);
+    if (rateMatch && rateMatch[1]) {
+      sampleRate = parseInt(rateMatch[1], 10) || 24000;
+    }
+
+    try {
+      const binaryString = atob(base64Data);
+      const pcmLength = binaryString.length;
+      const buffer = new ArrayBuffer(44 + pcmLength);
+      const view = new DataView(buffer);
+
+      // 'RIFF' chunk descriptor
+      view.setUint32(0, 0x52494646, false); // "RIFF"
+      view.setUint32(4, 36 + pcmLength, true); // ChunkSize
+      view.setUint32(8, 0x57415645, false); // "WAVE"
+
+      // 'fmt ' sub-chunk
+      view.setUint32(12, 0x666d7420, false); // "fmt "
+      view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+      view.setUint16(20, 1, true); // AudioFormat (1 for PCM)
+      view.setUint16(22, 1, true); // NumChannels (1 for mono)
+      view.setUint32(24, sampleRate, true); // SampleRate
+      view.setUint32(28, sampleRate * 1 * 2, true); // ByteRate
+      view.setUint16(32, 2, true); // BlockAlign
+      view.setUint16(34, 16, true); // BitsPerSample
+
+      // 'data' sub-chunk
+      view.setUint32(36, 0x64617461, false); // "data"
+      view.setUint32(40, pcmLength, true); // Subchunk2Size
+
+      // Copy PCM bytes
+      const bytes = new Uint8Array(buffer, 44, pcmLength);
+      for (let i = 0; i < pcmLength; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const blob = new Blob([buffer], { type: 'audio/wav' });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      console.warn('[Gemini TTS] Error converting PCM to WAV blob:', e);
+    }
+  }
+
+  return `data:${mimeType.split(';')[0] || 'audio/mp3'};base64,${base64Data}`;
+}
+
 export interface SpeakQuestionOptions {
   options?: Record<string, string> | null;
   roundType?: string;
@@ -18,6 +67,27 @@ export interface SpeakQuestionOptions {
 }
 
 export const aiExplanationService = {
+  _useGeminiTts: (() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_use_gemini_tts');
+      if (saved !== null) return saved === 'true';
+      localStorage.setItem('bti_use_gemini_tts', 'true');
+    }
+    return true; // Default to Gemini TTS
+  })(),
+  _geminiTtsListeners: new Set<(enabled: boolean) => void>(),
+
+  _geminiVoice: (() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_gemini_voice');
+      if (saved) return saved;
+    }
+    return 'Kore'; // 'Kore', 'Puck', 'Charon', 'Fenrir', 'Zephyr'
+  })(),
+  _geminiVoiceListeners: new Set<(voice: string) => void>(),
+
+  _activeAudioElement: null as HTMLAudioElement | null,
+
   _ttsVolume: (() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('bti_tts_volume');
@@ -143,6 +213,44 @@ export const aiExplanationService = {
     };
   },
 
+  isGeminiTtsEnabled(): boolean {
+    return this._useGeminiTts;
+  },
+
+  setGeminiTtsEnabled(enabled: boolean): void {
+    this._useGeminiTts = enabled;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bti_use_gemini_tts', String(enabled));
+    }
+    this._geminiTtsListeners.forEach(listener => {
+      try { listener(this._useGeminiTts); } catch {}
+    });
+  },
+
+  subscribeGeminiTts(listener: (enabled: boolean) => void): () => void {
+    this._geminiTtsListeners.add(listener);
+    return () => { this._geminiTtsListeners.delete(listener); };
+  },
+
+  getGeminiVoice(): string {
+    return this._geminiVoice || 'Kore';
+  },
+
+  setGeminiVoice(voice: string): void {
+    this._geminiVoice = voice;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bti_gemini_voice', voice);
+    }
+    this._geminiVoiceListeners.forEach(listener => {
+      try { listener(this._geminiVoice); } catch {}
+    });
+  },
+
+  subscribeGeminiVoice(listener: (voice: string) => void): () => void {
+    this._geminiVoiceListeners.add(listener);
+    return () => { this._geminiVoiceListeners.delete(listener); };
+  },
+
   getAvailableVoices(): SpeechSynthesisVoice[] {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
@@ -152,6 +260,168 @@ export const aiExplanationService = {
       }
     }
     return [];
+  },
+
+  /**
+   * Play high quality realistic TTS using Gemini API model gemini-3.1-flash-tts-preview
+   */
+  async playGeminiTts(
+    text: string,
+    langCode: string = 'vi',
+    onEnd?: () => void,
+    onError?: () => void,
+    type: string = 'general'
+  ): Promise<boolean> {
+    this.stopSpeech();
+    soundFx.setTtsActive(true);
+    this._emitSpeechState(text, true, type);
+
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (typeof window !== 'undefined') {
+        const token = sessionStorage.getItem('BTI2026_ADMIN_TOKEN') || 'bti2026_admin_authorized';
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch('/api/gemini-tts', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          text,
+          voiceName: this.getGeminiVoice(),
+          langCode
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Gemini TTS returned HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (!data.audio) {
+        throw new Error('No audio returned from Gemini TTS');
+      }
+
+      const audioUrl = createWavBlobFromBase64Audio(data.audio, data.mimeType || 'audio/pcm;rate=24000');
+      const audio = new Audio(audioUrl);
+      this._activeAudioElement = audio;
+      audio.volume = this.getTtsVolume();
+
+      return new Promise<boolean>((resolve) => {
+        audio.onended = () => {
+          if (this._activeAudioElement === audio) {
+            this._activeAudioElement = null;
+          }
+          soundFx.setTtsActive(false);
+          this._emitSpeechState('', false, 'none');
+          if (onEnd) onEnd();
+          resolve(true);
+        };
+
+        audio.onerror = (e) => {
+          if (this._activeAudioElement === audio) {
+            this._activeAudioElement = null;
+          }
+          soundFx.setTtsActive(false);
+          this._emitSpeechState('', false, 'none');
+          console.warn('[Gemini TTS] Playback error:', e);
+          if (onError) onError();
+          resolve(false);
+        };
+
+        audio.play().catch((err) => {
+          console.warn('[Gemini TTS] Audio play error:', err);
+          if (this._activeAudioElement === audio) {
+            this._activeAudioElement = null;
+          }
+          soundFx.setTtsActive(false);
+          this._emitSpeechState('', false, 'none');
+          resolve(false);
+        });
+      });
+    } catch (err) {
+      console.warn('[Gemini TTS] API error, will fallback:', err);
+      soundFx.setTtsActive(false);
+      this._emitSpeechState('', false, 'none');
+      return false;
+    }
+  },
+
+  /**
+   * Browser SpeechSynthesis fallback
+   */
+  speakWithBrowserTTS(
+    fullSpeechText: string,
+    langCode: string = 'vi',
+    onEnd?: () => void,
+    onError?: () => void,
+    type: string = 'general'
+  ): boolean {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      if (onError) onError();
+      return false;
+    }
+
+    window.speechSynthesis.cancel();
+    soundFx.setTtsActive(true);
+    this._emitSpeechState(fullSpeechText, true, type);
+
+    const utterance = new SpeechSynthesisUtterance(fullSpeechText);
+    activeUtterance = utterance;
+
+    const speechLangMap: Record<string, string> = {
+      vi: 'vi-VN',
+      en: 'en-US',
+      ko: 'ko-KR',
+      ja: 'ja-JP',
+      zh: 'zh-CN',
+      fr: 'fr-FR',
+      es: 'es-ES',
+      de: 'de-DE',
+      th: 'th-TH',
+      ru: 'ru-RU'
+    };
+
+    const targetLang = speechLangMap[langCode] || 'vi-VN';
+    utterance.lang = targetLang;
+    utterance.rate = 1.0;
+    utterance.pitch = this.getTtsPitch();
+    utterance.volume = this.getTtsVolume();
+
+    try {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        const userVoiceURI = this.getSelectedVoiceURI();
+        if (userVoiceURI && userVoiceURI !== 'auto') {
+          const customVoice = voices.find(v => v.voiceURI === userVoiceURI || v.name === userVoiceURI);
+          if (customVoice) utterance.voice = customVoice;
+        }
+        if (!utterance.voice) {
+          const langPrefix = targetLang.split('-')[0].toLowerCase();
+          const matchedVoice = voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase())
+            || voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
+          if (matchedVoice) utterance.voice = matchedVoice;
+        }
+      }
+    } catch {}
+
+    utterance.onend = () => {
+      activeUtterance = null;
+      soundFx.setTtsActive(false);
+      this._emitSpeechState('', false, 'none');
+      if (onEnd) onEnd();
+    };
+
+    utterance.onerror = (e) => {
+      activeUtterance = null;
+      soundFx.setTtsActive(false);
+      this._emitSpeechState('', false, 'none');
+      console.warn('[SpeechSynthesis] Error:', e);
+      if (onError) onError();
+    };
+
+    window.speechSynthesis.speak(utterance);
+    return true;
   },
 
   /**
@@ -338,6 +608,9 @@ export const aiExplanationService = {
    * Completely client-side, zero latency, offline-capable.
    * Speaks question text and multiple-choice options with natural pacing.
    */
+  /**
+   * Text-To-Speech execution (Gemini TTS with Web Speech API fallback)
+   */
   speakQuestionText(
     text: string,
     langCode: string = 'vi',
@@ -345,83 +618,25 @@ export const aiExplanationService = {
     onError?: () => void,
     optionsConfig?: SpeakQuestionOptions
   ): boolean {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      return false;
-    }
-
-    window.speechSynthesis.cancel(); // Cancel any existing playback
-    soundFx.setTtsActive(true);
-
     const fullSpeechText = optionsConfig
       ? this.buildSpeechText(text, optionsConfig, langCode)
       : text;
 
-    this._emitSpeechState(fullSpeechText, true, optionsConfig?.isReveal ? 'answer' : 'question');
+    const type = optionsConfig?.isReveal ? 'answer' : 'question';
 
-    const utterance = new SpeechSynthesisUtterance(fullSpeechText);
-    activeUtterance = utterance;
-    
-    // Map application language codes to BCP 47 speech synthesis tags
-    const speechLangMap: Record<string, string> = {
-      vi: 'vi-VN',
-      en: 'en-US',
-      ko: 'ko-KR',
-      ja: 'ja-JP',
-      zh: 'zh-CN',
-      fr: 'fr-FR',
-      es: 'es-ES',
-      de: 'de-DE',
-      th: 'th-TH',
-      ru: 'ru-RU'
-    };
-
-    const targetLang = speechLangMap[langCode] || 'vi-VN';
-    utterance.lang = targetLang;
-    utterance.rate = 1.0;
-    utterance.pitch = this.getTtsPitch();
-    utterance.volume = this.getTtsVolume();
-
-    // Pick user-selected voice or fallback to best matching voice
-    try {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {
-        const userVoiceURI = this.getSelectedVoiceURI();
-        if (userVoiceURI && userVoiceURI !== 'auto') {
-          const customVoice = voices.find(v => v.voiceURI === userVoiceURI || v.name === userVoiceURI);
-          if (customVoice) {
-            utterance.voice = customVoice;
-          }
+    if (this.isGeminiTtsEnabled()) {
+      this.playGeminiTts(fullSpeechText, langCode, onEnd, () => {
+        // Fallback to browser TTS if Gemini TTS encounters error
+        this.speakWithBrowserTTS(fullSpeechText, langCode, onEnd, onError, type);
+      }, type).then((success) => {
+        if (!success) {
+          this.speakWithBrowserTTS(fullSpeechText, langCode, onEnd, onError, type);
         }
-        if (!utterance.voice) {
-          const langPrefix = targetLang.split('-')[0].toLowerCase();
-          const matchedVoice = voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase())
-            || voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
-          if (matchedVoice) {
-            utterance.voice = matchedVoice;
-          }
-        }
-      }
-    } catch {
-      // Ignore voice lookup error
+      });
+      return true;
     }
 
-    utterance.onend = () => {
-      activeUtterance = null;
-      soundFx.setTtsActive(false);
-      this._emitSpeechState('', false, 'none');
-      if (onEnd) onEnd();
-    };
-
-    utterance.onerror = (e) => {
-      activeUtterance = null;
-      soundFx.setTtsActive(false);
-      this._emitSpeechState('', false, 'none');
-      console.warn('[SpeechSynthesis] Error:', e);
-      if (onError) onError();
-    };
-
-    window.speechSynthesis.speak(utterance);
-    return true;
+    return this.speakWithBrowserTTS(fullSpeechText, langCode, onEnd, onError, type);
   },
 
   /**
@@ -510,87 +725,39 @@ export const aiExplanationService = {
     onEnd?: () => void,
     onError?: () => void
   ): boolean {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      return false;
-    }
-
     const speechText = this.buildCorrectAnswerSpeechText(optionsConfig, langCode);
     if (!speechText.trim()) return false;
 
-    window.speechSynthesis.cancel();
-    soundFx.setTtsActive(true);
-    this._emitSpeechState(speechText, true, 'explanation');
-
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    activeUtterance = utterance;
-    const speechLangMap: Record<string, string> = {
-      vi: 'vi-VN',
-      en: 'en-US',
-      ko: 'ko-KR',
-      ja: 'ja-JP',
-      zh: 'zh-CN',
-      fr: 'fr-FR',
-      es: 'es-ES',
-      de: 'de-DE',
-      th: 'th-TH',
-      ru: 'ru-RU'
-    };
-
-    const targetLang = speechLangMap[langCode] || 'vi-VN';
-    utterance.lang = targetLang;
-    utterance.rate = 1.0;
-    utterance.pitch = this.getTtsPitch();
-    utterance.volume = this.getTtsVolume();
-
-    // Pick user-selected voice or fallback to best matching voice
-    try {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {
-        const userVoiceURI = this.getSelectedVoiceURI();
-        if (userVoiceURI && userVoiceURI !== 'auto') {
-          const customVoice = voices.find(v => v.voiceURI === userVoiceURI || v.name === userVoiceURI);
-          if (customVoice) {
-            utterance.voice = customVoice;
-          }
+    if (this.isGeminiTtsEnabled()) {
+      this.playGeminiTts(speechText, langCode, onEnd, () => {
+        this.speakWithBrowserTTS(speechText, langCode, onEnd, onError, 'explanation');
+      }, 'explanation').then((success) => {
+        if (!success) {
+          this.speakWithBrowserTTS(speechText, langCode, onEnd, onError, 'explanation');
         }
-        if (!utterance.voice) {
-          const langPrefix = targetLang.split('-')[0].toLowerCase();
-          const matchedVoice = voices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase())
-            || voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
-          if (matchedVoice) {
-            utterance.voice = matchedVoice;
-          }
-        }
-      }
-    } catch {
-      // Ignore voice lookup error
+      });
+      return true;
     }
 
-    utterance.onend = () => {
-      activeUtterance = null;
-      soundFx.setTtsActive(false);
-      this._emitSpeechState('', false, 'none');
-      if (onEnd) onEnd();
-    };
-
-    utterance.onerror = (e) => {
-      activeUtterance = null;
-      soundFx.setTtsActive(false);
-      this._emitSpeechState('', false, 'none');
-      console.warn('[SpeechSynthesis] Error:', e);
-      if (onError) onError();
-    };
-
-    window.speechSynthesis.speak(utterance);
-    return true;
+    return this.speakWithBrowserTTS(speechText, langCode, onEnd, onError, 'explanation');
   },
 
   /**
-   * Stops any currently active speech synthesis
+   * Stops any currently active speech synthesis or Gemini TTS audio
    */
   stopSpeech(): void {
     soundFx.setTtsActive(false);
     this._emitSpeechState('', false, 'none');
+
+    if (this._activeAudioElement) {
+      try {
+        this._activeAudioElement.pause();
+        this._activeAudioElement.onended = null;
+        this._activeAudioElement.onerror = null;
+        this._activeAudioElement = null;
+      } catch {}
+    }
+
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
         if (activeUtterance) {

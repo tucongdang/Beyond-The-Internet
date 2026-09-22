@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 
@@ -1604,6 +1604,65 @@ async function startServer() {
         });
       }
       res.status(500).json({ error: error?.message || "Lỗi hệ thống AI. Vui lòng thử lại sau." });
+    }
+  });
+
+  // API route for Gemini Text-to-Speech (TTS)
+  app.post("/api/gemini-tts", requireApiAuth, async (req, res) => {
+    try {
+      const { text, voiceName = 'Kore' } = req.body;
+      const apiKey = process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(500).json({ error: "Lỗi cấu hình server: chưa thiết lập AI API key." });
+      }
+
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ error: "Thiếu nội dung văn bản (text) cần chuyển đổi giọng nói." });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      });
+
+      const VALID_VOICES = new Set(['Kore', 'Puck', 'Charon', 'Fenrir', 'Zephyr']);
+      const selectedVoice = VALID_VOICES.has(voiceName) ? voiceName : 'Kore';
+
+      // Call Gemini TTS model gemini-3.1-flash-tts-preview
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-flash-tts-preview",
+        contents: [{ parts: [{ text: text.trim() }] }],
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: selectedVoice }
+            }
+          }
+        }
+      });
+
+      const part = response.candidates?.[0]?.content?.parts?.[0];
+      const base64Audio = part?.inlineData?.data;
+      const mimeType = part?.inlineData?.mimeType || 'audio/pcm;rate=24000';
+
+      if (!base64Audio) {
+        return res.status(500).json({ error: "Gemini TTS không trả về dữ liệu âm thanh." });
+      }
+
+      res.json({
+        audio: base64Audio,
+        mimeType
+      });
+    } catch (error: any) {
+      console.error("Gemini TTS API Error:", error?.message || error);
+      if (isResourceExhaustedError(error)) {
+        return res.status(429).json({ error: "Hạn mức Gemini AI TTS tạm thời đạt giới hạn (Resource Exhausted)." });
+      }
+      res.status(500).json({ error: error?.message || "Lỗi tạo giọng nói với Gemini TTS." });
     }
   });
 

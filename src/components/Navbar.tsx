@@ -409,26 +409,49 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{localLanguage.toUpperCase()}</span>
             </button>
 
-            {/* Sound Toggle */}
-            <button
-              id="btn-toggle-sound"
-              type="button"
-              onClick={() => {
-                vibrateSelection();
-                onToggleSound();
-              }}
-              data-tooltip={soundEnabled ? 'Tắt âm thanh hệ thống' : 'Bật âm thanh hệ thống'}
-              data-tooltip-title="Âm Thanh"
-              data-tooltip-hotkey="M"
-              data-tooltip-placement="bottom"
-              className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
-            >
-              {soundEnabled ? (
-                <Volume2 className="w-3.5 h-3.5 text-sky-300" />
-              ) : (
-                <VolumeX className="w-3.5 h-3.5 text-white/40" />
-              )}
-            </button>
+            {/* Mute Toggle */}
+            <div className="flex items-center gap-1.5">
+              <button
+                id="btn-toggle-sound"
+                type="button"
+                onClick={() => {
+                  vibrateSelection();
+                  onToggleSound();
+                }}
+                aria-label={soundEnabled ? 'Tắt âm thanh hệ thống' : 'Bật âm thanh hệ thống'}
+                data-tooltip={
+                  soundEnabled
+                    ? (effectiveLanguage === 'en' ? 'Sound FX: ACTIVE (Click or press M to Mute)' : 'Âm thanh hệ thống: BẬT (Bấm hoặc nhấn M để Tắt)')
+                    : (effectiveLanguage === 'en' ? 'Sound FX: MUTED (Click or press M to Unmute)' : 'Âm thanh hệ thống: TẮT (Bấm hoặc nhấn M để Bật)')
+                }
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}
+                data-tooltip-hotkey="M"
+                data-tooltip-placement="bottom"
+                className={`has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[3px] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border select-none ${
+                  soundEnabled
+                    ? 'bg-[#F7CAC9]/15 border-[#F7CAC9]/40 text-[#F7CAC9] hover:bg-[#F7CAC9]/25 hover:border-[#F7CAC9]/60 shadow-[0_0_12px_rgba(247,202,201,0.2)]'
+                    : 'bg-rose-950/30 border-rose-500/40 text-rose-300/80 hover:bg-rose-950/50 hover:text-rose-200 shadow-inner'
+                }`}
+              >
+                <div className="relative flex items-center justify-center">
+                  {soundEnabled ? (
+                    <Volume2 className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 text-rose-400" />
+                  )}
+                  <span
+                    className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border border-slate-950 ${
+                      soundEnabled
+                        ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                        : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
+                    }`}
+                  />
+                </div>
+                <span className="hidden lg:inline text-[10px] font-mono font-bold tracking-wider uppercase">
+                  {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+                </span>
+              </button>
+            </div>
 
             {/* Sound EQ Slider Settings (Hidden in Admin View) */}
             {currentView !== 'admin' && (
@@ -603,6 +626,37 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* In Login Screen: Clean minimal options */}
             {isLoginScreen ? (
               <div className="space-y-2 pt-1">
+                {/* Sound Status Toggle */}
+                <button
+                  onClick={() => {
+                    vibrateSelection();
+                    onToggleSound();
+                  }}
+                  className={`w-full px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
+                    soundEnabled
+                      ? 'bg-[#F7CAC9]/10 border-[#F7CAC9]/30 text-[#F7CAC9]'
+                      : 'bg-rose-950/30 border-rose-500/30 text-rose-300/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {soundEnabled ? (
+                      <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
+                    ) : (
+                      <VolumeX className="w-4 h-4 text-rose-400" />
+                    )}
+                    <span>{effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}</span>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
+                      soundEnabled
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                        : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
+                    }`}
+                  >
+                    {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+                  </span>
+                </button>
+
                 {/* Language switch */}
                 <button
                   onClick={() => {
@@ -801,6 +855,36 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* Utilities in Drawer */}
                 <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+                  <button
+                    onClick={() => {
+                      vibrateSelection();
+                      onToggleSound();
+                    }}
+                    className={`px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
+                      soundEnabled
+                        ? 'bg-[#F7CAC9]/10 border-[#F7CAC9]/30 text-[#F7CAC9]'
+                        : 'bg-rose-950/30 border-rose-500/30 text-rose-300/80'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {soundEnabled ? (
+                        <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
+                      ) : (
+                        <VolumeX className="w-4 h-4 text-rose-400" />
+                      )}
+                      <span>{effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}</span>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
+                        soundEnabled
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
+                      }`}
+                    >
+                      {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+                    </span>
+                  </button>
+
                   <button
                     onClick={() => {
                       vibrateTap();

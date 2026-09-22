@@ -439,36 +439,42 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
 
   return (
     <div 
-      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-3xl bg-[#0f172a] border border-[#F7CAC9]/30 rounded-[8px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="w-full max-w-4xl bg-slate-950/95 border border-[#F7CAC9]/40 rounded-[6px] shadow-2xl shadow-purple-950/60 overflow-hidden flex flex-col max-h-[92vh] transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0">
-              <FileSpreadsheet className="w-5 h-5" />
+        <div className="p-4 sm:p-5 border-b border-[#F7CAC9]/25 flex items-center justify-between bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 shrink-0">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-[4px] bg-[#F7CAC9]/15 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-inner">
+              <FileSpreadsheet className="w-5 h-5 text-[#F7CAC9]" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-white">
-                  Khảo Sát Khán Giả & Google Forms
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base sm:text-lg font-black text-white tracking-wide">
+                  Khảo Sát Khán Giả (10%) & Google Forms
                 </h3>
-                <span className={`text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-[2px] border ${
+                <span className={`text-[9px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[2px] border ${
                   isEnabled 
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
-                    : 'bg-slate-700/40 text-slate-400 border-slate-600/40'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-900/30' 
+                    : 'bg-slate-800/60 text-slate-400 border-slate-700/60'
                 }`}>
                   {isEnabled ? 'ĐANG BẬT' : 'ĐANG TẮT'}
                 </span>
+                {isForceActive && (
+                  <span className="text-[9px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[2px] bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block animate-ping" />
+                    LIVE ON AIR
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-400">
-                Lấy ý kiến ngẫu nhiên {sampleRate}% khán giả khi bế mạc hoặc phát lệnh tức thì
+              <p className="text-xs text-slate-400 mt-0.5">
+                Mô-đun thu thập phản hồi Google Forms tự động bốc thăm ngẫu nhiên {sampleRate}% khán giả theo User ID
               </p>
             </div>
           </div>
@@ -476,25 +482,25 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
+            className="p-2 text-slate-400 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer border border-transparent hover:border-slate-700/50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="px-5 border-b border-slate-800 bg-slate-950/60 flex items-center gap-2 shrink-0">
+        <div className="px-4 sm:px-6 border-b border-slate-800/80 bg-slate-950/90 flex items-center gap-1 sm:gap-2 shrink-0 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('SETTINGS')}
-            className={`py-3 px-3 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer ${
+            className={`py-3 px-3.5 text-xs font-mono font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'SETTINGS'
-                ? 'border-[#F7CAC9] text-[#F7CAC9]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#F7CAC9] text-[#F7CAC9] bg-purple-950/40 font-extrabold'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
-            Cấu Hình & Phát Lệnh
+            <span>Cấu Hình & Phát Lệnh</span>
           </button>
 
           <button
@@ -505,14 +511,14 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 loadFormStructure();
               }
             }}
-            className={`py-3 px-3 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer ${
+            className={`py-3 px-3.5 text-xs font-mono font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'EDITOR'
-                ? 'border-[#F7CAC9] text-[#F7CAC9]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#F7CAC9] text-[#F7CAC9] bg-purple-950/40 font-extrabold'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            Chỉnh Sửa Câu Hỏi (Editor)
+            <span>Chỉnh Sửa Câu Hỏi</span>
           </button>
 
           <button
@@ -523,16 +529,16 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 loadDriveForms();
               }
             }}
-            className={`py-3 px-3 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer relative ${
+            className={`py-3 px-3.5 text-xs font-mono font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer relative whitespace-nowrap ${
               activeTab === 'WORKSPACE'
-                ? 'border-[#F7CAC9] text-[#F7CAC9]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#F7CAC9] text-[#F7CAC9] bg-purple-950/40 font-extrabold'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            Google Forms Workspace
+            <span>Google Drive Workspace</span>
             {isGoogleConnected && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400" title="Google Connected" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-400" title="Google Connected" />
             )}
           </button>
 
@@ -544,14 +550,14 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 handleFetchAnalytics();
               }
             }}
-            className={`py-3 px-3 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer ${
+            className={`py-3 px-3.5 text-xs font-mono font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'ANALYTICS'
-                ? 'border-[#F7CAC9] text-[#F7CAC9]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#F7CAC9] text-[#F7CAC9] bg-purple-950/40 font-extrabold'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
-            Thống Kê Phản Hồi Trực Tiếp
+            <span>Thống Kê Live</span>
           </button>
         </div>
 
@@ -561,26 +567,26 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
           {activeTab === 'SETTINGS' && (
             <>
               {/* Status Quick Bar */}
-              <div className="p-4 rounded-[6px] bg-slate-900/80 border border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-[4px] bg-slate-900/80 border border-sky-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-mono">
                     <Users className="w-4 h-4 text-sky-400" />
                     <span className="text-slate-300">Khán giả đang online:</span>
-                    <strong className="text-white text-sm">{activeAudienceCount} người</strong>
+                    <strong className="text-white text-sm font-bold">{activeAudienceCount} người</strong>
                   </div>
                   <div className="text-xs text-slate-400 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-pink-400" />
                     <span>
-                      Tỷ lệ chọn <strong>{sampleRate}%</strong> → Dự kiến khoảng <strong>{estimatedSampleCount} khán giả</strong> sẽ nhận được khảo sát.
+                      Tỷ lệ bốc thăm <strong>{sampleRate}%</strong> → Dự kiến khoảng <strong className="text-sky-300">{estimatedSampleCount} khán giả</strong> sẽ nhận được khảo sát.
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                   <button
                     type="button"
                     onClick={handleToggleMaster}
-                    className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-[3px] text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow ${
+                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
                       isEnabled
                         ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40'
                         : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40'
@@ -593,10 +599,10 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                     type="button"
                     onClick={handleToggleInstantTrigger}
                     disabled={!formUrl.trim()}
-                    className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-[3px] text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow ${
+                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
                       isForceActive
-                        ? 'bg-amber-500 text-slate-950 font-black animate-pulse'
-                        : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white'
+                        ? 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 animate-pulse'
+                        : 'bg-sky-600 hover:bg-sky-500 text-white border border-sky-400/40'
                     }`}
                     title="Phát khảo sát lên máy 10% khán giả ngay lúc này"
                   >
@@ -608,7 +614,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                     ) : (
                       <>
                         <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Phát lệnh Khảo sát ngay</span>
+                        <span>Phát Lệnh Tức Thì</span>
                       </>
                     )}
                   </button>
@@ -1714,16 +1720,18 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
         {/* Audience Experience Live Preview Overlay */}
         {showPreviewModal && (
           <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-lg bg-slate-950 rounded-[8px] border-2 border-[#F7CAC9]/60 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-lg bg-slate-950/95 rounded-[6px] border border-[#F7CAC9]/50 shadow-2xl shadow-purple-950/60 overflow-hidden flex flex-col max-h-[90vh] backdrop-blur-2xl">
               {/* Preview Header */}
-              <div className="p-3.5 bg-gradient-to-r from-slate-900 via-purple-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-[#F7CAC9]" />
+              <div className="p-3.5 bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 border-b border-[#F7CAC9]/30 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9]">
+                    <Eye className="w-4 h-4 text-[#F7CAC9]" />
+                  </div>
                   <div>
-                    <span className="text-xs font-bold text-white block">
+                    <span className="text-xs font-black text-white block tracking-wide">
                       Xem Trước Trải Nghiệm Khán Giả
                     </span>
-                    <span className="text-[10px] font-mono text-[#F7CAC9]">
+                    <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold">
                       Chế độ mô phỏng giao diện ({sampleRate}% đại diện)
                     </span>
                   </div>
@@ -1731,21 +1739,21 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 <button
                   type="button"
                   onClick={() => setShowPreviewModal(false)}
-                  className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+                  className="p-1.5 rounded-[4px] hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Stage Toggle */}
-              <div className="px-3.5 py-2 bg-slate-900/80 border-b border-slate-800 flex items-center gap-2">
+              <div className="px-3.5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setPreviewStage('INVITE')}
-                  className={`flex-1 py-1.5 px-2 rounded text-xs font-mono font-bold transition cursor-pointer ${
+                  className={`flex-1 py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer ${
                     previewStage === 'INVITE'
-                      ? 'bg-[#F7CAC9] text-slate-950 shadow'
-                      : 'bg-slate-800/80 text-slate-300 hover:text-white'
+                      ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                      : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
                   }`}
                 >
                   1. Màn hình Mời Khảo Sát
@@ -1753,10 +1761,10 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 <button
                   type="button"
                   onClick={() => setPreviewStage('VOUCHER')}
-                  className={`flex-1 py-1.5 px-2 rounded text-xs font-mono font-bold transition cursor-pointer ${
+                  className={`flex-1 py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer ${
                     previewStage === 'VOUCHER'
-                      ? 'bg-[#F7CAC9] text-slate-950 shadow'
-                      : 'bg-slate-800/80 text-slate-300 hover:text-white'
+                      ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                      : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
                   }`}
                 >
                   2. Phiếu Quà Tặng (Voucher)
@@ -1768,42 +1776,42 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 {previewStage === 'INVITE' ? (
                   <div className="space-y-3.5">
                     {/* Header banner */}
-                    <div className="p-3.5 rounded-[6px] bg-gradient-to-r from-purple-950/60 to-slate-900 border border-[#F7CAC9]/40 flex items-center justify-between">
+                    <div className="p-3.5 rounded-[4px] bg-purple-950/40 border border-[#F7CAC9]/40 flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9]">
-                          <Sparkles className="w-4 h-4 animate-pulse" />
+                        <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0">
+                          <Sparkles className="w-4 h-4 animate-pulse text-[#F7CAC9]" />
                         </div>
                         <div>
                           <div className="text-xs font-black text-white">{title || 'Khảo Sát Ý Kiến Khán Giả BTI 2026'}</div>
-                          <span className="text-[10px] font-mono text-[#F7CAC9]">Dành riêng cho {sampleRate}% khán giả đại diện</span>
+                          <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold">Dành riêng cho {sampleRate}% khán giả đại diện</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Notification card */}
-                    <div className="p-3.5 rounded-[6px] bg-[#F7CAC9]/10 border border-[#F7CAC9]/25 text-xs text-slate-200 leading-relaxed">
+                    <div className="p-3.5 rounded-[4px] bg-[#F7CAC9]/10 border border-[#F7CAC9]/30 text-xs text-slate-200 leading-relaxed font-sans">
                       {description || DEFAULT_SURVEY_CONFIG.description}
                     </div>
 
                     {/* 3 Pillars */}
                     <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-sky-300">~60 giây</span>
+                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                        <span className="block text-[11px] font-bold text-sky-300 font-mono">~60 giây</span>
                         <span className="text-[10px] text-slate-400">Nhanh chóng</span>
                       </div>
-                      <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-[#F7CAC9]">Nhận quà</span>
+                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                        <span className="block text-[11px] font-bold text-[#F7CAC9] font-mono">Nhận quà</span>
                         <span className="text-[10px] text-slate-400">Tại lễ tân</span>
                       </div>
-                      <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-emerald-300">Bảo mật</span>
+                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                        <span className="block text-[11px] font-bold text-emerald-300 font-mono">Bảo mật</span>
                         <span className="text-[10px] text-slate-400">Google Forms</span>
                       </div>
                     </div>
 
                     {/* Gift callout */}
                     {giftNote && (
-                      <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-200">
+                      <div className="p-3 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-200">
                         <Gift className="w-4 h-4 text-amber-300 shrink-0" />
                         <span><strong>Quà tri ân:</strong> {giftNote}</span>
                       </div>
@@ -1811,14 +1819,14 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
 
                     {/* Demo Action Buttons */}
                     <div className="pt-2 space-y-2">
-                      <div className="w-full py-2.5 px-4 rounded bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] text-slate-950 font-black text-xs uppercase tracking-wider text-center shadow">
+                      <div className="w-full py-2.5 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] text-slate-950 font-black text-xs font-mono uppercase tracking-wider text-center shadow-md cursor-pointer transition-all border border-[#F7CAC9]/50 hover:brightness-110">
                         Làm Khảo Sát (Mở Google Forms)
                       </div>
-                      <div className="w-full py-2 px-4 rounded bg-slate-800 text-slate-300 text-xs text-center border border-slate-700">
+                      <div className="w-full py-2 px-4 rounded-[3px] bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs text-center border border-slate-800 font-mono">
                         Hoặc điền trực tiếp ngay trên trang này
                       </div>
                       <div className="text-center pt-1">
-                        <span className="text-xs text-emerald-400 underline font-mono cursor-pointer" onClick={() => setPreviewStage('VOUCHER')}>
+                        <span className="text-xs text-emerald-400 hover:text-emerald-300 underline font-mono cursor-pointer" onClick={() => setPreviewStage('VOUCHER')}>
                           Tôi đã gửi câu trả lời → Nhận mã đổi quà
                         </span>
                       </div>
@@ -1828,7 +1836,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                   <div className="space-y-4">
                     {/* Congratulatory Hero */}
                     <div className="text-center space-y-1">
-                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mx-auto">
+                      <div className="w-10 h-10 rounded-[4px] bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mx-auto">
                         <CheckCircle2 className="w-5 h-5" />
                       </div>
                       <h4 className="text-sm font-black text-white">
@@ -1840,7 +1848,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                     </div>
 
                     {/* Voucher Ticket */}
-                    <div className="rounded-[8px] bg-slate-900 border-2 border-[#F7CAC9]/50 p-4 space-y-3 shadow-xl">
+                    <div className="rounded-[6px] bg-slate-900/90 border border-[#F7CAC9]/50 p-4 space-y-3 shadow-xl">
                       <div className="flex items-center justify-between border-b border-dashed border-slate-700 pb-2.5">
                         <div className="flex items-center gap-1.5">
                           <Ticket className="w-4 h-4 text-[#F7CAC9]" />
@@ -1848,7 +1856,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                             Phiếu Nhận Quà Khảo Sát
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
                           HỢP LỆ • SẴN SÀNG ĐỔI
                         </span>
                       </div>
@@ -1857,7 +1865,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                         <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block">
                           Mã Voucher Đổi Quà Tri Ân:
                         </span>
-                        <div className="inline-block px-4 py-1.5 rounded bg-slate-950 border border-[#F7CAC9]/40">
+                        <div className="inline-block px-4 py-1.5 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/50">
                           <span className="text-xl font-mono font-black text-[#F7CAC9] tracking-wider">
                             BTI-GIFT-A8F2-2026
                           </span>
@@ -1869,7 +1877,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                           <span>Người nhận:</span>
                           <strong className="text-white">Nguyễn Văn A (Khán giả)</strong>
                         </div>
-                        <div className="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
+                        <div className="p-2 rounded-[3px] bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
                           <strong className="block text-amber-300">Hướng dẫn nhận quà:</strong>
                           <span>{giftNote || 'Đưa mã này cho lễ tân tại sảnh hội trường để nhận phần quà lưu niệm Beyond The Internet 2026.'}</span>
                         </div>
@@ -1880,7 +1888,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                       <button
                         type="button"
                         onClick={() => setShowPreviewModal(false)}
-                        className="w-full py-2.5 px-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition cursor-pointer text-center"
+                        className="w-full py-2.5 px-4 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition cursor-pointer text-center font-mono"
                       >
                         Đóng bản xem trước
                       </button>

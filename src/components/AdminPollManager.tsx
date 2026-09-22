@@ -34,6 +34,7 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Square,
+  Power,
   ChevronDown
 } from 'lucide-react';
 
@@ -273,6 +274,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
       return;
     }
     const currentForce = gameState.audience_survey?.force_active || false;
+    const nextState = !currentForce;
     soundFx.playClick();
     vibrateTap();
     setIsTogglingSurveyLive(true);
@@ -280,14 +282,36 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
       await syncService.updateGameState({
         audience_survey: {
           ...gameState.audience_survey,
-          enabled: true,
-          force_active: !currentForce,
+          enabled: nextState,
+          force_active: nextState,
           updated_at: Date.now()
         }
       });
-      if (!currentForce) {
+      if (nextState) {
         vibrateSuccess();
+        notify('Đã phát lệnh khảo sát tức thì tới khán giả!', 'success');
+      } else {
+        notify('Đã tắt khảo sát thành công!', 'warning');
       }
+    } finally {
+      setIsTogglingSurveyLive(false);
+    }
+  };
+
+  const handleDisableSurveyComplete = async () => {
+    soundFx.playClick();
+    vibrateTap();
+    setIsTogglingSurveyLive(true);
+    try {
+      await syncService.updateGameState({
+        audience_survey: {
+          ...gameState.audience_survey,
+          enabled: false,
+          force_active: false,
+          updated_at: Date.now()
+        }
+      });
+      notify('Đã tắt hoàn toàn khảo sát khán giả!', 'warning');
     } finally {
       setIsTogglingSurveyLive(false);
     }
@@ -737,32 +761,32 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
       </div>
 
       {/* Google Forms 10% Audience Survey Integration Banner */}
-      <div className="fluent-box-nested p-3.5 sm:p-4 rounded-[6px] border border-[#F7CAC9]/40 bg-gradient-to-r from-purple-950/50 via-slate-900/80 to-purple-950/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F7CAC9]/30 to-purple-600/30 border border-[#F7CAC9]/50 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-md">
-            <FileSpreadsheet className="w-4 h-4" />
+      <div className="fluent-card-acrylic p-4 sm:p-4.5 rounded-[6px] border border-[#F7CAC9]/40 bg-slate-950/90 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl shadow-purple-950/40">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-[4px] bg-[#F7CAC9]/15 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-inner">
+            <FileSpreadsheet className="w-5 h-5 text-[#F7CAC9]" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs sm:text-sm font-bold text-white tracking-wide">
-                Khảo Sát Khán Giả Cuối Chương Trình (Google Forms)
+              <span className="text-xs sm:text-sm font-black text-white tracking-wide">
+                Khảo Sát Khán Giả (10% Google Forms)
               </span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-[3px] font-bold ${
+              <span className={`text-[9px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[2px] border ${
                 gameState.audience_survey?.enabled 
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  : 'bg-white/10 text-white/50 border border-white/10'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-900/30'
+                  : 'bg-slate-800/60 text-slate-400 border-slate-700/60'
               }`}>
-                {gameState.audience_survey?.enabled ? `ĐANG BẬT (${gameState.audience_survey.sample_rate ?? 10}%)` : 'CHƯA BẬT'}
+                {gameState.audience_survey?.enabled ? `BẬT (${gameState.audience_survey.sample_rate ?? 10}%)` : 'CHƯA BẬT'}
               </span>
               {gameState.audience_survey?.force_active && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-rose-500/25 text-rose-300 border border-rose-500/40 animate-pulse font-bold flex items-center gap-1">
+                <span className="text-[9px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[2px] bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block animate-ping" />
-                  ĐANG PHÁT LIVE
+                  LIVE ON AIR
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-300/80 mt-1 flex items-center gap-1.5 flex-wrap">
-              <span>Bốc thăm ngẫu nhiên <strong>{gameState.audience_survey?.sample_rate ?? 10}% khán giả</strong> theo User ID.</span>
+            <p className="text-[11px] text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
+              <span>Bốc thăm ngẫu nhiên <strong>{gameState.audience_survey?.sample_rate ?? 10}% khán giả</strong> đại diện theo User ID.</span>
               {activeAudienceCount !== undefined && activeAudienceCount > 0 && (
                 <span className="text-[#F7CAC9] font-mono font-semibold">
                   (Dự kiến: ~{Math.round(((gameState.audience_survey?.sample_rate ?? 10) / 100) * activeAudienceCount)}/{activeAudienceCount} người)
@@ -776,29 +800,44 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
           {/* Quick 1-Tap Live Trigger Toggle */}
           {gameState.audience_survey?.form_url && (
-            <button
-              type="button"
-              onClick={handleToggleSurveyLive}
-              disabled={isTogglingSurveyLive}
-              className={`flex-1 md:flex-initial px-3.5 py-2 rounded-[3px] text-xs font-mono font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
-                gameState.audience_survey?.force_active
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/50 animate-pulse'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40'
-              }`}
-              title={gameState.audience_survey?.force_active ? 'Dừng phát khảo sát trên máy khán giả' : 'Phát lệnh khảo sát lên máy 10% khán giả ngay lúc này'}
-            >
-              {gameState.audience_survey?.force_active ? (
-                <>
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span>Dừng Phát Live</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Phát Khảo Sát Ngay</span>
-                </>
+            <>
+              <button
+                type="button"
+                onClick={handleToggleSurveyLive}
+                disabled={isTogglingSurveyLive}
+                className={`flex-1 md:flex-initial px-3.5 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                  gameState.audience_survey?.force_active
+                    ? 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 animate-pulse'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40'
+                }`}
+                title={gameState.audience_survey?.force_active ? 'Dừng phát khảo sát trên máy khán giả' : 'Phát lệnh khảo sát lên máy 10% khán giả ngay lúc này'}
+              >
+                {gameState.audience_survey?.force_active ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    <span>Dừng Phát Live</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Phát Khảo Sát Ngay</span>
+                  </>
+                )}
+              </button>
+
+              {(gameState.audience_survey?.enabled || gameState.audience_survey?.force_active) && (
+                <button
+                  type="button"
+                  onClick={handleDisableSurveyComplete}
+                  disabled={isTogglingSurveyLive}
+                  className="px-3 py-2 rounded-[3px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/50 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-md"
+                  title="Tắt hoàn toàn khảo sát trên máy tất cả khán giả"
+                >
+                  <Power className="w-3.5 h-3.5" />
+                  <span>Tắt Khảo Sát</span>
+                </button>
               )}
-            </button>
+            </>
           )}
 
           {onOpenAudienceSurvey && (
@@ -809,10 +848,10 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 soundFx.playClick();
                 onOpenAudienceSurvey();
               }}
-              className="flex-1 md:flex-initial px-4 py-2 rounded-[3px] bg-gradient-to-r from-[#F7CAC9] to-[#E39A96] hover:from-[#FCEEEC] hover:to-[#F7CAC9] text-slate-950 font-bold text-xs font-mono uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+              className="flex-1 md:flex-initial px-4 py-2 rounded-[3px] bg-purple-950/60 hover:bg-purple-900/80 text-[#F7CAC9] border border-[#F7CAC9]/40 font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Cấu Hình & Quản Lý Form</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#F7CAC9]" />
+              <span>Cấu Hình Form (10%)</span>
             </button>
           )}
         </div>

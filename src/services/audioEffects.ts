@@ -60,22 +60,51 @@ class AudioQueueManager {
 
 class SoundEffectsService {
   private ctx: AudioContext | null = null;
-  private enabled: boolean = true;
+  private enabled: boolean = (() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('bti_soundfx_enabled');
+        if (saved !== null) {
+          return saved === 'true';
+        }
+      } catch {}
+    }
+    return true;
+  })();
   private adminMuted: boolean = false;
   private ttsActive: boolean = false;
   private queueManager = new AudioQueueManager(() => this.shouldSuppressAudio());
   private masterGain: GainNode | null = null;
   private volume: number = (() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bti_soundfx_volume');
-      if (saved !== null) {
-        const val = parseFloat(saved);
-        if (!isNaN(val)) return Math.max(0, Math.min(1, val));
-      }
+      try {
+        const saved = localStorage.getItem('bti_soundfx_volume');
+        if (saved !== null) {
+          const val = parseFloat(saved);
+          if (!isNaN(val)) return Math.max(0, Math.min(1, val));
+        }
+      } catch {}
     }
     return 0.8;
   })();
   private volumeListeners: Set<(vol: number) => void> = new Set();
+  private audioActivityListeners: Set<(durationMs: number) => void> = new Set();
+
+  public notifyActivity(durationMs: number = 300) {
+    if (this.shouldSuppressAudio()) return;
+    this.audioActivityListeners.forEach(listener => {
+      try {
+        listener(durationMs);
+      } catch {}
+    });
+  }
+
+  public subscribeAudioActivity(listener: (durationMs: number) => void): () => void {
+    this.audioActivityListeners.add(listener);
+    return () => {
+      this.audioActivityListeners.delete(listener);
+    };
+  }
 
   public getVolume(): number {
     return this.volume;
@@ -182,6 +211,11 @@ class SoundEffectsService {
 
   public setEnabled(enabled: boolean) {
     this.enabled = enabled;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('bti_soundfx_enabled', String(enabled));
+      } catch {}
+    }
   }
 
   public isEnabled(): boolean {
@@ -190,6 +224,7 @@ class SoundEffectsService {
 
   /** Error feedback buzz/tone */
   public playError() {
+    this.notifyActivity(300);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();
@@ -217,6 +252,7 @@ class SoundEffectsService {
 
   /** Urgent warning / broadcast alert tone */
   public playWarning() {
+    this.notifyActivity(500);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();
@@ -247,6 +283,7 @@ class SoundEffectsService {
 
   /** Tap / selection feedback click */
   public playClick() {
+    this.notifyActivity(120);
     const ctx = this.getAudioContext();
     if (!ctx) return;
 
@@ -273,6 +310,7 @@ class SoundEffectsService {
 
   /** Countdown tick sound */
   public playTick(isUrgent = false) {
+    this.notifyActivity(isUrgent ? 150 : 80);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();
@@ -304,6 +342,7 @@ class SoundEffectsService {
 
   /** Time-up / Lock gong sound */
   public playLock() {
+    this.notifyActivity(450);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();
@@ -342,6 +381,7 @@ class SoundEffectsService {
 
   /** Reveal fanfare */
   public playReveal(isCorrect = true) {
+    this.notifyActivity(isCorrect ? 800 : 600);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();
@@ -396,6 +436,7 @@ class SoundEffectsService {
 
   /** Start round tension swoosh */
   public playStartRound() {
+    this.notifyActivity(400);
     this.queueManager.enqueue(() => {
       
     const ctx = this.getAudioContext();

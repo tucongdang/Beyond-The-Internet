@@ -173,7 +173,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
             setIsMinimized(false);
             setIsOpen(true);
           }}
-          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-2xl border transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-[4px] shadow-2xl border transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
             isCompleted
               ? 'bg-emerald-950/95 text-emerald-200 border-emerald-400/50 shadow-emerald-950/50'
               : 'bg-slate-950/95 text-[#F7CAC9] border-[#F7CAC9]/50 shadow-pink-950/50 hover:border-[#F7CAC9]'
@@ -216,7 +216,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
       onClick={() => setIsMinimized(true)}
     >
       <div 
-        className={`w-full rounded-[10px] overflow-hidden flex flex-col shadow-2xl border transition-all duration-300 ${
+        className={`w-full rounded-[6px] overflow-hidden flex flex-col shadow-2xl border transition-all duration-300 ${
           isFullscreen
             ? 'fixed inset-2 sm:inset-4 w-auto h-auto max-w-none max-h-none'
             : showEmbedded
@@ -225,20 +225,20 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
         } ${
           isHighContrast
             ? 'bg-black text-white border-white/50'
-            : 'bg-[#0f172a] text-slate-100 border-[#F7CAC9]/40 shadow-2xl'
+            : 'bg-slate-950/95 text-slate-100 border-[#F7CAC9]/40 backdrop-blur-2xl shadow-2xl shadow-purple-950/60'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
-        <div className="p-4 sm:p-4.5 border-b border-white/10 flex items-center justify-between gap-3 bg-slate-900/90 shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#F7CAC9]/30 to-[#92A8D1]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-inner">
-              <Gift className="w-4 h-4 animate-pulse text-[#F7CAC9]" />
+        <div className="p-4 sm:p-4.5 border-b border-[#F7CAC9]/25 flex items-center justify-between gap-3 bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-[4px] bg-[#F7CAC9]/15 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-inner">
+              <Gift className="w-5 h-5 animate-pulse text-[#F7CAC9]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-[3px] bg-gradient-to-r from-[#F7CAC9]/20 to-[#92A8D1]/20 text-[#F7CAC9] border border-[#F7CAC9]/40 tracking-wider flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
+                <span className="text-[9px] uppercase font-mono font-extrabold px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/40 tracking-wider flex items-center gap-1 shadow-sm">
+                  <Sparkles className="w-2.5 h-2.5 text-[#F7CAC9]" />
                   Đại diện {sampleRate}% Khán giả BTI
                 </span>
                 {forcePreview && (
@@ -282,6 +282,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 soundFx.playClick();
                 vibrateTap();
                 setIsOpen(false);
+                setIsMinimized(false);
               }}
               className="p-2 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
               title="Đóng khảo sát"
@@ -295,7 +296,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
         {showEmbedded ? (
           /* Embedded Google Form View with enhanced UX */
           <div className="flex-1 flex flex-col min-h-0 bg-slate-950 relative">
-            <div className="px-3.5 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300 shrink-0">
+            <div className="px-3.5 py-2 bg-slate-900 border-b border-[#F7CAC9]/25 flex items-center justify-between text-xs text-slate-300 shrink-0 font-mono">
               <span className="flex items-center gap-1.5 font-medium text-slate-200">
                 <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
                 Điền trực tiếp trong ứng dụng
@@ -324,7 +325,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
               {isIframeLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/90 z-10 text-slate-400">
                   <Loader2 className="w-7 h-7 animate-spin text-[#F7CAC9]" />
-                  <p className="text-xs">Đang tải biểu mẫu khảo sát Google Forms...</p>
+                  <p className="text-xs font-mono">Đang tải biểu mẫu khảo sát Google Forms...</p>
                 </div>
               )}
               <iframe
@@ -337,18 +338,18 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
             </div>
 
             {/* Iframe Bottom Controls */}
-            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
+            <div className="p-3 bg-slate-900/90 border-t border-sky-500/20 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowEmbedded(false)}
-                className="px-3.5 py-2 rounded-[4px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
+                className="px-3.5 py-2 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold transition cursor-pointer"
               >
                 ← Quay lại thông tin
               </button>
               <button
                 type="button"
                 onClick={handleMarkCompleted}
-                className="px-4 py-2 rounded-[4px] bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold flex items-center gap-1.5 transition shadow cursor-pointer"
+                className="px-4 py-2 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition shadow cursor-pointer border border-emerald-400/40"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Tôi đã hoàn tất & Nhận mã quà
@@ -363,8 +364,8 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 {/* Congratulatory Hero */}
                 <div className="text-center space-y-1">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mx-auto">
-                    <CheckCircle2 className="w-6 h-6" />
+                  <div className="w-10 h-10 rounded-[4px] bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mx-auto">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <h4 className="text-base sm:text-lg font-black text-white">
                     Hoàn Tất Khảo Sát Thành Công!
@@ -375,10 +376,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 </div>
 
                 {/* THE OFFICIAL TICKET VOUCHER */}
-                <div className="rounded-[8px] bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-[#F7CAC9]/50 p-4 sm:p-5 relative shadow-xl overflow-hidden">
-                  {/* Decorative background glow */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#F7CAC9]/10 rounded-full blur-2xl pointer-events-none" />
-
+                <div className="rounded-[6px] bg-slate-900/90 border border-[#F7CAC9]/50 p-4 sm:p-5 relative shadow-xl overflow-hidden">
                   {/* Voucher Header */}
                   <div className="flex items-center justify-between border-b border-dashed border-slate-700 pb-3">
                     <div className="flex items-center gap-2">
@@ -387,7 +385,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                         Phiếu Nhận Quà Khảo Sát
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
                       HỢP LỆ • SẴN SÀNG ĐỔI
                     </span>
                   </div>
@@ -397,14 +395,14 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     <span className="text-[11px] text-slate-400 uppercase font-mono tracking-widest block">
                       Mã Voucher Đổi Quà Tri Ân:
                     </span>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-[6px] bg-slate-950 border border-[#F7CAC9]/40 shadow-inner">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/50 shadow-inner">
                       <span className="text-xl sm:text-2xl font-mono font-black text-[#F7CAC9] tracking-wider select-all">
                         {voucherCode}
                       </span>
                       <button
                         type="button"
                         onClick={handleCopyVoucher}
-                        className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+                        className="p-1.5 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
                         title="Sao chép mã quà"
                       >
                         {copiedVoucher ? (
@@ -429,10 +427,10 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                         <strong className="text-white">{user.name} {user.mssv ? `(${user.mssv})` : ''}</strong>
                       </div>
                     )}
-                    <div className="p-2.5 rounded bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-200 text-xs">
+                    <div className="p-2.5 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-200 text-xs">
                       <Gift className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                       <div>
-                        <strong className="block text-amber-300">Hướng dẫn nhận quà:</strong>
+                        <strong className="block text-amber-300 font-mono">Hướng dẫn nhận quà:</strong>
                         <span>{giftNote}</span>
                       </div>
                     </div>
@@ -440,11 +438,11 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 </div>
 
                 {/* Footer Action Buttons */}
-                <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <div className="pt-2 flex flex-col sm:flex-row gap-2.5 font-mono">
                   <button
                     type="button"
                     onClick={handleOpenExternal}
-                    className="flex-1 py-2.5 px-4 rounded-[4px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 px-4 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     Xem lại biểu mẫu đã gửi
@@ -452,7 +450,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsMinimized(true)}
-                    className="flex-1 py-2.5 px-4 rounded-[4px] bg-gradient-to-r from-[#92A8D1] to-[#F7CAC9] hover:brightness-110 text-slate-950 font-bold text-xs transition shadow cursor-pointer flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] to-[#F7CAC9] hover:brightness-110 text-slate-950 font-bold text-xs transition shadow cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" />
                     Trở lại xem chương trình
@@ -463,7 +461,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
               /* INVITATION & PARTICIPATION VIEW */
               <>
                 {/* Special Notification Badge */}
-                <div className="p-4 rounded-[8px] bg-gradient-to-br from-[#F7CAC9]/15 via-[#92A8D1]/10 to-transparent border border-[#F7CAC9]/30 space-y-2">
+                <div className="p-4 rounded-[4px] bg-gradient-to-br from-[#F7CAC9]/15 via-[#92A8D1]/10 to-transparent border border-[#F7CAC9]/35 space-y-2">
                   <div className="flex items-center gap-2 text-[#F7CAC9] font-bold text-xs uppercase tracking-wider font-mono">
                     <Sparkles className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
                     <span>Chúc mừng bạn là khán giả đại diện!</span>
@@ -475,31 +473,31 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
 
                 {/* 3 Key Pillars of the Survey */}
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2.5 rounded-[6px] bg-slate-900/80 border border-slate-800 flex flex-col items-center justify-center gap-1">
+                  <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <Clock className="w-4 h-4 text-sky-400" />
-                    <span className="text-[11px] font-bold text-white">Chỉ ~60 giây</span>
+                    <span className="text-[11px] font-bold text-white font-mono">Chỉ ~60 giây</span>
                     <span className="text-[10px] text-slate-400">Nhanh chóng</span>
                   </div>
-                  <div className="p-2.5 rounded-[6px] bg-slate-900/80 border border-slate-800 flex flex-col items-center justify-center gap-1">
+                  <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <Gift className="w-4 h-4 text-[#F7CAC9]" />
-                    <span className="text-[11px] font-bold text-white">Nhận quà</span>
+                    <span className="text-[11px] font-bold text-white font-mono">Nhận quà</span>
                     <span className="text-[10px] text-slate-400">Tri ân tại lễ tân</span>
                   </div>
-                  <div className="p-2.5 rounded-[6px] bg-slate-900/80 border border-slate-800 flex flex-col items-center justify-center gap-1">
+                  <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span className="text-[11px] font-bold text-white">Bảo mật</span>
+                    <span className="text-[11px] font-bold text-white font-mono">Bảo mật</span>
                     <span className="text-[10px] text-slate-400">Google Forms</span>
                   </div>
                 </div>
 
                 {/* Gift Callout */}
                 {giftNote && (
-                  <div className="p-3 rounded-[6px] bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                  <div className="p-3 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-[3px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
                       <Gift className="w-4 h-4" />
                     </div>
                     <div className="text-xs text-slate-200">
-                      <span className="font-bold text-amber-300 block">Quà tri ân khán giả</span>
+                      <span className="font-bold text-amber-300 block font-mono">Quà tri ân khán giả</span>
                       {giftNote}
                     </div>
                   </div>
@@ -507,7 +505,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
 
                 {/* Participant Details if authenticated */}
                 {user && (
-                  <div className="px-3 py-2 rounded bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex items-center justify-between font-mono">
+                  <div className="px-3 py-2 rounded-[3px] bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex items-center justify-between font-mono">
                     <span>Khán giả tham gia:</span>
                     <span className="font-bold text-slate-200">
                       {user.name} {user.mssv ? `(${user.mssv})` : ''}
@@ -516,12 +514,12 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 )}
 
                 {/* Action Buttons */}
-                <div className="pt-2 space-y-2.5">
+                <div className="pt-2 space-y-2.5 font-mono">
                   {/* Primary CTA: Open External */}
                   <button
                     type="button"
                     onClick={handleOpenExternal}
-                    className="w-full py-3 px-4 rounded-[6px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] hover:brightness-110 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition hover:scale-[1.01] active:scale-95 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] hover:brightness-110 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition hover:scale-[1.01] active:scale-95 cursor-pointer"
                   >
                     <span>Làm Khảo Sát (Mở Google Forms)</span>
                     <ExternalLink className="w-4 h-4 shrink-0" />
@@ -536,7 +534,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                         vibrateTap();
                         setShowEmbedded(true);
                       }}
-                      className="w-full py-2.5 px-4 rounded-[6px] bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-slate-700"
+                      className="w-full py-2.5 px-4 rounded-[3px] bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
                     >
                       <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
                       <span>Hoặc điền trực tiếp ngay trên trang này</span>
