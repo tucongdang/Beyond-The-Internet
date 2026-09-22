@@ -307,6 +307,26 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
         setError(data.error || 'Xác thực Google không thành công.');
       }
     } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.message?.includes('popup-closed-by-user')) {
+        console.info('[Auth Admin] Google sign-in popup was closed by user.');
+        return;
+      }
+      if (err?.code === 'auth/cancelled-popup-request' || err?.message?.includes('cancelled-popup-request')) {
+        console.info('[Auth Admin] Google sign-in popup request cancelled.');
+        return;
+      }
+      if (err?.code === 'auth/popup-blocked') {
+        soundFx.playError();
+        vibrateError();
+        setError('Trình duyệt đã chặn cửa sổ đăng nhập Google. Vui lòng cho phép popup và thử lại.');
+        return;
+      }
+      if (err?.code === 'auth/unauthorized-domain') {
+        soundFx.playError();
+        vibrateError();
+        setError('Tên miền hiện tại chưa được cấp quyền trong Firebase Auth Console.');
+        return;
+      }
       console.error('Google Auth Error:', err);
       soundFx.playError();
       vibrateError();

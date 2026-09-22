@@ -109,15 +109,23 @@ export const translationService = {
       }
 
       const data = await resp.json();
-      const translation: QuestionTranslation = data.translation;
+      const translation: QuestionTranslation = data.translation || {
+        question_text: question.question_text,
+        options: question.options,
+        explanation: question.explanation
+      };
 
       // 3. Cache result
       this.setCachedTranslation(question.id, targetLang, translation);
 
       return translation;
     } catch (err: any) {
-      console.error(`[TranslationService] Error translating question ${question.id} to ${targetLang}:`, err);
-      throw err;
+      console.warn(`[TranslationService] Fallback to original for question ${question.id} (${targetLang}):`, err?.message || err);
+      return {
+        question_text: question.question_text,
+        options: question.options,
+        explanation: question.explanation
+      };
     }
   },
 

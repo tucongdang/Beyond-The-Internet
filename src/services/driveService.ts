@@ -27,7 +27,11 @@ export const driveService = {
       }
       return null;
     } catch (error: any) {
-      if (error?.code === 'auth/unauthorized-domain') {
+      if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('popup-closed-by-user')) {
+        console.info("[driveService] Google Drive auth popup closed by user.");
+      } else if (error?.code === 'auth/cancelled-popup-request' || error?.message?.includes('cancelled-popup-request')) {
+        console.info("[driveService] Google Drive auth popup cancelled.");
+      } else if (error?.code === 'auth/unauthorized-domain') {
         console.warn("[driveService] Google Drive auth skipped: current domain is not authorized in Firebase Auth Console.");
       } else {
         console.error("Failed to authenticate for Google Drive:", error);

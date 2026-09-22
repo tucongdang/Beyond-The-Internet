@@ -66,12 +66,15 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
       return;
     }
 
+    if (isReconnecting) {
+      return;
+    }
+
     setCountdown(5);
     timerRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          triggerReconnect();
-          return 5;
+          return 0;
         }
         return prev - 1;
       });
@@ -83,7 +86,14 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
         timerRef.current = null;
       }
     };
-  }, [isFirebaseConnected, isDismissed, triggerReconnect]);
+  }, [isFirebaseConnected, isDismissed, isReconnecting]);
+
+  // When countdown hits 0, trigger reconnect safely inside an effect (outside of render/updater)
+  useEffect(() => {
+    if (countdown === 0 && !isReconnecting && !isFirebaseConnected && !isDismissed) {
+      triggerReconnect();
+    }
+  }, [countdown, isReconnecting, isFirebaseConnected, isDismissed, triggerReconnect]);
 
   if (isFirebaseConnected || isDismissed) {
     return null;

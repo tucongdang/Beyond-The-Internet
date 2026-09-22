@@ -897,6 +897,29 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         ? 'Google account connected! Please verify your MSSV and 12-digit student UID below.'
         : 'Tài khoản Google đã kết nối! Vui lòng xác thực MSSV và Mã định danh 12 số lần đầu bên dưới.');
     } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.message?.includes('popup-closed-by-user')) {
+        console.info('[Auth] Google sign-in popup was closed by user.');
+        // User intentionally dismissed the popup, no error needed
+        return;
+      }
+      if (err?.code === 'auth/cancelled-popup-request' || err?.message?.includes('cancelled-popup-request')) {
+        console.info('[Auth] Google sign-in popup request cancelled.');
+        return;
+      }
+      if (err?.code === 'auth/popup-blocked') {
+        vibrateError();
+        setErrorMsg(localLanguage !== 'vi' 
+          ? 'Sign-in popup was blocked by browser. Please allow popups for this site and try again.'
+          : 'Trình duyệt đã chặn cửa sổ đăng nhập Google. Vui lòng cho phép popup và thử lại.');
+        return;
+      }
+      if (err?.code === 'auth/unauthorized-domain') {
+        vibrateError();
+        setErrorMsg(localLanguage !== 'vi'
+          ? 'Current domain is not authorized in Firebase Auth Console.'
+          : 'Tên miền hiện tại chưa được cấp quyền trong Firebase Auth Console.');
+        return;
+      }
       console.error('Google Sign-In Error:', err);
       vibrateError();
       setErrorMsg(localLanguage !== 'vi' ? 'Google sign-in error: ' + (err.message || '') : 'Lỗi đăng nhập Google: ' + (err.message || ''));

@@ -1508,11 +1508,22 @@ async function startServer() {
 
   // Modern lightweight Gemini models prioritized for sub-second latency, structured JSON reliability, and high throughput
   const LIGHTWEIGHT_MODELS = [
-    "gemini-3.5-flash-lite",
+    "gemini-3.8-flash",
     "gemini-3.1-flash-lite",
-    "gemini-flash-latest",
-    "gemini-3.8-flash"
+    "gemini-flash-latest"
   ];
+
+  function isResourceExhaustedError(err: any): boolean {
+    const msg = String(err?.message || err || '').toLowerCase();
+    const status = err?.status || err?.statusCode || 0;
+    return (
+      status === 429 ||
+      msg.includes('resource_exhausted') ||
+      msg.includes('usage limit') ||
+      msg.includes('quota') ||
+      msg.includes('rate limit')
+    );
+  }
 
   async function generateWithFallback(ai: GoogleGenAI, callParams: any) {
     let lastError: any = null;
@@ -1586,15 +1597,20 @@ async function startServer() {
       const data = JSON.parse(response.text.trim());
       res.json(data);
     } catch (error: any) {
-      console.error("Gemini API Error:", error);
-      res.status(500).json({ error: "Lỗi hệ thống AI. Vui lòng thử lại sau." });
+      console.error("Gemini API Error:", error?.message || error);
+      if (isResourceExhaustedError(error)) {
+        return res.status(429).json({ 
+          error: "Hạn mức AI tạm thời đạt giới hạn (Resource Exhausted). Vui lòng thử lại sau ít phút hoặc sử dụng câu hỏi từ Ngân hàng đề thi có sẵn." 
+        });
+      }
+      res.status(500).json({ error: error?.message || "Lỗi hệ thống AI. Vui lòng thử lại sau." });
     }
   });
 
   // API route for multilingual live question translation
   app.post("/api/translate-question", requireApiAuth, async (req, res) => {
+    const { question_text, options, explanation, target_lang } = req.body;
     try {
-      const { question_text, options, explanation, target_lang } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
       
       if (!apiKey) {
@@ -1693,15 +1709,27 @@ ${JSON.stringify({
         translation
       });
     } catch (error: any) {
-      console.error("Gemini Translation Error:", error);
-      res.status(500).json({ error: "Lỗi hệ thống AI dịch thuật. Vui lòng thử lại sau." });
+      console.warn("Gemini Translation Warning (graceful fallback):", error?.message || error);
+      // Degrade gracefully so players can still participate without broken screens
+      res.json({
+        target_lang: target_lang || 'vi',
+        translation: {
+          question_text: question_text || '',
+          options: options || {},
+          explanation: explanation || ''
+        },
+        fallback: true,
+        message: isResourceExhaustedError(error)
+          ? "Hạn mức AI tạm thời đạt giới hạn. Đang hiển thị văn bản gốc."
+          : "Hệ thống AI dịch thuật đang bận. Đang hiển thị văn bản gốc."
+      });
     }
   });
 
   // API route for translating short answers or terms into Vietnamese (Tiếng Việt)
   app.post("/api/translate-short-answer", requireApiAuth, async (req, res) => {
+    const { text, target_lang = 'vi', context } = req.body;
     try {
-      const { text, target_lang = 'vi', context } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -1795,15 +1823,21 @@ Return strictly JSON.`;
         detected_lang: result.detected_lang || 'unknown'
       });
     } catch (error: any) {
-      console.error("Short Answer Translation Error:", error);
-      res.status(500).json({ error: "Lỗi hệ thống AI dịch thuật. Vui lòng thử lại sau." });
+      console.warn("Short Answer Translation Warning (graceful fallback):", error?.message || error);
+      res.json({
+        original_text: text ? String(text).trim() : '',
+        translated_text: text ? String(text).trim() : '',
+        target_lang: target_lang || 'vi',
+        detected_lang: 'unknown',
+        fallback: true
+      });
     }
   });
 
   // API route for batch translating answer options from Vietnamese into foreign languages
   app.post("/api/translate-answers", requireApiAuth, async (req, res) => {
+    const { options, target_lang } = req.body;
     try {
-      const { options, target_lang } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -1867,15 +1901,19 @@ Return strictly JSON with the translated options.`;
         target_lang
       });
     } catch (error: any) {
-      console.error("Answer Translation Error:", error);
-      res.status(500).json({ error: "Lỗi hệ thống AI dịch thuật. Vui lòng thử lại sau." });
+      console.warn("Answer Translation Warning (graceful fallback):", error?.message || error);
+      res.json({
+        translated_options: options || {},
+        target_lang: target_lang || 'en',
+        fallback: true
+      });
     }
   });
 
   // API route for summarizing audience interactions (Shouts or Q&A)
   app.post("/api/summarize-audience", requireApiAuth, async (req, res) => {
+    const { type, data } = req.body;
     try {
-      const { type, data } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
       
       if (!apiKey) {
@@ -1934,15 +1972,28 @@ Hãy tóm tắt ngắn gọn trong 3-4 ý gạch đầu dòng: Đâu là những
 
       res.json({ summary: response.text.trim() });
     } catch (error: any) {
-      console.error("Gemini Summarize Error:", error);
-      res.status(500).json({ error: "Lỗi khi gọi AI tóm tắt. Vui lòng thử lại sau." });
+      console.warn("Gemini Summarize Warning (graceful rule-based summary):", error?.message || error);
+      const count = Array.isArray(data) ? data.length : 0;
+      if (type === 'SHOUTS') {
+        return res.json({
+          summary: count > 0
+            ? `Khán phòng đang rực cháy với hơn ${count} lượt tin nhắn cổ vũ cuồng nhiệt từ các cổ động viên!`
+            : "Chưa có lượt tin nhắn cổ vũ nào từ khán giả."
+        });
+      } else {
+        return res.json({
+          summary: count > 0
+            ? `Đang có ${count} câu hỏi thắc mắc từ khán giả xoay quanh nội dung thi đấu được ghi nhận trên hệ thống.`
+            : "Chưa có câu hỏi nào từ khán giả."
+        });
+      }
     }
   });
 
   // API route for instant question explanation on demand
   app.post("/api/explain-question", requireApiAuth, async (req, res) => {
+    const { question_text, correct_key, correct_option_text, explanation, target_lang = 'vi' } = req.body;
     try {
-      const { question_text, correct_key, correct_option_text, explanation, target_lang = 'vi' } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -1999,15 +2050,18 @@ YÊU CẦU QUAN TRỌNG:
 
       res.json({ explanation: response.text.trim() });
     } catch (error: any) {
-      console.error("Gemini Explain Question Error:", error);
-      res.status(500).json({ error: "Lỗi khi gọi AI giải thích câu hỏi. Vui lòng thử lại sau." });
+      console.warn("Gemini Explain Question Warning (graceful fallback):", error?.message || error);
+      const fallbackExplanation = explanation?.trim()
+        ? explanation.trim()
+        : `Đáp án ${correct_key}: "${correct_option_text || ''}" là đáp án chuẩn xác theo bộ tài liệu chuyên môn của giải đấu.`;
+      res.json({ explanation: fallbackExplanation });
     }
   });
 
   // API route for MC Co-Pilot real-time audience commentary
   app.post("/api/mc-copilot", requireApiAuth, async (req, res) => {
+    const { question_text, correct_key, counts = {}, percentages = {}, totalVotes = 0 } = req.body;
     try {
-      const { question_text, correct_key, counts = {}, percentages = {}, totalVotes = 0 } = req.body;
       const apiKey = process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -2069,8 +2123,19 @@ Trả về duy nhất định dạng JSON thuần túy:
 
       res.json(parsed);
     } catch (error: any) {
-      console.error("Gemini MC Co-pilot Error:", error);
-      res.status(500).json({ error: "Lỗi khi gọi AI MC Co-pilot. Vui lòng thử lại sau." });
+      console.warn("Gemini MC Co-pilot Warning (heuristic fallback):", error?.message || error);
+      const safePercentages = typeof percentages === 'object' && percentages !== null ? percentages : {};
+      const correctPct = Number(safePercentages[correct_key]) || 0;
+      let headline = 'Khán phòng theo dõi nghẹt thở!';
+      let mcLine = `Có ${Number(totalVotes) || 0} người chơi tham gia câu hỏi này với tỉ lệ trả lời đúng đạt ${correctPct}%.`;
+      if (correctPct >= 70) {
+        headline = 'Đại đa số hội trường đồng lòng!';
+        mcLine = `Tuyệt vời! Hơn ${correctPct}% khán giả đã xuất sắc chọn đúng phương án ${correct_key}!`;
+      } else if (correctPct > 0 && correctPct < 30) {
+        headline = 'Một câu hỏi đầy thách thức!';
+        mcLine = `Chỉ có ${correctPct}% người chơi vượt qua được cạm bẫy này, đáp án chính xác là ${correct_key}!`;
+      }
+      res.json({ headline, mcLine });
     }
   });
 

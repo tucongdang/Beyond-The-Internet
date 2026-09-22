@@ -411,7 +411,20 @@ class RealtimeSyncService {
 
   private notifyConnectionChange() {
     const isConnected = this.getIsFirebaseConnected();
-    this.connectionListeners.forEach(listener => listener(isConnected));
+    const notify = () => {
+      this.connectionListeners.forEach(listener => {
+        try {
+          listener(isConnected);
+        } catch (e) {
+          console.warn('Error in connection listener:', e);
+        }
+      });
+    };
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(notify);
+    } else {
+      setTimeout(notify, 0);
+    }
   }
 
   private setFirebaseConnected(status: boolean) {
@@ -499,6 +512,13 @@ class RealtimeSyncService {
       // BẬT CHẾ ĐỘ TIẾT KIỆM PIN: POLLING 10s một lần thay vì onSnapshot realtime
       this.batterySaverInterval = setInterval(async () => {
         if (!this.db) return;
+
+        // Skip network polling if client is offline
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          this.setFirebaseConnected(false);
+          return;
+        }
+
         try {
           // Poll game_state
           const stateSnap = await getDoc(doc(this.db, 'game_state', 'current'));
@@ -527,9 +547,20 @@ class RealtimeSyncService {
           this.saveLocalResponses();
           this.notifyResponseListeners();
 
-        } catch (err) {
-          console.error('Polling error in Battery Saver mode:', err);
-          this.setFirebaseConnected(false);
+        } catch (err: any) {
+          const isOffline =
+            (typeof navigator !== 'undefined' && !navigator.onLine) ||
+            err?.code === 'unavailable' ||
+            err?.message?.includes('client is offline') ||
+            err?.message?.includes('offline');
+
+          if (isOffline) {
+            // Silently mark disconnected without throwing critical console errors
+            this.setFirebaseConnected(false);
+          } else {
+            console.warn('Polling warning in Battery Saver mode:', err?.message || err);
+            this.setFirebaseConnected(false);
+          }
         }
       }, 10000); // 10 seconds polling interval
 
@@ -703,7 +734,21 @@ class RealtimeSyncService {
   }
 
   private notifyPingListeners() {
-    this.pingListeners.forEach(listener => listener(this.currentPingInfo));
+    const info = this.currentPingInfo;
+    const notify = () => {
+      this.pingListeners.forEach(listener => {
+        try {
+          listener(info);
+        } catch (e) {
+          console.warn('Error in ping listener:', e);
+        }
+      });
+    };
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(notify);
+    } else {
+      setTimeout(notify, 0);
+    }
   }
 
   private recordLatencyPoint(latencyMs: number | null, quality: PingQuality) {
