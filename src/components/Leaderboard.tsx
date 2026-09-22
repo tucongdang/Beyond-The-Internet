@@ -39,6 +39,7 @@ interface LeaderboardProps {
   activeCount?: number;
   onClose?: () => void;
   isAudienceView?: boolean;
+  isStageDisplay?: boolean;
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({
@@ -47,7 +48,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   customQuestionBank,
   activeCount = 0,
   onClose,
-  isAudienceView = false
+  isAudienceView = false,
+  isStageDisplay = false
 }) => {
   const [localRoundFilter, setLocalRoundFilter] = useState<'ALL' | 'R1' | 'R2' | 'R3' | 'R4'>('ALL');
   const roundFilter = (gameState.leaderboard_round_filter as any) || localRoundFilter;
@@ -306,7 +308,16 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
         </div>
 
         {/* Action buttons (Admin / Operator controls vs Audience Stage Telemetry) */}
-        {!isAudienceView ? (
+        {isStageDisplay ? (
+          /* Projector Stage Display Only: Clean status badge, zero buttons */
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-[2px] text-xs font-mono font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 uppercase tracking-wider shadow-sm">
+              {viewMode === 'PODIUM' 
+                ? (localLanguage !== 'vi' ? 'PODIUM HONORS' : 'BỤC VINH QUANG') 
+                : (localLanguage !== 'vi' ? 'FULL LEADERBOARD' : 'BẢNG ĐIỂM CHI TIẾT')}
+            </span>
+          </div>
+        ) : (
           <div className="flex flex-wrap items-center gap-2">
             {gameState.team_mode_active && gameState.teams && gameState.teams.length > 0 && (
               <div className="flex items-center gap-1 bg-black/40 p-1 rounded-[2px] border border-white/10 mr-2">
@@ -327,47 +338,52 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               </div>
             )}
 
-            {/* Export CSV button */}
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="fluent-btn px-3.5 py-2 rounded-[2px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer"
-              title={localLanguage !== 'vi' ? 'Export CSV' : 'Xuất bảng xếp hạng thí sinh ra file CSV (Excel / SPSS)'}
-            >
-              <FileSpreadsheet className="w-4 h-4 text-white" />
-              <span>{localLanguage !== 'vi' ? 'Export CSV' : 'Xuất CSV'}</span>
-            </button>
+            {/* Admin-Only Action Buttons: Hidden on Audience View and Stage Display */}
+            {!isAudienceView && !isStageDisplay && (
+              <>
+                {/* Export CSV button */}
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  className="fluent-btn px-3.5 py-2 rounded-[2px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer"
+                  title={localLanguage !== 'vi' ? 'Export CSV' : 'Xuất bảng xếp hạng thí sinh ra file CSV (Excel / SPSS)'}
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-white" />
+                  <span>{localLanguage !== 'vi' ? 'Export CSV' : 'Xuất CSV'}</span>
+                </button>
 
-            {/* Grand Finale Honors Ceremony Trigger */}
-            <button
-              type="button"
-              onClick={handleToggleGrandFinale}
-              className={`fluent-btn px-3.5 py-2 rounded-[2px] font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer ${
-                gameState.grand_finale?.active
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 hover:brightness-110 text-slate-950 ring-1 ring-amber-300'
-              }`}
-              title={gameState.grand_finale?.active ? 'Dừng Lễ Đăng Quang trên màn chiếu' : 'Kích hoạt Lễ Đăng Quang Quán Quân toàn màn chiếu'}
-            >
-              <Trophy className="w-4 h-4 fill-current" />
-              <span>{gameState.grand_finale?.active ? 'DỪNG ĐĂNG QUANG' : 'LỄ ĐĂNG QUANG (FINALE)'}</span>
-            </button>
+                {/* Grand Finale Honors Ceremony Trigger */}
+                <button
+                  type="button"
+                  onClick={handleToggleGrandFinale}
+                  className={`fluent-btn px-3.5 py-2 rounded-[2px] font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer ${
+                    gameState.grand_finale?.active
+                      ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
+                      : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 hover:brightness-110 text-slate-950 ring-1 ring-amber-300'
+                  }`}
+                  title={gameState.grand_finale?.active ? 'Dừng Lễ Đăng Quang trên màn chiếu' : 'Kích hoạt Lễ Đăng Quang Quán Quân toàn màn chiếu'}
+                >
+                  <Trophy className="w-4 h-4 fill-current" />
+                  <span>{gameState.grand_finale?.active ? 'DỪNG ĐĂNG QUANG' : 'LỄ ĐĂNG QUANG (FINALE)'}</span>
+                </button>
 
-            {/* Confetti Trigger */}
-            <button
-              type="button"
-              onClick={() => {
-                vibrateSuccess();
-                triggerConfetti();
-              }}
-              className="fluent-btn px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer"
-              title={localLanguage !== 'vi' ? 'Firework' : 'Bắn pháo hoa vinh danh'}
-            >
-              <Sparkles className="w-4 h-4 fill-current" />
-              {localLanguage !== 'vi' ? 'Celebrate Top 1' : 'Pháo Hoa Top 1'}
-            </button>
+                {/* Confetti Trigger */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateSuccess();
+                    triggerConfetti();
+                  }}
+                  className="fluent-btn px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-bold text-xs font-mono transition shadow-lg flex items-center gap-1.5 cursor-pointer"
+                  title={localLanguage !== 'vi' ? 'Firework' : 'Bắn pháo hoa vinh danh'}
+                >
+                  <Sparkles className="w-4 h-4 fill-current" />
+                  {localLanguage !== 'vi' ? 'Celebrate Top 1' : 'Pháo Hoa Top 1'}
+                </button>
+              </>
+            )}
 
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle (Available for Both Admin and Audience) */}
             <div className="flex items-center fluent-box-nested rounded-[2px] p-1 gap-1">
               <button
                 type="button"
@@ -414,15 +430,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
               </button>
             )}
           </div>
-        ) : (
-          /* Audience / Projector Display Only: Clean status badge, zero buttons */
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-[2px] text-xs font-mono font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 uppercase tracking-wider shadow-sm">
-              {viewMode === 'PODIUM' 
-                ? (localLanguage !== 'vi' ? 'PODIUM HONORS' : 'BỤC VINH QUANG') 
-                : (localLanguage !== 'vi' ? 'FULL LEADERBOARD' : 'BẢNG ĐIỂM CHI TIẾT')}
-            </span>
-          </div>
         )}
       </div>
 
@@ -432,7 +439,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <span className="text-white/40 px-2 flex items-center gap-1">
             <Filter className="w-3 h-3" /> {localLanguage !== 'vi' ? 'Round:' : 'Vòng thi:'}
           </span>
-          {isAudienceView ? (
+          {isStageDisplay ? (
             /* Clean display pill on Stage Display, non-interactive */
             <span className="px-3 py-1 text-xs font-mono font-bold rounded-[2px] bg-[#F7CAC9] text-[#190839] border border-[#F7CAC9] shadow-sm">
               {roundFilter === 'ALL'

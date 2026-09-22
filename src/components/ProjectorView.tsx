@@ -621,7 +621,8 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               allResponses={allResponses}
               gameState={gameState}
               activeCount={activeCount}
-              isAudienceView={true}
+              isAudienceView={false}
+              isStageDisplay={true}
             />
           </div>
         ) : isVcnvRound ? (
