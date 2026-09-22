@@ -7623,7 +7623,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           height: 'auto',
           zIndex: -9999,
           pointerEvents: 'none',
-          opacity: 1
+          opacity: 1,
+          transform: 'translateZ(0)',
+          contain: 'paint layout'
         }}
       >
         <ProjectorView
@@ -7631,6 +7633,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           responses={currentResponses}
           allResponses={allResponses}
           activeCount={activeCount}
+          isVirtual={true}
         />
       </div>
 

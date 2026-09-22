@@ -86,7 +86,7 @@ export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayPr
   return (
     <div
       id="grand-finale-projector-overlay"
-      className="fixed inset-0 z-[9999] bg-[#070114] text-white flex flex-col justify-between p-4 sm:p-6 md:p-8 select-none overflow-hidden animate-fadeIn"
+      className="absolute inset-0 z-[9999] bg-[#070114] text-white flex flex-col justify-between p-4 sm:p-6 md:p-8 select-none overflow-hidden animate-fadeIn"
     >
       <style>{`
         @keyframes spotlightSpin {

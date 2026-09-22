@@ -29,13 +29,15 @@ interface ProjectorViewProps {
   responses: Record<string, UserResponse>;
   allResponses?: Record<string, Record<string, UserResponse>>;
   activeCount: number;
+  isVirtual?: boolean;
 }
 
 export const ProjectorView: React.FC<ProjectorViewProps> = ({
   gameState,
   responses,
   allResponses,
-  activeCount
+  activeCount,
+  isVirtual = false
 }) => {
   const [timeLeft, setTimeLeft] = useState<number>(gameState.time_limit);
   const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
@@ -599,12 +601,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       id="projector-view-stage"
       className={`h-[100dvh] max-h-[100dvh] w-full ${theme.bgGradient} text-[#F5EFF9] p-2.5 sm:p-3 md:p-3.5 lg:p-4 ${hasAnnouncer ? 'pb-16 sm:pb-20' : ''} flex flex-col justify-between select-none relative overflow-hidden transition-colors duration-700`}>
       {/* Screen flash on capture */}
-      {snapshotFlash && (
+      {snapshotFlash && !isVirtual && (
         <div className="fixed inset-0 z-[100] bg-white/70 pointer-events-none transition-opacity duration-300 animate-fadeOut" />
       )}
 
       {/* Audience Light Show Stage Indicator */}
-      {gameState.audience_light_show?.active && (
+      {gameState.audience_light_show?.active && !isVirtual && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 animate-pulse flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/90 backdrop-blur-md border border-amber-400/50 text-amber-300 font-mono text-xs shadow-2xl">
           <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
           <span className="font-bold uppercase tracking-wider">
@@ -614,7 +616,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       )}
 
       {/* Grand Finale Full-Screen Stage Honors Ceremony */}
-      {gameState.grand_finale?.active && (
+      {gameState.grand_finale?.active && !isVirtual && (
         <GrandFinaleProjectorOverlay
           grandFinale={gameState.grand_finale}
           onClose={() => syncService.updateGameState({ grand_finale: null })}
@@ -1963,18 +1965,22 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         </div>
       )}
 
-      {gameState.projector_dimmed && (
+      {gameState.projector_dimmed && !isVirtual && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-[24px] saturate-150/85 z-[9999] pointer-events-none transition-opacity duration-1000 backdrop-blur-sm animate-fadeIn" />
       )}
 
       {/* Realtime Featured Audience Q&A Overlay */}
-      <ProjectorQAOverlay 
-        question={gameState.featured_qa_question || null} 
-        theme={gameState.projectorTheme} 
-      />
+      {!isVirtual && (
+        <ProjectorQAOverlay 
+          question={gameState.featured_qa_question || null} 
+          theme={gameState.projectorTheme} 
+        />
+      )}
 
       {/* Live Broadcast Announcer Overlay */}
-      <AnnouncerOverlay overlay={gameState.announcer_overlay} mode="projector" />
+      {!isVirtual && (
+        <AnnouncerOverlay overlay={gameState.announcer_overlay} mode="projector" />
+      )}
     </div>
   );
 };
