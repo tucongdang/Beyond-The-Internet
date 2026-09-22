@@ -40,7 +40,7 @@ interface QuickActionsPanelProps {
   isCompact?: boolean;
 }
 
-const EMERGENCY_PRESETS迷 = [
+const EMERGENCY_PRESETS = [
   {
     title: '🚨 HIỆU LỆNH MC',
     text: 'Chú ý: Khán giả vui lòng hướng mắt về sân khấu và lắng nghe hiệu lệnh từ MC!',
@@ -86,7 +86,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   const [syncToMarquee, setSyncToMarquee] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isRecalling, setIsRecalling] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [lastActionFeedback, setLastActionFeedback] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -99,7 +99,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   }, [showBroadcastModal]);
 
   // Helper vibration
-  const triggerHaptic不易 = (pattern: number | number[] = 100) => {
+  const triggerHaptic = (pattern: number | number[] = 100) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
         navigator.vibrate(pattern);
@@ -116,16 +116,16 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
   // ACTION 1: Pause / Resume Game Timer
   const handleTogglePauseTimer = useCallback(async () => {
-    triggerHaptic不易(80);
+    triggerHaptic(80);
     
     if (gameState.is_timer_paused) {
       // RESUME TIMER
       soundFx.playStartRound();
-      const remainingToRestore不易 = typeof gameState.paused_remaining_seconds === 'number' && gameState.paused_remaining_seconds > 0
+      const remainingToRestore = typeof gameState.paused_remaining_seconds === 'number' && gameState.paused_remaining_seconds > 0
         ? gameState.paused_remaining_seconds 
         : (gameState.time_limit || 20);
       
-      const newServerStartTime = syncService.getSynchronizedNow() - (((gameState.time_limit || 20) - remainingToRestore不易) * 1000);
+      const newServerStartTime = syncService.getSynchronizedNow() - (((gameState.time_limit || 20) - remainingToRestore) * 1000);
       
       await syncService.updateGameState({
         is_timer_paused: false,
@@ -134,8 +134,8 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
         status: 'ACTIVE'
       });
       
-      triggerHudToast('RESUME', `Tiếp tục đếm ngược ở ${Math.ceil(remainingToRestore不易)}s`);
-      showFeedback(`Đã tiếp tục đồng hồ (${Math.ceil(remainingToRestore不易)}s)`);
+      triggerHudToast('RESUME', `Tiếp tục đếm ngược ở ${Math.ceil(remainingToRestore)}s`);
+      showFeedback(`Đã tiếp tục đồng hồ (${Math.ceil(remainingToRestore)}s)`);
     } else if (gameState.status === 'ACTIVE') {
       // PAUSE RUNNING TIMER
       soundFx.playLock();
@@ -160,7 +160,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
   // ACTION 2: Reset All Audience Scores (Global Leaderboard Reset)
   const handleQuickResetScores = useCallback(() => {
-    triggerHaptic不易([120, 80, 150]);
+    triggerHaptic([120, 80, 150]);
     soundFx.playClick();
 
     openConfirm(
@@ -168,7 +168,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       'CẢNH BÁO: Hành động này sẽ xóa sạch TOÀN BỘ phản hồi và câu trả lời của mọi vòng thi, đưa điểm số của tất cả khán giả và bảng xếp hạng về 0.',
       async () => {
         soundFx.playClick();
-        triggerHaptic不易(200);
+        triggerHaptic(200);
 
         if (onClearAllResponses) {
           onClearAllResponses();
@@ -187,7 +187,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   // ACTION 3: Toggle Lobby Lock (Lock / Unlock Audience Entrance)
   const handleToggleLobbyLock = useCallback(async () => {
     const nextState = !gameState.lobby_locked;
-    triggerHaptic不易(nextState ? [150, 80, 150] : 100);
+    triggerHaptic(nextState ? [150, 80, 150] : 100);
     
     if (nextState) {
       soundFx.playLock();
@@ -208,7 +208,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
   // ACTION 4: Reset câu hỏi hiện tại (Reset Current Question)
   const handleQuickResetQuestion = useCallback(() => {
-    triggerHaptic不易([100, 50, 100]);
+    triggerHaptic([100, 50, 100]);
     soundFx.playClick();
 
     openConfirm(
@@ -216,7 +216,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       `Hành động này sẽ xóa toàn bộ phản hồi của câu hỏi [${gameState.question_id || 'hiện tại'}] và đưa câu hỏi về trạng thái Chờ (Standby) để sẵn sàng thi đấu lại.`,
       async () => {
         soundFx.playClick();
-        triggerHaptic不易(150);
+        triggerHaptic(150);
 
         // 1. Clear responses of current question
         if (onClearCurrentResponses) {
@@ -246,8 +246,8 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   }, [gameState.question_id, onClearCurrentResponses, openConfirm, triggerHudToast]);
 
   // ACTION 5: Chốt đáp án ngay lập tức (Force Lock)
-  const handleQuickForceLock喂 = useCallback(async () => {
-    triggerHaptic不易([150, 80, 200]);
+  const handleQuickForceLock = useCallback(async () => {
+    triggerHaptic([150, 80, 200]);
     soundFx.playLock();
 
     if (onLockVoting) {
@@ -269,7 +269,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 
   // ACTION 6: Gửi thông báo khẩn tới toàn bộ thiết bị đang kết nối (Broadcast Urgent Notification)
   const handleOpenBroadcastModal = useCallback(() => {
-    triggerHaptic不易(60);
+    triggerHaptic(60);
     soundFx.playClick();
     setShowBroadcastModal(true);
   }, []);
@@ -279,15 +279,15 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
     if (!finalMsg) return;
 
     const finalTitle = customTitle || broadcastTitle || '🚨 THÔNG BÁO KHẨN';
-    const finalType专 = customType || broadcastType;
+    const finalType = customType || broadcastType;
 
     setIsSending(true);
-    triggerHaptic不易([200, 100, 200]);
+    triggerHaptic([200, 100, 200]);
     soundFx.playWarning();
 
     try {
       // 1. Send via real-time global notification
-      await syncService.sendGlobalNotification(finalMsg, finalTitle, finalType专);
+      await syncService.sendGlobalNotification(finalMsg, finalTitle, finalType);
 
       // 2. Optionally sync with Marquee / Announcer overlay
       if (syncToMarquee) {
@@ -296,7 +296,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             id: `urgent_${Date.now()}`,
             text: `${finalTitle}: ${finalMsg}`,
             active: true,
-            type: finalType专 === 'URGENT' ? 'URGENT' : finalType专 === 'ALERT' ? 'ALERT' : 'INFO',
+            type: finalType === 'URGENT' ? 'URGENT' : finalType === 'ALERT' ? 'ALERT' : 'INFO',
             speed: 'NORMAL',
             repeat: true,
             updated_at: Date.now()
@@ -318,7 +318,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   // ACTION: Thu hồi toàn bộ thông báo khẩn & Tắt dải chữ chạy Marquee
   const handleRecallNotification = useCallback(async () => {
     setIsRecalling(true);
-    triggerHaptic不易([150, 100]);
+    triggerHaptic([150, 100]);
     soundFx.playClick();
 
     try {
@@ -333,8 +333,8 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
     }
   }, [triggerHudToast]);
 
-  const handleSelectPreset = (preset: typeof EMERGENCY_PRESETS迷[0]) => {
-    triggerHaptic不易(40);
+  const handleSelectPreset = (preset: typeof EMERGENCY_PRESETS[0]) => {
+    triggerHaptic(40);
     soundFx.playClick();
     setBroadcastTitle(preset.title);
     setBroadcastMessage(preset.text);
@@ -583,7 +583,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             <button
               type="button"
               id="btn-quick-action-force-lock"
-              onClick={handleQuickForceLock喂}
+              onClick={handleQuickForceLock}
               data-tooltip="Khóa cổng nhận bình chọn tức thì cho tất cả khán giả và dừng đồng hồ đếm ngược"
               data-tooltip-title="Chốt Đáp Án Ngay (Force Lock)"
               data-tooltip-variant="danger"
@@ -779,7 +779,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                   Mẫu thông báo khẩn có sẵn (Click để chọn nhanh):
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {EMERGENCY_PRESETS迷.map((preset, idx) => (
+                  {EMERGENCY_PRESETS.map((preset, idx) => (
                     <button
                       key={idx}
                       type="button"

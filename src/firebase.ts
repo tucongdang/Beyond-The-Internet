@@ -20,13 +20,19 @@ export const firebaseConfig = {
   apiKey: activeApiKey
 };
 
+export const FIRESTORE_DATABASE_ID = (firebaseConfig as any).firestoreDatabaseId
+  || (firebaseConfig as any).databaseId
+  || 'ai-studio-beyondtheinterne-dcaa1017-6ed0-4d28-92fc-51bee2e1976b';
+
 export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 let firestoreDb: Firestore;
 try {
-  firestoreDb = initializeFirestore(app, { experimentalForceLongPolling: true }, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+  firestoreDb = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+  }, FIRESTORE_DATABASE_ID);
 } catch (e) {
-  firestoreDb = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+  firestoreDb = getFirestore(app, FIRESTORE_DATABASE_ID);
 }
 
 export const db: Firestore = firestoreDb;

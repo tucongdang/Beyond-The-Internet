@@ -96,6 +96,7 @@ import { AudienceHighlightedQuestionToast } from './AudienceHighlightedQuestionT
 import { QuestionLikeButton } from './QuestionLikeButton';
 import { AudienceShoutMarquee } from './AudienceShoutMarquee';
 import { AudienceShoutModal } from './AudienceShoutModal';
+import { AudienceSurveyModal } from './AudienceSurveyModal';
 import { ClientLandingPage } from './ClientLandingPage';
 
 interface AudienceViewProps {
@@ -4743,6 +4744,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           </div>
         </div>
       )}
+
+      {/* 10% Audience Google Form Random Survey Modal */}
+      <AudienceSurveyModal
+        gameState={props.gameState}
+        user={props.user}
+        isHighContrast={isHighContrast}
+      />
 
       {/* Live Broadcast Announcer Overlay */}
       <AnnouncerOverlay overlay={props.gameState.announcer_overlay} mode="audience" isHighContrast={isHighContrast} />

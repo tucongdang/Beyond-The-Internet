@@ -21,6 +21,18 @@ export const DEFAULT_GAME_STATE: GameState = {
   },
   audience_light_show: null,
   grand_finale: null,
+  audience_survey: {
+    enabled: false,
+    form_url: 'https://docs.google.com/forms/d/e/1FAIpQLSc_ExampleFormKey/viewform',
+    sample_rate: 10,
+    title: 'Khảo Sát Khán Giả BTI 2026',
+    description: 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!',
+    gift_note: 'Hoàn tất khảo sát để nhận phần quà lưu niệm tại bàn Lễ tân.',
+    auto_show_on_summary: true,
+    force_active: false,
+    allow_embedded_view: true,
+    target_seed: 'BTI2026_FINALE_SURVEY'
+  },
   round_name: INITIAL_QUESTION_BANK[0].round_name,
   round_type: INITIAL_QUESTION_BANK[0].round_type,
   question_id: INITIAL_QUESTION_BANK[0].id,

@@ -2139,6 +2139,157 @@ Trả về duy nhất định dạng JSON thuần túy:
     }
   });
 
+  // -------------------------------------------------------------
+  // Google Workspace Proxy Endpoints (Overcomes Browser CORS Restrictions)
+  // -------------------------------------------------------------
+  app.post("/api/google/forms", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+      }
+
+      const googleRes = await fetch('https://forms.googleapis.com/v1/forms', {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(req.body)
+      });
+
+      const text = await googleRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+      return res.status(googleRes.status).json(data);
+    } catch (err: any) {
+      console.error("[/api/google/forms] Proxy error:", err);
+      return res.status(500).json({ error: err?.message || "Internal server error proxying to Google Forms" });
+    }
+  });
+
+  app.post("/api/google/forms/:formId/batchUpdate", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+      }
+
+      const { formId } = req.params;
+      const googleRes = await fetch(`https://forms.googleapis.com/v1/forms/${encodeURIComponent(formId)}:batchUpdate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(req.body)
+      });
+
+      const text = await googleRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+      return res.status(googleRes.status).json(data);
+    } catch (err: any) {
+      console.error("[/api/google/forms/:formId/batchUpdate] Proxy error:", err);
+      return res.status(500).json({ error: err?.message || "Internal server error proxying batchUpdate" });
+    }
+  });
+
+  app.get("/api/google/forms/:formId", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+      }
+
+      const { formId } = req.params;
+      const googleRes = await fetch(`https://forms.googleapis.com/v1/forms/${encodeURIComponent(formId)}`, {
+        headers: {
+          'Authorization': authHeader
+        }
+      });
+
+      const text = await googleRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+      return res.status(googleRes.status).json(data);
+    } catch (err: any) {
+      console.error("[/api/google/forms/:formId] Proxy error:", err);
+      return res.status(500).json({ error: err?.message || "Internal server error fetching form details" });
+    }
+  });
+
+  app.get("/api/google/forms/:formId/responses", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+      }
+
+      const { formId } = req.params;
+      const googleRes = await fetch(`https://forms.googleapis.com/v1/forms/${encodeURIComponent(formId)}/responses`, {
+        headers: {
+          'Authorization': authHeader
+        }
+      });
+
+      const text = await googleRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+      return res.status(googleRes.status).json(data);
+    } catch (err: any) {
+      console.error("[/api/google/forms/:formId/responses] Proxy error:", err);
+      return res.status(500).json({ error: err?.message || "Internal server error fetching form responses" });
+    }
+  });
+
+  app.get("/api/google/drive/forms", async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+      }
+
+      const query = encodeURIComponent("mimeType='application/vnd.google-apps.form' and trashed=false");
+      const fields = encodeURIComponent('files(id,name,webViewLink,createdTime,modifiedTime)');
+      const url = `https://www.googleapis.com/drive/v3/files?q=${query}&orderBy=modifiedTime%20desc&fields=${fields}&pageSize=25`;
+
+      const googleRes = await fetch(url, {
+        headers: {
+          'Authorization': authHeader
+        }
+      });
+
+      const text = await googleRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+      return res.status(googleRes.status).json(data);
+    } catch (err: any) {
+      console.error("[/api/google/drive/forms] Proxy error:", err);
+      return res.status(500).json({ error: err?.message || "Internal server error fetching drive forms" });
+    }
+  });
+
   const isProduction = process.env.NODE_ENV === "production";
 
   if (!isProduction) {

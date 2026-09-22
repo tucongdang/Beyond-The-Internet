@@ -28,6 +28,60 @@
       "type": "object",
       "properties": {}
     },
+    "User": {
+      "title": "User",
+      "description": "User profile for audience members and contestants",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique identifier of the user"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the user",
+          "maxLength": 100
+        },
+        "mssv": {
+          "type": "string",
+          "description": "Student ID number",
+          "maxLength": 50
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender code"
+        },
+        "birthYear": {
+          "type": "string",
+          "description": "Birth year"
+        },
+        "anonymizedUid": {
+          "type": "string",
+          "description": "12-digit anonymized UID"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "Assigned team identifier"
+        },
+        "teamName": {
+          "type": "string",
+          "description": "Assigned team name"
+        },
+        "email": {
+          "type": "string",
+          "description": "Optional email address"
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "Whether email is verified"
+        },
+        "registeredAt": {
+          "type": "number",
+          "description": "Registration timestamp"
+        }
+      },
+      "required": ["uid", "name"]
+    },
     "Presence": {
       "title": "Presence",
       "description": "User presence information",
@@ -113,6 +167,10 @@
     "/shouts/{shoutId}": {
       "schema": { "$ref": "#/entities/AudienceShout" },
       "description": "Real-time audience shout messages for marquee ticker"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles for audience members and contestants"
     }
   }
 }

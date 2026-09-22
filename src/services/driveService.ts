@@ -3,6 +3,8 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const provider = new GoogleAuthProvider();
 provider.addScope('https://www.googleapis.com/auth/drive.file');
+provider.addScope('https://www.googleapis.com/auth/forms.body');
+provider.addScope('https://www.googleapis.com/auth/forms.responses.readonly');
 provider.setCustomParameters({
   prompt: 'consent'
 });
@@ -10,13 +12,24 @@ provider.setCustomParameters({
 let cachedAccessToken: string | null = null;
 
 export const driveService = {
+  getAccessToken(): string | null {
+    return cachedAccessToken;
+  },
+
+  setAccessToken(token: string | null) {
+    cachedAccessToken = token;
+  },
+
   isConnected(): boolean {
     return Boolean(cachedAccessToken);
   },
 
-  async authenticate(interactive: boolean = false): Promise<string | null> {
-    if (cachedAccessToken) return cachedAccessToken;
-    if (!interactive || !auth) return null;
+  async authenticate(interactive: boolean = false, forceRefresh: boolean = false): Promise<string | null> {
+    if (cachedAccessToken && !forceRefresh) return cachedAccessToken;
+    if (!interactive) return cachedAccessToken;
+    if (!auth) {
+      throw new Error('Firebase Auth chưa sẵn sàng.');
+    }
     
     try {
       const result = await signInWithPopup(auth, provider);
@@ -25,18 +38,20 @@ export const driveService = {
         cachedAccessToken = credential.accessToken;
         return cachedAccessToken;
       }
-      return null;
+      throw new Error('Không nhận được Access Token từ Google.');
     } catch (error: any) {
       if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('popup-closed-by-user')) {
-        console.info("[driveService] Google Drive auth popup closed by user.");
+        throw new Error('Cửa sổ đăng nhập Google đã bị đóng trước khi hoàn tất.');
+      } else if (error?.code === 'auth/popup-blocked' || error?.message?.includes('popup-blocked')) {
+        throw new Error('Trình duyệt đã chặn cửa sổ Popup. Vui lòng bấm cho phép Popup trên thanh địa chỉ và thử lại.');
       } else if (error?.code === 'auth/cancelled-popup-request' || error?.message?.includes('cancelled-popup-request')) {
-        console.info("[driveService] Google Drive auth popup cancelled.");
+        throw new Error('Yêu cầu mở popup Google bị huỷ do có thao tác khác.');
       } else if (error?.code === 'auth/unauthorized-domain') {
-        console.warn("[driveService] Google Drive auth skipped: current domain is not authorized in Firebase Auth Console.");
+        throw new Error('Domain hiện tại chưa được cấp phép trong Firebase Auth Console.');
       } else {
-        console.error("Failed to authenticate for Google Drive:", error);
+        console.error("Failed to authenticate for Google Workspace:", error);
+        throw new Error(error?.message || 'Lỗi đăng nhập tài khoản Google.');
       }
-      return null;
     }
   },
 

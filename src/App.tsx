@@ -532,6 +532,9 @@ export default function App() {
   }, [isProfileModalOpen, isFirebaseConfigOpen, isInstallModalOpen, isLocalAudienceQrOpen, gameState.show_qr, isAudienceQrDismissed, isOnboardingOpen, user]);
 
   const handleUserComplete = async (userInfo: UserInfo) => {
+    if (!userInfo.uid) {
+      userInfo.uid = `aud_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    }
     if (!userInfo.anonymizedUid || userInfo.anonymizedUid.length !== 12) {
       userInfo.anonymizedUid = generate12DigitUID(
         userInfo.name || '',
@@ -548,7 +551,7 @@ export default function App() {
     try {
       await setDoc(doc(db, 'users', userInfo.uid), removeUndefined(userInfo), { merge: true });
     } catch (e) {
-      console.error("Failed to save user to firestore", e);
+      console.warn("Notice saving user profile to firestore:", e);
     }
   };
 

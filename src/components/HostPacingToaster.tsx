@@ -15,7 +15,8 @@ import {
   Layers,
   Clock,
   Users,
-  Activity
+  Activity,
+  ChevronDown
 } from 'lucide-react';
 import { vibrateTap, vibrateWarning } from '../utils/hapticUtils';
 
@@ -266,6 +267,7 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
 }) => {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Determine pacing status recommendation
   const getPacingStatus = () => {
@@ -397,6 +399,17 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
               <span>{recentPacingEvents.length}</span>
             </button>
           )}
+
+          {/* Collapse / Expand Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 rounded-[2px] text-white/60 hover:text-white transition text-xs flex items-center gap-1 cursor-pointer"
+            title={isCollapsed ? 'Mở rộng đồng hồ nhịp độ' : 'Thu gọn đồng hồ nhịp độ'}
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+            <span className="text-[10px] font-mono hidden sm:inline">{isCollapsed ? `${percent}%` : 'Thu gọn'}</span>
+          </button>
         </div>
       </div>
 
@@ -453,7 +466,10 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
         </div>
       )}
 
-      {/* Visual Live Pacing Gauge */}
+      {/* Collapsible Gauge and Quick Action Section */}
+      {!isCollapsed && (
+        <div className="space-y-3 animate-fadeIn">
+          {/* Visual Live Pacing Gauge */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs font-mono">
           <div className="flex items-center gap-2">
@@ -524,6 +540,8 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
           >
             <Lock className="w-3.5 h-3.5" /> Khóa Vote (L)
           </button>
+        </div>
+      )}
         </div>
       )}
 

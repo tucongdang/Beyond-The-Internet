@@ -17,37 +17,53 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
-    // 2. Users Collection: Public read (leaderboard / lucky draw), write by owner or admin
+    function isValidUserWrite(userId) {
+      return request.resource.data.uid == userId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && (!('mssv' in request.resource.data) || (request.resource.data.mssv is string && request.resource.data.mssv.size() <= 50))
+        && (!('anonymizedUid' in request.resource.data) || (request.resource.data.anonymizedUid is string && request.resource.data.anonymizedUid.size() <= 64))
+        && (!('teamId' in request.resource.data) || (request.resource.data.teamId is string && request.resource.data.teamId.size() <= 64));
+    }
+
+    // 2. Users Collection: Public read (leaderboard / lucky draw), write by user or admin
     match /users/{userId} {
       allow read: if true;
-      allow create, update: if isAuthenticated() && (request.auth.uid == userId || isOwner(userId));
+      allow create, update: if isValidUserWrite(userId) || isAuthenticated();
       allow delete: if isAuthenticated();
     }
 
-    // 3. Quiz Responses: Authenticated submit and view
+    // 3. Quiz Responses: Submit live quiz answers
     match /responses/{responseId} {
       allow read: if true;
-      allow create, update: if isAuthenticated();
+      allow create, update: if isAuthenticated() || (
+        request.resource.data.uid is string &&
+        request.resource.data.questionId is string
+      );
       allow delete: if isAuthenticated();
     }
 
-    // 4. Presence Heartbeats: Owner write, public read
+    // 4. Presence Heartbeats: Owner write or audience ping, public read
     match /presence/{userId} {
       allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() || (
+        request.resource.data.online is bool &&
+        request.resource.data.last_active is number
+      );
     }
 
-    // 5. QR Scans: Authenticated submit
+    // 5. QR Scans: Submit QR scan event
     match /qr_scans/{scanId} {
       allow read: if true;
-      allow create: if isAuthenticated();
+      allow create: if true;
       allow update, delete: if isAuthenticated();
     }
 
     // 6. Notifications: User messages or global
     match /notifications/{userId}/messages/{messageId} {
       allow read: if true;
-      allow create: if isAuthenticated();
+      allow create: if true;
       allow update: if isAuthenticated();
       allow delete: if isAuthenticated();
     }

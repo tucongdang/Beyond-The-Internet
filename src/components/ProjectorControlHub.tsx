@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Monitor,
   MonitorOff,
@@ -10,8 +10,6 @@ import {
   Layers,
   Sparkles,
   Crown,
-  Gift,
-  HelpCircle,
   Eye,
   CheckCircle2,
   Radio,
@@ -19,7 +17,8 @@ import {
   Megaphone,
   Heart,
   Activity,
-  Maximize2
+  Maximize2,
+  ChevronDown
 } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
@@ -38,8 +37,6 @@ interface ProjectorControlHubProps {
   ) => void;
   onOpenLightShow?: () => void;
   onOpenGrandFinale?: () => void;
-  onOpenLuckyDraw?: () => void;
-  onOpenEmergencyPoll?: () => void;
   className?: string;
   isCompact?: boolean;
 }
@@ -51,11 +48,10 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
   openConfirm,
   onOpenLightShow,
   onOpenGrandFinale,
-  onOpenLuckyDraw,
-  onOpenEmergencyPoll,
   className = '',
   isCompact = false
 }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const triggerHaptic = (pattern: number | number[] = 60) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
@@ -173,7 +169,22 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
 
         {/* Quick Projector Stealth Dim & Unified Auto-Fit Indicator */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-medium shadow-sm">
+          {/* Active Mode Pill when Collapsed */}
+          {isCollapsed && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-purple-500/20 text-purple-200 border border-purple-500/30 text-[10px] font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+              <span>Chế độ: {
+                activeMode === 'DEFAULT' ? 'Thẻ Câu Hỏi' :
+                activeMode === 'BAR_CHART' ? 'Biểu Đồ Cột' :
+                activeMode === 'RESPONSE_LIST' ? 'Danh Sách Phản Hồi' :
+                activeMode === 'HEATMAP' ? 'Bản Đồ Nhiệt' :
+                activeMode === 'LEADERBOARD' ? 'Bảng Xếp Hạng' :
+                activeMode === 'WORD_CLOUD' ? 'Đám Mây Từ Khóa' : activeMode
+              }</span>
+            </span>
+          )}
+
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-medium shadow-sm">
             <Maximize2 className="w-3 h-3 text-emerald-400 shrink-0" />
             <span>Tự Động Scale Khít Màn (Unified)</span>
           </div>
@@ -192,10 +203,24 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
             {gameState.projector_dimmed ? <MonitorOff className="w-3.5 h-3.5 text-white" /> : <Monitor className="w-3.5 h-3.5 text-purple-300" />}
             <span>{gameState.projector_dimmed ? 'Đang Ẩn Màn' : 'Ẩn Màn Chiếu'}</span>
           </button>
+
+          {/* Collapse / Expand Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/60 hover:text-white rounded-[2px] transition text-xs flex items-center gap-1.5 cursor-pointer"
+            title={isCollapsed ? 'Mở rộng điều khiển màn chiếu' : 'Thu gọn điều khiển màn chiếu'}
+          >
+            <span className="text-[10px] font-mono hidden md:inline">{isCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* Main Mode Switcher Grid */}
+      {/* Main Mode Switcher Grid & Controls (Collapsible) */}
+      {!isCollapsed && (
+        <div className="space-y-3.5 animate-fadeIn">
+          {/* Main Mode Switcher Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
         {/* 1. Mặc Định (Thẻ câu hỏi & Phương án) */}
         <button
@@ -445,39 +470,9 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
             <span>Lễ Đăng Quang (Grand Finale)</span>
           </button>
         )}
-
-        {/* Lucky Draw Trigger */}
-        {onOpenLuckyDraw && (
-          <button
-            type="button"
-            onClick={onOpenLuckyDraw}
-            className={`px-2.5 py-1 rounded-[2px] font-mono text-[10px] font-bold border transition flex items-center gap-1.5 cursor-pointer ${
-              gameState.active_module === 'LUCKY_DRAW'
-                ? 'bg-purple-600 text-white border-purple-400 shadow-md'
-                : 'bg-purple-950/30 text-purple-300 hover:bg-purple-900/40 border-purple-500/30'
-            }`}
-          >
-            <Gift className="w-3 h-3 text-purple-300" />
-            <span>Vòng Quay May Mắn</span>
-          </button>
-        )}
-
-        {/* Emergency Poll Trigger */}
-        {onOpenEmergencyPoll && (
-          <button
-            type="button"
-            onClick={onOpenEmergencyPoll}
-            className={`px-2.5 py-1 rounded-[2px] font-mono text-[10px] font-bold border transition flex items-center gap-1.5 cursor-pointer ${
-              gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED'
-                ? 'bg-rose-600 text-white border-rose-400 shadow-md'
-                : 'bg-rose-950/30 text-rose-300 hover:bg-rose-900/40 border-rose-500/30'
-            }`}
-          >
-            <HelpCircle className="w-3 h-3 text-rose-300" />
-            <span>Khảo Sát Khẩn Cấp</span>
-          </button>
-        )}
       </div>
+        </div>
+      )}
     </div>
   );
 };

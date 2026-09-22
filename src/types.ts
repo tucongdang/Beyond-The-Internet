@@ -186,6 +186,25 @@ export interface LuckyDrawState {
   winner: UserInfo | null;
 }
 
+export interface AudienceSurveyConfig {
+  enabled: boolean;
+  form_url: string; // Google Form URL
+  google_form_id?: string; // Raw Google Form ID for Forms API analytics
+  edit_url?: string; // Direct edit link for organizers in Google Drive
+  sample_rate: number; // e.g. 10 for 10% (can be 1 to 100)
+  title?: string;
+  description?: string;
+  gift_note?: string; // Information on how to receive rewards/gifts
+  auto_show_on_summary?: boolean; // Automatically show on summary / grand finale
+  force_active?: boolean; // Force active immediately for instant survey push
+  prefill_name_entry?: string; // Optional Google Form entry ID for Name pre-fill
+  prefill_mssv_entry?: string; // Optional Google Form entry ID for MSSV pre-fill
+  allow_embedded_view?: boolean; // Allow answering directly in iframe modal
+  target_seed?: string; // Random seed to guarantee stable selection
+  created_at?: number;
+  updated_at?: number;
+}
+
 export interface GameState {
   language?: 'vi' | 'en';
   active_module?: 'GAME' | 'LUCKY_DRAW';
@@ -246,6 +265,9 @@ export interface GameState {
   team_scores?: Record<string, number>;
 
   
+  // Google Form Random Audience Survey (10%)
+  audience_survey?: AudienceSurveyConfig | null;
+
   // Next Question Waiting / Intermission Timer
   next_question_wait_limit?: number;
   next_question_wait_start?: number;
