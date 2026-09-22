@@ -29,7 +29,8 @@ import {
   Mail,
   Send,
   ExternalLink,
-  Zap
+  Zap,
+  Trophy
 } from 'lucide-react';
 import { 
   getAuth, 
@@ -1208,8 +1209,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     <div 
       className={`${
         isInline
-          ? 'fluent-box p-3.5 sm:p-6 max-w-lg w-full space-y-3 sm:space-y-4 relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 my-auto text-[#F5EFF9]'
-          : 'fluent-dialog relative fluent-box rounded-[4px] p-3.5 sm:p-6 w-full max-w-lg shadow-2xl flex flex-col text-[#F5EFF9] max-h-[94dvh] overflow-hidden my-auto border border-white/20'
+          ? 'fluent-box p-3.5 sm:p-5 md:p-6 max-w-lg md:max-w-4xl lg:max-w-5xl w-full relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 text-[#F5EFF9]'
+          : 'fluent-dialog relative fluent-box rounded-[4px] p-3.5 sm:p-5 md:p-6 w-full max-w-lg md:max-w-4xl lg:max-w-5xl shadow-2xl flex flex-col text-[#F5EFF9] max-h-[94dvh] overflow-hidden border border-white/20'
       }`}
       onClick={(e) => e.stopPropagation()}
     >
@@ -1217,11 +1218,33 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       <div className="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#F7CAC9]/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Top Logo & Branding Badge (Mirrors Admin Portal) */}
-      <div className="text-center space-y-1.5 relative z-10 mb-1.5 sm:mb-2">
-        <div className="flex items-center justify-between">
-          <div className="w-16 flex justify-start">
-            {(onExit || onClose) && (
+      {/* Top Full-Width Header Bar */}
+      <div className="flex items-center justify-between pb-3 sm:pb-3.5 border-b border-white/10 relative z-10 gap-3">
+        {/* Left: Logo & Portal Title */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-[2px] fluent-acrylic-surface border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-950/40 text-sky-300 shrink-0">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
+          <div className="min-w-0">
+            <h1 id="audience-auth-title" className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight uppercase font-mono leading-tight truncate">
+              {localLanguage !== 'vi' ? (
+                <>Audience Portal <span className="text-sky-300">Live Arena</span></>
+              ) : (
+                <>Cổng Khán Giả <span className="text-sky-300">Đấu Trường Trực Tiếp</span></>
+              )}
+            </h1>
+            <p className="text-[10px] sm:text-[11px] text-white/60 font-sans truncate mt-0.5">
+              {localLanguage !== 'vi'
+                ? 'BTI 2026 Interactive Arena • Dual-Auth Security • Anonymized 12-Digit UID'
+                : 'Đồng bộ thời gian thực • Định danh 12 số bảo mật • Bảng vàng vinh danh'}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Actions (Home & Exit) */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {(onExit || onClose) && (
+            <>
               <button
                 type="button"
                 onClick={() => {
@@ -1230,21 +1253,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   if (onExit) onExit();
                   else if (onClose) onClose();
                 }}
-                className="p-1 sm:p-1.5 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
+                className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
                 title={localLanguage !== 'vi' ? 'Home' : 'Trang chủ'}
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{localLanguage !== 'vi' ? 'Home' : 'Trang chủ'}</span>
               </button>
-            )}
-          </div>
 
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[2px] fluent-acrylic-surface border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-950/40 text-sky-300">
-            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-
-          <div className="w-16 flex justify-end">
-            {(onExit || onClose) && (
               <button
                 type="button"
                 onClick={() => {
@@ -1253,115 +1268,166 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   if (onExit) onExit();
                   else if (onClose) onClose();
                 }}
-                className="p-1 sm:p-1.5 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
+                className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
                 title={localLanguage !== 'vi' ? 'Exit' : 'Thoát'}
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>{localLanguage !== 'vi' ? 'Exit' : 'Thoát'}</span>
               </button>
-            )}
-          </div>
-        </div>
-
-        <h1 id="audience-auth-title" className="text-base sm:text-lg font-black text-white tracking-tight uppercase font-mono flex items-center justify-center gap-1.5">
-          {localLanguage !== 'vi' ? (
-            <>Audience Portal <span className="text-sky-300">Live Arena</span></>
-          ) : (
-            <>Cổng Khán Giả <span className="text-sky-300">Đấu Trường Trực Tiếp</span></>
+            </>
           )}
-        </h1>
-        <p className="text-[10px] sm:text-[11px] text-white/60 font-sans leading-relaxed">
-          {localLanguage !== 'vi'
-            ? 'BTI 2026 Interactive Arena • Dual-Auth Security • Anonymized 12-Digit UID'
-            : 'Dành cho sinh viên & khán giả tham gia tương tác, trả lời câu hỏi và vinh danh Bảng Xếp Hạng.'}
-        </p>
+        </div>
       </div>
 
-        {/* Exclusive Scope / Student Notice Box */}
-        <div className="p-2 sm:p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/30 text-[10px] sm:text-[11px] text-sky-200/90 leading-relaxed font-sans mb-2 sm:mb-3 flex items-start gap-1.5 sm:gap-2">
-          <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0 mt-0.5" />
-          <span>
-            {localLanguage !== 'vi'
-              ? 'Realtime Synchronization: Your score and responses are recorded in real-time. Use your student ID (MSSV) for automatic award attribution.'
-              : 'Đồng bộ thời gian thực: Kết quả thi và thứ hạng được bảo mật qua Mã định danh 12 số, tự động ghi nhận điểm thưởng và quà may mắn.'}
-          </span>
+      {/* Main Responsive Grid: 1 Col on mobile, 12 Cols on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-7 items-start relative z-10 pt-3 sm:pt-4">
+
+        {/* Left Column: Scope Notice, Desktop Feature Cards */}
+        <div className="md:col-span-5 flex flex-col justify-between space-y-3 md:border-r md:border-white/10 md:pr-5 lg:pr-7">
+          <div className="space-y-3">
+            {/* Exclusive Scope / Student Notice Box */}
+            <div className="p-2 sm:p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/30 text-[10px] sm:text-[11px] text-sky-200/90 leading-relaxed font-sans flex items-start gap-1.5 sm:gap-2">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0 mt-0.5" />
+              <span>
+                {localLanguage !== 'vi'
+                  ? 'Realtime Synchronization: Your score and responses are recorded in real-time. Use your student ID (MSSV) for automatic award attribution.'
+                  : 'Đồng bộ thời gian thực: Kết quả thi và thứ hạng được bảo mật qua Mã định danh 12 số, tự động ghi nhận điểm thưởng và quà may mắn.'}
+              </span>
+            </div>
+
+            {/* Desktop Highlights Cards (hidden on mobile, visible on md+) */}
+            <div className="hidden md:flex flex-col gap-2 pt-1 text-left">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-sky-400 font-bold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{localLanguage !== 'vi' ? 'Live Arena Features' : 'Đặc quyền Đấu Trường'}</span>
+              </div>
+
+              <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-[2px] bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <Zap className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Sub-second Sync' : 'Đồng Bộ Mili-giây'}</div>
+                  <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                    {localLanguage !== 'vi' ? 'Live responses sync directly to the main stage projector & timer.' : 'Mọi câu trả lời đồng bộ trực tiếp tới màn chiếu sân khấu & đồng hồ đếm ngược.'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-[2px] bg-sky-500/20 text-sky-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <Fingerprint className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? '12-Digit Anonymous UID' : 'Định Danh 12 Số Bảo Mật'}</div>
+                  <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                    {localLanguage !== 'vi' ? 'Zero privacy exposure on stage, automatic award mapping with your MSSV.' : 'Tuyệt đối ẩn danh trên màn chiếu lớn, bảo vệ danh tính & tự động gắn điểm theo MSSV.'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-[2px] bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <Trophy className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Grand Finale & Rewards' : 'Vinh Danh & Quà May Mắn'}</div>
+                  <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                    {localLanguage !== 'vi' ? 'Realtime leaderboard ranking and eligible for lucky wheel spins at finale.' : 'Thăng hạng Bảng Vàng vinh danh và tự động nhận vé quay số trúng thưởng chung kết.'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Status Bar Footer */}
+          <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/40">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-emerald-300/80">Realtime Arena Active</span>
+            </span>
+            <span>BTI 2026 v2.0</span>
+          </div>
         </div>
 
-        {/* Mode Navigation Tabs (Mirrors Admin Portal Structure) */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3 select-none">
-          <button
-            type="button"
-            onClick={() => handleTabChange('LOGIN')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'LOGIN' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{localLanguage !== 'vi' ? 'Login' : 'Đăng Nhập'}</span>
-          </button>
+        {/* Right Column: Mode Tabs, Dynamic Alerts, Active Forms */}
+        <div className="md:col-span-7 flex flex-col justify-between space-y-3 sm:space-y-4 min-h-0">
+          <div>
+            {/* Mode Navigation Tabs (Mirrors Admin Portal Structure) */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3 select-none">
+              <button
+                type="button"
+                onClick={() => handleTabChange('LOGIN')}
+                className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
+                  activeTab === 'LOGIN' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="truncate">{localLanguage !== 'vi' ? 'Login' : 'Đăng Nhập'}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleTabChange('REGISTER')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'REGISTER' || activeTab === 'EMAIL_VERIFY' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{activeTab === 'EMAIL_VERIFY' ? (localLanguage !== 'vi' ? 'Verify' : 'Xác Thực') : (localLanguage !== 'vi' ? 'Register' : 'Đăng Ký')}</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('REGISTER')}
+                className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
+                  activeTab === 'REGISTER' || activeTab === 'EMAIL_VERIFY' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="truncate">{activeTab === 'EMAIL_VERIFY' ? (localLanguage !== 'vi' ? 'Verify' : 'Xác Thực') : (localLanguage !== 'vi' ? 'Register' : 'Đăng Ký')}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleTabChange('FORGOT_PASSWORD')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'FORGOT_PASSWORD' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <KeyRound className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{localLanguage !== 'vi' ? 'Reset' : 'Quên MK'}</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('FORGOT_PASSWORD')}
+                className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
+                  activeTab === 'FORGOT_PASSWORD' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <KeyRound className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="truncate">{localLanguage !== 'vi' ? 'Reset' : 'Quên MK'}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleTabChange('CHECK_STATUS')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'CHECK_STATUS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('CHECK_STATUS')}
+                className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
+                  activeTab === 'CHECK_STATUS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="truncate">{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => handleTabChange('QUICK_ACCESS')}
-            className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
-              activeTab === 'QUICK_ACCESS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Fingerprint className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="truncate">{localLanguage !== 'vi' ? 'UID 12' : 'Mã 12 Số'}</span>
-          </button>
-        </div>
+              <button
+                type="button"
+                onClick={() => handleTabChange('QUICK_ACCESS')}
+                className={`py-1.5 px-0.5 sm:px-1 rounded-[2px] transition flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer truncate ${
+                  activeTab === 'QUICK_ACCESS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Fingerprint className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="truncate">{localLanguage !== 'vi' ? 'UID 12' : 'Mã 12 Số'}</span>
+              </button>
+            </div>
 
-        {/* Dynamic Alerts */}
-        {errorMsg && (
-          <div className="flex items-start gap-2 text-rose-300 bg-rose-950/40 p-2 sm:p-2.5 rounded-[2px] border border-rose-500/30 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-inner">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-            <p className="leading-snug">{errorMsg}</p>
-          </div>
-        )}
+            {/* Dynamic Alerts */}
+            {errorMsg && (
+              <div className="flex items-start gap-2 text-rose-300 bg-rose-950/40 p-2 sm:p-2.5 rounded-[2px] border border-rose-500/30 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-inner">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <p className="leading-snug">{errorMsg}</p>
+              </div>
+            )}
 
-        {successMsg && (
-          <div className="flex items-start gap-2 text-emerald-300 bg-emerald-950/40 p-2 sm:p-2.5 rounded-[2px] border border-emerald-500/30 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-inner">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-            <p className="leading-snug">{successMsg}</p>
-          </div>
-        )}
+            {successMsg && (
+              <div className="flex items-start gap-2 text-emerald-300 bg-emerald-950/40 p-2 sm:p-2.5 rounded-[2px] border border-emerald-500/30 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-inner">
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <p className="leading-snug">{successMsg}</p>
+              </div>
+            )}
 
-        {/* Modal Body Container */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1 space-y-3 sm:space-y-4">
+            {/* Modal Body Container */}
+            <div className="overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1 space-y-3 sm:space-y-4 max-h-[58vh] md:max-h-[64vh]">
 
           {/* ========================================================= */}
           {/* TAB 1: LOGIN (MSSV / Username + Password + CAPTCHA) */}
@@ -2483,31 +2549,35 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </form>
           )}
 
-        </div>
-
-        {(onExit || onClose) && (
-          <div className="pt-2 sm:pt-3 border-t border-white/10 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                if (onExit) onExit();
-                else if (onClose) onClose();
-              }}
-              className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>{localLanguage !== 'vi' ? 'Return to Home Page' : 'Thoát về Trang Chủ BTI 2026'}</span>
-            </button>
+            </div>
           </div>
-        )}
+
+          {/* Mobile Footer Exit button */}
+          {(onExit || onClose) && (
+            <div className="md:hidden pt-2 sm:pt-3 border-t border-white/10 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  if (onExit) onExit();
+                  else if (onClose) onClose();
+                }}
+                className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>{localLanguage !== 'vi' ? 'Return to Home Page' : 'Thoát về Trang Chủ BTI 2026'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+    </div>
   );
 
   if (isInline) {
     return (
-      <div className="flex-1 min-h-[calc(100dvh-4rem)] flex items-center justify-center p-2.5 sm:p-4 py-4 sm:py-6 bg-transparent select-none overflow-y-auto">
+      <div className="flex-1 min-h-[calc(100dvh-4rem)] flex items-start sm:items-center justify-center p-2.5 sm:p-4 py-3 sm:py-6 bg-transparent select-none overflow-y-auto">
         {content}
       </div>
     );
@@ -2515,7 +2585,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div 
-      className="fluent-dialog-overlay z-[60] animate-fadeIn flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+      className="fluent-dialog-overlay z-[60] animate-fadeIn flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="audience-auth-title"

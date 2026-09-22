@@ -22,7 +22,10 @@ import {
   RefreshCw,
   Mail,
   Send,
-  ExternalLink
+  ExternalLink,
+  Monitor,
+  Cpu,
+  Zap
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateError } from '../utils/hapticUtils';
@@ -639,18 +642,34 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   };
 
   return (
-    <div className="flex-1 min-h-[calc(100dvh-4rem)] flex items-center justify-center p-2.5 sm:p-4 py-4 sm:py-6 bg-transparent select-none overflow-y-auto">
-      <div className="fluent-box p-3.5 sm:p-6 max-w-md w-full space-y-3 sm:space-y-4 relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 my-auto">
+    <div className="flex-1 min-h-[calc(100dvh-4rem)] flex items-start sm:items-center justify-center p-2.5 sm:p-4 py-3 sm:py-6 bg-transparent select-none overflow-y-auto">
+      <div className="fluent-box p-3.5 sm:p-5 md:p-6 max-w-md md:max-w-4xl lg:max-w-5xl w-full relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 text-[#F5EFF9]">
         
         {/* Glow Header Accent */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#F7CAC9]/15 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Top Logo & Branding Badge with Exit Button */}
-        <div className="text-center space-y-1.5 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="w-20 flex justify-start">
-              {onExit && (
+        {/* Top Full-Width Header Bar */}
+        <div className="flex items-center justify-between pb-3 sm:pb-3.5 border-b border-white/10 relative z-10 gap-3">
+          {/* Left: Logo & Portal Title */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-[2px] fluent-acrylic-surface border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-950/40 text-sky-300 shrink-0">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight uppercase font-mono leading-tight truncate">
+                Cổng Điều Hành <span className="text-sky-300">Ban Kỹ Thuật</span>
+              </h1>
+              <p className="text-[10px] sm:text-[11px] text-white/60 font-sans truncate mt-0.5">
+                Dành riêng cho nhân sự vận hành hệ thống phần mềm BTI 2026.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Actions (Home & Exit) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {onExit && (
+              <>
                 <button
                   type="button"
                   onClick={() => {
@@ -658,22 +677,14 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
                     soundFx.playClick();
                     onExit();
                   }}
-                  className="min-h-[44px] min-w-[44px] p-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
+                  className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
                   title="Về Trang Chủ"
                   aria-label="Về Trang Chủ"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Trang chủ</span>
                 </button>
-              )}
-            </div>
 
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[2px] fluent-acrylic-surface border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-950/40 text-sky-300">
-              <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-
-            <div className="w-20 flex justify-end">
-              {onExit && (
                 <button
                   type="button"
                   onClick={() => {
@@ -681,125 +692,188 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
                     soundFx.playClick();
                     onExit();
                   }}
-                  className="min-h-[44px] min-w-[44px] p-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
+                  className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
                   title="Thoát đăng nhập"
                   aria-label="Thoát đăng nhập"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Thoát</span>
                 </button>
-              )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Main Responsive Grid: 1 Col on mobile, 12 Cols on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-7 items-start relative z-10 pt-3 sm:pt-4">
+
+          {/* Left Column: Scope Notice, Technical Capability Cards, Desktop Footer */}
+          <div className="md:col-span-5 flex flex-col justify-between space-y-3 md:border-r md:border-white/10 md:pr-5 lg:pr-7">
+            <div className="space-y-3">
+              {/* Exclusive Scope Notice Box */}
+              <div className="p-2 sm:p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/30 text-[10px] sm:text-[11px] text-sky-200/90 leading-relaxed font-sans flex items-start gap-1.5 sm:gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-sky-300">📌 Lưu ý phạm vi:</strong> Cổng này chỉ cấp quyền cho nhân sự Kỹ thuật trực tiếp vận hành máy chủ và màn LED. Các ban Nội dung, Giám khảo, MC sử dụng hệ thống riêng.
+                </span>
+              </div>
+
+              {/* Desktop Highlights Cards (hidden on mobile, visible on md+) */}
+              <div className="hidden md:flex flex-col gap-2 pt-1 text-left">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-sky-400 font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Nhiệm Vụ Kỹ Thuật Viên</span>
+                </div>
+
+                <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                  <div className="w-6 h-6 rounded-[2px] bg-sky-500/20 text-sky-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Monitor className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-white font-mono">Điều Hành Màn Chiếu LED</div>
+                    <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                      Đồng bộ hiển thị LED Wall, Projector View và chuyển cảnh sân khấu tức thì.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                  <div className="w-6 h-6 rounded-[2px] bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Cpu className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-white font-mono">Quản Trị Đấu Trường Realtime</div>
+                    <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                      Kiểm soát đồng hồ đếm ngược, khóa câu hỏi, xử lý khiếu nại và chuyển vòng thi.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
+                  <div className="w-6 h-6 rounded-[2px] bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-white font-mono">Bảo Mật Phân Quyền Nghiêm Ngặt</div>
+                    <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
+                      Xác thực Firebase Auth đa tầng và phê duyệt hồ sơ kỹ thuật viên trực ban.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Status Bar Footer */}
+            <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/40">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-emerald-300/80">Admin Core Active</span>
+              </span>
+              <span>BTI 2026 v2.0</span>
             </div>
           </div>
 
-          <h1 className="text-base sm:text-lg font-black text-white tracking-tight uppercase font-mono flex items-center justify-center gap-1.5">
-            Cổng Điều Hành <span className="text-sky-300">Ban Kỹ Thuật</span>
-          </h1>
-          <p className="text-[10px] sm:text-[11px] text-white/60 font-sans leading-relaxed">
-            Dành riêng cho nhân sự vận hành hệ thống phần mềm BTI 2026.
-          </p>
-        </div>
+          {/* Right Column: Mode Tabs, Dynamic Alerts, Active Forms */}
+          <div className="md:col-span-7 flex flex-col justify-between space-y-3 sm:space-y-4 min-h-0">
+            <div>
+              {/* Mode Navigation Tabs */}
+              <div className="grid grid-cols-4 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveTab('LOGIN');
+                    setError(null);
+                  }}
+                  className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
+                    activeTab === 'LOGIN' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <LogIn className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Đăng Nhập</span>
+                </button>
 
-        {/* Exclusive Scope Notice Box */}
-        <div className="p-2 sm:p-2.5 rounded-[2px] bg-sky-950/30 border border-sky-500/30 text-[10px] sm:text-[11px] text-sky-200/90 leading-relaxed font-sans">
-          <strong className="text-sky-300">📌 Lưu ý phạm vi:</strong> Cổng này chỉ cấp quyền cho nhân sự Kỹ thuật trực tiếp vận hành máy chủ và màn LED. Các ban Nội dung, Giám khảo, MC sử dụng hệ thống Quản lý Ngân hàng Câu hỏi riêng.
-        </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    if (pendingVerifyEmail && activeTab !== 'EMAIL_VERIFY') {
+                      setActiveTab('EMAIL_VERIFY');
+                    } else {
+                      setActiveTab('REGISTER');
+                    }
+                    setError(null);
+                  }}
+                  className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
+                    activeTab === 'REGISTER' || activeTab === 'EMAIL_VERIFY' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {activeTab === 'EMAIL_VERIFY' ? (
+                    <>
+                      <Mail className="w-3.5 h-3.5 shrink-0 text-emerald-300 animate-pulse" />
+                      <span className="truncate">Xác Thực</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Đăng Ký</span>
+                    </>
+                  )}
+                </button>
 
-        {/* Mode Navigation Tabs */}
-        <div className="grid grid-cols-4 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold">
-          <button
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              setActiveTab('LOGIN');
-              setError(null);
-            }}
-            className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
-              activeTab === 'LOGIN' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <LogIn className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Đăng Nhập</span>
-          </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveTab('FORGOT_PASSWORD');
+                    setError(null);
+                    setSuccessMsg(null);
+                  }}
+                  className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
+                    activeTab === 'FORGOT_PASSWORD' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <KeyRound className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Quên MK</span>
+                </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              if (pendingVerifyEmail && activeTab !== 'EMAIL_VERIFY') {
-                setActiveTab('EMAIL_VERIFY');
-              } else {
-                setActiveTab('REGISTER');
-              }
-              setError(null);
-            }}
-            className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
-              activeTab === 'REGISTER' || activeTab === 'EMAIL_VERIFY' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            {activeTab === 'EMAIL_VERIFY' ? (
-              <>
-                <Mail className="w-3.5 h-3.5 shrink-0 text-emerald-300 animate-pulse" />
-                <span className="truncate">Xác Thực</span>
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Đăng Ký</span>
-              </>
-            )}
-          </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveTab('CHECK_STATUS');
+                    setError(null);
+                  }}
+                  className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
+                    activeTab === 'CHECK_STATUS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Search className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Tra Cứu</span>
+                </button>
+              </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              setActiveTab('FORGOT_PASSWORD');
-              setError(null);
-              setSuccessMsg(null);
-            }}
-            className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
-              activeTab === 'FORGOT_PASSWORD' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <KeyRound className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Quên MK</span>
-          </button>
+              {/* Alert Notifications */}
+              {error && (
+                <div className="flex items-start gap-2 text-rose-300 bg-rose-950/40 p-2 sm:p-2.5 rounded-[2px] border border-rose-500/30 text-[11px] sm:text-xs shadow-inner animate-fadeIn mb-2 sm:mb-3">
+                  <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p className="leading-snug">{error}</p>
+                </div>
+              )}
 
-          <button
-            type="button"
-            onClick={() => {
-              vibrateTap();
-              setActiveTab('CHECK_STATUS');
-              setError(null);
-            }}
-            className={`py-1.5 px-1 rounded-[2px] transition flex items-center justify-center gap-1 cursor-pointer truncate ${
-              activeTab === 'CHECK_STATUS' ? 'bg-sky-500 text-white shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Search className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Tra Cứu</span>
-          </button>
-        </div>
+              {successMsg && (
+                <div className="flex items-start gap-2 text-emerald-300 bg-emerald-950/40 p-2 sm:p-2.5 rounded-[2px] border border-emerald-500/30 text-[11px] sm:text-xs shadow-inner animate-fadeIn mb-2 sm:mb-3">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p className="leading-snug">{successMsg}</p>
+                </div>
+              )}
 
-        {/* Alert Notifications */}
-        {error && (
-          <div className="flex items-start gap-2 text-rose-300 bg-rose-950/40 p-2 sm:p-2.5 rounded-[2px] border border-rose-500/30 text-[11px] sm:text-xs shadow-inner animate-fadeIn">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-            <p className="leading-snug">{error}</p>
-          </div>
-        )}
+              {/* Form Body Container */}
+              <div className="overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1 space-y-3 sm:space-y-4 max-h-[58vh] md:max-h-[64vh]">
 
-        {successMsg && (
-          <div className="flex items-start gap-2 text-emerald-300 bg-emerald-950/40 p-2 sm:p-2.5 rounded-[2px] border border-emerald-500/30 text-[11px] sm:text-xs shadow-inner animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-            <p className="leading-snug">{successMsg}</p>
-          </div>
-        )}
-
-        {/* TAB 1: LOGIN */}
-        {activeTab === 'LOGIN' && (
-          <form onSubmit={handleLogin} className="space-y-3 text-left">
+                {/* TAB 1: LOGIN */}
+                {activeTab === 'LOGIN' && (
+                  <form onSubmit={handleLogin} className="space-y-3 text-left">
             <div>
               <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
                 Tên đăng nhập
@@ -1405,22 +1479,28 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
           </form>
         )}
 
-        {onExit && (
-          <div className="pt-2 sm:pt-3 border-t border-white/10 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                onExit();
-              }}
-              className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Thoát về Trang Chủ BTI 2026</span>
-            </button>
+              </div>
+            </div>
+
+            {/* Mobile Footer Exit button */}
+            {onExit && (
+              <div className="md:hidden pt-2 sm:pt-3 border-t border-white/10 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    onExit();
+                  }}
+                  className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Thoát về Trang Chủ BTI 2026</span>
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
       </div>
     </div>
