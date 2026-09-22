@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { WifiOff, RefreshCw, X, Clock, AlertCircle } from 'lucide-react';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
@@ -20,6 +21,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
   const [countdown, setCountdown] = useState<number>(5);
   const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0);
+  const [isDismissing, setIsDismissing] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerReconnect = useCallback(async () => {
@@ -45,7 +47,11 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
   const handleDismiss = () => {
     vibrateTap();
     soundFx.playClick();
-    onDismiss();
+    setIsDismissing(true);
+    setTimeout(() => {
+      onDismiss();
+      setIsDismissing(false);
+    }, 280);
   };
 
   // Reconnection countdown lifecycle
@@ -83,15 +89,21 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
     return null;
   }
 
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
   const progressPercent = Math.max(0, Math.min(100, ((5 - countdown) / 5) * 100));
 
-  return (
+  return createPortal(
     <div
       id="offline-connection-banner"
       role="alert"
       aria-live="assertive"
-      style={{ left: 'auto' }}
-      className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] right-4 sm:bottom-6 sm:right-6 left-auto z-50 max-w-[calc(100vw-2rem)] w-full sm:w-[420px] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[24px] saturate-[160%] text-white p-4 shadow-2xl shadow-rose-950/80 border border-rose-500/40 flex flex-col gap-3 transition-all duration-380 animate-fluent-toast-enter relative overflow-hidden select-none"
+      style={{ position: 'fixed' }}
+      className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[420px] max-w-[calc(100vw-2rem)] z-[99999] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[32px] saturate-[180%] text-white p-4 shadow-[0_24px_64px_rgba(0,0,0,0.9),0_0_36px_rgba(244,63,94,0.35)] border border-rose-500/50 ring-1 ring-rose-500/30 flex flex-col gap-3 transition-all duration-300 ${
+        isDismissing ? 'animate-fluent-toast-exit' : 'animate-fluent-toast-enter'
+      } overflow-hidden select-none pointer-events-auto`}
     >
       {/* Fluent UI 2 Top Highlight Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 pointer-events-none z-10" />
@@ -186,6 +198,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
