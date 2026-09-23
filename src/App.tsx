@@ -316,7 +316,18 @@ export default function App() {
     if (typeof window !== 'undefined') {
       try {
         const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
-        if (saved) return saved;
+        if (saved) {
+          if (!saved.anonymizedUid || saved.anonymizedUid.length !== 12) {
+            saved.anonymizedUid = generate12DigitUID(
+              saved.name || 'Audience',
+              saved.mssv || '',
+              saved.gender || '1',
+              saved.birthYear || '2004'
+            );
+            setSecureItem('BTI2026_USER_PROFILE', saved);
+          }
+          return saved;
+        }
       } catch {}
     }
     return null;
@@ -754,6 +765,11 @@ export default function App() {
           }}
           allResponses={allResponses}
           gameState={gameState}
+          initialTab={
+            gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
+              ? 'edit'
+              : undefined
+          }
         />
       )}
 

@@ -15,11 +15,12 @@ import {
   ShieldCheck,
   Ticket,
   ChevronRight,
-  Loader2,
-  Share2
+  Loader2
 } from 'lucide-react';
 import { GameState, UserInfo } from '../types';
-import { isUserSelectedForSurvey, buildGoogleFormUrl, generateSurveyVoucherCode } from '../utils/surveyUtils';
+import { isUserSelectedForSurvey, buildGoogleFormUrl, generateSurveyVoucherCode, DEFAULT_SURVEY_CONFIG } from '../utils/surveyUtils';
+import { translationService, SurveyTranslation } from '../services/translationService';
+import { useLanguage } from '../hooks/useLanguage';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
 
@@ -51,11 +52,22 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
     return 'guest_default';
   }, [user?.uid, user?.mssv]);
 
+  const effectiveConfig = surveyConfig || DEFAULT_SURVEY_CONFIG;
+
   // Determine if survey is globally enabled & triggered
-  const isEnabled = Boolean(surveyConfig?.enabled && surveyConfig?.form_url);
-  const isTriggered = isEnabled && (
-    Boolean(surveyConfig?.force_active) || 
-    Boolean(surveyConfig?.auto_show_on_summary && (gameState.show_summary || gameState.grand_finale?.active))
+  const isEnabled = Boolean(effectiveConfig.enabled && effectiveConfig.form_url);
+
+  // Check scheduling start and end time window
+  const isWithinTimeWindow = useMemo(() => {
+    const now = Date.now();
+    if (effectiveConfig.start_time && now < effectiveConfig.start_time) return false;
+    if (effectiveConfig.end_time && now > effectiveConfig.end_time) return false;
+    return true;
+  }, [effectiveConfig.start_time, effectiveConfig.end_time]);
+
+  const isTriggered = isEnabled && isWithinTimeWindow && (
+    Boolean(effectiveConfig.force_active) || 
+    Boolean(effectiveConfig.auto_show_on_summary && (gameState.show_summary || gameState.grand_finale?.active))
   );
 
   // Check 10% sampling determinism
@@ -63,29 +75,38 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
     if (!isEnabled || !effectiveUserId) return false;
     return isUserSelectedForSurvey(
       effectiveUserId,
-      surveyConfig?.sample_rate ?? 10,
-      surveyConfig?.target_seed || 'BTI2026_FINALE_SURVEY'
+      effectiveConfig.sample_rate ?? 10,
+      effectiveConfig.target_seed || 'BTI2026_FINALE_SURVEY'
     );
-  }, [isEnabled, effectiveUserId, surveyConfig?.sample_rate, surveyConfig?.target_seed]);
+  }, [isEnabled, effectiveUserId, effectiveConfig.sample_rate, effectiveConfig.target_seed]);
 
-  // Support local test preview toggle from Admin
+  // Support local test preview toggle from Admin & EventConcludedView button
   const [forcePreview, setForcePreview] = useState(false);
   useEffect(() => {
     const handleStorage = () => {
-      setForcePreview(Boolean(localStorage.getItem('BTI_SURVEY_FORCE_PREVIEW')));
+      const isForced = Boolean(localStorage.getItem('BTI_SURVEY_FORCE_PREVIEW'));
+      setForcePreview(isForced);
+      if (isForced) {
+        setIsOpen(true);
+        setIsMinimized(false);
+      }
     };
     handleStorage();
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener('bti_open_survey', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('bti_open_survey', handleStorage);
+    };
   }, []);
 
-  const shouldDisplay = isTriggered && (isSelected || forcePreview);
+  const shouldDisplay = forcePreview || (isTriggered && isSelected);
 
   // Completion state in localStorage
   const completionStorageKey = useMemo(() => {
-    const seed = surveyConfig?.target_seed || 'v1';
+    const seed = effectiveConfig.target_seed || 'v1';
     return `BTI_SURVEY_COMPLETED_${seed}`;
-  }, [surveyConfig?.target_seed]);
+  }, [effectiveConfig.target_seed]);
 
   const [isCompleted, setIsCompleted] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -100,8 +121,8 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
 
   // Generate official digital gift claim voucher
   const voucherCode = useMemo(() => {
-    return generateSurveyVoucherCode(effectiveUserId, surveyConfig?.target_seed || 'BTI2026');
-  }, [effectiveUserId, surveyConfig?.target_seed]);
+    return generateSurveyVoucherCode(effectiveUserId, effectiveConfig.target_seed || 'BTI2026');
+  }, [effectiveUserId, effectiveConfig.target_seed]);
 
   // Visibility & interaction states
   const [isOpen, setIsOpen] = useState(true);
@@ -112,28 +133,89 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
   const [copiedVoucher, setCopiedVoucher] = useState(false);
   const prevTriggeredRef = useRef(false);
 
-  // When survey is triggered newly, auto-open if not dismissed
+  // AI Translation Integration (follows system language)
+  const { localLanguage } = useLanguage();
+  const [activeLang, setActiveLang] = useState<string>(() => localLanguage || 'vi');
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translatedSurvey, setTranslatedSurvey] = useState<SurveyTranslation | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Keep in sync with user's selected language
+  useEffect(() => {
+    if (localLanguage) {
+      setActiveLang(localLanguage);
+    }
+  }, [localLanguage]);
+
+  // Load or fetch translation
+  useEffect(() => {
+    if (activeLang === 'vi' || showOriginal) {
+      setTranslatedSurvey(null);
+      return;
+    }
+
+    // 1. Check if pre-translated by Admin in surveyConfig.translations
+    if (effectiveConfig.translations?.[activeLang]) {
+      setTranslatedSurvey(effectiveConfig.translations[activeLang]);
+      return;
+    }
+
+    // 2. Fetch on the fly with translationService (which has memory + localStorage cache)
+    let isCancelled = false;
+    setIsTranslating(true);
+    translationService.translateSurveyConfig(
+      {
+        title: effectiveConfig.title,
+        description: effectiveConfig.description,
+        gift_note: effectiveConfig.gift_note
+      },
+      activeLang
+    )
+      .then((res) => {
+        if (!isCancelled && res) {
+          setTranslatedSurvey(res);
+        }
+      })
+      .catch((err) => {
+        console.warn('[AudienceSurvey] Translation error:', err);
+      })
+      .finally(() => {
+        if (!isCancelled) setIsTranslating(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeLang, showOriginal, effectiveConfig.title, effectiveConfig.description, effectiveConfig.gift_note, effectiveConfig.translations]);
+
+  // When survey trigger state changes
   useEffect(() => {
     if (shouldDisplay && !prevTriggeredRef.current) {
       setIsOpen(true);
       setIsMinimized(false);
       soundFx.playTing();
       vibrateSuccess();
+    } else if (!shouldDisplay && prevTriggeredRef.current) {
+      // Admin turned off survey or cancelled preview -> close both modal and floating pill immediately
+      setIsOpen(false);
+      setIsMinimized(false);
     }
     prevTriggeredRef.current = shouldDisplay;
   }, [shouldDisplay]);
 
-  if (!shouldDisplay || !surveyConfig) {
+  if (!shouldDisplay) {
     return null;
   }
 
-  const title = surveyConfig.title || 'Khảo Sát Khán Giả BTI 2026';
-  const description = surveyConfig.description || 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!';
-  const giftNote = surveyConfig.gift_note || 'Hoàn tất khảo sát để nhận phần quà lưu niệm tại bàn Lễ tân.';
-  const sampleRate = surveyConfig.sample_rate ?? 10;
+  const isForeign = activeLang !== 'vi' && !showOriginal;
 
-  const externalUrl = buildGoogleFormUrl(surveyConfig, user, false);
-  const embeddedUrl = buildGoogleFormUrl(surveyConfig, user, true);
+  const title = (isForeign && translatedSurvey?.title) || effectiveConfig.title || 'Khảo Sát Khán Giả BTI 2026';
+  const description = (isForeign && translatedSurvey?.description) || effectiveConfig.description || 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!';
+  const giftNote = (isForeign && translatedSurvey?.gift_note) || effectiveConfig.gift_note || 'Hoàn tất khảo sát để nhận phần quà lưu niệm tại bàn Lễ tân.';
+  const sampleRate = effectiveConfig.sample_rate ?? 10;
+
+  const externalUrl = buildGoogleFormUrl(effectiveConfig, user, false);
+  const embeddedUrl = buildGoogleFormUrl(effectiveConfig, user, true);
 
   const handleOpenExternal = () => {
     soundFx.playClick();
@@ -164,7 +246,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
   // 1. Minimized floating pill
   if (isMinimized) {
     return (
-      <aside aria-label="Khảo sát khán giả" className="fixed bottom-24 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <aside aria-label="Khảo sát khán giả" className="fixed bottom-24 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => {
@@ -199,6 +281,27 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
           </div>
           <Maximize2 className="w-3.5 h-3.5 opacity-70 ml-1 shrink-0" />
         </button>
+
+        {/* Quick Close Floating Pill Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            soundFx.playClick();
+            vibrateTap();
+            setIsMinimized(false);
+            setIsOpen(false);
+            if (forcePreview && typeof window !== 'undefined') {
+              localStorage.removeItem('BTI_SURVEY_FORCE_PREVIEW');
+              setForcePreview(false);
+              window.dispatchEvent(new Event('storage'));
+            }
+          }}
+          className="p-1.5 rounded-full bg-slate-900/90 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/20 transition cursor-pointer shadow-lg"
+          title="Tắt biểu tượng khảo sát"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </aside>
     );
   }
@@ -231,15 +334,15 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
       >
         {/* Modal Top Header */}
         <div className="p-4 sm:p-4.5 border-b border-[#F7CAC9]/25 flex items-center justify-between gap-3 bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-10 h-10 rounded-[4px] bg-[#F7CAC9]/15 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0 shadow-inner">
               <Gift className="w-5 h-5 animate-pulse text-[#F7CAC9]" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[9px] uppercase font-mono font-extrabold px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/40 tracking-wider flex items-center gap-1 shadow-sm">
                   <Sparkles className="w-2.5 h-2.5 text-[#F7CAC9]" />
-                  Đại diện {sampleRate}% Khán giả BTI
+                  {isForeign ? `Audience Voice • ${sampleRate}%` : `Đại diện ${sampleRate}% Khán giả BTI`}
                 </span>
                 {forcePreview && (
                   <span className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -247,18 +350,27 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                   </span>
                 )}
               </div>
-              <h3 className="text-sm sm:text-base font-black text-white truncate mt-0.5 tracking-tight">
+              <h3 
+                className="text-sm sm:text-base font-black text-white mt-0.5 tracking-tight line-clamp-1 break-words"
+                title={title}
+              >
                 {title}
               </h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isTranslating && (
+              <span className="flex items-center gap-1 text-[10px] text-amber-300 font-mono animate-pulse mr-1">
+                <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+                <span className="hidden sm:inline">Translating...</span>
+              </span>
+            )}
             {showEmbedded && (
               <button
                 type="button"
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-2 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
+                className="p-1.5 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
                 title={isFullscreen ? 'Thu nhỏ cửa sổ' : 'Phóng to toàn màn hình'}
               >
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -271,7 +383,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 vibrateTap();
                 setIsMinimized(true);
               }}
-              className="p-2 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
+              className="p-1.5 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
               title="Thu nhỏ để tiếp tục theo dõi sân khấu"
             >
               <Minimize2 className="w-4 h-4" />
@@ -283,8 +395,13 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 vibrateTap();
                 setIsOpen(false);
                 setIsMinimized(false);
+                if (forcePreview && typeof window !== 'undefined') {
+                  localStorage.removeItem('BTI_SURVEY_FORCE_PREVIEW');
+                  setForcePreview(false);
+                  window.dispatchEvent(new Event('storage'));
+                }
               }}
-              className="p-2 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
+              className="p-1.5 text-white/70 hover:text-white rounded-[4px] hover:bg-white/10 transition cursor-pointer"
               title="Đóng khảo sát"
             >
               <X className="w-4 h-4" />
@@ -299,7 +416,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
             <div className="px-3.5 py-2 bg-slate-900 border-b border-[#F7CAC9]/25 flex items-center justify-between text-xs text-slate-300 shrink-0 font-mono">
               <span className="flex items-center gap-1.5 font-medium text-slate-200">
                 <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                Điền trực tiếp trong ứng dụng
+                {isForeign ? 'Fill directly inside application' : 'Điền trực tiếp trong ứng dụng'}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -315,7 +432,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                   onClick={handleOpenExternal}
                   className="text-[#F7CAC9] hover:text-[#f8d7d6] flex items-center gap-1 font-bold transition cursor-pointer"
                 >
-                  Mở tab mới <ExternalLink className="w-3 h-3" />
+                  {isForeign ? 'Open new tab' : 'Mở tab mới'} <ExternalLink className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -325,7 +442,9 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
               {isIframeLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/90 z-10 text-slate-400">
                   <Loader2 className="w-7 h-7 animate-spin text-[#F7CAC9]" />
-                  <p className="text-xs font-mono">Đang tải biểu mẫu khảo sát Google Forms...</p>
+                  <p className="text-xs font-mono">
+                    {isForeign ? 'Loading Google Forms survey...' : 'Đang tải biểu mẫu khảo sát Google Forms...'}
+                  </p>
                 </div>
               )}
               <iframe
@@ -344,7 +463,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 onClick={() => setShowEmbedded(false)}
                 className="px-3.5 py-2 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold transition cursor-pointer"
               >
-                ← Quay lại thông tin
+                {isForeign ? '← Back to details' : '← Quay lại thông tin'}
               </button>
               <button
                 type="button"
@@ -352,7 +471,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 className="px-4 py-2 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition shadow cursor-pointer border border-emerald-400/40"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Tôi đã hoàn tất & Nhận mã quà
+                {isForeign ? 'I have completed & Claim voucher' : 'Tôi đã hoàn tất & Nhận mã quà'}
               </button>
             </div>
           </div>
@@ -368,10 +487,12 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <h4 className="text-base sm:text-lg font-black text-white">
-                    Hoàn Tất Khảo Sát Thành Công!
+                    {isForeign ? 'Survey Completed Successfully!' : 'Hoàn Tất Khảo Sát Thành Công!'}
                   </h4>
                   <p className="text-xs text-slate-300">
-                    Cảm ơn bạn đã đóng góp ý kiến đại diện cho khán giả Beyond The Internet 2026.
+                    {isForeign
+                      ? 'Thank you for representing the audience voice at Beyond The Internet 2026.'
+                      : 'Cảm ơn bạn đã đóng góp ý kiến đại diện cho khán giả Beyond The Internet 2026.'}
                   </p>
                 </div>
 
@@ -382,18 +503,18 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     <div className="flex items-center gap-2">
                       <Ticket className="w-4 h-4 text-[#F7CAC9]" />
                       <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9]">
-                        Phiếu Nhận Quà Khảo Sát
+                        {isForeign ? 'Survey Gift Voucher' : 'Phiếu Nhận Quà Khảo Sát'}
                       </span>
                     </div>
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">
-                      HỢP LỆ • SẴN SÀNG ĐỔI
+                      {isForeign ? 'VALID • READY TO REDEEM' : 'HỢP LỆ • SẴN SÀNG ĐỔI'}
                     </span>
                   </div>
 
                   {/* Voucher Code Display Box */}
                   <div className="py-4 text-center space-y-1.5">
                     <span className="text-[11px] text-slate-400 uppercase font-mono tracking-widest block">
-                      Mã Voucher Đổi Quà Tri Ân:
+                      {isForeign ? 'Your Gift Voucher Code:' : 'Mã Voucher Đổi Quà Tri Ân:'}
                     </span>
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/50 shadow-inner">
                       <span className="text-xl sm:text-2xl font-mono font-black text-[#F7CAC9] tracking-wider select-all">
@@ -403,7 +524,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                         type="button"
                         onClick={handleCopyVoucher}
                         className="p-1.5 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
-                        title="Sao chép mã quà"
+                        title={isForeign ? 'Copy voucher code' : 'Sao chép mã quà'}
                       >
                         {copiedVoucher ? (
                           <Check className="w-4 h-4 text-emerald-400" />
@@ -414,7 +535,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     </div>
                     {copiedVoucher && (
                       <p className="text-[11px] text-emerald-400 font-mono animate-in fade-in">
-                        ✓ Đã sao chép mã voucher vào bộ nhớ tạm!
+                        {isForeign ? '✓ Voucher code copied to clipboard!' : '✓ Đã sao chép mã voucher vào bộ nhớ tạm!'}
                       </p>
                     )}
                   </div>
@@ -423,14 +544,16 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                   <div className="pt-3 border-t border-dashed border-slate-700 space-y-2 text-xs">
                     {user && (
                       <div className="flex items-center justify-between text-slate-300 font-mono text-[11px]">
-                        <span>Người nhận:</span>
+                        <span>{isForeign ? 'Recipient:' : 'Người nhận:'}</span>
                         <strong className="text-white">{user.name} {user.mssv ? `(${user.mssv})` : ''}</strong>
                       </div>
                     )}
                     <div className="p-2.5 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-200 text-xs">
                       <Gift className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                       <div>
-                        <strong className="block text-amber-300 font-mono">Hướng dẫn nhận quà:</strong>
+                        <strong className="block text-amber-300 font-mono">
+                          {isForeign ? 'Gift Claim Instructions:' : 'Hướng dẫn nhận quà:'}
+                        </strong>
                         <span>{giftNote}</span>
                       </div>
                     </div>
@@ -445,7 +568,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     className="flex-1 py-2.5 px-4 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    Xem lại biểu mẫu đã gửi
+                    {isForeign ? 'Review submitted form' : 'Xem lại biểu mẫu đã gửi'}
                   </button>
                   <button
                     type="button"
@@ -453,7 +576,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     className="flex-1 py-2.5 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] to-[#F7CAC9] hover:brightness-110 text-slate-950 font-bold text-xs transition shadow cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" />
-                    Trở lại xem chương trình
+                    {isForeign ? 'Back to stage show' : 'Trở lại xem chương trình'}
                   </button>
                 </div>
               </div>
@@ -464,7 +587,11 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 <div className="p-4 rounded-[4px] bg-gradient-to-br from-[#F7CAC9]/15 via-[#92A8D1]/10 to-transparent border border-[#F7CAC9]/35 space-y-2">
                   <div className="flex items-center gap-2 text-[#F7CAC9] font-bold text-xs uppercase tracking-wider font-mono">
                     <Sparkles className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
-                    <span>Chúc mừng bạn là khán giả đại diện!</span>
+                    <span>
+                      {isForeign
+                        ? `Congratulations! You're a representative audience member!`
+                        : 'Chúc mừng bạn là khán giả đại diện!'}
+                    </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
                     {description}
@@ -475,17 +602,27 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <Clock className="w-4 h-4 text-sky-400" />
-                    <span className="text-[11px] font-bold text-white font-mono">Chỉ ~60 giây</span>
-                    <span className="text-[10px] text-slate-400">Nhanh chóng</span>
+                    <span className="text-[11px] font-bold text-white font-mono">
+                      {isForeign ? '~60 seconds' : 'Chỉ ~60 giây'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {isForeign ? 'Fast & Easy' : 'Nhanh chóng'}
+                    </span>
                   </div>
                   <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <Gift className="w-4 h-4 text-[#F7CAC9]" />
-                    <span className="text-[11px] font-bold text-white font-mono">Nhận quà</span>
-                    <span className="text-[10px] text-slate-400">Tri ân tại lễ tân</span>
+                    <span className="text-[11px] font-bold text-white font-mono">
+                      {isForeign ? 'Gift Reward' : 'Nhận quà'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {isForeign ? 'At Reception' : 'Tri ân tại lễ tân'}
+                    </span>
                   </div>
                   <div className="p-2.5 rounded-[3px] bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center gap-1">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span className="text-[11px] font-bold text-white font-mono">Bảo mật</span>
+                    <span className="text-[11px] font-bold text-white font-mono">
+                      {isForeign ? 'Secure' : 'Bảo mật'}
+                    </span>
                     <span className="text-[10px] text-slate-400">Google Forms</span>
                   </div>
                 </div>
@@ -497,7 +634,9 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                       <Gift className="w-4 h-4" />
                     </div>
                     <div className="text-xs text-slate-200">
-                      <span className="font-bold text-amber-300 block font-mono">Quà tri ân khán giả</span>
+                      <span className="font-bold text-amber-300 block font-mono">
+                        {isForeign ? 'Audience Gift Reward' : 'Quà tri ân khán giả'}
+                      </span>
                       {giftNote}
                     </div>
                   </div>
@@ -506,7 +645,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                 {/* Participant Details if authenticated */}
                 {user && (
                   <div className="px-3 py-2 rounded-[3px] bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex items-center justify-between font-mono">
-                    <span>Khán giả tham gia:</span>
+                    <span>{isForeign ? 'Participant:' : 'Khán giả tham gia:'}</span>
                     <span className="font-bold text-slate-200">
                       {user.name} {user.mssv ? `(${user.mssv})` : ''}
                     </span>
@@ -521,12 +660,12 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                     onClick={handleOpenExternal}
                     className="w-full py-3 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] hover:brightness-110 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition hover:scale-[1.01] active:scale-95 cursor-pointer"
                   >
-                    <span>Làm Khảo Sát (Mở Google Forms)</span>
+                    <span>{isForeign ? 'Open Google Forms Survey' : 'Làm Khảo Sát (Mở Google Forms)'}</span>
                     <ExternalLink className="w-4 h-4 shrink-0" />
                   </button>
 
                   {/* Secondary CTA: Embedded View */}
-                  {surveyConfig.allow_embedded_view !== false && (
+                  {effectiveConfig.allow_embedded_view !== false && (
                     <button
                       type="button"
                       onClick={() => {
@@ -537,7 +676,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                       className="w-full py-2.5 px-4 rounded-[3px] bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
                     >
                       <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                      <span>Hoặc điền trực tiếp ngay trên trang này</span>
+                      <span>{isForeign ? 'Or fill directly in this window' : 'Hoặc điền trực tiếp ngay trên trang này'}</span>
                     </button>
                   )}
 
@@ -549,14 +688,14 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                       className="text-xs text-emerald-400 hover:text-emerald-300 font-medium underline flex items-center gap-1.5 cursor-pointer transition"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      Tôi đã gửi câu trả lời → Nhận mã đổi quà
+                      {isForeign ? 'I submitted my answer → Get Gift Voucher' : 'Tôi đã gửi câu trả lời → Nhận mã đổi quà'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsMinimized(true)}
                       className="text-xs text-slate-400 hover:text-white transition cursor-pointer"
                     >
-                      Để sau (Thu nhỏ)
+                      {isForeign ? 'Dismiss' : 'Để sau (Thu nhỏ)'}
                     </button>
                   </div>
                 </div>

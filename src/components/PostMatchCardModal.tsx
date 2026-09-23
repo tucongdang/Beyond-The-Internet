@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { X, Download, Share2, Sparkles, Check } from 'lucide-react';
 import { UserInfo } from '../types';
 import { getSecureRandomId } from '../utils/cryptoUtils';
+import { getUserDisplayUid } from '../utils/uidUtils';
 
 interface PostMatchCardModalProps {
   isOpen: boolean;
@@ -137,7 +138,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
 
     ctx.fillStyle = '#F7CAC9';
     ctx.font = '600 24px "SVN-Gilroy", monospace';
-    ctx.fillText(`MSSV: ${user?.mssv || 'BTI-2026'}  •  UID: ${user?.anonymizedUid || user?.uid?.substring(0, 8) || 'ONLINE'}`, width / 2, 425);
+    ctx.fillText(`MSSV: ${user?.mssv || 'BTI-2026'}  •  UID: ${getUserDisplayUid(user)}`, width / 2, 425);
 
     // 6. Score Showcase Card (Big Numbers)
     const cardY = 465;

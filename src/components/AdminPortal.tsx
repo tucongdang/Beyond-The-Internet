@@ -42,6 +42,7 @@ import { QuickActionsPanel } from './QuickActionsPanel';
 import { ProjectorControlHub } from './ProjectorControlHub';
 import { LightShowControlModal } from './LightShowControlModal';
 import { AdminSurveyControlModal } from './AdminSurveyControlModal';
+import { AdminEventScheduleModal } from './AdminEventScheduleModal';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
@@ -122,7 +123,7 @@ import { Timer,  Shield,
   Type,
   ScanLine,
   TrendingUp
- , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings } from 'lucide-react';
+ , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings, Calendar, Flag } from 'lucide-react';
 import { PROJECTOR_THEMES, getProjectorTheme } from '../utils/themeUtils';
 import {
   vibrateTap,
@@ -180,6 +181,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   // Technical Staff Approval Management
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState<boolean>(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState<number>(0);
+
+  // Admin portal always defaults to Vietnamese
+  useEffect(() => {
+    try {
+      localStorage.setItem('bti_lang', 'vi');
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('languageChange', { detail: 'vi' }));
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const fetchPendingCount = async () => {
@@ -426,6 +436,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showMcCoPilotModal, setShowMcCoPilotModal] = useState(false);
   const [showLightShowModal, setShowLightShowModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [showEventScheduleModal, setShowEventScheduleModal] = useState(false);
   const [showAudioSettingsModal, setShowAudioSettingsModal] = useState(false);
   const [speechActive, setSpeechActive] = useState<boolean>(() => aiExplanationService.getActiveSpeechState().active);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
@@ -2894,6 +2905,119 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </button>
           </div>
 
+          {/* Group 2.5: Lịch Trình & Vận Hành Sự Kiện (Event Lifecycle & Leak Prevention) */}
+          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-indigo-950/30 border border-indigo-500/30">
+            <span className="text-[9px] font-mono font-bold text-indigo-400/90 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-indigo-500/30 mr-0.5">
+              Sự Kiện
+            </span>
+
+            {/* Event Schedule Config Button */}
+            <button
+              type="button"
+              id="btn-admin-header-event-schedule"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowEventScheduleModal(true);
+              }}
+              data-tooltip="Thiết lập ngày giờ tổ chức, bảo vệ rò rỉ đề trước giờ G và điều phối Bắt đầu / Kết thúc"
+              data-tooltip-title="Lịch Trình Sự Kiện"
+              data-tooltip-variant="accent"
+              className={`has-tooltip fluent-action-btn ${
+                gameState.event_schedule?.enabled
+                  ? 'text-sky-200 bg-sky-950/80 border-sky-400/60 shadow-md ring-1 ring-sky-400/40'
+                  : 'text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/50 border-indigo-500/30'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
+              <span>Lịch Trình</span>
+              {gameState.event_schedule?.enabled ? (
+                <span className={`px-1.5 py-0.2 rounded-[2px] text-[8px] font-mono font-bold uppercase tracking-wider ${
+                  gameState.event_schedule.status === 'SCHEDULED' ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40' :
+                  gameState.event_schedule.status === 'IN_PROGRESS' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' :
+                  'bg-purple-500/30 text-purple-200 border border-purple-400/40'
+                }`}>
+                  {gameState.event_schedule.status === 'SCHEDULED' ? 'CHỜ G' :
+                   gameState.event_schedule.status === 'IN_PROGRESS' ? 'ĐANG LIVE' : 'BẾ MẠC'}
+                </span>
+              ) : null}
+            </button>
+
+            {/* Nút BẮT ĐẦU SỰ KIỆN (Hiển thị khi chưa bắt đầu hoặc đang ở SCHEDULED) */}
+            {gameState.event_schedule?.status !== 'IN_PROGRESS' && (
+              <button
+                type="button"
+                id="btn-admin-header-start-event"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  openConfirm(
+                    'Bắt Đầu Sự Kiện BTI 2026?',
+                    'Hành động này sẽ mở khóa toàn bộ khán giả trong Phòng Chờ Khai Mạc và đưa vào sàn đấu trực tiếp ngay lập tức! Bạn có chắc chắn?',
+                    async () => {
+                      const updatedSchedule = {
+                        ...(gameState.event_schedule || {}),
+                        enabled: true,
+                        status: 'IN_PROGRESS' as const,
+                        scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
+                        started_at: Date.now()
+                      };
+                      await syncService.updateGameState({
+                        event_schedule: updatedSchedule,
+                        status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
+                      });
+                      triggerHudToast('EVENT', '🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Khán giả đã vào sàn đấu.');
+                    },
+                    'Bắt Đầu Ngay'
+                  );
+                }}
+                data-tooltip="Mở khóa toàn bộ khán giả từ Phòng Chờ vào sàn đấu trực tiếp"
+                data-tooltip-title="Bắt Đầu Sự Kiện"
+                data-tooltip-variant="success"
+                className="has-tooltip fluent-action-btn text-emerald-200 bg-emerald-950/70 hover:bg-emerald-900 border-emerald-400/60 font-bold shadow-md shadow-emerald-950/40 animate-pulse"
+              >
+                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-current" />
+                <span>Bắt Đầu</span>
+              </button>
+            )}
+
+            {/* Nút KẾT THÚC SỰ KIỆN (Hiển thị khi sự kiện đang diễn ra IN_PROGRESS) */}
+            {gameState.event_schedule?.status === 'IN_PROGRESS' && (
+              <button
+                type="button"
+                id="btn-admin-header-end-event"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  openConfirm(
+                    'Kết Thúc Sự Kiện BTI 2026?',
+                    'Hành động này sẽ bế mạc sự kiện, đóng lượt thi và chuyển toàn bộ khán giả sang màn hình Bế Mạc & Tổng Kết thành tích chung cuộc! Bạn có chắc chắn?',
+                    async () => {
+                      const updatedSchedule = {
+                        ...(gameState.event_schedule || {}),
+                        enabled: true,
+                        status: 'CONCLUDED' as const,
+                        ended_at: Date.now()
+                      };
+                      await syncService.updateGameState({
+                        event_schedule: updatedSchedule
+                      });
+                      triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
+                    },
+                    'Đồng Ý Kết Thúc'
+                  );
+                }}
+                data-tooltip="Bế mạc sự kiện và chuyển tất cả khán giả sang màn hình Tổng Kết & Khảo Sát"
+                data-tooltip-title="Kết Thúc Sự Kiện"
+                data-tooltip-variant="danger"
+                className="has-tooltip fluent-action-btn text-rose-200 bg-rose-950/70 hover:bg-rose-900 border-rose-500/60 font-bold shadow-md shadow-rose-950/40"
+              >
+                <Flag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
+                <span>Kết Thúc</span>
+              </button>
+            )}
+          </div>
+
           {/* Group 3: Điều Phối & Dữ Liệu (Stage Orchestration & Data) */}
           <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-amber-950/20 border border-amber-500/20">
             <span className="text-[9px] font-mono font-bold text-amber-400/80 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-amber-500/20 mr-0.5">
@@ -3692,6 +3816,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             onNavigate={setActiveAdminTab} 
             gameState={gameState} 
             snapshotCount={snapshotCount} 
+            onOpenEventSchedule={() => {
+              vibrateTap();
+              soundFx.playClick();
+              setShowEventScheduleModal(true);
+            }}
+            onStartEvent={() => {
+              vibrateTap();
+              soundFx.playClick();
+              openConfirm(
+                'Bắt Đầu Sự Kiện BTI 2026?',
+                'Hành động này sẽ mở khóa toàn bộ khán giả trong Phòng Chờ Khai Mạc và đưa vào sàn đấu trực tiếp ngay lập tức! Bạn có chắc chắn?',
+                async () => {
+                  const updatedSchedule = {
+                    ...(gameState.event_schedule || {}),
+                    enabled: true,
+                    status: 'IN_PROGRESS' as const,
+                    scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
+                    started_at: Date.now()
+                  };
+                  await syncService.updateGameState({
+                    event_schedule: updatedSchedule,
+                    status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
+                  });
+                  triggerHudToast('EVENT', '🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Khán giả đã vào sàn đấu.');
+                },
+                'Bắt Đầu Ngay'
+              );
+            }}
+            onEndEvent={() => {
+              vibrateTap();
+              soundFx.playClick();
+              openConfirm(
+                'Kết Thúc Sự Kiện BTI 2026?',
+                'Hành động này sẽ bế mạc sự kiện, đóng lượt thi và chuyển toàn bộ khán giả sang màn hình Bế Mạc & Tổng Kết thành tích chung cuộc! Bạn có chắc chắn?',
+                async () => {
+                  const updatedSchedule = {
+                    ...(gameState.event_schedule || {}),
+                    enabled: true,
+                    status: 'CONCLUDED' as const,
+                    ended_at: Date.now()
+                  };
+                  await syncService.updateGameState({
+                    event_schedule: updatedSchedule
+                  });
+                  triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
+                },
+                'Đồng Ý Kết Thúc'
+              );
+            }}
           />
         ) : activeAdminTab === 'QUESTIONS' ? (
         /* ================= TAB 5: NHẬP & QUẢN LÝ NGÂN HÀNG CÂU HỎI STUDIO ================= */
@@ -7691,6 +7864,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onClose={() => setShowSurveyModal(false)}
         gameState={gameState}
         activeAudienceCount={activeCount}
+      />
+
+      {/* Event Schedule & Anti-Leak Stage Control Modal */}
+      <AdminEventScheduleModal
+        isOpen={showEventScheduleModal}
+        onClose={() => setShowEventScheduleModal(false)}
+        gameState={gameState}
+        activeAudienceCount={activeCount}
+        triggerToast={(msg) => triggerHudToast('EVENT', msg)}
       />
 
       {/* AI MC Co-pilot Live Advice Modal */}

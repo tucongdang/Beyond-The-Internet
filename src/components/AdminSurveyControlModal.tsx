@@ -31,11 +31,21 @@ import {
   ArrowUp,
   ArrowDown,
   Save,
-  Ticket
+  Ticket,
+  ClipboardList,
+  Copy,
+  Languages,
+  Globe,
+  Calendar,
+  Flag,
+  Clock
 } from 'lucide-react';
 import { GameState, AudienceSurveyConfig } from '../types';
 import { syncService } from '../services/syncService';
-import { DEFAULT_SURVEY_CONFIG } from '../utils/surveyUtils';
+import { DEFAULT_SURVEY_CONFIG, buildGoogleFormUrl } from '../utils/surveyUtils';
+import { translationService, SUPPORTED_TRANSLATION_LANGUAGES, SurveyTranslation } from '../services/translationService';
+import { soundFx } from '../services/audioEffects';
+import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
 import {
   googleFormsService,
   extractFormIdFromUrl,
@@ -75,6 +85,20 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
   const [prefillNameEntry, setPrefillNameEntry] = useState(currentConfig.prefill_name_entry || '');
   const [prefillMssvEntry, setPrefillMssvEntry] = useState(currentConfig.prefill_mssv_entry || '');
   const [targetSeed, setTargetSeed] = useState(currentConfig.target_seed || 'BTI2026_FINALE_SURVEY');
+  
+  const formatDateTimeLocal = (timestamp?: number) => {
+    if (!timestamp) return '';
+    try {
+      const d = new Date(timestamp);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch {
+      return '';
+    }
+  };
+
+  const [startTime, setStartTime] = useState<string>(() => formatDateTimeLocal(currentConfig.start_time));
+  const [endTime, setEndTime] = useState<string>(() => formatDateTimeLocal(currentConfig.end_time));
 
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -97,7 +121,19 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
 
   // Audience Experience In-Modal Preview State
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewStage, setPreviewStage] = useState<'INVITE' | 'VOUCHER'>('INVITE');
+  const [previewStage, setPreviewStage] = useState<'INVITE' | 'FORM' | 'VOUCHER'>('INVITE');
+  const [hasCopiedVoucher, setHasCopiedVoucher] = useState(false);
+  const [previewLanguage, setPreviewLanguage] = useState<string>('vi');
+
+  // AI Survey & Questions Translation State
+  const [translations, setTranslations] = useState<Record<string, { title: string; description: string; gift_note: string }>>(() => {
+    return gameState.audience_survey?.translations || {};
+  });
+  const [surveyTargetLang, setSurveyTargetLang] = useState<string>('en');
+  const [isTranslatingSurvey, setIsTranslatingSurvey] = useState(false);
+  const [surveyTransPreview, setSurveyTransPreview] = useState<SurveyTranslation | null>(null);
+  const [isTranslatingQuestions, setIsTranslatingQuestions] = useState(false);
+  const [questionsTargetLang, setQuestionsTargetLang] = useState<string>('en');
 
   // Sync state when gameState updates
   useEffect(() => {
@@ -115,6 +151,15 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
       setPrefillNameEntry(cfg.prefill_name_entry || '');
       setPrefillMssvEntry(cfg.prefill_mssv_entry || '');
       setTargetSeed(cfg.target_seed || 'BTI2026_FINALE_SURVEY');
+      if (cfg.start_time !== undefined) {
+        setStartTime(formatDateTimeLocal(cfg.start_time));
+      }
+      if (cfg.end_time !== undefined) {
+        setEndTime(formatDateTimeLocal(cfg.end_time));
+      }
+      if (cfg.translations) {
+        setTranslations(cfg.translations);
+      }
     }
   }, [gameState.audience_survey]);
 
@@ -379,6 +424,13 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
         prefill_mssv_entry: prefillMssvEntry.trim() || undefined,
         target_seed: targetSeed.trim() || 'BTI2026_FINALE_SURVEY',
         force_active: override?.force_active !== undefined ? override.force_active : Boolean(currentConfig.force_active),
+        start_time: override?.start_time !== undefined 
+          ? override.start_time 
+          : (startTime ? new Date(startTime).getTime() : undefined),
+        end_time: override?.end_time !== undefined 
+          ? override.end_time 
+          : (endTime ? new Date(endTime).getTime() : undefined),
+        translations: override?.translations !== undefined ? override.translations : (Object.keys(translations).length > 0 ? translations : undefined),
         updated_at: Date.now()
       };
 
@@ -392,6 +444,152 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
       showToast('Lỗi khi lưu cấu hình');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleStartSurvey = async () => {
+    soundFx.playReveal(true);
+    const now = Date.now();
+    await handleSaveConfig({
+      enabled: true,
+      force_active: true,
+      start_time: now
+    });
+    setStartTime(formatDateTimeLocal(now));
+    showToast('🚀 ĐÃ BẮT ĐẦU MỞ KHẢO SÁT! Khán giả thuộc tỷ lệ mẫu đã nhận được thông báo.');
+  };
+
+  const handleEndSurvey = async () => {
+    soundFx.playLock();
+    const now = Date.now();
+    await handleSaveConfig({
+      force_active: false,
+      enabled: false,
+      end_time: now
+    });
+    setEndTime(formatDateTimeLocal(now));
+    showToast('🏁 ĐÃ KẾT THÚC & KHÓA KHẢO SÁT!');
+  };
+
+  const handleAiTranslateSurveyInfo = async () => {
+    if (!title && !description && !giftNote) {
+      showToast('Cần nhập tiêu đề hoặc lời kêu gọi trước khi dịch.');
+      return;
+    }
+    setIsTranslatingSurvey(true);
+    setSurveyTransPreview(null);
+    soundFx.playClick();
+    vibrateTap();
+    try {
+      const res = await translationService.translateSurveyConfig(
+        { title, description, gift_note: giftNote },
+        surveyTargetLang
+      );
+      setSurveyTransPreview(res);
+      soundFx.playTing();
+      vibrateSuccess();
+      const langLabel = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label || surveyTargetLang;
+      showToast(`Đã dịch AI sang ${langLabel}!`);
+    } catch (err: any) {
+      console.error('Survey translate error:', err);
+      showToast('Lỗi khi dịch AI. Vui lòng thử lại.');
+    } finally {
+      setIsTranslatingSurvey(false);
+    }
+  };
+
+  const handleSaveSurveyTranslation = async (lang: string, trans: SurveyTranslation) => {
+    const updated = {
+      ...translations,
+      [lang]: trans
+    };
+    setTranslations(updated);
+    await handleSaveConfig({ translations: updated });
+    showToast(`Đã lưu bản dịch ${lang.toUpperCase()} vào cấu hình khảo sát!`);
+    setSurveyTransPreview(null);
+  };
+
+  const handleApplySurveyTranslationToMain = (trans: SurveyTranslation) => {
+    if (trans.title) setTitle(trans.title);
+    if (trans.description) setDescription(trans.description);
+    if (trans.gift_note) setGiftNote(trans.gift_note);
+    showToast('Đã áp dụng bản dịch vào các trường nội dung chính!');
+    setSurveyTransPreview(null);
+  };
+
+  const handleRemoveSurveyTranslation = async (lang: string) => {
+    const updated = { ...translations };
+    delete updated[lang];
+    setTranslations(updated);
+    await handleSaveConfig({ translations: Object.keys(updated).length > 0 ? updated : undefined });
+    showToast(`Đã xóa bản dịch ${lang.toUpperCase()}.`);
+  };
+
+  const handleAiTranslateFormQuestions = async (targetLang: string) => {
+    if (!formStructure || !formStructure.items || formStructure.items.length === 0) {
+      showToast('Chưa có câu hỏi nào để dịch.');
+      return;
+    }
+    setIsTranslatingQuestions(true);
+    soundFx.playClick();
+    vibrateTap();
+    try {
+      const translatedItems = await translationService.translateSurveyQuestions(
+        formStructure.items,
+        targetLang
+      );
+
+      const updatedStructure: EditableFormStructure = {
+        ...formStructure,
+        items: formStructure.items.map((item, idx) => {
+          const trans = translatedItems[idx];
+          if (!trans) return item;
+          return {
+            ...item,
+            title: trans.title || item.title,
+            description: trans.description !== undefined ? trans.description : item.description,
+            options: Array.isArray(trans.options) && trans.options.length > 0 ? trans.options : item.options,
+            scaleLowLabel: trans.scaleLowLabel || item.scaleLowLabel,
+            scaleHighLabel: trans.scaleHighLabel || item.scaleHighLabel
+          };
+        })
+      };
+
+      setFormStructure(updatedStructure);
+      soundFx.playTing();
+      vibrateSuccess();
+      const langLabel = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === targetLang)?.label || targetLang;
+      showToast(`Đã dịch toàn bộ câu hỏi sang ${langLabel}! Nhớ nhấn "Lưu Biểu Mẫu" để cập nhật.`);
+    } catch (err: any) {
+      console.error('Failed to translate questions:', err);
+      showToast('Lỗi khi dịch AI câu hỏi khảo sát.');
+    } finally {
+      setIsTranslatingQuestions(false);
+    }
+  };
+
+  const handleAiTranslateSingleQuestion = async (index: number, targetLang: string) => {
+    if (!formStructure || !formStructure.items[index]) return;
+    const item = formStructure.items[index];
+    soundFx.playClick();
+    vibrateTap();
+    try {
+      const res = await translationService.translateSurveyQuestions([item], targetLang);
+      if (res && res[0]) {
+        const trans = res[0];
+        handleUpdateItem(index, {
+          title: trans.title || item.title,
+          description: trans.description !== undefined ? trans.description : item.description,
+          options: Array.isArray(trans.options) && trans.options.length > 0 ? trans.options : item.options,
+          scaleLowLabel: trans.scaleLowLabel || item.scaleLowLabel,
+          scaleHighLabel: trans.scaleHighLabel || item.scaleHighLabel
+        });
+        soundFx.playTing();
+        showToast(`Đã dịch câu hỏi #${index + 1}!`);
+      }
+    } catch (err: any) {
+      console.error('Failed to translate single question:', err);
+      showToast('Lỗi dịch câu hỏi.');
     }
   };
 
@@ -417,15 +615,19 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
   };
 
   const handleTestPreviewOnMyDevice = () => {
+    setShowPreviewModal(true);
+    setPreviewStage('INVITE');
     if (typeof window !== 'undefined') {
-      const isCurrentlyForced = Boolean(localStorage.getItem('BTI_SURVEY_FORCE_PREVIEW'));
-      if (isCurrentlyForced) {
-        localStorage.removeItem('BTI_SURVEY_FORCE_PREVIEW');
-        showToast('Đã tắt chế độ xem thử khảo sát trên thiết bị này.');
-      } else {
-        localStorage.setItem('BTI_SURVEY_FORCE_PREVIEW', 'true');
-        showToast('Đã bật chế độ xem thử khảo sát! Chuyển sang màn hình Khán giả để xem.');
-      }
+      localStorage.setItem('BTI_SURVEY_FORCE_PREVIEW', 'true');
+      window.dispatchEvent(new Event('storage'));
+    }
+    showToast('Đang mở bản xem trước giao diện khảo sát...');
+  };
+
+  const handleClosePreviewModal = () => {
+    setShowPreviewModal(false);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('BTI_SURVEY_FORCE_PREVIEW');
       window.dispatchEvent(new Event('storage'));
     }
   };
@@ -582,42 +784,122 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
+                  {/* Nút BẮT ĐẦU */}
                   <button
                     type="button"
-                    onClick={handleToggleMaster}
-                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
-                      isEnabled
-                        ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40'
+                    onClick={handleStartSurvey}
+                    disabled={!formUrl.trim() || (isEnabled && isForceActive)}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                      isEnabled && isForceActive
+                        ? 'bg-slate-800 text-slate-500 border border-white/5 cursor-not-allowed'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 shadow-emerald-950/40 active:scale-95'
                     }`}
+                    title="Bắt đầu mở khảo sát ngay lập tức cho khán giả"
                   >
-                    {isEnabled ? 'Tắt Khảo Sát' : 'Bật Khảo Sát'}
+                    <Play className="w-3.5 h-3.5 fill-current text-white" />
+                    <span>Bắt Đầu</span>
+                  </button>
+
+                  {/* Nút KẾT THÚC */}
+                  <button
+                    type="button"
+                    onClick={handleEndSurvey}
+                    disabled={!isEnabled && !isForceActive}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                      !isEnabled && !isForceActive
+                        ? 'bg-slate-800 text-slate-500 border border-white/5 cursor-not-allowed'
+                        : 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/50 shadow-rose-950/40 active:scale-95'
+                    }`}
+                    title="Kết thúc và đóng toàn bộ khảo sát ngay lập tức"
+                  >
+                    <Flag className="w-3.5 h-3.5 text-white" />
+                    <span>Kết Thúc</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={handleToggleInstantTrigger}
-                    disabled={!formUrl.trim()}
-                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
-                      isForceActive
-                        ? 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 animate-pulse'
-                        : 'bg-sky-600 hover:bg-sky-500 text-white border border-sky-400/40'
+                    onClick={handleToggleMaster}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                      isEnabled
+                        ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10'
                     }`}
-                    title="Phát khảo sát lên máy 10% khán giả ngay lúc này"
                   >
-                    {isForceActive ? (
-                      <>
-                        <Square className="w-3.5 h-3.5 fill-current" />
-                        <span>Đang phát live (Dừng)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Phát Lệnh Tức Thì</span>
-                      </>
-                    )}
+                    {isEnabled ? 'Tạm Dừng' : 'Kích Hoạt'}
                   </button>
+                </div>
+              </div>
+
+              {/* Scheduling Section: Thiết lập Ngày & Giờ Tổ Chức (Tránh rò rỉ nội dung cho khán giả đăng ký sớm) */}
+              <div className="p-4 rounded-[6px] bg-slate-900/60 border border-indigo-500/30 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-xs font-mono font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+                    Thiết Lập Ngày Giờ Mở Khảo Sát (Bảo Vệ Đề / Tránh Rò Rỉ Sớm)
+                  </label>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Khán giả đăng ký trước giờ này sẽ KHÔNG nhìn thấy khảo sát
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[11px] font-mono text-slate-300 block mb-1">
+                      Thời điểm bắt đầu mở (Start Time):
+                    </span>
+                    <input
+                      type="datetime-local"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full bg-slate-950 border border-indigo-500/30 rounded-[3px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Để trống nếu muốn mở theo nút Bắt đầu của Ban Tổ Chức
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-mono text-slate-300 block mb-1">
+                      Thời điểm kết thúc đóng (End Time):
+                    </span>
+                    <input
+                      type="datetime-local"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full bg-slate-950 border border-indigo-500/30 rounded-[3px] px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Tự động đóng khảo sát khi vượt quá thời gian này
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                  <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-sky-400" />
+                    <span>Trạng thái khung giờ:</span>
+                    {startTime && new Date(startTime).getTime() > Date.now() ? (
+                      <span className="text-amber-400 font-bold">Chưa đến giờ mở (Đang khóa an toàn)</span>
+                    ) : endTime && new Date(endTime).getTime() < Date.now() ? (
+                      <span className="text-rose-400 font-bold">Đã hết hạn kết thúc (Đã đóng)</span>
+                    ) : (
+                      <span className="text-emerald-400 font-bold">Trong khung giờ hợp lệ</span>
+                    )}
+                  </div>
+
+                  {(startTime || endTime) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStartTime('');
+                        setEndTime('');
+                      }}
+                      className="text-[11px] font-mono text-slate-400 hover:text-white underline cursor-pointer"
+                    >
+                      Xóa khung giờ
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -871,6 +1153,159 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                 </div>
               </div>
 
+              {/* AI Survey Translation Card (Multilingual Survey Info) */}
+              <div className="space-y-3 p-4 rounded-[6px] bg-gradient-to-br from-purple-950/40 via-slate-900/60 to-purple-950/20 border border-[#F7CAC9]/30 shadow-md">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
+                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                      Dịch AI Cấu Hình Khảo Sát (Multilingual Survey)
+                    </span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold">
+                      Gemini Flash
+                    </span>
+                  </div>
+                  {Object.keys(translations).length > 0 && (
+                    <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Đã lưu {Object.keys(translations).length} bản dịch
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-slate-300">
+                  Tự động dịch tiêu đề, lời mời tham gia và ghi chú quà tặng sang tiếng Anh hoặc các ngôn ngữ quốc tế cho khán giả đa quốc gia.
+                </p>
+
+                {/* Target Language Select & Action Button */}
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-[4px] border border-slate-700">
+                    <Globe className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                    <select
+                      value={surveyTargetLang}
+                      onChange={(e) => setSurveyTargetLang(e.target.value)}
+                      className="bg-transparent text-white text-xs font-mono outline-none cursor-pointer"
+                    >
+                      {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code} className="bg-slate-900 text-white">
+                          {lang.flag} {lang.label} ({lang.nativeLabel})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAiTranslateSurveyInfo}
+                    disabled={isTranslatingSurvey}
+                    className="px-3.5 py-1.5 rounded-[4px] bg-gradient-to-r from-[#92A8D1] to-[#F7CAC9] hover:brightness-110 text-slate-950 font-bold text-xs font-mono transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow"
+                  >
+                    {isTranslatingSurvey ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Đang dịch AI...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Dịch sang {SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label || surveyTargetLang}</span>
+                      </>
+                    )}
+                  </button>
+
+                  {translations[surveyTargetLang] && (
+                    <span className="text-[10px] text-emerald-300 font-mono flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Đã lưu trong hệ thống
+                    </span>
+                  )}
+                </div>
+
+                {/* Translation Preview Box */}
+                {surveyTransPreview && (
+                  <div className="p-3 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/40 space-y-2 text-xs font-mono animate-in fade-in">
+                    <div className="flex items-center justify-between text-[11px] text-[#F7CAC9] font-bold border-b border-slate-800 pb-1.5">
+                      <span>Bản dịch: {SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label} ({surveyTargetLang.toUpperCase()})</span>
+                      <button
+                        type="button"
+                        onClick={() => setSurveyTransPreview(null)}
+                        className="text-slate-400 hover:text-white"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Tiêu đề (Title):</span>
+                      <p className="text-white font-semibold font-sans">{surveyTransPreview.title}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Lời kêu gọi (Description):</span>
+                      <p className="text-slate-200 font-sans">{surveyTransPreview.description}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Ghi chú quà tặng (Gift Note):</span>
+                      <p className="text-amber-300 font-sans">{surveyTransPreview.gift_note}</p>
+                    </div>
+                    <div className="flex items-center gap-2 pt-1.5 border-t border-slate-800 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveSurveyTranslation(surveyTargetLang, surveyTransPreview)}
+                        className="px-3 py-1 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <Save className="w-3 h-3" />
+                        Lưu vào cấu hình đa ngữ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleApplySurveyTranslationToMain(surveyTransPreview)}
+                        className="px-3 py-1 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        Áp dụng đè lên tiếng Việt
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Saved Translations List */}
+                {Object.keys(translations).length > 0 && (
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+                    <span className="text-[10px] uppercase font-mono font-bold text-slate-400 tracking-wider block">
+                      Các ngôn ngữ đã được lưu trong khảo sát:
+                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {Object.entries(translations).map(([code, trans]) => {
+                        const langObj = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === code);
+                        return (
+                          <div
+                            key={code}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200"
+                          >
+                            <span>{langObj?.flag || '🌐'} {langObj?.label || code.toUpperCase()}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSurveyTargetLang(code);
+                                setSurveyTransPreview(trans);
+                              }}
+                              className="text-sky-400 hover:text-sky-300 underline text-[10px] cursor-pointer ml-1"
+                            >
+                              Xem
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSurveyTranslation(code)}
+                              className="text-rose-400 hover:text-rose-300 ml-1 cursor-pointer"
+                              title="Xóa bản dịch này"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Advanced / Pre-fill Entries & Re-roll Seed */}
               <details className="text-xs text-slate-400 rounded-[6px] bg-slate-900/30 border border-slate-800 p-3">
                 <summary className="font-mono uppercase font-bold text-slate-300 cursor-pointer flex items-center justify-between">
@@ -1049,7 +1484,7 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
 
                   {/* Questions Section */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-white uppercase tracking-wider">
                           Danh sách câu hỏi ({formStructure.items.length})
@@ -1057,6 +1492,43 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                         <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">
                           Google Forms API
                         </span>
+                      </div>
+
+                      {/* AI Batch Translate Toolbar for Survey Questions */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded border border-slate-700">
+                          <Languages className="w-3 h-3 text-[#F7CAC9]" />
+                          <select
+                            value={questionsTargetLang}
+                            onChange={(e) => setQuestionsTargetLang(e.target.value)}
+                            className="bg-transparent text-[11px] font-mono text-white outline-none cursor-pointer"
+                          >
+                            {SUPPORTED_TRANSLATION_LANGUAGES.map((l) => (
+                              <option key={l.code} value={l.code} className="bg-slate-900 text-white">
+                                {l.flag} {l.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleAiTranslateFormQuestions(questionsTargetLang)}
+                          disabled={isTranslatingQuestions || formStructure.items.length === 0}
+                          className="px-2.5 py-1 rounded bg-purple-900/60 hover:bg-purple-800/80 text-purple-200 border border-purple-600/40 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                          title="Dịch toàn bộ câu hỏi và các lựa chọn đáp án sang ngôn ngữ đích bằng AI"
+                        >
+                          {isTranslatingQuestions ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Đang dịch AI...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
+                              <span>Dịch AI toàn bộ ({questionsTargetLang.toUpperCase()})</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
 
@@ -1092,6 +1564,17 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* AI Translate Single Question */}
+                            <button
+                              type="button"
+                              onClick={() => handleAiTranslateSingleQuestion(index, questionsTargetLang)}
+                              className="px-2 py-1 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/40 text-purple-300 text-[11px] font-mono flex items-center gap-1 cursor-pointer transition"
+                              title={`Dịch câu hỏi này sang ${questionsTargetLang.toUpperCase()} bằng AI`}
+                            >
+                              <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
+                              <span>Dịch AI</span>
+                            </button>
+
                             {/* Required Checkbox */}
                             <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer select-none">
                               <input
@@ -1679,15 +2162,11 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
             <button
               type="button"
               onClick={handleTestPreviewOnMyDevice}
-              className={`px-3 py-2 rounded-[3px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border ${
-                isTestingPreview
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
-              }`}
-              title="Bật/Tắt hiển thị thử khảo sát trên trình duyệt này"
+              className="px-3.5 py-2 rounded-[3px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border bg-slate-900 text-slate-200 hover:text-white border-slate-700 hover:border-[#F7CAC9]/60 shadow-sm hover:shadow-purple-950/40"
+              title="Mở xem trước giao diện khảo sát của khán giả"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{isTestingPreview ? 'Đang thử Preview' : 'Thử giao diện (Preview)'}</span>
+              <Eye className="w-3.5 h-3.5 text-[#F7CAC9]" />
+              <span>Thử giao diện (Preview)</span>
             </button>
 
             {toastMessage && (
@@ -1719,120 +2198,291 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
 
         {/* Audience Experience Live Preview Overlay */}
         {showPreviewModal && (
-          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-lg bg-slate-950/95 rounded-[6px] border border-[#F7CAC9]/50 shadow-2xl shadow-purple-950/60 overflow-hidden flex flex-col max-h-[90vh] backdrop-blur-2xl">
+          <div 
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClosePreviewModal();
+            }}
+          >
+            <div 
+              className="w-full max-w-lg bg-slate-950/95 rounded-[6px] border border-[#F7CAC9]/50 shadow-2xl shadow-purple-950/60 overflow-hidden flex flex-col max-h-[92vh] backdrop-blur-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Preview Header */}
-              <div className="p-3.5 bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 border-b border-[#F7CAC9]/30 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9]">
+              <div className="p-3.5 bg-gradient-to-r from-purple-950/60 via-slate-900 to-purple-950/60 border-b border-[#F7CAC9]/30 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0">
                     <Eye className="w-4 h-4 text-[#F7CAC9]" />
                   </div>
-                  <div>
-                    <span className="text-xs font-black text-white block tracking-wide">
+                  <div className="min-w-0">
+                    <span className="text-xs font-black text-white block tracking-wide truncate">
                       Xem Trước Trải Nghiệm Khán Giả
                     </span>
-                    <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold">
-                      Chế độ mô phỏng giao diện ({sampleRate}% đại diện)
+                    <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold block">
+                      Mô phỏng giao diện ({sampleRate}% đại diện)
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPreviewModal(false)}
-                  className="p-1.5 rounded-[4px] hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('BTI_SURVEY_FORCE_PREVIEW', 'true');
+                        window.dispatchEvent(new Event('storage'));
+                        window.open('/?view=audience', '_blank');
+                      }
+                    }}
+                    className="px-2 py-1 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-[#92A8D1] hover:text-white border border-[#92A8D1]/30 text-[10px] font-mono font-bold flex items-center gap-1 transition cursor-pointer"
+                    title="Mở tab giao diện Khán giả thực tế trong tab mới"
+                  >
+                    <span>Tab Khán giả</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClosePreviewModal}
+                    className="p-1.5 rounded-[4px] hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                    title="Đóng bản xem trước"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              {/* Stage Toggle */}
-              <div className="px-3.5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPreviewStage('INVITE')}
-                  className={`flex-1 py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer ${
-                    previewStage === 'INVITE'
-                      ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
-                      : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
-                  }`}
-                >
-                  1. Màn hình Mời Khảo Sát
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewStage('VOUCHER')}
-                  className={`flex-1 py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer ${
-                    previewStage === 'VOUCHER'
-                      ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
-                      : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
-                  }`}
-                >
-                  2. Phiếu Quà Tặng (Voucher)
-                </button>
+              {/* Stage & Language Toggle */}
+              <div className="px-3 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0 overflow-x-auto">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewStage('INVITE')}
+                    className={`py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer whitespace-nowrap ${
+                      previewStage === 'INVITE'
+                        ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                        : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    1. Mời Khảo Sát
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewStage('FORM')}
+                    className={`py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer whitespace-nowrap ${
+                      previewStage === 'FORM'
+                        ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                        : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    2. Biểu Mẫu Nhúng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewStage('VOUCHER')}
+                    className={`py-1.5 px-2 rounded-[3px] text-xs font-mono font-bold transition cursor-pointer whitespace-nowrap ${
+                      previewStage === 'VOUCHER'
+                        ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                        : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    3. Phiếu Đổi Quà
+                  </button>
+                </div>
+
+                {/* Preview Language Toggle: VI vs EN */}
+                <div className="inline-flex items-center rounded-[3px] bg-slate-950 p-0.5 border border-[#F7CAC9]/30 font-mono text-[11px] shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLanguage('vi')}
+                    className={`px-2 py-0.5 rounded-[2px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                      previewLanguage === 'vi'
+                        ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🇻🇳</span>
+                    <span>VI</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLanguage('en')}
+                    className={`px-2 py-0.5 rounded-[2px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                      previewLanguage === 'en'
+                        ? 'bg-[#F7CAC9] text-slate-950 font-black shadow'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🇬🇧</span>
+                    <span>EN</span>
+                  </button>
+                </div>
               </div>
 
               {/* Preview Content Body */}
-              <div className="p-5 overflow-y-auto space-y-4 text-slate-200">
-                {previewStage === 'INVITE' ? (
-                  <div className="space-y-3.5">
-                    {/* Header banner */}
-                    <div className="p-3.5 rounded-[4px] bg-purple-950/40 border border-[#F7CAC9]/40 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0">
-                          <Sparkles className="w-4 h-4 animate-pulse text-[#F7CAC9]" />
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-slate-200 min-h-0 flex-1">
+                {previewStage === 'INVITE' && (() => {
+                  const previewTrans = previewLanguage !== 'vi' ? (translations[previewLanguage] || surveyTransPreview) : null;
+                  const pTitle = previewTrans?.title || title || 'Khảo Sát Ý Kiến Khán Giả BTI 2026';
+                  const pDesc = previewTrans?.description || description || DEFAULT_SURVEY_CONFIG.description;
+                  const pGift = previewTrans?.gift_note || giftNote;
+                  const isPForeign = previewLanguage !== 'vi';
+
+                  return (
+                    <div className="space-y-3.5">
+                      {/* Header banner */}
+                      <div className="p-3.5 rounded-[4px] bg-purple-950/40 border border-[#F7CAC9]/40 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-[4px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 flex items-center justify-center text-[#F7CAC9] shrink-0">
+                            <Sparkles className="w-4 h-4 animate-pulse text-[#F7CAC9]" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-black text-white">{pTitle}</div>
+                            <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold">
+                              {isPForeign ? `Sample audience (${sampleRate}%)` : `Dành riêng cho ${sampleRate}% khán giả đại diện`}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-xs font-black text-white">{title || 'Khảo Sát Ý Kiến Khán Giả BTI 2026'}</div>
-                          <span className="text-[10px] font-mono text-[#F7CAC9] font-semibold">Dành riêng cho {sampleRate}% khán giả đại diện</span>
+                        {isPForeign && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-900/60 border border-purple-500/40 text-purple-200 font-bold">
+                            AI {previewLanguage.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Notification card */}
+                      <div className="p-3.5 rounded-[4px] bg-[#F7CAC9]/10 border border-[#F7CAC9]/30 text-xs text-slate-200 leading-relaxed font-sans">
+                        {pDesc}
+                      </div>
+
+                      {/* 3 Pillars */}
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                          <span className="block text-[11px] font-bold text-sky-300 font-mono">
+                            {isPForeign ? '~60s' : '~60 giây'}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {isPForeign ? 'Fast & Easy' : 'Nhanh chóng'}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                          <span className="block text-[11px] font-bold text-[#F7CAC9] font-mono">
+                            {isPForeign ? 'Gift Reward' : 'Nhận quà'}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {isPForeign ? 'At Reception' : 'Tại lễ tân'}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
+                          <span className="block text-[11px] font-bold text-emerald-300 font-mono">
+                            {isPForeign ? 'Secure' : 'Bảo mật'}
+                          </span>
+                          <span className="text-[10px] text-slate-400">Google Forms</span>
+                        </div>
+                      </div>
+
+                      {/* Gift callout */}
+                      {pGift && (
+                        <div className="p-3 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-200">
+                          <Gift className="w-4 h-4 text-amber-300 shrink-0" />
+                          <span><strong>{isPForeign ? 'Gift reward:' : 'Quà tri ân:'}</strong> {pGift}</span>
+                        </div>
+                      )}
+
+                      {/* Demo Action Buttons */}
+                      <div className="pt-2 space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewStage('FORM')}
+                          className="w-full py-2.5 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] text-slate-950 font-black text-xs font-mono uppercase tracking-wider text-center shadow-md cursor-pointer transition-all border border-[#F7CAC9]/50 hover:brightness-110"
+                        >
+                          {isPForeign ? 'Take Survey (In-App)' : 'Làm Khảo Sát (Điền Trực Tiếp Trong Ứng Dụng)'}
+                        </button>
+                        {formUrl && (
+                          <a
+                            href={formUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full py-2 px-4 rounded-[3px] bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs text-center border border-slate-800 font-mono transition"
+                          >
+                            {isPForeign ? 'Or open Google Forms in a new tab ↗' : 'Hoặc mở Google Forms trong tab mới ↗'}
+                          </a>
+                        )}
+                        <div className="text-center pt-1">
+                          <span 
+                            className="text-xs text-emerald-400 hover:text-emerald-300 underline font-mono cursor-pointer" 
+                            onClick={() => setPreviewStage('VOUCHER')}
+                          >
+                            {isPForeign ? 'I have submitted my response → View voucher' : 'Tôi đã gửi câu trả lời → Xem phiếu đổi quà mẫu'}
+                          </span>
                         </div>
                       </div>
                     </div>
+                  );
+                })()}
 
-                    {/* Notification card */}
-                    <div className="p-3.5 rounded-[4px] bg-[#F7CAC9]/10 border border-[#F7CAC9]/30 text-xs text-slate-200 leading-relaxed font-sans">
-                      {description || DEFAULT_SURVEY_CONFIG.description}
+                {previewStage === 'FORM' && (
+                  <div className="space-y-3">
+                    <div className="p-2 rounded-[3px] bg-slate-900 border border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
+                      <span className="flex items-center gap-1.5 text-slate-200">
+                        <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                        Điền trực tiếp trong ứng dụng
+                      </span>
+                      {formUrl ? (
+                        <a
+                          href={formUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#F7CAC9] hover:text-[#f8d7d6] flex items-center gap-1 font-bold"
+                        >
+                          Mở tab mới <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span className="text-amber-400 text-[11px] font-mono">Chưa nhập URL form</span>
+                      )}
                     </div>
 
-                    {/* 3 Pillars */}
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-sky-300 font-mono">~60 giây</span>
-                        <span className="text-[10px] text-slate-400">Nhanh chóng</span>
-                      </div>
-                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-[#F7CAC9] font-mono">Nhận quà</span>
-                        <span className="text-[10px] text-slate-400">Tại lễ tân</span>
-                      </div>
-                      <div className="p-2 rounded-[3px] bg-slate-900/90 border border-slate-800">
-                        <span className="block text-[11px] font-bold text-emerald-300 font-mono">Bảo mật</span>
-                        <span className="text-[10px] text-slate-400">Google Forms</span>
-                      </div>
+                    <div className="relative w-full h-[360px] bg-slate-900/90 rounded-[4px] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+                      {formUrl ? (
+                        <iframe
+                          src={buildGoogleFormUrl({ form_url: formUrl }, { name: 'Khán giả BTI', mssv: '2026-TEST' }, true)}
+                          title="Xem trước biểu mẫu Google Form"
+                          className="w-full h-full border-0 rounded-[3px]"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="space-y-3 max-w-sm">
+                          <FileSpreadsheet className="w-10 h-10 text-slate-500 mx-auto" />
+                          <p className="text-xs text-slate-300">
+                            Chưa có URL Google Form nào được cấu hình cho khảo sát này.
+                          </p>
+                          <p className="text-[11px] text-slate-400 font-mono">
+                            Vui lòng nhập đường dẫn biểu mẫu tại tab <strong>CẤU HÌNH CHUNG</strong> hoặc tạo tự động ở tab <strong>GOOGLE WORKSPACE</strong>.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Gift callout */}
-                    {giftNote && (
-                      <div className="p-3 rounded-[3px] bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-200">
-                        <Gift className="w-4 h-4 text-amber-300 shrink-0" />
-                        <span><strong>Quà tri ân:</strong> {giftNote}</span>
-                      </div>
-                    )}
-
-                    {/* Demo Action Buttons */}
-                    <div className="pt-2 space-y-2">
-                      <div className="w-full py-2.5 px-4 rounded-[3px] bg-gradient-to-r from-[#92A8D1] via-[#F7CAC9] to-[#E39A96] text-slate-950 font-black text-xs font-mono uppercase tracking-wider text-center shadow-md cursor-pointer transition-all border border-[#F7CAC9]/50 hover:brightness-110">
-                        Làm Khảo Sát (Mở Google Forms)
-                      </div>
-                      <div className="w-full py-2 px-4 rounded-[3px] bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs text-center border border-slate-800 font-mono">
-                        Hoặc điền trực tiếp ngay trên trang này
-                      </div>
-                      <div className="text-center pt-1">
-                        <span className="text-xs text-emerald-400 hover:text-emerald-300 underline font-mono cursor-pointer" onClick={() => setPreviewStage('VOUCHER')}>
-                          Tôi đã gửi câu trả lời → Nhận mã đổi quà
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between pt-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewStage('INVITE')}
+                        className="px-3.5 py-2 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold transition cursor-pointer"
+                      >
+                        ← Quay lại thông tin
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewStage('VOUCHER')}
+                        className="px-4 py-2 rounded-[3px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
+                      >
+                        Đã Gửi Form → Xem Phiếu Quà Tặng
+                      </button>
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {previewStage === 'VOUCHER' && (
                   <div className="space-y-4">
                     {/* Congratulatory Hero */}
                     <div className="text-center space-y-1">
@@ -1861,21 +2511,38 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                         </span>
                       </div>
 
-                      <div className="py-2 text-center space-y-1">
+                      <div className="py-2 text-center space-y-1.5">
                         <span className="text-[10px] text-slate-400 uppercase font-mono tracking-widest block">
                           Mã Voucher Đổi Quà Tri Ân:
                         </span>
-                        <div className="inline-block px-4 py-1.5 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/50">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[4px] bg-slate-950 border border-[#F7CAC9]/50">
                           <span className="text-xl font-mono font-black text-[#F7CAC9] tracking-wider">
                             BTI-GIFT-A8F2-2026
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                                navigator.clipboard.writeText('BTI-GIFT-A8F2-2026');
+                                setHasCopiedVoucher(true);
+                                setTimeout(() => setHasCopiedVoucher(false), 2000);
+                              }
+                            }}
+                            className="p-1 hover:text-white text-slate-400 transition cursor-pointer"
+                            title="Sao chép mã"
+                          >
+                            {hasCopiedVoucher ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
                         </div>
+                        {hasCopiedVoucher && (
+                          <span className="block text-[10px] text-emerald-400 font-mono">Đã sao chép mã!</span>
+                        )}
                       </div>
 
                       <div className="pt-2 border-t border-dashed border-slate-700 space-y-2 text-xs">
                         <div className="flex items-center justify-between text-slate-300 font-mono text-[11px]">
                           <span>Người nhận:</span>
-                          <strong className="text-white">Nguyễn Văn A (Khán giả)</strong>
+                          <strong className="text-white">Khán giả mẫu (Nguyễn Văn A)</strong>
                         </div>
                         <div className="p-2 rounded-[3px] bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
                           <strong className="block text-amber-300">Hướng dẫn nhận quà:</strong>
@@ -1884,11 +2551,18 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                       </div>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="pt-2 flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setShowPreviewModal(false)}
-                        className="w-full py-2.5 px-4 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition cursor-pointer text-center font-mono"
+                        onClick={() => setPreviewStage('FORM')}
+                        className="flex-1 py-2 px-3 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs font-mono transition cursor-pointer"
+                      >
+                        ← Xem lại biểu mẫu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClosePreviewModal}
+                        className="flex-1 py-2 px-3 rounded-[3px] bg-[#F7CAC9] hover:bg-[#FCEEEC] text-slate-950 font-bold text-xs transition cursor-pointer text-center font-mono"
                       >
                         Đóng bản xem trước
                       </button>

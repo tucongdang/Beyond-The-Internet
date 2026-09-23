@@ -198,6 +198,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const getStatusBadge = () => {
+    // If event schedule is active
+    if (gameState.event_schedule?.enabled) {
+      if (gameState.event_schedule.status === 'SCHEDULED') {
+        return (
+          <div className="px-2 py-0.5 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
+              {effectiveLanguage === 'en' ? 'Waiting Room' : 'Phòng Chờ'}
+            </span>
+          </div>
+        );
+      }
+      if (gameState.event_schedule.status === 'CONCLUDED') {
+        return (
+          <div className="px-2 py-0.5 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 bg-purple-400 rounded-full" />
+            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
+              {effectiveLanguage === 'en' ? 'Concluded' : 'Bế Mạc'}
+            </span>
+          </div>
+        );
+      }
+    }
+
     switch (gameState.status) {
       case 'ACTIVE':
         return (
@@ -392,22 +416,24 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* System Utilities Group (Language, Audio, Fullscreen) - Unified everywhere */}
           <div className="inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
-            {/* Quick Language Toggle */}
-            <button
-              id="btn-toggle-language"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                toggleLanguage();
-              }}
-              data-tooltip={localLanguage !== 'vi' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
-              data-tooltip-title="Language / Ngôn Ngữ"
-              data-tooltip-placement="bottom"
-              className="has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[1px] text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1 text-[10px] font-mono font-bold cursor-pointer"
-            >
-              <Globe className="w-3 h-3 text-sky-300" />
-              <span>{localLanguage.toUpperCase()}</span>
-            </button>
+            {/* Quick Language Toggle - Hidden on Admin view (Admin always uses Vietnamese default) */}
+            {currentView !== 'admin' && (
+              <button
+                id="btn-toggle-language"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  toggleLanguage();
+                }}
+                data-tooltip={localLanguage !== 'vi' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
+                data-tooltip-title="Language / Ngôn Ngữ"
+                data-tooltip-placement="bottom"
+                className="has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[1px] text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1 text-[10px] font-mono font-bold cursor-pointer"
+              >
+                <Globe className="w-3 h-3 text-sky-300" />
+                <span>{localLanguage.toUpperCase()}</span>
+              </button>
+            )}
 
             {/* Mute Toggle */}
             <div className="flex items-center gap-1.5">
@@ -657,23 +683,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </button>
 
-                {/* Language switch */}
-                <button
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    toggleLanguage();
-                  }}
-                  className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
-                >
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-sky-300" />
-                    <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-[2px] bg-sky-500/30 text-sky-200 font-bold border border-sky-400/30">
-                    {localLanguage.toUpperCase()}
-                  </span>
-                </button>
+                {/* Language switch (Hidden in Admin View) */}
+                {currentView !== 'admin' && (
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      toggleLanguage();
+                    }}
+                    className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-sky-300" />
+                      <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-[2px] bg-sky-500/30 text-sky-200 font-bold border border-sky-400/30">
+                      {localLanguage.toUpperCase()}
+                    </span>
+                  </button>
+                )}
 
                 {/* Audio settings (Hidden in Admin View) */}
                 {currentView !== 'admin' && (
@@ -885,20 +913,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      vibrateTap();
-                      soundFx.playClick();
-                      toggleLanguage();
-                    }}
-                    className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-sky-300" />
-                      <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
-                    </div>
-                    <span className="font-bold text-sky-200">{localLanguage.toUpperCase()}</span>
-                  </button>
+                  {currentView !== 'admin' && (
+                    <button
+                      onClick={() => {
+                        vibrateTap();
+                        soundFx.playClick();
+                        toggleLanguage();
+                      }}
+                      className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-sky-300" />
+                        <span>{effectiveLanguage === 'en' ? 'Language' : 'Ngôn Ngữ'}</span>
+                      </div>
+                      <span className="font-bold text-sky-200">{localLanguage.toUpperCase()}</span>
+                    </button>
+                  )}
 
                   {currentView !== 'admin' && (
                     <button

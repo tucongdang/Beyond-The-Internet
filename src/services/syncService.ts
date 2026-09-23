@@ -21,6 +21,17 @@ export const DEFAULT_GAME_STATE: GameState = {
   },
   audience_light_show: null,
   grand_finale: null,
+  event_schedule: {
+    enabled: false,
+    status: 'IN_PROGRESS',
+    scheduled_start_time: Date.now() + 3600000,
+    auto_start_on_time: false,
+    title: 'Beyond The Internet 2026',
+    location: 'Hội trường Trực tiếp & Trực tuyến BTI',
+    briefing_note: 'Chào mừng các bạn khán giả! Vui lòng ổn định chỗ ngồi, kiểm tra kết nối mạng và sẵn sàng thi đấu.',
+    concluding_message: 'Cảm ơn toàn thể quý thầy cô và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2026!',
+    allow_early_registration: true
+  },
   audience_survey: {
     enabled: false,
     form_url: 'https://docs.google.com/forms/d/e/1FAIpQLSc_ExampleFormKey/viewform',

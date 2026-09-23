@@ -23,6 +23,25 @@ export const SUPPORTED_TRANSLATION_LANGUAGES: SupportedLanguageOption[] = [
 
 // Local memory cache to ensure 0ms instantaneous lookup and 0 token re-calls
 const memoryCache = new Map<string, QuestionTranslation>();
+const surveyMemoryCache = new Map<string, SurveyTranslation>();
+
+export interface SurveyTranslation {
+  title: string;
+  description: string;
+  gift_note: string;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  let token = 'bti2026_admin_authorized';
+  if (typeof sessionStorage !== 'undefined') {
+    const sessionToken = sessionStorage.getItem('BTI2026_ADMIN_TOKEN');
+    if (sessionToken) token = sessionToken;
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
 
 function getCacheKey(questionId: string, lang: string): string {
   return `bti_trans_${questionId}_${lang}`;
@@ -92,9 +111,7 @@ export const translationService = {
     try {
       const resp = await fetch('/api/translate-question', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           question_text: question.question_text,
           options: question.options,
@@ -150,9 +167,7 @@ export const translationService = {
     try {
       const resp = await fetch('/api/translate-short-answer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           text: trimmed,
           target_lang: lang
@@ -199,9 +214,7 @@ export const translationService = {
     try {
       const resp = await fetch('/api/translate-answers', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           options,
           target_lang: targetLang
@@ -249,5 +262,100 @@ export const translationService = {
     }
 
     return results;
+  },
+
+  /**
+   * Translates Audience Survey invitation info (Title, Description, Gift Note) into target language
+   */
+  async translateSurveyConfig(
+    config: { title?: string; description?: string; gift_note?: string },
+    targetLang: string
+  ): Promise<SurveyTranslation> {
+    const fallback: SurveyTranslation = {
+      title: config.title || 'Khảo Sát Khán Giả BTI 2026',
+      description: config.description || '',
+      gift_note: config.gift_note || ''
+    };
+
+    if (!targetLang || targetLang === 'vi') {
+      return fallback;
+    }
+
+    const cacheKey = `bti_trans_survey_${targetLang}_${(config.title || '').slice(0, 20)}`;
+    if (surveyMemoryCache.has(cacheKey)) {
+      return surveyMemoryCache.get(cacheKey)!;
+    }
+
+    try {
+      const stored = localStorage.getItem(cacheKey);
+      if (stored) {
+        const parsed = JSON.parse(stored) as SurveyTranslation;
+        surveyMemoryCache.set(cacheKey, parsed);
+        return parsed;
+      }
+    } catch {}
+
+    try {
+      const resp = await fetch('/api/translate-survey', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          title: config.title,
+          description: config.description,
+          gift_note: config.gift_note,
+          target_lang: targetLang
+        })
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const translation: SurveyTranslation = data.translation || fallback;
+
+      surveyMemoryCache.set(cacheKey, translation);
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(translation));
+      } catch {}
+
+      return translation;
+    } catch (err) {
+      console.warn(`[TranslationService] Failed to translate survey config to ${targetLang}:`, err);
+      return fallback;
+    }
+  },
+
+  /**
+   * Batch translates survey questions (Google Form structure items) into target language
+   */
+  async translateSurveyQuestions(
+    items: Array<{ id: string; title: string; description?: string; options?: string[]; scaleLowLabel?: string; scaleHighLabel?: string }>,
+    targetLang: string
+  ): Promise<Array<{ id: string; title: string; description?: string; options?: string[]; scaleLowLabel?: string; scaleHighLabel?: string }>> {
+    if (!targetLang || targetLang === 'vi' || !items || items.length === 0) {
+      return items;
+    }
+
+    try {
+      const resp = await fetch('/api/translate-survey-questions', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          items,
+          target_lang: targetLang
+        })
+      });
+
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      return data.items || items;
+    } catch (err) {
+      console.warn(`[TranslationService] Failed to translate survey questions to ${targetLang}:`, err);
+      return items;
+    }
   }
 };

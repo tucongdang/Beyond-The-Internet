@@ -34,6 +34,7 @@ interface ProfileModalProps {
   onUpdateUser: (user: UserInfo) => void;
   allResponses: Record<string, Record<string, UserResponse>>;
   gameState: GameState;
+  initialTab?: 'stats' | 'edit' | 'settings';
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -42,14 +43,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   user,
   onUpdateUser,
   allResponses,
-  gameState
+  gameState,
+  initialTab
 }) => {
   const { localLanguage, toggleLanguage, selectLanguage } = useLanguage();
-  const [tab, setTab] = useState<'stats' | 'edit' | 'settings'>('stats');
+  
+  const isWaitingRoom = Boolean(
+    gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
+  );
+  
+  const [tab, setTab] = useState<'stats' | 'edit' | 'settings'>(initialTab || (isWaitingRoom ? 'edit' : 'stats'));
   
   // Edit state
   const [name, setName] = useState(user.name);
   const [mssv, setMssv] = useState(user.mssv);
+  const [teamName, setTeamName] = useState(user.teamName || '');
   const [gender, setGender] = useState(user.gender || '');
   const [birthYear, setBirthYear] = useState(user.birthYear || '');
   const [avatarSeed, setAvatarSeed] = useState(user.avatarSeed || user.uid);
@@ -254,10 +262,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       setMssv(user.mssv);
       setGender(user.gender || '');
       setBirthYear(user.birthYear || '');
+      setTeamName(user.teamName || '');
       setAvatarSeed(user.avatarSeed || user.uid);
-      setTab('stats');
+      setTab(initialTab || (isWaitingRoom ? 'edit' : 'stats'));
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, isWaitingRoom, initialTab]);
 
   const scoreState = useMemo(() => {
     return computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
@@ -274,10 +283,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       const anonymizedUid = user.anonymizedUid || generate12DigitUID(name, mssv, gender, birthYear);
       const updatedUser: UserInfo = {
         ...user,
-        name,
-        mssv,
+        name: name.trim(),
+        mssv: mssv.trim(),
         gender,
         birthYear,
+        teamName: teamName.trim() || undefined,
         anonymizedUid,
         avatarSeed
       };
@@ -288,7 +298,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       
       onUpdateUser(updatedUser);
       vibrateSuccess();
-      setTab('stats');
+      soundFx.playTing();
+      if (!isWaitingRoom) {
+        setTab('stats');
+      } else {
+        onClose();
+      }
     } catch (err) {
       console.error(err);
       soundFx.playError();
@@ -334,7 +349,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         {/* Header */}
         <div className="fluent-dialog-header">
           <h2 id="profile-modal-title" className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <User className="w-5 h-5 text-[#F7CAC9]" /> {t("prof_title", localLanguage)}
+            <User className="w-5 h-5 text-[#F7CAC9]" />
+            {isWaitingRoom
+              ? (localLanguage !== 'vi' ? 'Edit Personal Information' : 'Chỉnh Sửa Thông Tin Cá Nhân')
+              : t("prof_title", localLanguage)}
           </h2>
           <button
             onClick={() => {
@@ -358,7 +376,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 className="w-16 h-16"
               />
             </div>
-            {tab === 'edit' && (
+            {(tab === 'edit' || isWaitingRoom) && (
               <button 
                 onClick={generateNewAvatar}
                 className="absolute -bottom-2 -right-2 p-2 bg-[#F7CAC9] text-[#190839] hover:brightness-110 rounded-[2px] shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
@@ -375,28 +393,35 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 MSSV: {user.mssv}
               </span>
               <span className="fluent-badge fluent-badge-accent">
-                UID: {user.anonymizedUid || user.uid}
+                UID: {getUserDisplayUid(user)}
               </span>
+              {user.teamName && (
+                <span className="fluent-badge bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  {user.teamName}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex px-4 pt-3 gap-2 shrink-0 border-b border-white/10 bg-white/[0.02]">
-          <button 
-            onClick={() => {
-              soundFx.playClick();
-              vibrateTap();
-              setTab('stats');
-            }}
-            className={`px-3.5 py-2 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
-              tab === 'stats' 
-                ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
-                : 'text-white/40 hover:bg-white/5'
-            }`}
-          >
-            <Activity className="w-4 h-4 text-[#F7CAC9]" /> {t("prof_stats", localLanguage)}
-          </button>
+          {!isWaitingRoom && (
+            <button 
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                setTab('stats');
+              }}
+              className={`px-3.5 py-2 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                tab === 'stats' 
+                  ? 'bg-white/10 text-white border-b-2 border-[#F7CAC9]' 
+                  : 'text-white/40 hover:bg-white/5'
+              }`}
+            >
+              <Activity className="w-4 h-4 text-[#F7CAC9]" /> {t("prof_stats", localLanguage)}
+            </button>
+          )}
           <button 
             onClick={() => {
               soundFx.playClick();
@@ -409,7 +434,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 : 'text-white/40 hover:bg-white/5'
             }`}
           >
-            <Edit3 className="w-4 h-4 text-purple-300" /> {t("prof_update", localLanguage)}
+            <Edit3 className="w-4 h-4 text-purple-300" /> {isWaitingRoom ? (localLanguage !== 'vi' ? 'Profile Details' : 'Thông Tin Cá Nhân') : t("prof_update", localLanguage)}
           </button>
           <button 
             onClick={() => {
@@ -423,13 +448,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 : 'text-white/40 hover:bg-white/5'
             }`}
           >
-            <Sliders className="w-4 h-4 text-sky-300" /> {t("profile_settings_tab", localLanguage)}
+            <Sliders className="w-4 h-4 text-sky-300" /> {isWaitingRoom ? (localLanguage !== 'vi' ? 'Device & Audio' : 'Cài Đặt & Thiết Bị') : t("profile_settings_tab", localLanguage)}
           </button>
         </div>
 
         {/* Content */}
         <div className="fluent-dialog-body space-y-5">
-          {tab === 'stats' && (
+          {!isWaitingRoom && tab === 'stats' && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-3">
                 <div className="fluent-box-nested border border-purple-500/30 rounded-[2px] p-4 text-center">
@@ -481,7 +506,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(user.anonymizedUid || user.uid);
+                      navigator.clipboard.writeText(getUserDisplayUid(user));
                       soundFx.playClick();
                       vibrateTap();
                     }}
@@ -491,7 +516,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </button>
                 </div>
                 <div className="text-sm font-mono font-bold text-white fluent-box-nested border border-white/10 px-3 py-2 rounded-[2px] tracking-wider select-all">
-                  {user.anonymizedUid || user.uid}
+                  {getUserDisplayUid(user)}
                 </div>
                 <p className="text-[10px] text-purple-200/60 leading-tight">
                   {localLanguage !== 'vi' ? '💡 12-digit unique identifier format: 4 Student ID + 2 Name chars + Gender + 2 Birth Year + 3 Random.' : '💡 Mã 12 số định danh duy nhất theo chuẩn: 4 số MSSV + 2 ký tự Tên + Giới tính + 2 số Năm sinh + 3 số Ngẫu nhiên.'}
@@ -517,6 +542,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   onChange={(e) => setMssv(e.target.value)}
                   className="w-full fluent-input font-mono"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-white/70 mb-1.5 font-mono">
+                  {localLanguage !== 'vi' ? 'Cheering Team (Optional)' : 'Đội Cổ Vũ (Tùy chọn)'}
+                </label>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder={localLanguage !== 'vi' ? 'e.g. Phoenix, Golden Dragon, Blue Fire...' : 'VD: Rồng Vàng, Lửa Xanh...'}
+                  className="w-full fluent-input font-mono"
                 />
               </div>
 
@@ -593,7 +631,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   }}
                   className="fluent-input text-xs font-mono py-1.5 px-2.5 rounded-[2px] bg-[#190839] text-white border border-white/20 cursor-pointer focus:outline-none focus:border-sky-400"
                 >
-                  <option value="vi">🇻🇳 Tiếng Việt (Gốc)</option>
+                  <option value="vi">🇻🇳 Tiếng Việt (VI)</option>
                   {SUPPORTED_TRANSLATION_LANGUAGES.map((l) => (
                     <option key={l.code} value={l.code}>
                       {l.flag} {l.nativeLabel} ({l.code.toUpperCase()})

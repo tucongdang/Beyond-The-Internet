@@ -16,24 +16,169 @@ import {
   BookOpen,
   Gamepad2,
   Users,
-  Settings
+  Settings,
+  Calendar,
+  Play,
+  Flag,
+  Shield,
+  Radio
 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onNavigate: (tabId: any) => void;
   gameState: any;
   snapshotCount: number;
+  onOpenEventSchedule?: () => void;
+  onStartEvent?: () => void;
+  onEndEvent?: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, gameState, snapshotCount }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  onNavigate,
+  gameState,
+  snapshotCount,
+  onOpenEventSchedule,
+  onStartEvent,
+  onEndEvent
+}) => {
   const cardClasses = "fluent-box p-4 sm:p-5 transition-all duration-300 ease-out cursor-pointer group hover:bg-white/5 hover:brightness-110 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg";
   const iconBoxClasses = "w-10 h-10 rounded-[2px] flex items-center justify-center mb-4 transition-transform group-hover:scale-110";
 
+  const schedule = gameState.event_schedule;
+  const isScheduled = schedule?.enabled && schedule?.status === 'SCHEDULED';
+  const isLive = schedule?.enabled && schedule?.status === 'IN_PROGRESS';
+  const isConcluded = schedule?.enabled && schedule?.status === 'CONCLUDED';
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn pb-12">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-white tracking-tight">Bảng Điều Khiển Tổng Quan</h2>
-        <p className="text-white/60 text-sm">Chọn một module bên dưới để bắt đầu điều khiển luồng chương trình.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Bảng Điều Khiển Tổng Quan</h2>
+          <p className="text-white/60 text-sm">Điều phối toàn diện luồng chương trình, bảo mật đề thi và quản lý vòng đấu.</p>
+        </div>
+
+        {onOpenEventSchedule && (
+          <button
+            type="button"
+            onClick={onOpenEventSchedule}
+            className="px-4 py-2.5 rounded-[3px] bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-mono font-bold text-xs shadow-lg shadow-sky-950/50 flex items-center gap-2 cursor-pointer transition active:scale-95 shrink-0 self-start sm:self-auto"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Thiết Lập Lịch Trình & Ngày Giờ</span>
+          </button>
+        )}
+      </div>
+
+      {/* Hero Banner: Tiến Trình & Vận Hành Sự Kiện (Event Lifecycle & Leak Protection) */}
+      <div className="fluent-box p-4 sm:p-5 rounded-[4px] border border-sky-500/30 bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className={`w-12 h-12 rounded-[4px] flex items-center justify-center shrink-0 shadow-md ${
+              isLive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 animate-pulse' :
+              isScheduled ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40' :
+              isConcluded ? 'bg-purple-500/20 text-purple-300 border border-purple-400/40' :
+              'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+            }`}>
+              {isLive ? <Radio className="w-6 h-6 animate-pulse" /> :
+               isScheduled ? <Clock className="w-6 h-6" /> :
+               isConcluded ? <Flag className="w-6 h-6" /> :
+               <Shield className="w-6 h-6" />}
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-sm sm:text-base text-white">
+                  {schedule?.title || 'Beyond The Internet 2026'}
+                </span>
+                {schedule?.enabled ? (
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase border ${
+                    isLive ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 animate-pulse' :
+                    isScheduled ? 'bg-amber-500/20 text-amber-300 border-amber-400/40' :
+                    'bg-purple-500/20 text-purple-300 border-purple-400/40'
+                  }`}>
+                    {isLive ? '● ĐANG DIỄN RA (LIVE)' :
+                     isScheduled ? '⏳ CHỜ KHAI MẠC (LOCKED)' :
+                     '🏁 ĐÃ KẾT THÚC (CONCLUDED)'}
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-mono text-slate-400 bg-white/5 border border-white/10">
+                    Chưa kích hoạt khóa lịch trình
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
+                {schedule?.scheduled_start_time && (
+                  <span className="text-sky-300 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>
+                      {new Date(schedule.scheduled_start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} • {new Date(schedule.scheduled_start_time).toLocaleDateString('vi-VN')}
+                    </span>
+                  </span>
+                )}
+                {schedule?.location && (
+                  <span className="text-slate-400">
+                    Địa điểm: {schedule.location}
+                  </span>
+                )}
+                <span className="text-emerald-400">
+                  {isScheduled ? '🔒 Khán giả ở Phòng Chờ Khai Mạc (Đề thi được bảo mật)' :
+                   isLive ? '🟢 Khán giả đang thi đấu trực tiếp' :
+                   isConcluded ? '🏆 Khán giả xem Bế Mạc & Tổng Kết' : 'Chế độ thi đấu tự do'}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Action Buttons for Master Event Lifecycle */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/10">
+            {/* Start Button */}
+            {onStartEvent && (
+              <button
+                type="button"
+                onClick={onStartEvent}
+                disabled={isLive}
+                className={`py-2 px-3.5 rounded-[3px] font-mono font-bold text-xs flex items-center gap-1.5 shadow-md transition cursor-pointer ${
+                  isLive
+                    ? 'bg-slate-800 text-slate-500 border border-white/5 cursor-not-allowed'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40 active:scale-95'
+                }`}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Bắt Đầu Sự Kiện</span>
+              </button>
+            )}
+
+            {/* End Button */}
+            {onEndEvent && (
+              <button
+                type="button"
+                onClick={onEndEvent}
+                disabled={isConcluded || !isLive}
+                className={`py-2 px-3.5 rounded-[3px] font-mono font-bold text-xs flex items-center gap-1.5 shadow-md transition cursor-pointer ${
+                  isConcluded || !isLive
+                    ? 'bg-slate-800 text-slate-500 border border-white/5 cursor-not-allowed'
+                    : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/40 active:scale-95'
+                }`}
+              >
+                <Flag className="w-3.5 h-3.5" />
+                <span>Kết Thúc Sự Kiện</span>
+              </button>
+            )}
+
+            {/* Config Button */}
+            {onOpenEventSchedule && (
+              <button
+                type="button"
+                onClick={onOpenEventSchedule}
+                className="py-2 px-3 rounded-[3px] bg-white/10 hover:bg-white/15 text-slate-200 border border-white/10 font-mono text-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-400" />
+                <span>Cài Đặt</span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-6">

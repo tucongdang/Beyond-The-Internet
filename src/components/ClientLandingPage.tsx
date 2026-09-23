@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { Clock, ShieldCheck, Megaphone, Radio, Sparkles, Wifi } from 'lucide-react';
+import { Clock, ShieldCheck, Megaphone, Radio, Sparkles, Wifi, Calendar } from 'lucide-react';
 import { GameState } from '../types';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 
@@ -11,9 +11,36 @@ interface ClientLandingPageProps {
 
 export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState, isPanic }) => {
   const { localLanguage } = useLanguage();
+  const [currentTime, setCurrentTime] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const overlay = gameState?.announcer_overlay;
   const hasLiveAnnouncement = Boolean(overlay?.active && overlay?.text?.trim());
   const isPanicMode = isPanic ?? Boolean(gameState?.panic_mode);
+
+  const schedule = gameState?.event_schedule;
+  const scheduledTime = schedule?.scheduled_start_time || 0;
+  const isScheduleActive = Boolean(schedule?.enabled || scheduledTime > 0);
+  const diffMs = Math.max(0, scheduledTime - currentTime);
+  const isTimeReached = currentTime >= scheduledTime;
+
+  const countdown = useMemo(() => {
+    if (diffMs <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { days, hours, minutes, seconds };
+  }, [diffMs]);
 
   return (
     <div className="min-h-full flex-1 w-full bg-transparent relative overflow-hidden flex flex-col items-center justify-center text-[#F5EFF9] p-4 sm:p-8 pb-20 select-none">
@@ -31,7 +58,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
             : (localLanguage !== 'vi' ? 'Please Stand By' : 'Vui Lòng Chờ')}
         </h1>
         
-        <p className="text-sm sm:text-base text-[#B6A6D8] mb-7 font-normal leading-relaxed max-w-md">
+        <p className="text-sm sm:text-base text-[#B6A6D8] mb-6 font-normal leading-relaxed max-w-md">
           {isPanicMode ? (
             localLanguage !== 'vi' ? (
               <>Interaction is currently paused by the Administrator.<br/>All submitted answers are safely preserved. Please wait for further announcements.</>
@@ -46,6 +73,34 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
             )
           )}
         </p>
+
+        {/* Live Countdown Clock if upcoming */}
+        {isScheduleActive && !isTimeReached && schedule?.status === 'SCHEDULED' && (
+          <div className="w-full mb-6 p-4 rounded-[4px] fluent-box border border-amber-500/30 shadow-xl bg-slate-950/70 backdrop-blur-md animate-fadeIn">
+            <div className="text-[11px] font-mono text-amber-300 uppercase font-bold tracking-wider mb-2 flex items-center justify-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 animate-pulse" />
+              <span>{localLanguage !== 'vi' ? 'Countdown to Start:' : 'Thời gian đếm ngược:'}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.days).padStart(2, '0')}</div>
+                <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Days' : 'Ngày'}</div>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.hours).padStart(2, '0')}</div>
+                <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Hours' : 'Giờ'}</div>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10">
+                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.minutes).padStart(2, '0')}</div>
+                <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Mins' : 'Phút'}</div>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-amber-500/40">
+                <div className="text-xl font-mono font-black text-yellow-400 animate-pulse">{String(countdown.seconds).padStart(2, '0')}</div>
+                <div className="text-[9px] font-mono text-amber-300 uppercase">{localLanguage !== 'vi' ? 'Secs' : 'Giây'}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* High Priority Live Broadcast Banner on Waiting Screen */}
         {hasLiveAnnouncement && (

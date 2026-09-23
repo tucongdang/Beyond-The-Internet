@@ -50,6 +50,7 @@ import {
   Sparkles,
   Award,
   BarChart3,
+  ArrowLeft,
   HelpCircle,
   Lock,
   Send,
@@ -98,6 +99,8 @@ import { AudienceShoutMarquee } from './AudienceShoutMarquee';
 import { AudienceShoutModal } from './AudienceShoutModal';
 import { AudienceSurveyModal } from './AudienceSurveyModal';
 import { ClientLandingPage } from './ClientLandingPage';
+import { EventWaitingRoom } from './EventWaitingRoom';
+import { EventConcludedView } from './EventConcludedView';
 
 interface AudienceViewProps {
   gameState: GameState;
@@ -161,6 +164,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const handleOpenShareModal = onOpenShareModal || (() => setIsShareModalOpen(true));
+  const [showConcludedLeaderboard, setShowConcludedLeaderboard] = useState<boolean>(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState<boolean>(false);
   const [lastKeyPressed, setLastKeyPressed] = useState<string>('');
   const isLongQuestion = (gameState?.question_text || '').length > 180;
@@ -1536,6 +1540,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         return () => clearTimeout(timer);
           }
 
+      // Disable in-game shortcuts in Waiting Room
+      if (gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED') {
+        return () => clearTimeout(timer);
+      }
+
       if (keyUpper === 'M') {
         e.preventDefault();
         const nextState = !soundFx.isEnabled();
@@ -1636,6 +1645,112 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
   
   const renderContent = () => {
+
+  // ==========================================
+  // EVENT LIFECYCLE: PRE-EVENT SCHEDULE GATE (ANTI-LEAK WAITING ROOM)
+  // Protects contest content from leaking before official start
+  // ==========================================
+  if (gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED') {
+    return (
+      <div className="relative w-full">
+        <EventWaitingRoom
+          gameState={gameState}
+          user={user}
+          activeCount={survivalStats?.totalContestants || 1}
+          onOpenRegister={onOpenRegister}
+          onOpenProfile={onOpenProfile}
+          isWakeLockSupported={isWakeLockSupported}
+          isWakeLockLocked={isWakeLockLocked}
+          onToggleWakeLock={onToggleWakeLock}
+        />
+        <AudienceSurveyModal
+          gameState={gameState}
+          user={user}
+          activeCount={survivalStats?.totalContestants || 1}
+        />
+      </div>
+    );
+  }
+
+  // ==========================================
+  // EVENT LIFECYCLE: CONCLUDED STAGE (POST-EVENT SUMMARY & SURVEY)
+  // ==========================================
+  if (gameState.event_schedule?.enabled && gameState.event_schedule.status === 'CONCLUDED') {
+    if (showConcludedLeaderboard) {
+      return (
+        <div className="relative w-full min-h-[calc(100dvh-5rem)] flex flex-col z-50 animate-fadeIn">
+          {/* Top Return Navigation Bar */}
+          <div className="sticky top-0 z-30 flex items-center justify-between p-3.5 bg-slate-950/90 backdrop-blur-md border-b border-amber-500/20 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-[3px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-white font-mono uppercase tracking-wider">
+                  Bảng Xếp Hạng Chung Cuộc
+                </h3>
+                <p className="text-[10px] text-amber-200/60 font-mono">
+                  Beyond The Internet 2026
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                setShowConcludedLeaderboard(false);
+              }}
+              className="px-3 py-1.5 rounded-[3px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-bold font-mono flex items-center gap-1.5 transition cursor-pointer shadow active:scale-95"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Quay Lại Tổng Kết</span>
+            </button>
+          </div>
+
+          <div className="flex-1 w-full p-2 sm:p-4">
+            <Leaderboard
+              allResponses={allResponses || {}}
+              gameState={gameState}
+              activeCount={1}
+              isAudienceView={true}
+              onClose={() => setShowConcludedLeaderboard(false)}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative w-full">
+        <EventConcludedView
+          gameState={gameState}
+          user={user}
+          userScore={userPerformance?.totalScore || 0}
+          userRank={typeof userPerformance?.rank === 'number' ? userPerformance.rank : undefined}
+          correctCount={userPerformance?.correctCount || 0}
+          totalAnswered={userPerformance?.totalAnswered || 0}
+          onOpenLeaderboard={() => {
+            soundFx.playClick();
+            vibrateTap();
+            setShowConcludedLeaderboard(true);
+          }}
+          onOpenSurvey={() => {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('BTI_SURVEY_FORCE_PREVIEW', 'true');
+              window.dispatchEvent(new Event('storage'));
+              window.dispatchEvent(new CustomEvent('bti_open_survey'));
+            }
+          }}
+        />
+        <AudienceSurveyModal
+          gameState={gameState}
+          user={user}
+          activeCount={survivalStats?.totalContestants || 1}
+        />
+      </div>
+    );
+  }
 
   if (gameState.panic_mode) {
     return <ClientLandingPage gameState={gameState} isPanic={true} />;
@@ -2822,14 +2937,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                 >
                                   <span className="flex items-center gap-2">
                                     <span className="text-base">🇻🇳</span>
-                                    <span>Tiếng Việt (Gốc)</span>
+                                    <span>Tiếng Việt (VI)</span>
                                   </span>
                                   {localLanguage === 'vi' && (
                                     <span className="text-sky-300 font-bold text-xs">✓</span>
                                   )}
                                 </button>
 
-                                {/* Foreign Languages (English, Chinese, Japanese, Korean, etc.) */}
+                                {/* Foreign Languages (English, Chinese, Japanese, Korean, French, Spanish, German, Thai, Lao, Khmer, Russian) */}
                                 {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => {
                                   const isSelected = localLanguage === lang.code;
                                   return (
@@ -4432,33 +4547,47 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
     return <ClientLandingPage gameState={props.gameState} isPanic={true} />;
   }
 
+  const isWaitingRoom = Boolean(
+    props.gameState.event_schedule?.enabled && props.gameState.event_schedule.status === 'SCHEDULED'
+  );
+  const isConcluded = Boolean(
+    props.gameState.event_schedule?.enabled && props.gameState.event_schedule.status === 'CONCLUDED'
+  );
+  const isEventSpecialStage = isWaitingRoom || isConcluded;
+
   return (
     <div className={`flex flex-col h-full relative transition-all duration-300 ${isHighContrast ? 'audience-high-contrast bg-black/50 backdrop-blur-[24px] saturate-150' : ''}`}>
-      <ScoreDisplay 
-        user={props.user} 
-        allResponses={props.allResponses || {}} 
-        gameState={props.gameState} 
-        isHighContrast={isHighContrast}
-        onToggleHighContrast={props.onToggleHighContrast}
-        isWakeLockLocked={isWakeLockLocked}
-        isWakeLockSupported={isWakeLockSupported}
-        onToggleWakeLock={toggleWakeLock}
-        onOpenLogModal={handleOpenLogModal}
-        onOpenPostMatchModal={handleOpenPostMatchModal}
-      />
+      {!isEventSpecialStage && (
+        <ScoreDisplay 
+          user={props.user} 
+          allResponses={props.allResponses || {}} 
+          gameState={props.gameState} 
+          isHighContrast={isHighContrast}
+          onToggleHighContrast={props.onToggleHighContrast}
+          isWakeLockLocked={isWakeLockLocked}
+          isWakeLockSupported={isWakeLockSupported}
+          onToggleWakeLock={toggleWakeLock}
+          onOpenLogModal={handleOpenLogModal}
+          onOpenPostMatchModal={handleOpenPostMatchModal}
+        />
+      )}
 
-      {/* Real-time Audience Shout Marquee Bar */}
-      <AudienceShoutMarquee
-        user={props.user}
-        onOpenShoutModal={handleOpenShoutModal}
-        variant="audience"
-        isHighContrast={isHighContrast}
-      />
+      {/* Real-time Audience Shout Marquee Bar (Hidden in waiting room & conclusion) */}
+      {!isEventSpecialStage && (
+        <AudienceShoutMarquee
+          user={props.user}
+          onOpenShoutModal={handleOpenShoutModal}
+          variant="audience"
+          isHighContrast={isHighContrast}
+        />
+      )}
 
-      <div className="px-3 sm:px-6 pt-2 max-w-7xl mx-auto w-full z-40 relative">
-        <NextQuestionCountdown gameState={props.gameState} compact={false} />
-      </div>
-      <div className={`flex-1 overflow-x-hidden ${hasAnnouncer ? 'pb-44 sm:pb-16' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-6'}`}>
+      {!isEventSpecialStage && (
+        <div className="px-3 sm:px-6 pt-2 max-w-7xl mx-auto w-full z-40 relative">
+          <NextQuestionCountdown gameState={props.gameState} compact={false} />
+        </div>
+      )}
+      <div className={`flex-1 overflow-x-hidden ${isEventSpecialStage ? 'pb-4' : hasAnnouncer ? 'pb-44 sm:pb-16' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-6'}`}>
         <AudienceViewContent 
           {...props} 
           onOpenLogModal={handleOpenLogModal}
@@ -4471,71 +4600,73 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         />
       </div>
 
-      {/* Floating Audience Action Group (Desktop / Tablet only) */}
-      <div className="hidden sm:inline-flex fixed left-4 bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-        <button
-          id="btn-audience-shout-floating"
-          type="button"
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsShoutModalOpen(true);
-          }}
-          className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30"
-          title={t("view_nav_shout_mq", localLanguage)}
-        >
-          <Megaphone className="w-[14px] h-[14px] text-pink-400" />
-          <span className="font-bold tracking-wide">{t("view_shout", localLanguage)}</span>
-        </button>
+      {/* Floating Audience Action Group (Desktop / Tablet only) - Hidden in waiting room & conclusion */}
+      {!isEventSpecialStage && (
+        <div className="hidden sm:inline-flex fixed left-4 bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          <button
+            id="btn-audience-shout-floating"
+            type="button"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsShoutModalOpen(true);
+            }}
+            className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30"
+            title={t("view_nav_shout_mq", localLanguage)}
+          >
+            <Megaphone className="w-[14px] h-[14px] text-pink-400" />
+            <span className="font-bold tracking-wide">{t("view_shout", localLanguage)}</span>
+          </button>
 
-        <button
-          id="btn-audience-cheer-floating"
-          type="button"
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsCheerModalOpen(true);
-          }}
-          className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30"
-          title={t("view_nav_cheer", localLanguage)}
-        >
-          <Heart className="w-[14px] h-[14px] fill-current animate-pulse text-rose-400" />
-          <span className="font-bold tracking-wide">{t("view_cheer", localLanguage)}</span>
-        </button>
+          <button
+            id="btn-audience-cheer-floating"
+            type="button"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsCheerModalOpen(true);
+            }}
+            className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30"
+            title={t("view_nav_cheer", localLanguage)}
+          >
+            <Heart className="w-[14px] h-[14px] fill-current animate-pulse text-rose-400" />
+            <span className="font-bold tracking-wide">{t("view_cheer", localLanguage)}</span>
+          </button>
 
-        <button
-          id="btn-audience-qa-floating"
-          type="button"
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            setIsQAModalOpen(true);
-          }}
-          className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30"
-          title={t("view_nav_qa", localLanguage)}
-        >
-          <MessageSquare className="w-[14px] h-[14px] text-sky-400" />
-          <span className="font-bold tracking-wide">{t("view_qna", localLanguage)}</span>
-        </button>
+          <button
+            id="btn-audience-qa-floating"
+            type="button"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsQAModalOpen(true);
+            }}
+            className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30"
+            title={t("view_nav_qa", localLanguage)}
+          >
+            <MessageSquare className="w-[14px] h-[14px] text-sky-400" />
+            <span className="font-bold tracking-wide">{t("view_qna", localLanguage)}</span>
+          </button>
 
-        <button
-          id="btn-audience-postmatch-floating"
-          type="button"
-          onClick={() => {
-            vibrateSelection();
-            soundFx.playTing();
-            handleOpenPostMatchModal();
-          }}
-          className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30"
-          title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
-        >
-          <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />
-          <span className="font-bold tracking-wide">Thẻ</span>
-        </button>
-      </div>
+          <button
+            id="btn-audience-postmatch-floating"
+            type="button"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              handleOpenPostMatchModal();
+            }}
+            className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30"
+            title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
+          >
+            <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />
+            <span className="font-bold tracking-wide">Thẻ</span>
+          </button>
+        </div>
+      )}
 
-      {/* Mobile Bottom Navigation Bar (Optimized for iOS Safe Area & Touch Targets) */}
-      {typeof document !== 'undefined' && !!document.body && createPortal(
+      {/* Mobile Bottom Navigation Bar - Hidden in waiting room & conclusion */}
+      {!isEventSpecialStage && typeof document !== 'undefined' && !!document.body && createPortal(
         <nav 
           id="audience-mobile-bottom-nav"
           aria-label={t("view_nav_audience", localLanguage)}

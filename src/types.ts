@@ -201,8 +201,32 @@ export interface AudienceSurveyConfig {
   prefill_mssv_entry?: string; // Optional Google Form entry ID for MSSV pre-fill
   allow_embedded_view?: boolean; // Allow answering directly in iframe modal
   target_seed?: string; // Random seed to guarantee stable selection
+  start_time?: number; // Timestamp ms bắt đầu mở khảo sát
+  end_time?: number; // Timestamp ms kết thúc đóng khảo sát
+  translations?: Record<string, {
+    title: string;
+    description: string;
+    gift_note: string;
+  }>;
   created_at?: number;
   updated_at?: number;
+}
+
+export type EventStageStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'CONCLUDED';
+
+export interface EventScheduleConfig {
+  enabled: boolean; // Bật chế độ khóa bảo vệ trước giờ G (tránh rò rỉ nội dung câu hỏi cho khán giả đăng ký sớm)
+  status: EventStageStatus; // 'SCHEDULED' (Chờ khai mạc) | 'IN_PROGRESS' (Đang diễn ra) | 'CONCLUDED' (Đã kết thúc)
+  scheduled_start_time: number; // Timestamp ms của ngày giờ tổ chức
+  scheduled_end_time?: number; // Timestamp ms kết thúc dự kiến
+  auto_start_on_time?: boolean; // Tự động bắt đầu khi tới giờ (mặc định false - chờ Ban Tổ Chức ấn Bắt đầu)
+  title?: string; // Tên sự kiện (ví dụ: "Beyond The Internet 2026")
+  location?: string; // Địa điểm tổ chức (Hội trường A / Trực tiếp)
+  briefing_note?: string; // Lời dặn / Hướng dẫn trước giờ thi
+  concluding_message?: string; // Thông điệp bế mạc cảm ơn khán giả
+  started_at?: number; // Thời điểm Admin bấm Bắt đầu
+  ended_at?: number; // Thời điểm Admin bấm Kết thúc
+  allow_early_registration?: boolean; // Cho phép khán giả ghi danh trước để nhận mã định danh
 }
 
 export interface GameState {
@@ -264,7 +288,9 @@ export interface GameState {
   teams?: Array<{ id: string, name: string, color: string }>;
   team_scores?: Record<string, number>;
 
-  
+  // Event Lifecycle Schedule & Leak Prevention (Waiting Room Gate)
+  event_schedule?: EventScheduleConfig | null;
+
   // Google Form Random Audience Survey (10%)
   audience_survey?: AudienceSurveyConfig | null;
 
