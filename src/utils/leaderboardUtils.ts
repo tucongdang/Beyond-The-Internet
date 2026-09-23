@@ -220,3 +220,226 @@ export function calculateSurvivalStats(
     survivalRate
   };
 }
+
+export interface RankChangeInfo {
+  delta: number | null; // Positive: moved up, Negative: moved down, 0: same, null: new
+  prevRank: number | null;
+}
+
+/**
+ * Calculates how each contestant's rank changed compared to the previous question update
+ */
+export function calculateRankChanges(
+  allResponses: Record<string, Record<string, UserResponse>>,
+  currentRankedList: UserScoreSummary[],
+  currentQuestionId?: string,
+  customQuestionBank?: QuestionItem[],
+  gameState?: GameState,
+  filterRound: 'ALL' | 'R1' | 'R2' | 'R3' | 'R4' = 'ALL'
+): Map<string, RankChangeInfo> {
+  const result = new Map<string, RankChangeInfo>();
+  if (!allResponses || Object.keys(allResponses).length === 0 || currentRankedList.length === 0) {
+    return result;
+  }
+
+  const questionKeys = Object.keys(allResponses).filter(k => allResponses[k] && Object.keys(allResponses[k]).length > 0);
+  
+  // If there's only 1 question or no prior question history
+  if (questionKeys.length <= 1) {
+    currentRankedList.forEach(user => {
+      result.set(user.uid, { delta: null, prevRank: null });
+    });
+    return result;
+  }
+
+  // Determine the latest question ID to exclude for prior calculation
+  let targetExcludeKey = currentQuestionId;
+  if (!targetExcludeKey || !allResponses[targetExcludeKey] || Object.keys(allResponses[targetExcludeKey]).length === 0) {
+    targetExcludeKey = questionKeys[questionKeys.length - 1];
+  }
+
+  const priorResponses: Record<string, Record<string, UserResponse>> = {};
+  questionKeys.forEach(k => {
+    if (k !== targetExcludeKey) {
+      priorResponses[k] = allResponses[k];
+    }
+  });
+
+  const priorBoard = calculateLeaderboard(priorResponses, customQuestionBank, gameState, filterRound);
+  const priorRankMap = new Map<string, number>();
+  priorBoard.forEach(u => {
+    priorRankMap.set(u.uid, u.rank);
+    if (u.mssv) priorRankMap.set(u.mssv, u.rank);
+  });
+
+  currentRankedList.forEach(user => {
+    const prevRank = priorRankMap.get(user.uid) ?? (user.mssv ? priorRankMap.get(user.mssv) : undefined);
+    if (prevRank === undefined) {
+      result.set(user.uid, { delta: null, prevRank: null });
+    } else {
+      const delta = prevRank - user.rank;
+      result.set(user.uid, { delta, prevRank });
+    }
+  });
+
+  return result;
+}
+
+export type PerformanceTrend = 'rising' | 'falling' | 'stable' | 'streak';
+
+export interface TrendInfo {
+  trend: PerformanceTrend;
+  label?: string;
+  labelVi?: string;
+  streakCount?: number;
+  description?: string;
+}
+
+/**
+ * Evaluates performance trends across multiple question rounds and recent answers
+ */
+export function calculateUserTrends(
+  allResponses: Record<string, Record<string, UserResponse>>,
+  rankedUsers: UserScoreSummary[],
+  customQuestionBank?: QuestionItem[],
+  gameState?: GameState
+): Map<string, TrendInfo> {
+  const result = new Map<string, TrendInfo>();
+  if (!allResponses || Object.keys(allResponses).length === 0 || rankedUsers.length === 0) {
+    return result;
+  }
+
+  // Pre-index question items for quick lookup
+  const questionMap = new Map<string, QuestionItem>();
+  (customQuestionBank || INITIAL_QUESTION_BANK).forEach(q => {
+    questionMap.set(q.id, q);
+  });
+
+  rankedUsers.forEach(user => {
+    const userLookupKey = user.uid;
+    const userMssv = user.mssv;
+
+    // Collect all responses for this user in chronological order
+    const userResponses: { questionId: string; response: UserResponse; timestamp: number; isCorrect: boolean }[] = [];
+
+    Object.entries(allResponses).forEach(([qId, qResponses]) => {
+      if (!qResponses) return;
+      const resp = qResponses[userLookupKey] || 
+        Object.values(qResponses).find(r => 
+          (r?.user_info?.uid && r.user_info.uid === userLookupKey) ||
+          (userMssv && r?.user_info?.mssv && r.user_info.mssv.toLowerCase() === userMssv.toLowerCase())
+        );
+
+      if (resp) {
+        const qItem = questionMap.get(qId);
+        const correctChoice = qItem?.correct_key || (gameState?.question_id === qId ? gameState?.correct_key : undefined);
+        const evalResult = evaluateUserChoice(resp.choice, correctChoice);
+        const isCorrect = evalResult.isCorrect;
+        userResponses.push({
+          questionId: qId,
+          response: resp,
+          timestamp: resp.timestamp || 0,
+          isCorrect
+        });
+      }
+    });
+
+    userResponses.sort((a, b) => a.timestamp - b.timestamp);
+
+    const total = userResponses.length;
+    if (total === 0) {
+      result.set(user.uid, { trend: 'stable', label: 'Stable', labelVi: 'Ổn định' });
+      return;
+    }
+
+    // 1. Calculate current consecutive correct answer streak from latest questions
+    let streakCount = 0;
+    for (let i = total - 1; i >= 0; i--) {
+      if (userResponses[i].isCorrect) {
+        streakCount++;
+      } else {
+        break;
+      }
+    }
+
+    if (streakCount >= 3) {
+      result.set(user.uid, {
+        trend: 'streak',
+        streakCount,
+        label: `${streakCount} Streak`,
+        labelVi: `Chuỗi ${streakCount}`,
+        description: `Đang có chuỗi ${streakCount} câu trả lời đúng liên tiếp!`
+      });
+      return;
+    }
+
+    // 2. Multi-round analysis
+    const { round1, round2, round3, round4 } = user.roundScores;
+    const activeRounds = [round1, round2, round3, round4].filter(score => score > 0);
+
+    // 3. Analyze recent questions vs previous performance
+    if (total >= 2) {
+      const recentWindow = userResponses.slice(-Math.min(3, total));
+      const recentCorrect = recentWindow.filter(r => r.isCorrect).length;
+      const recentAccuracy = recentCorrect / recentWindow.length;
+
+      // If user had a decent start but recently missed 2 in a row
+      if (recentWindow.length >= 2 && recentCorrect === 0 && user.accuracyRate >= 30) {
+        result.set(user.uid, {
+          trend: 'falling',
+          label: 'Falling',
+          labelVi: 'Giảm sút',
+          description: 'Phong độ có dấu hiệu chững lại ở các câu hỏi gần đây.'
+        });
+        return;
+      }
+
+      // If user is accelerating in recent questions (e.g. 2/2 or 3/3 correct or round score improving)
+      if (recentAccuracy >= 0.8 && (user.accuracyRate < 80 || activeRounds.length > 1)) {
+        result.set(user.uid, {
+          trend: 'rising',
+          label: 'Rising',
+          labelVi: 'Đang lên',
+          description: 'Phong độ bứt phá với các câu trả lời chính xác gần đây!'
+        });
+        return;
+      }
+    }
+
+    // 4. Multi-round score progression check
+    if (activeRounds.length >= 2) {
+      const lastRoundScore = activeRounds[activeRounds.length - 1];
+      const prevRoundScore = activeRounds[activeRounds.length - 2];
+
+      if (lastRoundScore > prevRoundScore * 1.25) {
+        result.set(user.uid, {
+          trend: 'rising',
+          label: 'Rising',
+          labelVi: 'Đang lên',
+          description: 'Điểm số bứt phá mạnh mẽ ở vòng đấu mới nhất!'
+        });
+        return;
+      } else if (lastRoundScore < prevRoundScore * 0.4 && prevRoundScore > 0) {
+        result.set(user.uid, {
+          trend: 'falling',
+          label: 'Falling',
+          labelVi: 'Giảm sút',
+          description: 'Cần tăng tốc trong các câu hỏi kế tiếp.'
+        });
+        return;
+      }
+    }
+
+    // 5. Default steady stability
+    result.set(user.uid, {
+      trend: 'stable',
+      label: 'Stable',
+      labelVi: 'Ổn định',
+      description: 'Phong độ và tốc độ duy trì ổn định qua các vòng thi.'
+    });
+  });
+
+  return result;
+}
+
+

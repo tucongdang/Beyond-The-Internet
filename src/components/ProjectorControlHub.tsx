@@ -51,7 +51,7 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
   className = '',
   isCompact = false
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const triggerHaptic = (pattern: number | number[] = 60) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
@@ -60,10 +60,12 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
     }
   };
 
-  const activeMode = gameState.projector_view_mode || (
-    gameState.show_summary ? 'LEADERBOARD' :
-    gameState.show_word_cloud ? 'WORD_CLOUD' :
-    'DEFAULT'
+  const activeMode = gameState.projector_view_mode === 'DEFAULT' ? 'DEFAULT' : (
+    gameState.projector_view_mode || (
+      gameState.show_summary ? 'LEADERBOARD' :
+      gameState.show_word_cloud ? 'WORD_CLOUD' :
+      'DEFAULT'
+    )
   );
 
   const handleSetProjectorMode = useCallback((mode: 'DEFAULT' | 'BAR_CHART' | 'RESPONSE_LIST' | 'HEATMAP' | 'LEADERBOARD' | 'WORD_CLOUD') => {
@@ -76,10 +78,14 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
       show_word_cloud: mode === 'WORD_CLOUD'
     };
 
+    if (mode === 'DEFAULT') {
+      updates.grand_finale = null;
+    }
+
     syncService.updateGameState(updates);
 
     const modeLabels: Record<string, string> = {
-      DEFAULT: 'Thẻ Câu Hỏi & Phương Án',
+      DEFAULT: 'Thẻ Câu Hỏi & Phương Án (Theo Tiến Trình)',
       BAR_CHART: 'Biểu Đồ Cột Phân Bố',
       RESPONSE_LIST: 'Danh Sách Phản Hồi Trực Tiếp',
       HEATMAP: 'Bản Đồ Nhiệt Heatmap',
@@ -89,6 +95,21 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
 
     if (triggerHudToast) {
       triggerHudToast('PROJECTOR', `Màn chiếu: ${modeLabels[mode] || mode}`);
+    }
+  }, [triggerHudToast]);
+
+  const handleForceSync = useCallback(() => {
+    triggerHaptic(80);
+    soundFx.playSuccess();
+    syncService.updateGameState({
+      projector_view_mode: 'DEFAULT',
+      show_summary: false,
+      show_word_cloud: false,
+      grand_finale: null,
+      projector_dimmed: false
+    });
+    if (triggerHudToast) {
+      triggerHudToast('FORCE SYNC', 'Đã cưỡng chế đồng bộ toàn bộ màn chiếu theo sàn đấu trực tiếp!');
     }
   }, [triggerHudToast]);
 
@@ -169,6 +190,30 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
 
         {/* Quick Projector Stealth Dim & Unified Auto-Fit Indicator */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick 1-Click Sync Button when in non-default mode */}
+          {activeMode !== 'DEFAULT' && (
+            <button
+              type="button"
+              onClick={() => handleSetProjectorMode('DEFAULT')}
+              className="px-2.5 py-1 rounded-[2px] bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-[10px] font-bold shadow-md shadow-amber-950/50 flex items-center gap-1.5 cursor-pointer animate-pulse"
+              title="Đưa màn chiếu về hiển thị câu hỏi & tiến trình trận đấu"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Theo Tiến Trình Sàn Đấu</span>
+            </button>
+          )}
+
+          {/* Force Sync button */}
+          <button
+            type="button"
+            onClick={handleForceSync}
+            className="px-2.5 py-1 rounded-[2px] bg-white/5 hover:bg-white/10 text-sky-300 border border-sky-400/30 font-mono text-[10px] font-bold transition flex items-center gap-1 cursor-pointer"
+            title="Cưỡng chế đồng bộ toàn bộ trạng thái màn chiếu"
+          >
+            <Radio className="w-3 h-3 text-sky-400" />
+            <span>Đồng Bộ Lại Màn Chiếu</span>
+          </button>
+
           {/* Active Mode Pill when Collapsed */}
           {isCollapsed && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-purple-500/20 text-purple-200 border border-purple-500/30 text-[10px] font-mono">
@@ -216,6 +261,34 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Mode Override Warning Banner if not DEFAULT */}
+      {activeMode !== 'DEFAULT' && (
+        <div className="p-2.5 rounded-[3px] bg-amber-950/40 border border-amber-400/50 text-amber-200 font-mono text-xs flex flex-wrap items-center justify-between gap-2 shadow-inner">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span>
+              <strong>LƯU Ý:</strong> Màn chiếu đang cố định ở chế độ{' '}
+              <strong className="text-amber-300 underline">
+                {activeMode === 'LEADERBOARD' ? 'BẢNG XẾP HẠNG TOP 5 / TỔNG KẾT' :
+                 activeMode === 'BAR_CHART' ? 'BIỂU ĐỒ CỘT PHÂN BỐ' :
+                 activeMode === 'WORD_CLOUD' ? 'ĐÁM MÂY TỪ KHÓA' :
+                 activeMode === 'RESPONSE_LIST' ? 'DANH SÁCH PHẢN HỒI' :
+                 activeMode === 'HEATMAP' ? 'BẢN ĐỒ NHIỆT' : activeMode}
+              </strong>{' '}
+              (Không tự chuyển theo câu hỏi).
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleSetProjectorMode('DEFAULT')}
+            className="px-3 py-1 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow cursor-pointer transition active:scale-95"
+          >
+            🎯 Chuyển Về Thẻ Câu Hỏi & Tiến Trình
+          </button>
+        </div>
+      )}
 
       {/* Main Mode Switcher Grid & Controls (Collapsible) */}
       {!isCollapsed && (

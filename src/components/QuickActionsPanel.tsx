@@ -14,12 +14,14 @@ import {
   Users, 
   ChevronDown, 
   BellOff,
-  Sparkles
+  Sparkles,
+  Coffee
 } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { LightShowControlModal } from './LightShowControlModal';
+import { MatchBreakModal } from './MatchBreakModal';
 
 interface QuickActionsPanelProps {
   gameState: GameState;
@@ -80,6 +82,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 }) => {
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [showLightShowModal, setShowLightShowModal] = useState(false);
+  const [showMatchBreakModal, setShowMatchBreakModal] = useState(false);
   const [broadcastTitle, setBroadcastTitle] = useState('🚨 THÔNG BÁO KHẨN TỪ BAN TỔ CHỨC');
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastType, setBroadcastType] = useState<'URGENT' | 'ALERT' | 'INFO'>('URGENT');
@@ -234,7 +237,11 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
           paused_remaining_seconds: 0,
           eliminated_options: [],
           next_question_wait_limit: 0,
-          next_question_wait_start: 0
+          next_question_wait_start: 0,
+          show_summary: false,
+          show_word_cloud: false,
+          projector_view_mode: 'DEFAULT',
+          grand_finale: null
         });
 
         triggerHudToast('RESET Q', `Đã reset câu hỏi [${gameState.question_id}] về trạng thái Chờ!`);
@@ -427,53 +434,75 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
         {!isCollapsed && (
           <div className="p-2.5 sm:p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-2.5 animate-fadeIn">
             
-            {/* ACTION 1: Pause / Resume Game Timer */}
+            {/* ACTION 1: Tạm Dừng / Giải Lao Trận Đấu (Unified Pause & Match Break) */}
             <button
               type="button"
-              id="btn-quick-action-pause-timer"
-              onClick={handleTogglePauseTimer}
-              data-tooltip="Tạm dừng hoặc tiếp tục đếm ngược đồng hồ thi đấu hiện tại trong 1 click"
-              data-tooltip-title="Tạm Dừng / Tiếp Tục Đồng Hồ (Pause Timer)"
+              id="btn-quick-action-pause-match"
+              onClick={() => {
+                triggerHaptic(80);
+                setShowMatchBreakModal(true);
+              }}
+              data-tooltip="Tạm dừng trận đấu, đóng băng đồng hồ câu hỏi hoặc đếm ngược giải lao sân khấu (1m, 2m, 5m, 10m)"
+              data-tooltip-title="Tạm Dừng / Giải Lao Trận Đấu (Pause & Break)"
               data-tooltip-variant="warning"
               className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
-                isTimerPaused
-                  ? 'border-amber-400 bg-gradient-to-r from-amber-950/80 to-slate-900/90 text-amber-200 shadow-md shadow-amber-950/50 ring-1 ring-amber-400/50 animate-pulse'
-                  : isQuestionActive
-                    ? 'border-indigo-500/50 bg-gradient-to-r from-indigo-950/50 to-slate-900/70 hover:from-indigo-900/60 hover:to-indigo-950/60 text-indigo-200 hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-950/50'
-                    : 'border-slate-700/50 bg-slate-900/40 text-white/60 hover:border-slate-500 hover:text-white'
+                gameState.match_break?.active
+                  ? 'border-amber-400 bg-gradient-to-r from-amber-950/90 via-purple-950/80 to-amber-950/90 text-amber-200 shadow-lg shadow-amber-950/60 ring-1 ring-amber-400 animate-pulse'
+                  : isTimerPaused
+                    ? 'border-amber-400 bg-gradient-to-r from-amber-950/80 to-slate-900/90 text-amber-200 shadow-md shadow-amber-950/50 ring-1 ring-amber-400/50 animate-pulse'
+                    : isQuestionActive
+                      ? 'border-indigo-500/50 bg-gradient-to-r from-indigo-950/50 to-slate-900/70 hover:from-indigo-900/60 hover:to-indigo-950/60 text-indigo-200 hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-950/50'
+                      : 'border-slate-700/50 bg-slate-900/40 text-white/60 hover:border-slate-500 hover:text-white'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
-                  isTimerPaused 
-                    ? 'bg-amber-500 text-slate-950 shadow-md' 
-                    : isQuestionActive
-                      ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 group-hover:scale-105'
-                      : 'bg-white/5 border border-white/10 text-white/40'
+                  gameState.match_break?.active
+                    ? 'bg-amber-400 text-slate-950 shadow-md animate-bounce'
+                    : isTimerPaused 
+                      ? 'bg-amber-500 text-slate-950 shadow-md' 
+                      : isQuestionActive
+                        ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 group-hover:scale-105'
+                        : 'bg-white/5 border border-white/10 text-white/40'
                 }`}>
-                  {isTimerPaused ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
+                  {gameState.match_break?.active ? (
+                    <Coffee className="w-3.5 h-3.5" />
+                  ) : isTimerPaused ? (
+                    <Pause className="w-3.5 h-3.5" />
+                  ) : isQuestionActive ? (
+                    <Pause className="w-3.5 h-3.5" />
+                  ) : (
+                    <Coffee className="w-3.5 h-3.5" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-white group-hover:text-indigo-200 truncate">
-                      {isTimerPaused ? 'Tiếp Tục Giờ' : 'Tạm Dừng Giờ'}
+                      {gameState.match_break?.active ? 'Đang Nghỉ Trận' : isTimerPaused ? 'Đang Tạm Dừng' : 'Tạm Dừng Trận'}
                     </span>
+                    {(gameState.match_break?.active || isTimerPaused) && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    )}
                   </div>
                   <p className="text-[9px] text-white/50 truncate">
-                    {isTimerPaused 
-                      ? `Đang dừng (${gameState.paused_remaining_seconds || 0}s)` 
-                      : isQuestionActive ? 'Đóng băng đếm ngược' : 'Chờ bắt đầu'}
+                    {gameState.match_break?.active 
+                      ? 'Đang đếm ngược sân khấu'
+                      : isTimerPaused 
+                        ? `Đóng băng (${gameState.paused_remaining_seconds || 0}s)` 
+                        : 'Nghỉ hiệp & đóng băng giờ'}
                   </p>
                 </div>
               </div>
               <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
-                isTimerPaused
-                  ? 'bg-amber-950 text-amber-300 border-amber-400/60'
-                  : isQuestionActive
-                    ? 'bg-indigo-950/80 text-indigo-300 border-indigo-500/30'
-                    : 'bg-black/40 text-white/40 border-white/10'
+                gameState.match_break?.active
+                  ? 'bg-amber-400 text-slate-950 border-amber-300 font-black'
+                  : isTimerPaused
+                    ? 'bg-amber-950 text-amber-300 border-amber-400/60 font-bold'
+                    : isQuestionActive
+                      ? 'bg-indigo-950/80 text-indigo-300 border-indigo-500/30'
+                      : 'bg-black/40 text-white/40 border-white/10'
               }`}>
-                {isTimerPaused ? 'PAUSED' : isQuestionActive ? 'PAUSE' : 'STANDBY'}
+                {gameState.match_break?.active ? 'BREAK' : isTimerPaused ? 'PAUSED' : isQuestionActive ? 'PAUSE' : 'STANDBY'}
               </span>
             </button>
 
@@ -900,6 +929,16 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
         isOpen={showLightShowModal}
         onClose={() => setShowLightShowModal(false)}
         gameState={gameState}
+      />
+
+      {/* Match Break & Intermission Modal */}
+      <MatchBreakModal
+        isOpen={showMatchBreakModal}
+        onClose={() => setShowMatchBreakModal(false)}
+        gameState={gameState}
+        activeCount={activeCount}
+        triggerHudToast={triggerHudToast}
+        openConfirm={openConfirm}
       />
     </>
   );

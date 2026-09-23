@@ -8,6 +8,7 @@ import { getProjectorTheme } from '../utils/themeUtils';
 import { Leaderboard } from './Leaderboard';
 import { LuckyDrawProjector } from './LuckyDrawProjector';
 import { GrandFinaleProjectorOverlay } from './GrandFinaleProjectorOverlay';
+import { MatchBreakProjectorOverlay } from './MatchBreakProjectorOverlay';
 import { EmergencyPollProjector } from './EmergencyPollProjector';
 import { ProjectorResponseList } from './ProjectorResponseList';
 import { ProjectorWordCloud } from './ProjectorWordCloud';
@@ -18,6 +19,7 @@ import { ProjectorQAOverlay } from './ProjectorQAOverlay';
 import { ProjectorResponseBarChart } from './ProjectorResponseBarChart';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { AudienceShoutMarquee } from './AudienceShoutMarquee';
+import { ProjectorWaitingRoom } from './ProjectorWaitingRoom';
 import { syncService } from '../services/syncService';
 import { snapshotService } from '../services/snapshotService';
 import { soundFx } from '../services/audioEffects';
@@ -67,16 +69,26 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const [isCapturingSnapshot, setIsCapturingSnapshot] = useState<boolean>(false);
   const [snapshotFlash, setSnapshotFlash] = useState<boolean>(false);
 
-  const activeProjectorMode = gameState.projector_view_mode || (
-    gameState.show_summary ? 'LEADERBOARD' :
-    gameState.show_word_cloud ? 'WORD_CLOUD' :
-    showBarChart ? 'BAR_CHART' :
-    showWordCloud ? 'WORD_CLOUD' :
-    showResponseList ? 'RESPONSE_LIST' :
-    showHeatmap ? 'HEATMAP' :
-    'DEFAULT'
+  const activeProjectorMode = gameState.projector_view_mode === 'DEFAULT' ? 'DEFAULT' : (
+    gameState.projector_view_mode || (
+      gameState.show_summary ? 'LEADERBOARD' :
+      gameState.show_word_cloud ? 'WORD_CLOUD' :
+      showBarChart ? 'BAR_CHART' :
+      showWordCloud ? 'WORD_CLOUD' :
+      showResponseList ? 'RESPONSE_LIST' :
+      showHeatmap ? 'HEATMAP' :
+      'DEFAULT'
+    )
   );
   const isLeaderboardVisible = activeProjectorMode === 'LEADERBOARD';
+
+  // Automatically reset local overlay states when question changes or goes active
+  useEffect(() => {
+    setShowBarChart(false);
+    setShowHeatmap(false);
+    setShowResponseList(false);
+    setShowWordCloud(false);
+  }, [gameState.question_id, gameState.status]);
 
   const handleCopyAudienceUrl = () => {
     if (!audienceJoinUrl) return;
@@ -497,6 +509,29 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const theme = useMemo(() => getProjectorTheme(gameState.projectorTheme), [gameState.projectorTheme]);
   const hasAnnouncer = Boolean(gameState.announcer_overlay?.active && gameState.announcer_overlay?.text?.trim());
 
+  // Check if Event is in Scheduled Waiting Room or Panic/Standby Stage
+  const isScheduledStage = Boolean(
+    gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
+  );
+  const isConcludedStage = Boolean(
+    gameState.event_schedule?.enabled && gameState.event_schedule.status === 'CONCLUDED'
+  );
+  const isStandbyStage = Boolean(
+    gameState.force_route === 'client_landing' || gameState.panic_mode
+  );
+
+  if ((isScheduledStage || isConcludedStage || isStandbyStage) && !gameState.show_summary && !gameState.grand_finale?.active && !isVirtual) {
+    return (
+      <ProjectorWaitingRoom
+        gameState={gameState}
+        activeCount={activeCount}
+        qrDataUrl={qrDataUrl}
+        audienceJoinUrl={audienceJoinUrl}
+        isPanic={Boolean(gameState.panic_mode)}
+      />
+    );
+  }
+
   return (
     <div 
       id="projector-view-stage"
@@ -515,6 +550,16 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         />
       )}
 
+      {/* Mid-Game Match Break & Timeout Stage Intermission Overlay */}
+      {gameState.match_break?.active && !isVirtual && (
+        <MatchBreakProjectorOverlay
+          gameState={gameState}
+          activeCount={activeCount}
+          qrDataUrl={qrDataUrl}
+          audienceJoinUrl={audienceJoinUrl}
+        />
+      )}
+
       {/* Stage Header (Bento Style) */}
       <header className={`relative z-10 fluent-box p-2.5 px-3.5 sm:px-4 flex items-center justify-between gap-3 transition-all duration-500 group shrink-0`}>
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -525,8 +570,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#F7CAC9] font-bold">
               STAGE DISPLAY MATRIX • {theme.name.toUpperCase()}
             </div>
-            <h1 className="text-sm sm:text-base font-bold tracking-tight text-white whitespace-nowrap">
-              Beyond The Internet 2026
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-white whitespace-nowrap flex items-center gap-2">
+              <span>{gameState.event_schedule?.title || 'Beyond The Internet 2026'}</span>
+              {gameState.event_schedule?.match_name && (
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                  {gameState.event_schedule.match_name}
+                </span>
+              )}
             </h1>
           </div>
         </div>

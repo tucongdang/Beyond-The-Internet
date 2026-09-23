@@ -43,6 +43,8 @@ import { ProjectorControlHub } from './ProjectorControlHub';
 import { LightShowControlModal } from './LightShowControlModal';
 import { AdminSurveyControlModal } from './AdminSurveyControlModal';
 import { AdminEventScheduleModal } from './AdminEventScheduleModal';
+import { MatchBreakModal } from './MatchBreakModal';
+import { AdminMatchConfigSection } from './AdminMatchConfigSection';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
@@ -123,7 +125,7 @@ import { Timer,  Shield,
   Type,
   ScanLine,
   TrendingUp
- , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings, Calendar, Flag } from 'lucide-react';
+ , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings, Calendar, Flag, Coffee } from 'lucide-react';
 import { PROJECTOR_THEMES, getProjectorTheme } from '../utils/themeUtils';
 import {
   vibrateTap,
@@ -438,6 +440,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showEventScheduleModal, setShowEventScheduleModal] = useState(false);
   const [showAudioSettingsModal, setShowAudioSettingsModal] = useState(false);
+  const [showMatchBreakModal, setShowMatchBreakModal] = useState(false);
   const [speechActive, setSpeechActive] = useState<boolean>(() => aiExplanationService.getActiveSpeechState().active);
   const [shortcutHudToast, setShortcutHudToast] = useState<{ text: string; key: string } | null>(null);
 
@@ -1451,7 +1454,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       media_type: item.media_type || "NONE",
       media_autoplay: item.media_autoplay || false,
       translations: item.translations || {},
-      server_start_time: 0
+      server_start_time: 0,
+      show_summary: false,
+      show_word_cloud: false,
+      projector_view_mode: 'DEFAULT',
+      grand_finale: null
     });
 
     syncService.logActivity(
@@ -1481,7 +1488,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       next_question_wait_limit: 0,
       next_question_wait_start: 0,
       correct_key: '', // Keep answer key secret
-      explanation: item?.explanation || gameState.explanation
+      explanation: item?.explanation || gameState.explanation,
+      show_summary: false,
+      show_word_cloud: false,
+      projector_view_mode: 'DEFAULT',
+      grand_finale: null
     });
 
     syncService.logActivity(
@@ -2930,7 +2941,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               }`}
             >
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
-              <span>Lịch Trình</span>
+              <span>{gameState.event_schedule?.match_name ? gameState.event_schedule.match_name : 'Lịch Trình'}</span>
               {gameState.event_schedule?.enabled ? (
                 <span className={`px-1.5 py-0.2 rounded-[2px] text-[8px] font-mono font-bold uppercase tracking-wider ${
                   gameState.event_schedule.status === 'SCHEDULED' ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40' :
@@ -3000,7 +3011,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         ended_at: Date.now()
                       };
                       await syncService.updateGameState({
-                        event_schedule: updatedSchedule
+                        event_schedule: updatedSchedule,
+                        show_qr: false
                       });
                       triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
                     },
@@ -3024,45 +3036,86 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               Điều Phối
             </span>
 
-            {onViewChange && (
-              <button
-                type="button"
-                id="btn-admin-header-pause"
-                onClick={() => openConfirm(
-                  'Tạm dừng Trận Đấu?',
-                  'Cảnh báo: Hành động này sẽ chuyển TẤT CẢ khán giả về Màn Hình Chờ (Pause). Bạn có chắc chắn?',
-                  () => syncService.updateGameState({ force_route: 'client_landing', force_route_ts: Date.now() }),
-                  'Đồng ý Tạm Dừng'
-                )}
-                data-tooltip="Chuyển toàn bộ khán giả về màn hình chờ / Tạm dừng thi đấu"
-                data-tooltip-title="Tạm Dừng Gameshow"
-                data-tooltip-variant="warning"
-                className="has-tooltip fluent-action-btn text-amber-300 bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/30"
-              >
+            {/* Nút TẠM DỪNG TRẬN / ĐẾM NGƯỢC GIẢI LAO (Master Match Pause & Intermission Hub) */}
+            <button
+              type="button"
+              id="btn-admin-header-pause"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowMatchBreakModal(true);
+              }}
+              data-tooltip="Bật bảng điều khiển Tạm Dừng Trận Đấu, Đóng băng câu hỏi hoặc Đếm ngược giải lao sân khấu (1m, 2m, 5m, 10m)"
+              data-tooltip-title="Tạm Dừng / Giải Lao Trận"
+              data-tooltip-variant="warning"
+              className={`has-tooltip fluent-action-btn ${
+                gameState.match_break?.active
+                  ? 'text-amber-200 bg-amber-950/90 border-amber-400 shadow-md shadow-amber-950/60 ring-1 ring-amber-400 animate-pulse'
+                  : gameState.is_timer_paused || gameState.force_route === 'client_landing'
+                    ? 'text-amber-200 bg-amber-950/80 border-amber-400/80 shadow-md ring-1 ring-amber-400/50 animate-pulse'
+                    : 'text-amber-300 bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/30'
+              }`}
+            >
+              {gameState.match_break?.active ? (
+                <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 animate-bounce" />
+              ) : (
                 <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-                <span>Tạm Dừng Trận</span>
-              </button>
-            )}
+              )}
+              <span className="font-bold">
+                {gameState.match_break?.active
+                  ? 'Đang Nghỉ Trận'
+                  : gameState.is_timer_paused
+                    ? `Tạm Dừng (${gameState.paused_remaining_seconds || 0}s)`
+                    : 'Tạm Dừng Trận'}
+              </span>
+              {(gameState.match_break?.active || gameState.is_timer_paused) && (
+                <span className="w-2 h-2 rounded-[2px] bg-amber-400 animate-ping" />
+              )}
+            </button>
 
-            {onViewChange && (
-              <button
-                type="button"
-                id="btn-admin-header-resume"
-                onClick={() => openConfirm(
-                  'Tiếp tục Trận Đấu?',
-                  'Hành động này sẽ ĐƯA TẤT CẢ khán giả trở lại màn hình thi đấu trực tiếp (Audience View). Bạn có chắc chắn?',
-                  () => syncService.updateGameState({ force_route: 'audience', force_route_ts: Date.now() }),
-                  'Đồng ý Tiếp Tục'
-                )}
-                data-tooltip="Đưa tất cả khán giả trở lại giao diện thi đấu trực tiếp"
-                data-tooltip-title="Tiếp Tục Gameshow"
-                data-tooltip-variant="success"
-                className="has-tooltip fluent-action-btn text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30"
-              >
-                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-                <span>Tiếp Tục Trận</span>
-              </button>
-            )}
+            {/* Nút TIẾP TỤC TRẬN (Master Resume Match) */}
+            <button
+              type="button"
+              id="btn-admin-header-resume"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playStartRound();
+                
+                const updates: Partial<GameState> = {
+                  match_break: null,
+                  force_route: 'audience',
+                  force_route_ts: Date.now(),
+                  projector_view_mode: 'DEFAULT',
+                  show_summary: false
+                };
+
+                if (gameState.is_timer_paused) {
+                  const remainingToRestore = typeof gameState.paused_remaining_seconds === 'number' && gameState.paused_remaining_seconds > 0
+                    ? gameState.paused_remaining_seconds 
+                    : (gameState.time_limit || 20);
+                  
+                  const newServerStartTime = syncService.getSynchronizedNow() - (((gameState.time_limit || 20) - remainingToRestore) * 1000);
+                  updates.is_timer_paused = false;
+                  updates.paused_remaining_seconds = 0;
+                  updates.server_start_time = newServerStartTime;
+                  updates.status = 'ACTIVE';
+                }
+
+                syncService.updateGameState(updates);
+                triggerHudToast('RESUME', '🚀 ĐÃ TIẾP TỤC TRẬN ĐẤU! Toàn bộ sàn đấu và khán giả đã trở lại thi đấu.');
+              }}
+              data-tooltip="Đưa tất cả khán giả, màn chiếu và đồng hồ trở lại giao diện thi đấu trực tiếp"
+              data-tooltip-title="Tiếp Tục Trận Đấu"
+              data-tooltip-variant="success"
+              className={`has-tooltip fluent-action-btn ${
+                gameState.match_break?.active || gameState.is_timer_paused || gameState.force_route === 'client_landing'
+                  ? 'text-emerald-100 bg-emerald-700 hover:bg-emerald-600 border-emerald-400 shadow-lg shadow-emerald-950/60 font-bold ring-1 ring-emerald-300 animate-pulse'
+                  : 'text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30'
+              }`}
+            >
+              <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-current" />
+              <span>Tiếp Tục Trận</span>
+            </button>
 
             {/* Show Summary / Leaderboard Button */}
             <button
@@ -3373,6 +3426,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           activeAudienceCount={activeCount} 
         />
       )}
+
+      {/* ================= TOURNAMENT MATCH CONFIGURATION & STAGE BRANDING SECTION ================= */}
+      <AdminMatchConfigSection
+        gameState={gameState}
+        onOpenFullScheduleModal={() => {
+          vibrateTap();
+          soundFx.playClick();
+          setShowEventScheduleModal(true);
+        }}
+        triggerToast={(msg) => triggerHudToast('EVENT', msg)}
+      />
 
       {/* ================= STAGE PROJECTOR REMOTE CONTROL HUB ================= */}
       <ProjectorControlHub
@@ -3858,13 +3922,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     ended_at: Date.now()
                   };
                   await syncService.updateGameState({
-                    event_schedule: updatedSchedule
+                    event_schedule: updatedSchedule,
+                    show_qr: false
                   });
                   triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
                 },
                 'Đồng Ý Kết Thúc'
               );
             }}
+            triggerToast={(msg) => triggerHudToast('EVENT', msg)}
           />
         ) : activeAdminTab === 'QUESTIONS' ? (
         /* ================= TAB 5: NHẬP & QUẢN LÝ NGÂN HÀNG CÂU HỎI STUDIO ================= */
@@ -7873,6 +7939,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         gameState={gameState}
         activeAudienceCount={activeCount}
         triggerToast={(msg) => triggerHudToast('EVENT', msg)}
+      />
+
+      {/* Match Break & Intermission Countdown Modal */}
+      <MatchBreakModal
+        isOpen={showMatchBreakModal}
+        onClose={() => setShowMatchBreakModal(false)}
+        gameState={gameState}
+        activeCount={activeCount}
+        triggerHudToast={(title, msg) => triggerHudToast(title, msg)}
+        openConfirm={openConfirm}
       />
 
       {/* AI MC Co-pilot Live Advice Modal */}

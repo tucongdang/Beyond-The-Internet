@@ -274,6 +274,12 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       {/* Header Telemetry row */}
       <div className="flex items-center justify-between gap-3 pt-1">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
+          {gameState?.event_schedule?.match_name && (
+            <span className="px-2.5 py-0.5 rounded-[2px] text-[10.5px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 truncate flex items-center gap-1 shadow-sm">
+              <span>{gameState.event_schedule.match_name}</span>
+            </span>
+          )}
+
           {(label || gameState?.category || gameState?.round_name) && (
             <span className="px-3 py-1 rounded-[2px] text-xs font-bold uppercase tracking-wider bg-[#F7CAC9]/20 text-[#FCEEEC] border border-[#F7CAC9]/40 truncate">
               {label || gameState?.category || gameState?.round_name}

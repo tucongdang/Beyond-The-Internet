@@ -62,6 +62,7 @@ interface AudienceDesktopSidebarProps {
   onOpenProfile: () => void;
   onOpenLogModal?: () => void;
   onOpenQAModal?: () => void;
+  onOpenLeaderboard?: () => void;
   selectedChoice?: string;
   hasVotedThisQuestion?: boolean;
   timeLeft?: number;
@@ -83,6 +84,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
   onOpenProfile,
   onOpenLogModal,
   onOpenQAModal,
+  onOpenLeaderboard,
   selectedChoice = '',
   hasVotedThisQuestion = false,
   timeLeft = 0,
@@ -491,6 +493,20 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
                   {/* Quick Profile Actions */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
+                    {onOpenLeaderboard ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpen(false);
+                          onOpenLeaderboard();
+                        }}
+                        className="col-span-2 p-2.5 rounded-[2px] bg-gradient-to-r from-amber-500/20 to-purple-600/20 hover:from-amber-500/30 hover:to-purple-600/30 border border-amber-400/40 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition hover-effect shadow-sm"
+                      >
+                        <Trophy className="w-4 h-4 text-amber-300" />
+                        <span>{localLanguage !== 'vi' ? 'Live Real-time Leaderboard' : 'Bảng Xếp Hạng Thời Gian Thực'}</span>
+                      </button>
+                    ) : null}
+
                     <button
                       type="button"
                       onClick={() => {

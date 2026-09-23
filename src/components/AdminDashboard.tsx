@@ -24,6 +24,8 @@ import {
   Radio
 } from 'lucide-react';
 
+import { AdminMatchConfigSection } from './AdminMatchConfigSection';
+
 interface AdminDashboardProps {
   onNavigate: (tabId: any) => void;
   gameState: any;
@@ -31,6 +33,7 @@ interface AdminDashboardProps {
   onOpenEventSchedule?: () => void;
   onStartEvent?: () => void;
   onEndEvent?: () => void;
+  triggerToast?: (message: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -39,7 +42,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   snapshotCount,
   onOpenEventSchedule,
   onStartEvent,
-  onEndEvent
+  onEndEvent,
+  triggerToast
 }) => {
   const cardClasses = "fluent-box p-4 sm:p-5 transition-all duration-300 ease-out cursor-pointer group hover:bg-white/5 hover:brightness-110 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg";
   const iconBoxClasses = "w-10 h-10 rounded-[2px] flex items-center justify-center mb-4 transition-transform group-hover:scale-110";
@@ -180,6 +184,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Match Configuration & Stage Branding Control */}
+      <AdminMatchConfigSection
+        gameState={gameState}
+        onOpenFullScheduleModal={onOpenEventSchedule}
+        triggerToast={triggerToast}
+      />
 
       <div className="space-y-6">
         {/* Nhóm 1: Vòng thi đấu */}

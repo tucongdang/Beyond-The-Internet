@@ -29,7 +29,7 @@ export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfi
 let firestoreDb: Firestore;
 try {
   firestoreDb = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
+    experimentalAutoDetectLongPolling: true,
   }, FIRESTORE_DATABASE_ID);
 } catch (e) {
   firestoreDb = getFirestore(app, FIRESTORE_DATABASE_ID);

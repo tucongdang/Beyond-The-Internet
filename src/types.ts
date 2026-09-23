@@ -214,6 +214,28 @@ export interface AudienceSurveyConfig {
 
 export type EventStageStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'CONCLUDED';
 
+export type TournamentMatchStage =
+  | 'SCRIM' // Đấu thử nghiệm / Tập dượt (Mock match)
+  | 'SEMI_1' // Bán kết 1
+  | 'SEMI_2' // Bán kết 2
+  | 'SEMI_3' // Bán kết 3
+  | 'FINALS' // Đêm Chung kết Tổng
+  | 'CUSTOM'; // Trận đấu tùy chỉnh
+
+export interface MatchBreakState {
+  active: boolean;
+  title: string;
+  subtitle?: string;
+  duration_seconds: number;
+  start_time: number;
+  ends_at?: number;
+  is_paused?: boolean;
+  paused_remaining_seconds?: number;
+  sound_alert_on_finish?: boolean;
+  bg_preset?: 'NEON_PURPLE' | 'CYBER_DARK' | 'GOLD_CEREMONY' | 'EMERGENCY_AMBER';
+  show_qr?: boolean;
+}
+
 export interface EventScheduleConfig {
   enabled: boolean; // Bật chế độ khóa bảo vệ trước giờ G (tránh rò rỉ nội dung câu hỏi cho khán giả đăng ký sớm)
   status: EventStageStatus; // 'SCHEDULED' (Chờ khai mạc) | 'IN_PROGRESS' (Đang diễn ra) | 'CONCLUDED' (Đã kết thúc)
@@ -221,6 +243,9 @@ export interface EventScheduleConfig {
   scheduled_end_time?: number; // Timestamp ms kết thúc dự kiến
   auto_start_on_time?: boolean; // Tự động bắt đầu khi tới giờ (mặc định false - chờ Ban Tổ Chức ấn Bắt đầu)
   title?: string; // Tên sự kiện (ví dụ: "Beyond The Internet 2026")
+  match_stage?: TournamentMatchStage; // Loại trận đấu (SCRIM, SEMI_1, SEMI_2, SEMI_3, FINALS, CUSTOM)
+  match_name?: string; // Tên trận đấu hiển thị (ví dụ: "Trận Bán Kết 1", "Đêm Chung Kết Tổng")
+  match_subtitle?: string; // Phụ đề / Bảng đấu (ví dụ: "Bảng A tranh tài", "Ngôi Vị Quán Quân")
   location?: string; // Địa điểm tổ chức (Hội trường A / Trực tiếp)
   briefing_note?: string; // Lời dặn / Hướng dẫn trước giờ thi
   concluding_message?: string; // Thông điệp bế mạc cảm ơn khán giả
@@ -233,6 +258,7 @@ export interface GameState {
   language?: 'vi' | 'en';
   active_module?: 'GAME' | 'LUCKY_DRAW';
   lucky_draw?: LuckyDrawState;
+  match_break?: MatchBreakState | null;
   audience_light_show?: AudienceLightShowState | null;
   grand_finale?: GrandFinaleState | null;
   announcer_overlay?: AnnouncerOverlay | null;

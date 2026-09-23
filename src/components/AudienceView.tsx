@@ -36,7 +36,9 @@ import { ZoomIn } from 'lucide-react';
 import { t } from '../utils/i18n';
 import { ShareGameModal } from './ShareGameModal';
 import { Leaderboard } from './Leaderboard';
+import { AudienceRealtimeLeaderboard } from './AudienceRealtimeLeaderboard';
 import { LuckyDrawAudience } from './LuckyDrawAudience';
+import { MatchBreakAudienceOverlay } from './MatchBreakAudienceOverlay';
 import { NextQuestionCountdown } from './NextQuestionCountdown';
 import { CountdownTimer } from './CountdownTimer';
 import { AudienceDesktopSidebar } from './AudienceDesktopSidebar';
@@ -113,6 +115,7 @@ interface AudienceViewProps {
   onOpenShareModal?: () => void;
   onOpenQAModal?: () => void;
   onOpenPostMatchModal?: () => void;
+  onOpenLeaderboard?: () => void;
   isHighContrast?: boolean;
   onToggleHighContrast?: () => void;
   isWakeLockLocked?: boolean;
@@ -131,6 +134,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   onOpenShareModal,
   onOpenQAModal,
   onOpenPostMatchModal,
+  onOpenLeaderboard,
   isHighContrast,
   onToggleHighContrast,
   isWakeLockLocked,
@@ -165,6 +169,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const handleOpenShareModal = onOpenShareModal || (() => setIsShareModalOpen(true));
   const [showConcludedLeaderboard, setShowConcludedLeaderboard] = useState<boolean>(false);
+  const [isRealtimeLeaderboardOpen, setIsRealtimeLeaderboardOpen] = useState<boolean>(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState<boolean>(false);
   const [lastKeyPressed, setLastKeyPressed] = useState<string>('');
   const isLongQuestion = (gameState?.question_text || '').length > 180;
@@ -1569,6 +1574,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         return () => clearTimeout(timer);
           }
 
+      if (keyUpper === 'B') {
+        e.preventDefault();
+        soundFx.playClick();
+        vibrateTap();
+        setIsRealtimeLeaderboardOpen(prev => !prev);
+        return () => clearTimeout(timer);
+      }
+
       if (keyUpper === 'L') {
         e.preventDefault();
         soundFx.playClick();
@@ -1742,6 +1755,22 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               window.dispatchEvent(new CustomEvent('bti_open_survey'));
             }
           }}
+        />
+        <AudienceSurveyModal
+          gameState={gameState}
+          user={user}
+          activeCount={survivalStats?.totalContestants || 1}
+        />
+      </div>
+    );
+  }
+
+  if (gameState.match_break?.active) {
+    return (
+      <div className="relative w-full min-h-[calc(100dvh-5rem)] flex flex-col justify-center items-center p-3 sm:p-6 animate-fadeIn">
+        <MatchBreakAudienceOverlay
+          gameState={gameState}
+          activeCount={survivalStats?.totalContestants || 1}
         />
         <AudienceSurveyModal
           gameState={gameState}
@@ -2489,6 +2518,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           onOpenProfile={onOpenProfile}
           onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
           onOpenQAModal={onOpenQAModal}
+          onOpenLeaderboard={() => setIsRealtimeLeaderboardOpen(true)}
           selectedChoice={selectedChoice}
           hasVotedThisQuestion={hasVotedThisQuestion}
           timeLeft={timeLeft}
@@ -2529,8 +2559,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </div>
             </div>
 
-            <div className="inline-block px-3.5 py-1 rounded-[2px] text-xs font-bold uppercase tracking-widest bg-[#F7CAC9]/10 text-[#F7CAC9] border border-[#F7CAC9]/30 mb-3">
-              {t("standby_ready", localLanguage)}
+            <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
+              {gameState.event_schedule?.match_name && (
+                <div className="inline-block px-3 py-1 rounded-[2px] text-xs font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/40 shadow-sm">
+                  {gameState.event_schedule.match_name}
+                </div>
+              )}
+              <div className="inline-block px-3.5 py-1 rounded-[2px] text-xs font-bold uppercase tracking-widest bg-[#F7CAC9]/10 text-[#F7CAC9] border border-[#F7CAC9]/30">
+                {t("standby_ready", localLanguage)}
+              </div>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-black text-slate-100 mb-3">
@@ -4479,6 +4516,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isRealtimeLeaderboardOpen, setIsRealtimeLeaderboardOpen] = useState(false);
   
   const [isCheerModalOpen, setIsCheerModalOpen] = useState(false);
   const [isQAModalOpen, setIsQAModalOpen] = useState(false);
@@ -4487,6 +4525,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const [qaModalInitialTab, setQaModalInitialTab] = useState<'ASK' | 'MY_QUESTIONS' | 'COMMUNITY'>('ASK');
   const handleOpenLogModal = props.onOpenLogModal || (() => setIsLogModalOpen(true));
   const handleOpenShareModal = props.onOpenShareModal || (() => setIsShareModalOpen(true));
+  const handleOpenLeaderboard = props.onOpenLeaderboard || (() => setIsRealtimeLeaderboardOpen(true));
   const handleOpenCheerModal = () => setIsCheerModalOpen(true);
   const handleOpenShoutModal = () => setIsShoutModalOpen(true);
   const handleOpenPostMatchModal = () => setIsPostMatchModalOpen(true);
@@ -4594,6 +4633,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onOpenShareModal={handleOpenShareModal}
           onOpenQAModal={handleOpenQAModal}
           onOpenPostMatchModal={handleOpenPostMatchModal}
+          onOpenLeaderboard={handleOpenLeaderboard}
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={toggleWakeLock}
@@ -4603,6 +4643,21 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       {/* Floating Audience Action Group (Desktop / Tablet only) - Hidden in waiting room & conclusion */}
       {!isEventSpecialStage && (
         <div className="hidden sm:inline-flex fixed left-4 bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          <button
+            id="btn-audience-leaderboard-floating"
+            type="button"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              handleOpenLeaderboard();
+            }}
+            className="fluent-action-btn text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 hover:border-amber-500/50"
+            title="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
+          >
+            <Trophy className="w-[14px] h-[14px] text-amber-400" />
+            <span className="font-bold tracking-wide">BXH Live</span>
+          </button>
+
           <button
             id="btn-audience-shout-floating"
             type="button"
@@ -4686,6 +4741,21 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
             <Home className="w-5 h-5 drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
             <span className="text-[9px] font-bold tracking-tight">{t("view_contest", localLanguage)}</span>
             <span className="w-1 h-1 rounded-full bg-[#F7CAC9] mt-0.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Bảng Xếp Hạng Live"
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsRealtimeLeaderboardOpen(true);
+            }}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
+              isHighContrast ? 'text-amber-300 font-bold' : 'text-amber-400 hover:text-amber-300'
+            }`}
+          >
+            <Trophy className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+            <span className="text-[9px] font-bold tracking-tight">BXH Live</span>
           </button>
           <button
             type="button"
@@ -4812,6 +4882,16 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         user={props.user}
         allResponses={props.allResponses || {}}
         gameState={props.gameState}
+      />
+
+      {/* Real-time Audience Leaderboard Modal */}
+      <AudienceRealtimeLeaderboard
+        isOpen={isRealtimeLeaderboardOpen}
+        onClose={() => setIsRealtimeLeaderboardOpen(false)}
+        user={props.user}
+        gameState={props.gameState}
+        initialAllResponses={props.allResponses}
+        onOpenShareModal={handleOpenShareModal}
       />
 
       {/* Share Modal */}

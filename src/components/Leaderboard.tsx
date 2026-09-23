@@ -1,7 +1,10 @@
 import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { GameState, UserResponse, QuestionItem, GrandFinaleWinner } from '../types';
-import { calculateLeaderboard, UserScoreSummary } from '../utils/leaderboardUtils';
+import { calculateLeaderboard, UserScoreSummary, calculateRankChanges, calculateUserTrends } from '../utils/leaderboardUtils';
+import { RankMovementIndicator } from './RankMovementIndicator';
+import { TrendIndicator } from './TrendIndicator';
 import { syncService } from '../services/syncService';
 import { exportLeaderboardToCSV } from '../utils/exportUtils';
 import { soundFx } from '../services/audioEffects';
@@ -51,11 +54,20 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   isAudienceView = false,
   isStageDisplay = false
 }) => {
-  const [localRoundFilter, setLocalRoundFilter] = useState<'ALL' | 'R1' | 'R2' | 'R3' | 'R4'>('ALL');
-  const roundFilter = (gameState.leaderboard_round_filter as any) || localRoundFilter;
+  const [localRoundFilter, setLocalRoundFilter] = useState<'ALL' | 'R1' | 'R2' | 'R3' | 'R4'>(
+    () => (gameState.leaderboard_round_filter as any) || 'ALL'
+  );
+  
+  // For audience view, allow independent client-side filtering without host override lock.
+  // For stage display, follow host gameState strictly.
+  // For admin operator, control both local state and sync to host.
+  const roundFilter = isAudienceView
+    ? localRoundFilter
+    : (gameState.leaderboard_round_filter as any) || localRoundFilter;
+
   const setRoundFilter = (filter: 'ALL' | 'R1' | 'R2' | 'R3' | 'R4') => {
     setLocalRoundFilter(filter);
-    if (!isAudienceView) {
+    if (!isAudienceView && !isStageDisplay) {
       syncService.updateGameState({ leaderboard_round_filter: filter });
     }
   };
@@ -72,11 +84,13 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   }, [gameState.team_mode_active]);
 
   const [localViewModeState, setLocalViewModeState] = useState<'PODIUM' | 'LIST'>('PODIUM');
-  const activeViewMode = (gameState.leaderboard_view_mode as 'PODIUM' | 'LIST') || localViewModeState;
+  const activeViewMode = isAudienceView
+    ? localViewModeState
+    : (gameState.leaderboard_view_mode as 'PODIUM' | 'LIST') || localViewModeState;
   const viewMode = tabFilter === 'TEAM' ? 'LIST' : activeViewMode;
   const setViewMode = (mode: 'PODIUM' | 'LIST') => {
     setLocalViewModeState(mode);
-    if (!isAudienceView) {
+    if (!isAudienceView && !isStageDisplay) {
       syncService.updateGameState({ leaderboard_view_mode: mode });
     }
   };
@@ -102,6 +116,28 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   const allRankedUsers = useMemo(() => {
     return calculateLeaderboard(allResponses, customQuestionBank, gameState, roundFilter);
   }, [allResponses, customQuestionBank, gameState, roundFilter]);
+
+  // Track rank delta (up/down/same) compared to previous question
+  const rankChangesMap = useMemo(() => {
+    return calculateRankChanges(
+      allResponses,
+      allRankedUsers,
+      gameState.question_id,
+      customQuestionBank,
+      gameState,
+      roundFilter
+    );
+  }, [allResponses, allRankedUsers, gameState.question_id, customQuestionBank, gameState, roundFilter]);
+
+  // Track multi-round performance trends (rising, falling, stable, streak)
+  const trendsMap = useMemo(() => {
+    return calculateUserTrends(
+      allResponses,
+      allRankedUsers,
+      customQuestionBank,
+      gameState
+    );
+  }, [allResponses, allRankedUsers, customQuestionBank, gameState]);
 
   // Auto-scroll hook for table list view
   const {
@@ -467,7 +503,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   vibrateSelection();
                   setRoundFilter(tab.id as any);
                 }}
-                className={`fluent-subtab-btn ${
+                className={`fluent-subtab-btn cursor-pointer transition-all ${
                   roundFilter === tab.id
                     ? 'active bg-[#F7CAC9] text-[#190839] font-black border-[#F7CAC9] shadow-sm'
                     : 'fluent-box-nested text-white/60 hover:text-white hover:bg-white/10'
@@ -533,15 +569,36 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                         </div>
                       </div>
 
-                      <span className="fluent-badge fluent-badge-success flex items-center gap-1.5 px-3 py-1 text-xs sm:text-sm font-bold shadow-md">
-                        <Zap className="w-3.5 h-3.5 text-emerald-400 animate-bounce" /> TOP 1 LIVE
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {rankChangesMap.get(rank1.uid) && (
+                          <RankMovementIndicator
+                            delta={rankChangesMap.get(rank1.uid)?.delta}
+                            prevRank={rankChangesMap.get(rank1.uid)?.prevRank}
+                          />
+                        )}
+                        <span className="fluent-badge fluent-badge-success flex items-center gap-1.5 px-3 py-1 text-xs sm:text-sm font-bold shadow-md">
+                          <Zap className="w-3.5 h-3.5 text-emerald-400 animate-bounce" /> TOP 1 LIVE
+                        </span>
+                      </div>
                     </div>
 
                     <div>
-                      <h3 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white group-hover:text-amber-200 transition tracking-tight font-mono leading-tight">
-                        {rank1.name}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white group-hover:text-amber-200 transition tracking-tight font-mono leading-tight">
+                          {rank1.name}
+                        </h3>
+                        {rankChangesMap.get(rank1.uid) && (
+                          <RankMovementIndicator
+                            delta={rankChangesMap.get(rank1.uid)?.delta}
+                            prevRank={rankChangesMap.get(rank1.uid)?.prevRank}
+                          />
+                        )}
+                        {trendsMap.get(rank1.uid) && (
+                          <TrendIndicator
+                            trendInfo={trendsMap.get(rank1.uid)}
+                          />
+                        )}
+                      </div>
                       <div className="mt-2.5 flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs sm:text-sm font-mono">
                         <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded-[3px] text-white/80">
                           MSSV: <strong className="text-amber-300 font-bold">{rank1.mssv || 'N/A'}</strong>
@@ -710,11 +767,31 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                           <Medal className="w-3 h-3 text-slate-300" /> {localLanguage !== 'vi' ? 'Runner-Up 1' : 'Á Quân 1'}
                         </span>
                       </div>
+                      {rankChangesMap.get(rank2.uid) && (
+                        <RankMovementIndicator
+                          delta={rankChangesMap.get(rank2.uid)?.delta}
+                          prevRank={rankChangesMap.get(rank2.uid)?.prevRank}
+                        />
+                      )}
                     </div>
 
-                    <h3 className="text-lg lg:text-xl font-black text-white group-hover:text-slate-200 transition truncate font-mono">
-                      {rank2.name}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg lg:text-xl font-black text-white group-hover:text-slate-200 transition truncate font-mono">
+                        {rank2.name}
+                      </h3>
+                      {rankChangesMap.get(rank2.uid) && (
+                        <RankMovementIndicator
+                          delta={rankChangesMap.get(rank2.uid)?.delta}
+                          prevRank={rankChangesMap.get(rank2.uid)?.prevRank}
+                          compact
+                        />
+                      )}
+                      {trendsMap.get(rank2.uid) && (
+                        <TrendIndicator
+                          trendInfo={trendsMap.get(rank2.uid)}
+                        />
+                      )}
+                    </div>
                     <p className="text-xs text-white/60 font-mono my-2 flex flex-wrap items-center gap-1.5">
                       <span>MSSV: <strong className="text-slate-300 font-bold">{rank2.mssv || 'N/A'}</strong></span>
                       <span>•</span>
@@ -768,14 +845,36 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                         </span>
                       </div>
 
-                      <span className="fluent-badge fluent-badge-success flex items-center gap-1 text-[11px] font-bold">
-                        <Zap className="w-3 h-3 text-emerald-400" /> TOP 1 LIVE
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {rankChangesMap.get(rank1.uid) && (
+                          <RankMovementIndicator
+                            delta={rankChangesMap.get(rank1.uid)?.delta}
+                            prevRank={rankChangesMap.get(rank1.uid)?.prevRank}
+                          />
+                        )}
+                        <span className="fluent-badge fluent-badge-success flex items-center gap-1 text-[11px] font-bold">
+                          <Zap className="w-3 h-3 text-emerald-400" /> TOP 1 LIVE
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white group-hover:text-amber-200 transition tracking-tight truncate font-mono">
-                      {rank1.name}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white group-hover:text-amber-200 transition tracking-tight truncate font-mono">
+                        {rank1.name}
+                      </h3>
+                      {rankChangesMap.get(rank1.uid) && (
+                        <RankMovementIndicator
+                          delta={rankChangesMap.get(rank1.uid)?.delta}
+                          prevRank={rankChangesMap.get(rank1.uid)?.prevRank}
+                          compact
+                        />
+                      )}
+                      {trendsMap.get(rank1.uid) && (
+                        <TrendIndicator
+                          trendInfo={trendsMap.get(rank1.uid)}
+                        />
+                      )}
+                    </div>
                     <p className="text-xs text-amber-200/80 font-mono my-2 flex flex-wrap items-center gap-1.5">
                       <span>MSSV: <strong className="text-amber-300 font-bold">{rank1.mssv || 'N/A'}</strong></span>
                       <span>•</span>
@@ -825,11 +924,31 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                           <Medal className="w-3 h-3 text-amber-400" /> {localLanguage !== 'vi' ? 'Runner-Up 2' : 'Á Quân 2'}
                         </span>
                       </div>
+                      {rankChangesMap.get(rank3.uid) && (
+                        <RankMovementIndicator
+                          delta={rankChangesMap.get(rank3.uid)?.delta}
+                          prevRank={rankChangesMap.get(rank3.uid)?.prevRank}
+                        />
+                      )}
                     </div>
 
-                    <h3 className="text-lg lg:text-xl font-black text-white group-hover:text-amber-200 transition truncate font-mono">
-                      {rank3.name}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg lg:text-xl font-black text-white group-hover:text-amber-200 transition truncate font-mono">
+                        {rank3.name}
+                      </h3>
+                      {rankChangesMap.get(rank3.uid) && (
+                        <RankMovementIndicator
+                          delta={rankChangesMap.get(rank3.uid)?.delta}
+                          prevRank={rankChangesMap.get(rank3.uid)?.prevRank}
+                          compact
+                        />
+                      )}
+                      {trendsMap.get(rank3.uid) && (
+                        <TrendIndicator
+                          trendInfo={trendsMap.get(rank3.uid)}
+                        />
+                      )}
+                    </div>
                     <p className="text-xs text-white/60 font-mono my-2 flex flex-wrap items-center gap-1.5">
                       <span>MSSV: <strong className="text-amber-400 font-bold">{rank3.mssv || 'N/A'}</strong></span>
                       <span>•</span>
@@ -875,7 +994,21 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       #4
                     </span>
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white font-mono leading-tight">{rank4.name}</h4>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-white font-mono leading-tight">{rank4.name}</h4>
+                        {rankChangesMap.get(rank4.uid) && (
+                          <RankMovementIndicator
+                            delta={rankChangesMap.get(rank4.uid)?.delta}
+                            prevRank={rankChangesMap.get(rank4.uid)?.prevRank}
+                            compact
+                          />
+                        )}
+                        {trendsMap.get(rank4.uid) && (
+                          <TrendIndicator
+                            trendInfo={trendsMap.get(rank4.uid)}
+                          />
+                        )}
+                      </div>
                       <p className="text-[10px] sm:text-[11px] font-mono text-white/50">MSSV: {rank4.mssv || 'N/A'} • UID: <span className="text-purple-300 font-bold">{getUserDisplayUid(rank4)}</span></p>
                     </div>
                   </div>
@@ -897,7 +1030,21 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                       #5
                     </span>
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white font-mono leading-tight">{rank5.name}</h4>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-white font-mono leading-tight">{rank5.name}</h4>
+                        {rankChangesMap.get(rank5.uid) && (
+                          <RankMovementIndicator
+                            delta={rankChangesMap.get(rank5.uid)?.delta}
+                            prevRank={rankChangesMap.get(rank5.uid)?.prevRank}
+                            compact
+                          />
+                        )}
+                        {trendsMap.get(rank5.uid) && (
+                          <TrendIndicator
+                            trendInfo={trendsMap.get(rank5.uid)}
+                          />
+                        )}
+                      </div>
                       <p className="text-[10px] sm:text-[11px] font-mono text-white/50">MSSV: {rank5.mssv || 'N/A'} • UID: <span className="text-purple-300 font-bold">{getUserDisplayUid(rank5)}</span></p>
                     </div>
                   </div>
@@ -1016,78 +1163,100 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {allRankedUsers.map((user, idx) => {
-                  const isTop1 = idx === 0;
-                  const isTop2 = idx === 1;
-                  const isTop3 = idx === 2;
-                  const isTop5 = idx < 5;
+                <AnimatePresence initial={false}>
+                  {allRankedUsers.map((user, idx) => {
+                    const isTop1 = idx === 0;
+                    const isTop2 = idx === 1;
+                    const isTop3 = idx === 2;
+                    const isTop5 = idx < 5;
 
-                  return (
-                    <tr
-                      key={user.uid || idx}
-                      className={`transition ${
-                        isTop1
-                          ? 'bg-amber-400/10 hover:bg-amber-400/15 font-bold'
-                          : isTop2
-                          ? 'bg-slate-400/5 hover:bg-slate-400/15'
-                          : isTop3
-                          ? 'bg-amber-700/5 hover:bg-amber-700/15'
-                          : 'hover:bg-white/5'
-                      }`}
-                    >
-                      <td className="p-3 text-center">
-                        <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-[2px] font-black text-xs ${
-                            isTop1
-                              ? 'bg-amber-400 text-[#0D0420] ring-1 ring-amber-300'
-                              : isTop2
-                              ? 'bg-slate-300 text-[#0D0420]'
-                              : isTop3
-                              ? 'bg-amber-700 text-white'
-                              : isTop5
-                              ? 'bg-[#F7CAC9]/30 text-[#EBC7D6] border border-[#E39A96]/30'
-                              : 'text-white/40'
-                          }`}
-                        >
-                          {idx + 1}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          {isTop1 && <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />}
-                          <span className={`text-xs sm:text-sm ${isTop5 ? 'text-white font-bold' : 'text-white/80'}`}>
-                            {user.name}
+                    return (
+                      <motion.tr
+                        key={user.uid || user.mssv || idx}
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{
+                          layout: { type: 'spring', damping: 25, stiffness: 350 },
+                          opacity: { duration: 0.2 }
+                        }}
+                        className={`transition-colors ${
+                          isTop1
+                            ? 'bg-amber-400/10 hover:bg-amber-400/15 font-bold'
+                            : isTop2
+                            ? 'bg-slate-400/5 hover:bg-slate-400/15'
+                            : isTop3
+                            ? 'bg-amber-700/5 hover:bg-amber-700/15'
+                            : 'hover:bg-white/5'
+                        }`}
+                      >
+                        <td className="p-3 text-center">
+                          <span
+                            className={`inline-flex items-center justify-center w-6 h-6 rounded-[2px] font-black text-xs ${
+                              isTop1
+                                ? 'bg-amber-400 text-[#0D0420] ring-1 ring-amber-300'
+                                : isTop2
+                                ? 'bg-slate-300 text-[#0D0420]'
+                                : isTop3
+                                ? 'bg-amber-700 text-white'
+                                : isTop5
+                                ? 'bg-[#F7CAC9]/30 text-[#EBC7D6] border border-[#E39A96]/30'
+                                : 'text-white/40'
+                            }`}
+                          >
+                            {idx + 1}
                           </span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-white/60">{user.mssv}</td>
-                      <td className="p-3">
-                        <span className="text-purple-300 font-mono text-xs bg-purple-950/40 border border-purple-500/20 px-2 py-0.5 rounded-[2px]">
-                          {getUserDisplayUid(user)}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className="text-emerald-400 font-bold">
-                          {user.correctAnswersCount}
-                        </span>
-                        <span className="text-white/40"> / {user.totalAnswered}</span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] fluent-box-nested border border-white/5">
-                          <span className={user.accuracyRate >= 80 ? 'text-emerald-400 font-bold' : 'text-white/70'}>
-                            {user.accuracyRate}%
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {isTop1 && <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />}
+                            <span className={`text-xs sm:text-sm ${isTop5 ? 'text-white font-bold' : 'text-white/80'}`}>
+                              {user.name}
+                            </span>
+                            {rankChangesMap.get(user.uid) && (
+                              <RankMovementIndicator
+                                delta={rankChangesMap.get(user.uid)?.delta}
+                                prevRank={rankChangesMap.get(user.uid)?.prevRank}
+                                compact
+                              />
+                            )}
+                            {trendsMap.get(user.uid) && (
+                              <TrendIndicator
+                                trendInfo={trendsMap.get(user.uid)}
+                              />
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 text-white/60">{user.mssv}</td>
+                        <td className="p-3">
+                          <span className="text-purple-300 font-mono text-xs bg-purple-950/40 border border-purple-500/20 px-2 py-0.5 rounded-[2px]">
+                            {getUserDisplayUid(user)}
                           </span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-center text-[#FCEEEC] font-bold">{user.avgLatency}s</td>
-                      <td className="p-3 text-right">
-                        <span className={`text-sm sm:text-base font-black ${isTop1 ? 'text-amber-300' : 'text-white'}`}>
-                          {user.totalScore} <span className="text-xs text-white/40 font-normal">pts</span>
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className="text-emerald-400 font-bold">
+                            {user.correctAnswersCount}
+                          </span>
+                          <span className="text-white/40"> / {user.totalAnswered}</span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] fluent-box-nested border border-white/5">
+                            <span className={user.accuracyRate >= 80 ? 'text-emerald-400 font-bold' : 'text-white/70'}>
+                              {user.accuracyRate}%
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center text-[#FCEEEC] font-bold">{user.avgLatency}s</td>
+                        <td className="p-3 text-right">
+                          <span className={`text-sm sm:text-base font-black ${isTop1 ? 'text-amber-300' : 'text-white'}`}>
+                            {user.totalScore} <span className="text-xs text-white/40 font-normal">pts</span>
+                          </span>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>

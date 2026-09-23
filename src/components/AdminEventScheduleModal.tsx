@@ -16,12 +16,106 @@ import {
   Radio,
   Save,
   Lock,
-  Unlock
+  Unlock,
+  Trophy,
+  Swords,
+  FlaskConical,
+  Award,
+  Layers,
+  Tag
 } from 'lucide-react';
-import { GameState, EventScheduleConfig, EventStageStatus } from '../types';
+import { GameState, EventScheduleConfig, EventStageStatus, TournamentMatchStage } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
+
+export interface TournamentPresetOption {
+  id: TournamentMatchStage;
+  label: string;
+  badge: string;
+  icon: string;
+  name: string;
+  subtitle: string;
+  briefing: string;
+  concluding: string;
+  badgeBg: string;
+  borderColor: string;
+}
+
+export const TOURNAMENT_MATCH_PRESETS: TournamentPresetOption[] = [
+  {
+    id: 'SCRIM',
+    label: 'Đấu Thử Nghiệm',
+    badge: 'TẬP DƯỢT',
+    icon: '🧪',
+    name: 'Trận Đấu Thử Nghiệm / Mock Match',
+    subtitle: 'Khảo sát giao diện & Làm quen hệ thống',
+    briefing: 'Chào mừng các bạn tham gia trận đấu thử nghiệm! Hãy thử tương tác, trả lời câu hỏi và kiểm tra độ mượt mà của hệ thống.',
+    concluding: 'Buổi tập dượt đã kết thúc thành công! Hẹn gặp lại các bạn tại các vòng thi chính thức của Beyond The Internet 2026!',
+    badgeBg: 'bg-amber-500/20 text-amber-300',
+    borderColor: 'border-amber-500/40 hover:border-amber-400'
+  },
+  {
+    id: 'SEMI_1',
+    label: 'Bán Kết 1',
+    badge: 'SEMI-FINAL 1',
+    icon: '⚔️',
+    name: 'Trận Bán Kết 1 (Semi-Final 1)',
+    subtitle: 'Bảng A - Tranh vé vào Chung Kết',
+    briefing: 'Chào mừng quý vị và các bạn đến với Trận Bán Kết 1! Chúc các thí sinh thi đấu tự tin, bản lĩnh và bứt phá ngoạn mục.',
+    concluding: 'Trận Bán Kết 1 đã khép lại thành công rực rỡ! Chúc mừng các thí sinh xuất sắc nhất đã giành tấm vé đầu tiên vào Chung Kết!',
+    badgeBg: 'bg-sky-500/20 text-sky-300',
+    borderColor: 'border-sky-500/40 hover:border-sky-400'
+  },
+  {
+    id: 'SEMI_2',
+    label: 'Bán Kết 2',
+    badge: 'SEMI-FINAL 2',
+    icon: '⚔️',
+    name: 'Trận Bán Kết 2 (Semi-Final 2)',
+    subtitle: 'Bảng B - Tranh vé vào Chung Kết',
+    briefing: 'Chào mừng quý vị và các bạn đến với Trận Bán Kết 2! Hãy chuẩn bị tinh thần và chiến thuật tốt nhất cho từng câu hỏi.',
+    concluding: 'Trận Bán Kết 2 đã khép lại thành công rực rỡ! Chúc mừng các thí sinh xuất sắc tiếp theo bước vào Chung Kết!',
+    badgeBg: 'bg-indigo-500/20 text-indigo-300',
+    borderColor: 'border-indigo-500/40 hover:border-indigo-400'
+  },
+  {
+    id: 'SEMI_3',
+    label: 'Bán Kết 3',
+    badge: 'SEMI-FINAL 3',
+    icon: '⚔️',
+    name: 'Trận Bán Kết 3 (Semi-Final 3)',
+    subtitle: 'Bảng C - Tranh vé vào Chung Kết',
+    briefing: 'Chào mừng quý vị và các bạn đến với Trận Bán Kết 3! Cơ hội cuối cùng để giành tấm vé bước tiếp vào Đêm Chung Kết Tổng!',
+    concluding: 'Trận Bán Kết 3 đã kết thúc! Toàn bộ các tấm vé vàng bước vào Đêm Chung Kết Tổng đã chính thức có chủ!',
+    badgeBg: 'bg-pink-500/20 text-pink-300',
+    borderColor: 'border-pink-500/40 hover:border-pink-400'
+  },
+  {
+    id: 'FINALS',
+    label: 'Chung Kết Tổng',
+    badge: 'GRAND FINALS',
+    icon: '🏆',
+    name: 'Đêm Chung Kết Tổng (Grand Finale)',
+    subtitle: 'Đêm Vinh Quang & Ngôi Vị Quán Quân',
+    briefing: 'Chào mừng toàn thể quý vị đại biểu, thầy cô và khán giả đến với ĐÊM CHUNG KẾT TỔNG Beyond The Internet 2026! Cùng đón xem những màn tranh tài đỉnh cao!',
+    concluding: 'Beyond The Internet 2026 đã chính thức tìm ra Nhà Vô Địch! Trân trọng cảm ơn tất cả quý vị đại biểu, thầy cô và các bạn khán giả!',
+    badgeBg: 'bg-yellow-500/25 text-yellow-300',
+    borderColor: 'border-yellow-400/60 hover:border-yellow-300'
+  },
+  {
+    id: 'CUSTOM',
+    label: 'Tùy Chỉnh',
+    badge: 'CUSTOM',
+    icon: '⚙️',
+    name: 'Trận Đấu Tùy Chỉnh',
+    subtitle: 'Phiên đấu tương tác đặc biệt',
+    briefing: 'Chào mừng các bạn tham gia trận đấu! Chúc các bạn có những trải nghiệm tuyệt vời.',
+    concluding: 'Trận đấu đã kết thúc! Cảm ơn sự tham gia nhiệt tình của tất cả các bạn!',
+    badgeBg: 'bg-slate-500/20 text-slate-300',
+    borderColor: 'border-slate-500/40 hover:border-slate-400'
+  }
+];
 
 interface AdminEventScheduleModalProps {
   isOpen: boolean;
@@ -62,6 +156,9 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
 
   const [autoStartOnTime, setAutoStartOnTime] = useState<boolean>(Boolean(currentSchedule?.auto_start_on_time));
   const [title, setTitle] = useState<string>(currentSchedule?.title || 'Beyond The Internet 2026');
+  const [matchStage, setMatchStage] = useState<TournamentMatchStage>(currentSchedule?.match_stage || 'SEMI_1');
+  const [matchName, setMatchName] = useState<string>(currentSchedule?.match_name || 'Trận Bán Kết 1 (Semi-Final 1)');
+  const [matchSubtitle, setMatchSubtitle] = useState<string>(currentSchedule?.match_subtitle || 'Bảng A - Tranh vé vào Chung Kết');
   const [location, setLocation] = useState<string>(currentSchedule?.location || 'Hội trường Trực tiếp & Nền tảng Tương tác Trực tuyến');
   const [briefingNote, setBriefingNote] = useState<string>(
     currentSchedule?.briefing_note || 'Chào mừng các bạn khán giả! Vui lòng ổn định chỗ ngồi, kiểm tra kết nối mạng và sẵn sàng cho các vòng thi gay cấn.'
@@ -86,6 +183,9 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       }
       setAutoStartOnTime(Boolean(currentSchedule.auto_start_on_time));
       if (currentSchedule.title) setTitle(currentSchedule.title);
+      if (currentSchedule.match_stage) setMatchStage(currentSchedule.match_stage);
+      if (currentSchedule.match_name) setMatchName(currentSchedule.match_name);
+      if (currentSchedule.match_subtitle) setMatchSubtitle(currentSchedule.match_subtitle);
       if (currentSchedule.location) setLocation(currentSchedule.location);
       if (currentSchedule.briefing_note) setBriefingNote(currentSchedule.briefing_note);
       if (currentSchedule.concluding_message) setConcludingMessage(currentSchedule.concluding_message);
@@ -100,7 +200,19 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
     }
   };
 
-  // Quick preset helpers
+  // Quick preset helpers for Match Selection
+  const applyMatchPreset = (preset: TournamentPresetOption) => {
+    soundFx.playClick();
+    vibrateTap();
+    setMatchStage(preset.id);
+    setMatchName(preset.name);
+    setMatchSubtitle(preset.subtitle);
+    setBriefingNote(preset.briefing);
+    setConcludingMessage(preset.concluding);
+    showToast(`Đã chọn cấu hình: ${preset.label}`);
+  };
+
+  // Quick preset helpers for Time
   const applyPreset = (offsetMs: number) => {
     soundFx.playClick();
     vibrateTap();
@@ -141,6 +253,9 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       scheduled_start_time: startTimestamp,
       auto_start_on_time: autoStartOnTime,
       title: title.trim() || 'Beyond The Internet 2026',
+      match_stage: matchStage,
+      match_name: matchName.trim() || 'Trận Đấu',
+      match_subtitle: matchSubtitle.trim(),
       location: location.trim(),
       briefing_note: briefingNote.trim(),
       concluding_message: concludingMessage.trim(),
@@ -153,7 +268,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       event_schedule: updatedSchedule
     });
 
-    showToast('✓ Đã lưu cấu hình lịch trình sự kiện!');
+    showToast('✓ Đã lưu cấu hình trận đấu & lịch trình sự kiện!');
     onClose();
   };
 
@@ -175,6 +290,9 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       scheduled_start_time: startTimestamp,
       auto_start_on_time: autoStartOnTime,
       title: title.trim() || 'Beyond The Internet 2026',
+      match_stage: matchStage,
+      match_name: matchName.trim() || 'Trận Đấu',
+      match_subtitle: matchSubtitle.trim(),
       location: location.trim(),
       briefing_note: briefingNote.trim(),
       concluding_message: concludingMessage.trim(),
@@ -182,18 +300,17 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
     };
 
     await syncService.updateGameState({
-      event_schedule: updatedSchedule,
-      status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
+      event_schedule: updatedSchedule
     });
 
     setStatus('IN_PROGRESS');
     setConfirmAction(null);
-    showToast('🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Toàn bộ khán giả đã được mở khóa vào sàn đấu.');
+    showToast('🚀 ĐÃ BẮT ĐẦU TRẬN ĐẤU! Khán giả đã được mở khóa vào sàn đấu trực tiếp.');
   };
 
   // Handle End Event Action
   const handleConfirmEndEvent = async () => {
-    soundFx.playLock();
+    soundFx.playSuccess();
     vibrateTap();
 
     const updatedSchedule: EventScheduleConfig = {
@@ -201,6 +318,9 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       enabled: true,
       status: 'CONCLUDED',
       title: title.trim() || 'Beyond The Internet 2026',
+      match_stage: matchStage,
+      match_name: matchName.trim() || 'Trận Đấu',
+      match_subtitle: matchSubtitle.trim(),
       location: location.trim(),
       briefing_note: briefingNote.trim(),
       concluding_message: concludingMessage.trim(),
@@ -208,7 +328,8 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
     };
 
     await syncService.updateGameState({
-      event_schedule: updatedSchedule
+      event_schedule: updatedSchedule,
+      show_qr: false
     });
 
     setStatus('CONCLUDED');
@@ -232,10 +353,16 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       enabled: true,
       status: 'SCHEDULED',
       scheduled_start_time: startTimestamp,
+      auto_start_on_time: autoStartOnTime,
       title: title.trim() || 'Beyond The Internet 2026',
+      match_stage: matchStage,
+      match_name: matchName.trim() || 'Trận Đấu',
+      match_subtitle: matchSubtitle.trim(),
       location: location.trim(),
       briefing_note: briefingNote.trim(),
-      concluding_message: concludingMessage.trim()
+      concluding_message: concludingMessage.trim(),
+      started_at: undefined,
+      ended_at: undefined
     };
 
     await syncService.updateGameState({
@@ -265,14 +392,14 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
-                  LỊCH TRÌNH & VẬN HÀNH SỰ KIỆN
+                  LỊCH TRÌNH & CẤU HÌNH TRẬN ĐẤU
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-[2px] bg-sky-500/20 text-sky-200 border border-sky-400/30 font-bold uppercase">
                   ANTI-LEAK GATE
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Thiết lập ngày giờ tổ chức, bảo vệ nội dung thi đấu và điều phối Bắt đầu / Kết thúc
+                Thiết lập vòng đấu (Bán kết / Chung kết / Thử nghiệm), ngày giờ và điều phối trận
               </p>
             </div>
           </div>
@@ -341,7 +468,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
                 }`}
               >
                 <Play className="w-4 h-4 fill-current" />
-                <span>BẮT ĐẦU SỰ KIỆN</span>
+                <span>BẮT ĐẦU TRẬN ĐẤU</span>
               </button>
 
               {/* Button KẾT THÚC */}
@@ -389,6 +516,82 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Section: Tournament Match Selection Presets */}
+          <div className="p-4 rounded-[4px] bg-slate-900 border border-white/10 space-y-3.5">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <div className="flex items-center gap-2 font-mono font-bold text-xs uppercase tracking-wider text-amber-300">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <span>Vòng Đấu & Trận Đấu Giải (Tournament Match Presets)</span>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">
+                1-Click Quick Select
+              </span>
+            </div>
+
+            {/* Quick Match Preset Buttons */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+              {TOURNAMENT_MATCH_PRESETS.map((preset) => {
+                const isSelected = matchStage === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => applyMatchPreset(preset)}
+                    className={`p-2.5 rounded-[4px] text-left border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-1.5 ${
+                      isSelected
+                        ? 'bg-slate-800/90 border-amber-400 shadow-md ring-1 ring-amber-400/50 scale-[1.02]'
+                        : 'bg-slate-950/60 border-white/10 hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-base">{preset.icon}</span>
+                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${preset.badgeBg}`}>
+                        {preset.badge}
+                      </span>
+                    </div>
+                    <div>
+                      <div className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                        {preset.label}
+                      </div>
+                      <div className="text-[10px] text-slate-400 line-clamp-1">
+                        {preset.subtitle}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Match Customization Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-white/5">
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono text-slate-300 block font-bold">
+                  Tên trận đấu hiển thị:
+                </label>
+                <input
+                  type="text"
+                  value={matchName}
+                  onChange={(e) => setMatchName(e.target.value)}
+                  placeholder="Ví dụ: Trận Bán Kết 1 (Semi-Final 1)"
+                  className="w-full bg-slate-950 border border-white/15 focus:border-amber-400 text-white text-xs px-3 py-2 rounded-[3px] outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono text-slate-300 block font-bold">
+                  Phụ đề / Bảng đấu:
+                </label>
+                <input
+                  type="text"
+                  value={matchSubtitle}
+                  onChange={(e) => setMatchSubtitle(e.target.value)}
+                  placeholder="Ví dụ: Bảng A - Tranh vé vào Chung Kết"
+                  className="w-full bg-slate-950 border border-white/15 focus:border-amber-400 text-white text-xs px-3 py-2 rounded-[3px] outline-none"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Master Toggle: Enable Anti-Leak Waiting Room Gate */}
@@ -506,7 +709,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[11px] font-mono text-slate-300 block font-bold">
-                  Tiêu đề sự kiện:
+                  Tiêu đề sự kiện lớn:
                 </label>
                 <input
                   type="text"
@@ -574,7 +777,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
             className="px-5 py-2 rounded-[3px] bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs font-mono shadow-md flex items-center gap-1.5 cursor-pointer transition active:scale-95"
           >
             <Save className="w-4 h-4" />
-            <span>Lưu Thiết Lập Lịch Trình</span>
+            <span>Lưu Cấu Hình Trận Đấu & Lịch Trình</span>
           </button>
         </div>
 
@@ -598,38 +801,41 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed bg-white/5 p-3 rounded-[3px] border border-white/5">
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed bg-black/30 p-3 rounded-[4px] border border-white/10">
                 {confirmAction.message}
               </p>
 
-              <div className="flex justify-end gap-2.5 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setConfirmAction(null)}
-                  className="px-4 py-2 rounded-[3px] bg-white/10 hover:bg-white/15 text-slate-300 font-mono text-xs transition cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-[3px] bg-white/10 hover:bg-white/15 text-xs font-mono text-slate-300 transition cursor-pointer"
                 >
-                  Hủy bỏ
+                  Hủy Bỏ
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirmAction.type === 'START') handleConfirmStartEvent();
-                    else if (confirmAction.type === 'END') handleConfirmEndEvent();
-                    else if (confirmAction.type === 'RESET') handleConfirmResetScheduled();
+                    if (confirmAction.type === 'START') {
+                      handleConfirmStartEvent();
+                    } else if (confirmAction.type === 'END') {
+                      handleConfirmEndEvent();
+                    } else if (confirmAction.type === 'RESET') {
+                      handleConfirmResetScheduled();
+                    }
                   }}
-                  className={`px-4 py-2 rounded-[3px] font-bold font-mono text-xs shadow-md transition cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-[3px] font-bold text-xs font-mono shadow-md transition cursor-pointer ${
                     confirmAction.type === 'START' ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950' :
                     confirmAction.type === 'END' ? 'bg-rose-600 hover:bg-rose-500 text-white' :
                     'bg-amber-500 hover:bg-amber-400 text-slate-950'
                   }`}
                 >
-                  Đồng ý Thực hiện
+                  Đồng Ý Thực Hiện
                 </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

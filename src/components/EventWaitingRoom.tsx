@@ -129,10 +129,18 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
           <div className="relative z-10 flex flex-col items-center text-center">
-            {/* Stage Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-400/40 shadow-sm mb-4">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span>PHÒNG CHỜ KHAI MẠC • SẮP DIỄN RA</span>
+            {/* Stage Status Pill & Match Badge */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-400/40 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                <span>PHÒNG CHỜ KHAI MẠC • SẮP DIỄN RA</span>
+              </div>
+              {schedule?.match_name && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-400/40 shadow-sm">
+                  <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{schedule.match_name}</span>
+                </div>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-2">
