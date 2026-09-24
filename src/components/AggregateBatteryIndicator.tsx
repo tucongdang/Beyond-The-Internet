@@ -375,7 +375,7 @@ export const AggregateBatteryIndicator: React.FC<AggregateBatteryIndicatorProps>
               </span>
             )}
           </span>
-          <span className={`text-xs font-bold ${visuals.textColor}`}>
+          <span className={`text-xs font-bold tabular-nums ${visuals.textColor}`}>
             {avgPercent !== null ? `${avgPercent}%` : 'N/A'}
             <span className="text-[10px] text-white/50 ml-1 font-normal">
               ({totalReporting} máy)

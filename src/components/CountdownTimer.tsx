@@ -213,7 +213,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         ) : (
           <Clock className={`w-4 h-4 shrink-0 ${isUrgent ? 'text-amber-300 animate-spin-slow' : 'text-[#F7CAC9]'}`} />
         )}
-        <span>{currentSeconds}s</span>
+        <span className="tabular-nums">{currentSeconds}s</span>
       </div>
     );
   }
@@ -250,7 +250,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className={`font-mono text-base font-black ${
+          <span className={`font-mono text-base font-black tabular-nums ${
             isCritical ? 'text-rose-400 animate-pulse' : isUrgent ? 'text-amber-300' : 'text-white'
           }`}>
             {currentSeconds}
@@ -285,7 +285,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           </div>
 
           <div
-            className={`px-2.5 py-1 rounded-[2px] font-mono text-xs font-black border transition-all ${
+            className={`px-2.5 py-1 rounded-[2px] font-mono text-xs font-black tabular-nums border transition-all ${
               isCritical
                 ? 'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
                 : isUrgent
@@ -340,7 +340,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         <div
           role="timer"
           aria-live="polite"
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] font-mono text-sm font-black border transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] font-mono text-sm font-black tabular-nums border transition-all shrink-0 ${
             isCritical
               ? 'bg-rose-950/80 border-rose-500 text-rose-400 scale-105 animate-bounce shadow-lg shadow-rose-500/30 ring-2 ring-rose-500/40'
               : isUrgent

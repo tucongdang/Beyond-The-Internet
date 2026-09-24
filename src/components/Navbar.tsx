@@ -475,7 +475,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${pingBadge.dot}`} />
                 <Activity className={`w-3 h-3 ${isMeasuringPing ? 'animate-spin text-white' : pingBadge.text}`} />
-                <span className={`text-[10px] font-bold ${pingBadge.text}`}>
+                <span className={`text-[10px] font-bold tabular-nums ${pingBadge.text}`}>
                   {isMeasuringPing ? '...' : pingInfo.latencyMs !== null ? `${pingInfo.latencyMs}ms` : 'Off'}
                 </span>
               </button>

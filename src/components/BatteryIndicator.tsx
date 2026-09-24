@@ -302,7 +302,7 @@ export const BatteryIndicator: React.FC<BatteryIndicatorProps> = ({
               <BatteryIcon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
             )}
           </div>
-          <span className={`text-[10px] font-mono font-bold ${visuals.textColor}`}>
+          <span className={`text-[10px] font-mono font-bold tabular-nums ${visuals.textColor}`}>
             {percent}%
           </span>
         </button>

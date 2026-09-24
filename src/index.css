@@ -1004,46 +1004,75 @@ body.battery-saver-active,
   box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.62), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* Fluent Option Button / Card (Windows 11 Fluent UI 380ms Standard) */
+/* Fluent Option Button / Card (Ergonomic, High-Contrast & Snappy <=160ms Touch Feedback) */
 .fluent-option-btn {
-  background: rgba(22, 8, 48, 0.52) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(22, 8, 48, 0.58) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 3px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
-  transition: transform 0.38s cubic-bezier(0.13, 0.77, 0.32, 0.99), background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s cubic-bezier(0.13, 0.77, 0.32, 0.99), opacity 0.3s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
   transform-origin: center center;
   position: relative;
   overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .fluent-option-btn:hover:not(:disabled) {
-  background: rgba(42, 16, 82, 0.68) !important;
-  border-color: rgba(247, 202, 201, 0.5) !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 1px 1.5px rgba(255, 255, 255, 0.28) !important;
-  transform: scale(1.02);
+  background: rgba(42, 16, 84, 0.72) !important;
+  border-color: rgba(247, 202, 201, 0.55) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.28) !important;
+  transform: translateY(-1px);
 }
 
 .fluent-option-btn:active:not(:disabled) {
-  transform: scale(0.97);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.98);
+  transition: transform 0.08s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .fluent-option-btn.selected {
-  background: rgba(168, 85, 247, 0.28) !important;
-  border: 1px solid rgba(247, 202, 201, 0.7) !important;
-  box-shadow: 0 0 28px rgba(247, 202, 201, 0.22), inset 0 1px 1.5px rgba(255, 255, 255, 0.3) !important;
-  transform: scale(1.02);
+  background: rgba(168, 85, 247, 0.26) !important;
+  border: 1.5px solid rgba(247, 202, 201, 0.85) !important;
+  box-shadow: 0 0 28px rgba(247, 202, 201, 0.28), inset 0 1px 1.5px rgba(255, 255, 255, 0.32) !important;
+  transform: scale(1.008);
 }
 
 .fluent-option-badge {
-  background: rgba(10, 3, 25, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 3, 25, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 2px;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-family: 'SVN-Gilroy', 'Lexend', ui-monospace, monospace;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Distinct color-coded badge accents per option key */
+.fluent-badge-key-A {
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+.fluent-badge-key-B {
+  border-color: rgba(14, 165, 233, 0.45);
+  color: #38bdf8;
+}
+.fluent-badge-key-C {
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+.fluent-badge-key-D {
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #c084fc;
+}
+.fluent-badge-key-E {
+  border-color: rgba(236, 72, 153, 0.45);
+  color: #f472b6;
+}
+.fluent-badge-key-F {
+  border-color: rgba(6, 182, 212, 0.45);
+  color: #22d3ee;
 }
 
 /* Fluent UI 2 Button Interaction System (Tactile Elevation & Touch Feedback) */

@@ -3089,7 +3089,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       <h2 
                         ref={audienceQuestionTextRef}
                         style={audienceOptimalQuestionStyle}
-                        className={`font-bold text-white ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed tracking-tight'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} 
+                        className={`font-bold text-white [text-wrap:balance] tracking-tight ${isCjkQuestion ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'} ${isKoreanQuestion ? 'korean-question-font' : ''}`} 
                         data-question-text="true"
                       >
                         {activeQuestionText}
@@ -3628,6 +3628,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         : label;
 
                       const numKey = idx + 1;
+                      const badgeKeyClass = `fluent-badge-key-${key}`;
 
                       return (
                         <button
@@ -3635,23 +3636,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           id={`btn-option-${key}`}
                           disabled={isEliminated || timeLeft <= 0}
                           onClick={() => handleOptionSelect(key)}
-                          className={`relative w-full p-4 sm:p-5 rounded-[2px] text-left flex items-start gap-3.5 select-none overflow-hidden hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-all duration-300 ${
+                          className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[3px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer ${
                             isEliminated
                               ? 'opacity-30 fluent-box-nested line-through cursor-not-allowed border-white/5'
-                              : isCorrectAnswer && hasVotedThisQuestion
-                              ? 'fluent-option-btn border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] bg-emerald-500/20 z-10 scale-[1.01] animate-pulse'
-                              : isUserIncorrect
-                              ? 'fluent-option-btn border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.4)] bg-rose-500/20 z-10 scale-[1.01]'
+                              : isCorrectAnswer && (gameState.status === 'REVEAL' || timeLeft <= 0)
+                              ? 'fluent-option-btn border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.45)] bg-emerald-500/25 z-10 scale-[1.01] ring-1 ring-emerald-400'
+                              : isUserIncorrect && (gameState.status === 'REVEAL' || timeLeft <= 0)
+                              ? 'fluent-option-btn border-rose-500 shadow-[0_0_24px_rgba(244,63,94,0.45)] bg-rose-500/25 z-10 scale-[1.01] ring-1 ring-rose-500'
                               : isSelected
-                              ? 'fluent-option-btn selected shadow-[0_0_20px_rgba(247,202,201,0.2)] z-10 scale-[1.01]'
+                              ? 'fluent-option-btn selected shadow-[0_0_24px_rgba(247,202,201,0.28)] z-10 scale-[1.008]'
                               : hasVotedThisQuestion
-                              ? 'fluent-option-btn opacity-40 hover:opacity-70 scale-[0.98]'
-                              : 'fluent-option-btn'
+                              ? 'fluent-option-btn opacity-50 hover:opacity-80 scale-[0.99]'
+                              : 'fluent-option-btn hover:border-white/30'
                           }`}
                         >
                           {/* Network LED */}
                           <div 
-                            className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full z-20 shadow-[0_0_8px_currentColor] ${
+                            className={`absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full z-20 shadow-[0_0_8px_currentColor] ${
                               networkStatus === 'OFFLINE' ? 'bg-rose-500 text-rose-500 animate-pulse' :
                               networkStatus === 'DELAYED' ? 'bg-amber-400 text-amber-400' :
                               'bg-emerald-500 text-emerald-500'
@@ -3685,28 +3686,28 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           {/* Option Key Badge with keyboard hint */}
                           <div className="flex flex-col items-center gap-1 shrink-0 relative z-10">
                             <div
-                              className={`w-10 h-10 rounded-[2px] font-mono font-black text-base flex items-center justify-center transition-all ${
+                              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-[2px] font-mono font-black text-base flex items-center justify-center transition-all ${
                                 isSelected
-                                  ? 'bg-[#F7CAC9] text-[#0D0420] shadow-[0_0_15px_rgba(247,202,201,0.8)]'
-                                  : 'fluent-option-badge text-[#F7CAC9]'
+                                  ? 'bg-[#F7CAC9] text-[#0D0420] shadow-[0_0_15px_rgba(247,202,201,0.85)]'
+                                  : `fluent-option-badge ${badgeKeyClass}`
                               }`}
                             >
                               {key}
                             </div>
-                            <span className="text-[9px] font-mono text-amber-300 font-bold hidden sm:inline px-1 py-0.5 rounded-[2px] bg-white/10 border border-white/15">
+                            <span className="text-[9px] font-mono text-amber-300/80 font-bold hidden sm:inline px-1 py-0.5 rounded-[2px] bg-white/10 border border-white/15">
                               [{numKey}]
                             </span>
                           </div>
 
                           {/* Option Text & Image */}
-                          <div className="flex-1 pt-1 relative z-10 flex flex-col gap-2">
+                          <div className="flex-1 pt-0.5 relative z-10 flex flex-col gap-2">
                             {gameState.option_images?.[key] && (
-                              <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full h-32 object-cover rounded-[2px] shadow-sm border border-white/10" />
+                              <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full h-32 sm:h-36 object-cover rounded-[2px] shadow-sm border border-white/10" />
                             )}
                             <div
-                              className={`text-sm sm:text-base font-bold ${
-                                isSelected ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'text-slate-200'
-                              } ${isCjk(displayText, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-snug'}`}
+                              className={`text-sm sm:text-base font-semibold tracking-tight ${
+                                isSelected ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] font-bold' : 'text-slate-100'
+                              } ${isCjk(displayText, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-relaxed'}`}
                             >
                               {displayText}
                             </div>
