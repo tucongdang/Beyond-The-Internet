@@ -50,6 +50,7 @@ import { aiExplanationService } from '../services/aiExplanationService';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
 import { AiTranslationModal } from './AiTranslationModal';
 import { AdminApprovalModal } from './AdminApprovalModal';
+import { SessionExpiringModal } from './SessionExpiringModal';
 import { shortcutService } from '../services/shortcutService';
 import { AudienceAnswerDistributionChart } from './AudienceAnswerDistributionChart';
 import { FluentSearchBar } from './FluentSearchBar';
@@ -124,7 +125,8 @@ import { Timer,  Shield,
   ZoomOut,
   Type,
   ScanLine,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
  , Monitor, MonitorOff, Volume2, VolumeX, Megaphone, MessageSquare, Cloud, Camera, BookOpen, LayoutDashboard , Settings, Calendar, Flag, Coffee } from 'lucide-react';
 import { PROJECTOR_THEMES, getProjectorTheme } from '../utils/themeUtils';
 import {
@@ -175,10 +177,102 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true';
+    if (typeof window !== 'undefined') {
+      if (sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') return true;
+      if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true' && localStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
+        sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+        return true;
+      }
+    }
+    return false;
   });
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState('');
+
+  // 30-minute inactivity timer with 2-minute warning modal
+  const [showSessionWarningModal, setShowSessionWarningModal] = useState<boolean>(false);
+  const [sessionSecondsRemaining, setSessionSecondsRemaining] = useState<number>(120);
+  const lastActivityRef = useRef<number>(Date.now());
+
+  const handleExtendSession = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    setShowSessionWarningModal(false);
+    setSessionSecondsRemaining(120);
+    soundFx.playSuccess();
+    vibrateSuccess();
+    notify('Đã gia hạn phiên làm việc thêm 30 phút thành công!');
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const TOTAL_TIMEOUT_SECONDS = 30 * 60; // 1800s (30 minutes)
+    const WARNING_THRESHOLD_SECONDS = 28 * 60; // 1680s (28 minutes)
+
+    const performInactivityLogout = () => {
+      try {
+        sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
+        sessionStorage.removeItem('BTI2026_TECH_USER');
+        sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
+
+        localStorage.removeItem('BTI2026_ADMIN_AUTH');
+        localStorage.removeItem('BTI2026_TECH_USER');
+        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+      } catch {}
+
+      setIsAuthenticated(false);
+      setShowSessionWarningModal(false);
+      if (onLogout) {
+        onLogout();
+      }
+    };
+
+    const handleUserActivity = () => {
+      // If modal is not currently open, continuous user action updates last activity
+      if (!showSessionWarningModal) {
+        lastActivityRef.current = Date.now();
+      }
+    };
+
+    const activityEvents = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'touchmove',
+      'pointerdown',
+      'wheel'
+    ];
+
+    activityEvents.forEach(evt => {
+      window.addEventListener(evt, handleUserActivity, { passive: true });
+    });
+
+    const intervalId = setInterval(() => {
+      const elapsedSeconds = Math.floor((Date.now() - lastActivityRef.current) / 1000);
+
+      if (elapsedSeconds >= TOTAL_TIMEOUT_SECONDS) {
+        performInactivityLogout();
+      } else if (elapsedSeconds >= WARNING_THRESHOLD_SECONDS) {
+        const remaining = TOTAL_TIMEOUT_SECONDS - elapsedSeconds;
+        setShowSessionWarningModal(true);
+        setSessionSecondsRemaining(Math.max(0, remaining));
+      } else {
+        if (showSessionWarningModal) {
+          setShowSessionWarningModal(false);
+        }
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      activityEvents.forEach(evt => {
+        window.removeEventListener(evt, handleUserActivity);
+      });
+    };
+  }, [isAuthenticated, onLogout, showSessionWarningModal]);
 
   // Technical Staff Approval Management
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState<boolean>(false);
@@ -1417,6 +1511,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
        soundFx.playClick();
        setIsAuthenticated(true);
        sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+       if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') !== 'false') {
+         localStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+         localStorage.setItem('BTI2026_KEEP_LOGGED_IN', 'true');
+       }
        setPasscodeError('');
     } else {
        vibrateError();
@@ -2658,6 +2756,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-400 animate-pulse" />
                 MÁY CHỦ CHÍNH • MASTER
               </span>
+
+              {/* Session Activity & Live Warning Countdown Indicator Pill */}
+              {showSessionWarningModal ? (
+                <button
+                  type="button"
+                  onClick={() => handleExtendSession()}
+                  data-tooltip="Phiên sắp hết hạn! Bấm vào đây để gia hạn phiên làm việc (+30 phút) ngay lập tức."
+                  data-tooltip-title="Cảnh Báo Hết Hạn Phiên"
+                  className="has-tooltip inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-950/50 animate-pulse transition-all cursor-pointer hover:bg-amber-500/30"
+                >
+                  <span className="relative flex h-2 w-2 items-center justify-center shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-90"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+                  </span>
+                  <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>HẾT HẠN TRONG:</span>
+                  <span className="text-amber-200 font-black font-mono">
+                    {String(Math.floor(sessionSecondsRemaining / 60)).padStart(2, '0')}:
+                    {String(sessionSecondsRemaining % 60).padStart(2, '0')}
+                  </span>
+                </button>
+              ) : (
+                <span 
+                  data-tooltip="Hệ thống đang theo dõi thời gian hoạt động Admin (30 phút không thao tác sẽ tự động đăng xuất, cảnh báo trước 2 phút)"
+                  data-tooltip-title="Theo Dõi Phiên Hoạt Động"
+                  className="has-tooltip inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-medium bg-[#0D1B2A]/80 text-sky-200 border border-sky-500/30 shadow-sm transition-all"
+                >
+                  <span className="relative flex h-2 w-2 items-center justify-center shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-400"></span>
+                  </span>
+                  <Clock className="w-3 h-3 text-sky-400 shrink-0" />
+                  <span className="hidden sm:inline">PHIÊN BẢO MẬT:</span>
+                  <span className="text-emerald-400 font-bold">THEO DÕI ACTIVE</span>
+                </span>
+              )}
             </div>
             <p className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-normal sm:tracking-[0.15em] font-mono break-words">
               Beyond The Internet 2026 • Điều Phối Trực Tiếp & Phân Tích Dữ Liệu
@@ -8107,6 +8241,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         isOpen={isApprovalModalOpen}
         onClose={() => setIsApprovalModalOpen(false)}
         currentUser={adminUser}
+      />
+
+      <SessionExpiringModal
+        isOpen={showSessionWarningModal}
+        secondsRemaining={sessionSecondsRemaining}
+        onStayLoggedIn={handleExtendSession}
+        onLogoutNow={() => {
+          try {
+            sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
+            sessionStorage.removeItem('BTI2026_TECH_USER');
+            sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
+            localStorage.removeItem('BTI2026_ADMIN_AUTH');
+            localStorage.removeItem('BTI2026_TECH_USER');
+            localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+            localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+          } catch {}
+          setIsAuthenticated(false);
+          setShowSessionWarningModal(false);
+          if (onLogout) onLogout();
+        }}
       />
       </div>
     </FluentProvider>

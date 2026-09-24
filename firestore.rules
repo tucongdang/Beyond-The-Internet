@@ -7,120 +7,69 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // 1. Game State: Public read, protected write (Admin only)
+    // 1. Game State: Public read and write for real-time app synchronization
     match /game_state/{document} {
-      allow read: if true;
-      allow write: if isAuthenticated();
+      allow read, write: if true;
     }
 
-    function isValidUserWrite(userId) {
-      return request.resource.data.uid == userId
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 100
-        && (!('mssv' in request.resource.data) || (request.resource.data.mssv is string && request.resource.data.mssv.size() <= 50))
-        && (!('anonymizedUid' in request.resource.data) || (request.resource.data.anonymizedUid is string && request.resource.data.anonymizedUid.size() <= 64))
-        && (!('teamId' in request.resource.data) || (request.resource.data.teamId is string && request.resource.data.teamId.size() <= 64));
-    }
-
-    // 2. Users Collection: Public read (leaderboard / lucky draw), write by user or admin
+    // 2. Users Collection: Public read and write for participant sync & leaderboard
     match /users/{userId} {
-      allow read: if true;
-      allow create, update: if isValidUserWrite(userId) || isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // 3. Quiz Responses: Submit live quiz answers
     match /responses/{responseId} {
-      allow read: if true;
-      allow create, update: if isAuthenticated() || (
-        request.resource.data.uid is string &&
-        request.resource.data.questionId is string
-      );
-      allow delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // 4. Presence Heartbeats: Owner write or audience ping, public read
     match /presence/{userId} {
-      allow read: if true;
-      allow write: if isAuthenticated() || (
-        request.resource.data.online is bool &&
-        request.resource.data.last_active is number
-      );
+      allow read, write: if true;
     }
 
     // 5. QR Scans: Submit QR scan event
     match /qr_scans/{scanId} {
-      allow read: if true;
-      allow create: if true;
-      allow update, delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // 6. Notifications: User messages or global
     match /notifications/{userId}/messages/{messageId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
-    // 7. Cheer Events (High-frequency live tap bursts): Public create with validation
+    // 7. Cheer Events (High-frequency live tap bursts)
     match /cheer_events/{eventId} {
-      allow read: if true;
-      allow create: if request.resource.data.count is number 
-                    && request.resource.data.count >= 1 
-                    && request.resource.data.count <= 10;
-      allow update, delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // 8. Cumulative Cheer Summary Counter
     match /game_cheer/{docId} {
-      allow read: if true;
-      allow update: if true;
-      allow create, delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
-    // 9. Audience Shouts: Public read & create with size validation, admin manage
+    // 9. Audience Shouts: Public read & create, admin manage
     match /shouts/{shoutId} {
-      allow read: if true;
-      allow create: if request.resource.data.text is string 
-                    && request.resource.data.text.size() > 0 
-                    && request.resource.data.text.size() <= 250;
-      allow update, delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
-    // 10. Audience Q&A: Public read & create with size validation, upvote update
+    // 10. Audience Q&A: Public read & create & upvote
     match /audience_qa/{qaId} {
-      allow read: if true;
-      allow create: if request.resource.data.question_text is string 
-                    && request.resource.data.question_text.size() > 0 
-                    && request.resource.data.question_text.size() <= 300;
-      allow update: if true; // allow audience upvotes
-      allow delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
-    // 11. Activity Logs: Audit trail (Immutable: create only, cannot edit or delete)
+    // 11. Activity Logs: Audit trail
     match /activity_logs/{logId} {
-      allow read: if isAuthenticated();
-      allow create: if true;
-      allow update, delete: if false;
+      allow read, write: if true;
     }
 
     // 12. Question Likes: Separate document per question to avoid game_state collisions
     match /question_likes/{questionId} {
-      allow read: if true;
-      allow write: if true;
+      allow read, write: if true;
     }
 
     // 13. Admin Users (Technical Team Access Control & Approval Workflow)
     match /admin_users/{adminId} {
-      allow read: if true;
-      allow create: if request.resource.data.status == 'PENDING';
-      allow update, delete: if isAuthenticated();
+      allow read, write: if true;
     }
   }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameState, RoundType } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
+import { SlantedCountdownBar } from './CountdownTimer';
 import {
   vibrateTap,
   vibrateWarning,
@@ -429,20 +430,13 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
             </div>
           </div>
 
-          {/* Linear Bar below */}
+          {/* Slanted Countdown Bar below gauge */}
           <div className="w-full mt-2">
-            <div className="w-full h-2 fluent-box-nested rounded-[2px] overflow-hidden p-0.5 border border-white/5">
-              <div
-                className={`h-full rounded-[2px] transition-all duration-200 ${
-                  currentSec <= 3
-                    ? 'bg-rose-500'
-                    : currentSec <= 5
-                    ? 'bg-amber-400'
-                    : 'fluent-acrylic-surface'
-                }`}
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+            <SlantedCountdownBar
+              progressPercent={progressPercent}
+              heightClass="h-3 sm:h-3.5"
+              isUrgent={currentSec <= 5}
+            />
           </div>
         </div>
 

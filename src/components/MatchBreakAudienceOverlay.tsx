@@ -11,6 +11,7 @@ import {
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
+import { RotatingSplitBackground } from './RotatingSplitBackground';
 
 interface MatchBreakAudienceOverlayProps {
   gameState: GameState;
@@ -66,22 +67,32 @@ export const MatchBreakAudienceOverlay: React.FC<MatchBreakAudienceOverlayProps>
   };
 
   return (
-    <div className="p-4 sm:p-6 rounded-[3px] bg-gradient-to-br from-[#1d0e33]/90 via-[#130722]/95 to-[#0b0314]/95 border border-amber-400/40 shadow-2xl backdrop-blur-xl text-center space-y-4 animate-fadeIn my-auto max-w-lg mx-auto w-full">
+    <div className="p-4 sm:p-6 rounded-[3px] bg-gradient-to-br from-[#1d0e33]/90 via-[#130722]/95 to-[#0b0314]/95 border border-amber-400/40 shadow-2xl backdrop-blur-xl text-center space-y-4 animate-fadeIn my-auto max-w-lg mx-auto w-full relative overflow-hidden">
+      {/* Rotating Split Background (MBC Movement) */}
+      <RotatingSplitBackground durationSeconds={10} darkColor="#190839" lightColor="#F7CAC9" opacity={0.08} isFixed={true} />
+
+      {/* Background Motion Layers */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.15)_0%,rgba(168,85,247,0.1)_35%,transparent_70%)] animate-spin-slow opacity-80" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-amber-400/25 rounded-full animate-countdown-ripple" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-purple-400/15 rounded-full animate-countdown-ripple" style={{ animationDelay: '1s' }} />
+      </div>
+
       {/* Header Pill */}
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
+      <div className="relative z-10 inline-flex items-center gap-2 px-3 py-1 rounded-[2px] bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
         <Coffee className="w-3.5 h-3.5 animate-bounce" />
         <span>{matchBreak.title || 'TẠM DỪNG GIẢI LAO'}</span>
       </div>
 
       {/* Subtitle / Advisory */}
       {matchBreak.subtitle && (
-        <p className="text-xs sm:text-sm text-white/80 font-medium leading-relaxed">
+        <p className="relative z-10 text-xs sm:text-sm text-white/80 font-medium leading-relaxed">
           {matchBreak.subtitle}
         </p>
       )}
 
       {/* Synchronized Countdown Clock */}
-      <div className="py-2">
+      <div className="relative z-10 py-2">
         <div className={`font-mono font-black text-5xl sm:text-6xl tracking-tight leading-none ${
           isFinished 
             ? 'text-emerald-300' 

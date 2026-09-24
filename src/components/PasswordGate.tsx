@@ -45,6 +45,7 @@ interface PasswordGateProps {
   isAuthenticated: boolean;
   onAuthenticated: (user?: AdminUser) => void;
   viewName: string;
+  isLookupLocked?: boolean;
   onExit?: () => void;
   children: React.ReactNode;
 }
@@ -55,6 +56,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   isAuthenticated,
   onAuthenticated,
   viewName,
+  isLookupLocked = false,
   onExit,
   children
 }) => {
@@ -129,6 +131,32 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   const [masterPasscode, setMasterPasscode] = useState('');
   const [showMasterPasscode, setShowMasterPasscode] = useState(false);
 
+  // Keep Me Logged In State
+  const [keepLoggedIn, setKeepLoggedIn] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('BTI2026_KEEP_LOGGED_IN') !== 'false';
+    }
+    return true;
+  });
+
+  const saveAdminSession = (token?: string, user?: any) => {
+    sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+    if (token) sessionStorage.setItem('BTI2026_ADMIN_TOKEN', token);
+    if (user) sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(user));
+
+    if (keepLoggedIn) {
+      localStorage.setItem('BTI2026_KEEP_LOGGED_IN', 'true');
+      localStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+      if (token) localStorage.setItem('BTI2026_ADMIN_TOKEN', token);
+      if (user) localStorage.setItem('BTI2026_TECH_USER', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+      localStorage.removeItem('BTI2026_ADMIN_AUTH');
+      localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+      localStorage.removeItem('BTI2026_TECH_USER');
+    }
+  };
+
   // General Status State
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -181,12 +209,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
       if (res.ok && data.success) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
-        if (data.token) {
-          sessionStorage.setItem('BTI2026_ADMIN_TOKEN', data.token);
-        }
-        if (data.user) {
-          sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(data.user));
-        }
+        saveAdminSession(data.token, data.user);
         onAuthenticated(data.user);
       } else {
         // Auto-sync fallback: if user recently reset password via Firebase email
@@ -229,8 +252,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
                     synced = true;
                     soundFx.playPacingChime('complete');
                     vibrateSuccess();
-                    if (retryData.token) sessionStorage.setItem('BTI2026_ADMIN_TOKEN', retryData.token);
-                    if (retryData.user) sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(retryData.user));
+                    saveAdminSession(retryData.token, retryData.user);
                     onAuthenticated(retryData.user);
                     return;
                   }
@@ -290,12 +312,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
       if (res.ok && data.success) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
-        if (data.token) {
-          sessionStorage.setItem('BTI2026_ADMIN_TOKEN', data.token);
-        }
-        if (data.user) {
-          sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(data.user));
-        }
+        saveAdminSession(data.token, data.user);
         onAuthenticated(data.user);
       } else if (data.status === 'PENDING') {
         soundFx.playClick();
@@ -616,12 +633,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
       if (res.ok && data.success) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
-        if (data.token) {
-          sessionStorage.setItem('BTI2026_ADMIN_TOKEN', data.token);
-        }
-        if (data.user) {
-          sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(data.user));
-        }
+        saveAdminSession(data.token, data.user);
         onAuthenticated(data.user);
       } else {
         soundFx.playError();
@@ -640,6 +652,12 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
   // 8. Handle Status Lookup
   const handleCheckStatus = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLookupLocked) {
+      soundFx.playError();
+      vibrateError();
+      setError('Chức năng tra cứu thông tin hiện đang bị khóa bởi Ban Tổ Chức.');
+      return;
+    }
     const q = checkQuery.trim();
     if (!q) return;
 
@@ -939,6 +957,19 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
               onChange={handleLoginCaptchaChange}
               disabled={isSubmitting}
             />
+
+            {/* Keep Me Logged In Toggle */}
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-white/80 py-0.5">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={keepLoggedIn}
+                  onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
+                />
+                <span className="text-sky-200 font-medium">Duy trì đăng nhập (Keep Me Logged In)</span>
+              </label>
+            </div>
 
             <button
               type="submit"

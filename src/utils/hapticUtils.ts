@@ -4,7 +4,10 @@
  */
 
 const HAPTIC_STORAGE_KEY = 'BTI2026_HAPTICS_ENABLED';
+const HAPTIC_INTENSITY_STORAGE_KEY = 'BTI2026_HAPTIC_INTENSITY';
 const HAPTIC_EVENT_NAME = 'bti_haptics_changed';
+
+export type HapticIntensity = 'Soft' | 'Medium' | 'Strong';
 
 /**
  * Check if the browser / hardware supports the Web Vibration API
@@ -34,18 +37,56 @@ export const getHapticPreference = (): boolean => {
 };
 
 /**
+ * Get configured haptic feedback intensity pattern multiplier
+ * Defaults to 'Medium'
+ */
+export const getHapticIntensity = (): HapticIntensity => {
+  if (typeof window === 'undefined') return 'Medium';
+  try {
+    const saved = localStorage.getItem(HAPTIC_INTENSITY_STORAGE_KEY);
+    if (saved === 'Soft' || saved === 'Medium' || saved === 'Strong') {
+      return saved;
+    }
+    return 'Medium';
+  } catch {
+    return 'Medium';
+  }
+};
+
+/**
+ * Update user haptic feedback intensity in localStorage and notify listeners
+ */
+export const setHapticIntensity = (intensity: HapticIntensity): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(HAPTIC_INTENSITY_STORAGE_KEY, intensity);
+    window.dispatchEvent(
+      new CustomEvent(HAPTIC_EVENT_NAME, {
+        detail: { enabled: getHapticPreference(), intensity }
+      })
+    );
+  } catch {}
+};
+
+/**
  * Update user haptic feedback preference in localStorage and notify listeners
  */
 export const setHapticPreference = (enabled: boolean): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(HAPTIC_STORAGE_KEY, enabled ? 'true' : 'false');
-    window.dispatchEvent(new CustomEvent(HAPTIC_EVENT_NAME, { detail: { enabled } }));
+    window.dispatchEvent(
+      new CustomEvent(HAPTIC_EVENT_NAME, {
+        detail: { enabled, intensity: getHapticIntensity() }
+      })
+    );
     if (enabled) {
       // Provide a brief tactile confirmation of enabling haptics
       if (isVibrationSupported()) {
         try {
-          navigator.vibrate([40, 30, 60]);
+          const intensity = getHapticIntensity();
+          const p = intensity === 'Soft' ? [20, 20, 30] : intensity === 'Strong' ? [60, 30, 90] : [40, 30, 60];
+          navigator.vibrate(p);
         } catch {}
       }
     }
@@ -55,11 +96,16 @@ export const setHapticPreference = (enabled: boolean): void => {
 /**
  * Subscribe to haptic preference changes
  */
-export const subscribeHapticPreference = (callback: (enabled: boolean) => void): (() => void) => {
+export const subscribeHapticPreference = (
+  callback: (enabled: boolean, intensity: HapticIntensity) => void
+): (() => void) => {
   if (typeof window === 'undefined') return () => {};
   const handler = (e: Event) => {
-    const customEvent = e as CustomEvent<{ enabled: boolean }>;
-    callback(customEvent.detail?.enabled ?? getHapticPreference());
+    const customEvent = e as CustomEvent<{ enabled: boolean; intensity?: HapticIntensity }>;
+    callback(
+      customEvent.detail?.enabled ?? getHapticPreference(),
+      customEvent.detail?.intensity ?? getHapticIntensity()
+    );
   };
   window.addEventListener(HAPTIC_EVENT_NAME, handler);
   return () => window.removeEventListener(HAPTIC_EVENT_NAME, handler);
@@ -68,18 +114,38 @@ export const subscribeHapticPreference = (callback: (enabled: boolean) => void):
 import { getBatterySaverMode } from './batterySaverUtils';
 
 /**
- * Generic safe vibration trigger
+ * Generic safe vibration trigger with intensity pattern scaling
  */
 const triggerVibration = (pattern: number | number[]): boolean => {
   if (!isVibrationSupported()) return false;
   if (!getHapticPreference()) return false;
   try {
+    // Apply intensity scaling based on user preference ('Soft' | 'Medium' | 'Strong')
+    const intensity = getHapticIntensity();
+    let scale = 1.0;
+    if (intensity === 'Soft') scale = 0.55;
+    else if (intensity === 'Strong') scale = 1.55;
+
+    let scaledPattern: number | number[];
+    if (typeof pattern === 'number') {
+      scaledPattern = Math.max(8, Math.round(pattern * scale));
+    } else if (Array.isArray(pattern)) {
+      scaledPattern = pattern.map((dur, idx) => {
+        if (idx % 2 === 0) {
+          return Math.max(8, Math.round(dur * scale));
+        }
+        return dur;
+      });
+    } else {
+      scaledPattern = pattern;
+    }
+
     // If Battery Saver mode is active, reduce vibration duration to save haptic motor power
     if (getBatterySaverMode()) {
-      if (typeof pattern === 'number') {
-        pattern = Math.min(pattern, 10);
-      } else if (Array.isArray(pattern)) {
-        pattern = [Math.min(pattern[0] || 10, 10)];
+      if (typeof scaledPattern === 'number') {
+        scaledPattern = Math.min(scaledPattern, 10);
+      } else if (Array.isArray(scaledPattern)) {
+        scaledPattern = [Math.min(scaledPattern[0] || 10, 10)];
       }
     }
 
@@ -88,7 +154,7 @@ const triggerVibration = (pattern: number | number[]): boolean => {
       (navigator as any).webkitVibrate ||
       (navigator as any).mozVibrate;
     if (typeof vibrateFn === 'function') {
-      return vibrateFn.call(navigator, pattern);
+      return vibrateFn.call(navigator, scaledPattern);
     }
     return false;
   } catch {

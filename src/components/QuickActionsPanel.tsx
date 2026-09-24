@@ -15,13 +15,15 @@ import {
   ChevronDown, 
   BellOff,
   Sparkles,
-  Coffee
+  Coffee,
+  ShieldCheck
 } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { LightShowControlModal } from './LightShowControlModal';
 import { MatchBreakModal } from './MatchBreakModal';
+import { AggregateBatteryIndicator } from './AggregateBatteryIndicator';
 
 interface QuickActionsPanelProps {
   gameState: GameState;
@@ -209,6 +211,59 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
     showFeedback(nextState ? 'Đã khóa cổng tham gia (Lobby Locked)' : 'Đã mở cổng tham gia (Lobby Open)');
   }, [gameState.lobby_locked, triggerHudToast]);
 
+  // ACTION: Toggle Anti-Exit Protection (Chống Thoát Trình Duyệt)
+  const handleToggleAntiExit = useCallback(async () => {
+    const nextState = gameState.anti_exit_protection === false; // Default is enabled (true) if undefined
+    triggerHaptic(nextState ? [120, 80] : 80);
+    soundFx.playClick();
+
+    await syncService.updateGameState({
+      anti_exit_protection: nextState
+    });
+
+    triggerHudToast(
+      nextState ? 'ANTI-EXIT ACTIVE' : 'ANTI-EXIT DISABLED',
+      nextState ? 'Đã bật chống thoát trình duyệt cho khán giả!' : 'Đã tắt cơ chế chống thoát trình duyệt'
+    );
+    showFeedback(nextState ? 'Đã BẬT cơ chế chống thoát trình duyệt' : 'Đã TẮT cơ chế chống thoát trình duyệt');
+  }, [gameState.anti_exit_protection, triggerHudToast]);
+
+  // ACTION: Toggle Anti-Lookup Protection (Chống Tra Cứu)
+  const handleToggleAntiLookup = useCallback(async () => {
+    const nextState = !gameState.lookup_locked;
+    triggerHaptic(nextState ? [120, 80] : 80);
+    soundFx.playClick();
+
+    await syncService.updateGameState({
+      lookup_locked: nextState,
+      anti_lookup_protection: nextState
+    });
+
+    triggerHudToast(
+      nextState ? 'ANTI-LOOKUP ACTIVE' : 'LOOKUP OPEN',
+      nextState ? 'Đã bật cơ chế chống tra cứu dữ liệu khán giả!' : 'Đã mở lại tính năng tra cứu thông tin'
+    );
+    showFeedback(nextState ? 'Đã BẬT cơ chế chống tra cứu' : 'Đã MỞ tính năng tra cứu');
+  }, [gameState.lookup_locked, triggerHudToast]);
+
+  // ACTION: Toggle SEB Anti-Cheat Kiosk Mode (Chế Độ SEB Anti-Cheat)
+  const handleToggleSebMode = useCallback(async () => {
+    const nextState = !gameState.seb_mode_enabled;
+    triggerHaptic(nextState ? [120, 80] : 80);
+    soundFx.playClick();
+
+    await syncService.updateGameState({
+      seb_mode_enabled: nextState,
+      seb_strict_kiosk: nextState
+    });
+
+    triggerHudToast(
+      nextState ? 'SEB KIOSK ACTIVE' : 'SEB KIOSK OFF',
+      nextState ? 'Đã kích hoạt chế độ Safe Exam Browser (SEB Anti-Cheat)!' : 'Đã tắt chế độ Safe Exam Browser Kiosk'
+    );
+    showFeedback(nextState ? 'Đã BẬT Safe Exam Browser Kiosk' : 'Đã TẮT Safe Exam Browser Kiosk');
+  }, [gameState.seb_mode_enabled, triggerHudToast]);
+
   // ACTION 4: Reset câu hỏi hiện tại (Reset Current Question)
   const handleQuickResetQuestion = useCallback(() => {
     triggerHaptic([100, 50, 100]);
@@ -358,7 +413,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       {/* Quick Actions Bar Container with Fluent UI v2 styling */}
       <div 
         id="admin-quick-actions-panel"
-        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[4px] overflow-hidden transition-all duration-300 ${className}`}
+        className={`fluent-box border border-sky-500/30 bg-gradient-to-r from-slate-950/95 via-[#0c142c]/90 to-sky-950/90 shadow-xl shadow-sky-950/40 rounded-[4px] transition-all duration-300 ${className}`}
       >
         {/* Header Ribbon */}
         <div className="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between gap-2 border-b border-white/10 bg-white/5">
@@ -418,6 +473,9 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               <strong className="text-sky-300 font-bold">{activeCount}</strong>
               <span className="hidden md:inline">thiết bị</span>
             </div>
+
+            {/* Audience Aggregate Battery Indicator */}
+            <AggregateBatteryIndicator triggerToast={(msg) => showFeedback(msg)} />
 
             <button
               type="button"
@@ -506,14 +564,14 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               </span>
             </button>
 
-            {/* ACTION 2: Toggle Lobby Lock */}
+            {/* ACTION 2: Toggle Lobby Lock (Cổng Tham Gia) */}
             <button
               type="button"
               id="btn-quick-action-toggle-lobby-lock"
               onClick={handleToggleLobbyLock}
-              data-tooltip="Khóa hoặc mở cổng đăng ký tham gia của khán giả mới"
+              data-tooltip={isLobbyLocked ? "Bấm để mở cổng cho khán giả mới vào tự do" : "Bấm để khóa cổng, tạm dừng nhận khán giả mới"}
               data-tooltip-title="Khóa / Mở Cổng Tham Gia (Lobby Lock)"
-              data-tooltip-variant="accent"
+              data-tooltip-variant={isLobbyLocked ? "warning" : "accent"}
               className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
                 isLobbyLocked
                   ? 'border-rose-500/70 bg-gradient-to-r from-rose-950/80 to-slate-900/80 text-rose-200 shadow-md shadow-rose-950/40 ring-1 ring-rose-500/40'
@@ -523,7 +581,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
               <div className="flex items-center gap-2 min-w-0">
                 <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
                   isLobbyLocked 
-                    ? 'bg-rose-600 text-white shadow-md' 
+                    ? 'bg-rose-600 text-white shadow-md animate-pulse' 
                     : 'bg-purple-500/20 border border-purple-500/40 text-purple-300 group-hover:scale-105'
                 }`}>
                   {isLobbyLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -531,20 +589,144 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-white group-hover:text-purple-200 truncate">
-                      {isLobbyLocked ? 'Mở Cổng Vào' : 'Khóa Cổng Vào'}
+                      {isLobbyLocked ? 'CỔNG VÀO: ĐÃ KHÓA' : 'CỔNG VÀO: MỞ TỰ DO'}
                     </span>
                   </div>
                   <p className="text-[9px] text-white/50 truncate">
-                    {isLobbyLocked ? 'Đang chặn đăng ký mới' : 'Cho phép vào tự do'}
+                    {isLobbyLocked ? 'Đang chặn khán giả mới' : 'Cho phép khán giả vào tự do'}
                   </p>
                 </div>
               </div>
               <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
                 isLobbyLocked
                   ? 'bg-rose-950 text-rose-300 border-rose-500/50'
-                  : 'bg-purple-950/80 text-purple-300 border-purple-500/30'
+                  : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/30'
               }`}>
-                {isLobbyLocked ? 'LOCKED' : 'OPEN'}
+                {isLobbyLocked ? 'ĐÃ KHÓA' : 'ĐANG MỞ'}
+              </span>
+            </button>
+
+            {/* ACTION 2C: Toggle Anti-Lookup Protection (Chống Tra Cứu) */}
+            <button
+              type="button"
+              id="btn-quick-action-toggle-anti-lookup"
+              onClick={handleToggleAntiLookup}
+              data-tooltip={gameState.lookup_locked ? "Bấm để mở lại tính năng tra cứu thông tin khán giả" : "Bấm để khóa tính năng tra cứu thông tin khán giả"}
+              data-tooltip-title="Chống Tra Cứu (Anti-Lookup Protection)"
+              data-tooltip-variant={gameState.lookup_locked ? "rose" : "amber"}
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+                gameState.lookup_locked
+                  ? 'border-rose-500/70 bg-gradient-to-r from-rose-950/80 to-slate-900/80 text-rose-200 shadow-md shadow-rose-950/40 ring-1 ring-rose-500/40'
+                  : 'border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
+                  gameState.lookup_locked
+                    ? 'bg-rose-600 text-white shadow-md' 
+                    : 'bg-slate-800 text-slate-400'
+                }`}>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white truncate">
+                      {gameState.lookup_locked ? 'CHỐNG TRA CỨU: BẬT' : 'CHỐNG TRA CỨU: TẮT'}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-white/50 truncate">
+                    {gameState.lookup_locked ? 'Chặn tra cứu hồ sơ & MSSV' : 'Mở tìm kiếm / tra cứu hồ sơ'}
+                  </p>
+                </div>
+              </div>
+              <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
+                gameState.lookup_locked
+                  ? 'bg-rose-950 text-rose-300 border-rose-500/50'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {gameState.lookup_locked ? 'ĐANG KHÓA' : 'ĐANG MỞ'}
+              </span>
+            </button>
+
+            {/* ACTION 2D: Toggle SEB Anti-Cheat Kiosk Mode */}
+            <button
+              type="button"
+              id="btn-quick-action-toggle-seb-mode"
+              onClick={handleToggleSebMode}
+              data-tooltip={gameState.seb_mode_enabled ? "Bấm để tắt chế độ thi đấu Safe Exam Browser Kiosk" : "Bấm để bật chế độ thi đấu Safe Exam Browser Kiosk"}
+              data-tooltip-title="Chế Độ SEB Anti-Cheat (Safe Exam Browser)"
+              data-tooltip-variant={gameState.seb_mode_enabled ? "sky" : "cyan"}
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+                gameState.seb_mode_enabled
+                  ? 'border-sky-500/70 bg-gradient-to-r from-sky-950/80 to-slate-900/80 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40'
+                  : 'border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
+                  gameState.seb_mode_enabled
+                    ? 'bg-sky-600 text-white shadow-md' 
+                    : 'bg-slate-800 text-slate-400'
+                }`}>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white truncate">
+                      {gameState.seb_mode_enabled ? 'SEB KIOSK: BẬT' : 'SEB KIOSK: TẮT'}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-white/50 truncate">
+                    {gameState.seb_mode_enabled ? 'Ép Toàn Màn Hình & Chặn DevTools' : 'Chế độ thi chuẩn thông thường'}
+                  </p>
+                </div>
+              </div>
+              <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
+                gameState.seb_mode_enabled
+                  ? 'bg-sky-950 text-sky-300 border-sky-500/50'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {gameState.seb_mode_enabled ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
+              </span>
+            </button>
+            <button
+              type="button"
+              id="btn-quick-action-toggle-anti-exit"
+              onClick={handleToggleAntiExit}
+              data-tooltip={gameState.anti_exit_protection === false ? "Bấm để bật cơ chế chống vuốt thoát/mất kết nối trình duyệt" : "Bấm để tạm tắt chống thoát trình duyệt"}
+              data-tooltip-title="Chống Thoát Trình Duyệt (Anti-Exit Guard)"
+              data-tooltip-variant={gameState.anti_exit_protection === false ? "warning" : "emerald"}
+              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
+                gameState.anti_exit_protection !== false
+                  ? 'border-emerald-500/70 bg-gradient-to-r from-emerald-950/80 to-slate-900/80 text-emerald-200 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/40'
+                  : 'border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
+                  gameState.anti_exit_protection !== false
+                    ? 'bg-emerald-600 text-white shadow-md' 
+                    : 'bg-slate-800 text-slate-400'
+                }`}>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white truncate">
+                      {gameState.anti_exit_protection !== false ? 'CHỐNG THOÁT: BẬT' : 'CHỐNG THOÁT: TẮT'}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-white/50 truncate">
+                    {gameState.anti_exit_protection !== false ? 'Chặn lỡ tay làm mới/đóng tab' : 'Tạm thời không chặn thoát tab'}
+                  </p>
+                </div>
+              </div>
+              <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
+                gameState.anti_exit_protection !== false
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {gameState.anti_exit_protection !== false ? 'ĐANG BẬT' : 'ĐÃ TẮT'}
               </span>
             </button>
 

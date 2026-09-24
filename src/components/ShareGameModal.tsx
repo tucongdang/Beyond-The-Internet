@@ -243,7 +243,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     >
       <div
         id="share-game-modal-content"
-        className={`fluent-dialog w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl shadow-purple-950/90 relative flex flex-col items-center select-none transition-all duration-300 ${
+        className={`fluent-dialog w-full bg-[#16062f] border border-[#F7CAC9]/30 rounded-[3px] shadow-2xl shadow-purple-950/90 relative flex flex-col items-center select-none transition-all duration-300 ${
           displayMode === 'fullscreen'
             ? 'max-w-4xl min-h-[88vh] md:min-h-[92vh] justify-between p-6 sm:p-8'
             : 'max-w-md p-4 sm:p-6'

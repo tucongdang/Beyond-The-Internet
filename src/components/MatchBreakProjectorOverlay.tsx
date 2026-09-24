@@ -14,6 +14,7 @@ import {
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
+import { RotatingSplitBackground } from './RotatingSplitBackground';
 
 interface MatchBreakProjectorOverlayProps {
   gameState: GameState;
@@ -94,6 +95,9 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0c051a]/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 lg:p-14 select-none text-white overflow-hidden animate-fadeIn">
+      {/* Rotating Split Background (MBC Movement) */}
+      <RotatingSplitBackground durationSeconds={10} darkColor="#190839" lightColor="#F7CAC9" opacity={0.08} isFixed={true} />
+
       {/* Ambient background glow & grid */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-purple-600/15 rounded-full blur-[140px] pointer-events-none animate-pulse" />
@@ -166,8 +170,23 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
 
         {/* Giant Digital Countdown Display */}
         <div className="relative flex flex-col items-center justify-center p-8 sm:p-12">
+          {/* Animated Background Motion Orbitals around Circular Ring */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+            {/* Spinning Outer SVG Dashed Ring */}
+            <svg className="w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] animate-spin-slow opacity-40 text-amber-400" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 6" />
+            </svg>
+            <svg className="w-[380px] h-[380px] sm:w-[540px] sm:h-[540px] animate-spin-slow-reverse opacity-25 text-purple-400 absolute" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="0.4" strokeDasharray="2 10" />
+            </svg>
+
+            {/* Expanding Pulse Waves */}
+            <div className="w-[300px] h-[300px] sm:w-[420px] sm:h-[420px] rounded-full border border-amber-400/30 animate-countdown-ripple absolute" />
+            <div className="w-[360px] h-[360px] sm:w-[500px] sm:h-[500px] rounded-full border border-purple-400/20 animate-countdown-ripple absolute" style={{ animationDelay: '1s' }} />
+          </div>
+
           {/* Circular Glowing Ring */}
-          <div className={`relative flex items-center justify-center rounded-full p-10 sm:p-16 border-4 shadow-2xl transition-all duration-300 ${
+          <div className={`relative z-10 flex items-center justify-center rounded-full p-10 sm:p-16 border-4 shadow-2xl transition-all duration-300 backdrop-blur-md ${
             isFinished 
               ? 'border-emerald-400 bg-emerald-950/40 shadow-emerald-500/30' 
               : remainingSeconds <= 10 
@@ -186,7 +205,7 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
               </span>
 
               <div className="flex items-center gap-2 mt-4 text-xs sm:text-sm font-mono uppercase tracking-widest text-white/60">
-                <Clock className="w-4 h-4 text-amber-400" />
+                <Clock className="w-4 h-4 text-amber-400 animate-bounce" />
                 <span>
                   {isFinished ? 'HẾT GIỜ NGHỈ • CHUẨN BỊ BẮT ĐẦU' : 'THỜI GIAN NGHỈ CÒN LẠI'}
                 </span>

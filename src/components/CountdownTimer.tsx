@@ -5,9 +5,63 @@ import { interpolateTimerColor } from '../utils/colorUtils';
 import { syncService } from '../services/syncService';
 import { GameState } from '../types';
 
+export interface SlantedCountdownBarProps {
+  progressPercent: number;
+  timerColor?: string;
+  heightClass?: string;
+  isUrgent?: boolean;
+  className?: string;
+}
+
+export const SlantedCountdownBar: React.FC<SlantedCountdownBarProps> = ({
+  progressPercent,
+  timerColor,
+  heightClass = 'h-3.5 sm:h-4',
+  isUrgent = false,
+  className = ''
+}) => {
+  const safePercent = Math.max(0, Math.min(100, progressPercent));
+
+  return (
+    <div className={`w-full relative py-0.5 ${className}`}>
+      {/* Slanted Parallelogram Container with Skew -12deg matching video motion */}
+      <div className={`w-full ${heightClass} bg-[#0c081e] border border-purple-500/40 rounded-[2px] overflow-hidden transform -skew-x-12 shadow-[0_0_15px_rgba(12,8,30,0.8)_inset] relative`}>
+        {/* Active Filled Section (Purple / Dynamic Timer Gradient) */}
+        <div
+          className={`h-full transition-all duration-200 ease-linear relative overflow-hidden ${
+            isUrgent ? 'animate-pulse shadow-[0_0_16px_rgba(244,63,94,0.9)]' : 'shadow-[0_0_14px_rgba(147,51,234,0.7)]'
+          }`}
+          style={{
+            width: `${safePercent}%`,
+            background: isUrgent && timerColor
+              ? timerColor
+              : 'linear-gradient(90deg, #4c1d95 0%, #7c3aed 45%, #9333ea 80%, #a855f7 100%)',
+          }}
+        >
+          {/* Shimmer light effect sliding across fill */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer" />
+
+          {/* Sharp glowing slant boundary edge at the right split point */}
+          <div 
+            className="absolute top-0 right-0 bottom-0 w-1.5 transform translate-x-1/2 z-10"
+            style={{
+              backgroundColor: isUrgent ? '#fecdd3' : '#f3e8ff',
+              boxShadow: isUrgent ? '0 0 10px #f43f5e, 0 0 4px #ffffff' : '0 0 10px #c084fc, 0 0 4px #ffffff'
+            }}
+          />
+        </div>
+
+        {/* Subtle background mesh texture */}
+        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#a855f7_1px,transparent_1px)] [background-size:8px_8px]" />
+      </div>
+    </div>
+  );
+};
+
 export type CountdownTimerVariant = 'full' | 'compact' | 'badge' | 'bar' | 'circular';
 
 export interface CountdownTimerProps {
+
   /** Explicit remaining time in seconds (if controlled by parent) */
   timeLeft?: number;
   /** Total time limit in seconds */
@@ -125,22 +179,12 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   // Variant 1: Progress Bar Only
   if (variant === 'bar') {
     return (
-      <div 
-        className={`w-full h-2 bg-[#3E1D74]/50 rounded-[2px] overflow-hidden p-0.5 border border-[#F7CAC9]/30 ${className}`}
-        role="progressbar"
-        aria-valuenow={currentSeconds}
-        aria-valuemin={0}
-        aria-valuemax={effectiveTotal}
-      >
-        <div
-          className="h-full rounded-[2px] transition-all duration-300 ease-linear"
-          style={{
-            width: `${progressPercent}%`,
-            backgroundColor: timerColor,
-            boxShadow: `0 0 10px ${timerColor}80`
-          }}
-        />
-      </div>
+      <SlantedCountdownBar
+        progressPercent={progressPercent}
+        timerColor={timerColor}
+        isUrgent={isUrgent}
+        className={className}
+      />
     );
   }
 
@@ -253,17 +297,13 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full h-1.5 bg-black/40 rounded-[2px] overflow-hidden p-0.5 border border-white/10">
-          <div
-            className="h-full rounded-[2px] transition-all duration-300 ease-linear"
-            style={{
-              width: `${progressPercent}%`,
-              backgroundColor: timerColor,
-              boxShadow: `0 0 8px ${timerColor}60`
-            }}
-          />
-        </div>
+        {/* Slanted Progress bar */}
+        <SlantedCountdownBar
+          progressPercent={progressPercent}
+          timerColor={timerColor}
+          heightClass="h-2.5 sm:h-3"
+          isUrgent={isUrgent}
+        />
       </div>
     );
   }
@@ -323,23 +363,14 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </div>
       </div>
 
-      {/* Synchronized Linear Progress Bar */}
-      <div 
-        className="w-full h-2 bg-[#3E1D74]/50 rounded-[2px] mb-5 overflow-hidden p-0.5 border border-[#F7CAC9]/30"
-        role="progressbar"
-        aria-valuenow={currentSeconds}
-        aria-valuemin={0}
-        aria-valuemax={effectiveTotal}
-      >
-        <div
-          className="h-full rounded-[2px] transition-all duration-300 ease-linear"
-          style={{
-            width: `${progressPercent}%`,
-            backgroundColor: timerColor,
-            boxShadow: `0 0 10px ${timerColor}80`
-          }}
-        />
-      </div>
+      {/* Synchronized Slanted Linear Progress Bar */}
+      <SlantedCountdownBar
+        progressPercent={progressPercent}
+        timerColor={timerColor}
+        heightClass="h-3.5 sm:h-4.5"
+        isUrgent={isUrgent}
+        className="mb-3"
+      />
     </div>
   );
 };

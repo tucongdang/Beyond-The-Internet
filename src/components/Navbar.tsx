@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, PingInfo, AdminUser, TECHNICAL_ROLES } from '../types';
-import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles } from 'lucide-react';
+import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
 import { BatteryIndicator } from './BatteryIndicator';
+import { AggregateBatteryIndicator } from './AggregateBatteryIndicator';
 import { useLanguage } from '../hooks/useLanguage';
 import { AudioSettingsModal } from './AudioSettingsModal';
+import { useBatterySaver } from '../utils/batterySaverUtils';
+import { BatterySaverModal } from './BatterySaverModal';
 
 interface NavbarProps {
   currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector';
@@ -61,6 +64,84 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [isBatterySaverModalOpen, setIsBatterySaverModalOpen] = useState(false);
+
+  // System Battery & Energy Mode State
+  const { isBatterySaver, batteryLevel } = useBatterySaver();
+  const [isCharging, setIsCharging] = useState(false);
+
+  useEffect(() => {
+    let batteryManager: any = null;
+    let isMounted = true;
+    if (typeof navigator !== 'undefined' && 'getBattery' in navigator) {
+      (navigator as any).getBattery().then((bm: any) => {
+        if (!isMounted) return;
+        batteryManager = bm;
+        setIsCharging(bm.charging);
+        const handleChargingChange = () => {
+          if (isMounted) setIsCharging(bm.charging);
+        };
+        bm.addEventListener('chargingchange', handleChargingChange);
+      }).catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const getEnergyBadge = () => {
+    const pct = batteryLevel !== null ? Math.round(batteryLevel * 100) : null;
+
+    if (isBatterySaver) {
+      return {
+        color: 'green',
+        badgeClass: 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/60 shadow-[0_0_8px_rgba(52,211,153,0.2)]',
+        dotClass: 'bg-emerald-400 shadow-[0_0_6px_#34d399]',
+        label: effectiveLanguage === 'en' ? 'Eco Mode' : 'Tiết Kiệm',
+        fullText: effectiveLanguage === 'en' ? 'Energy Mode: Eco Active' : 'Chế Độ Năng Lượng: Tiết Kiệm Pin'
+      };
+    }
+
+    if (isCharging) {
+      return {
+        color: 'green',
+        badgeClass: 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60',
+        dotClass: 'bg-emerald-400 animate-pulse',
+        label: effectiveLanguage === 'en' ? 'Charging' : 'Đang Sạc',
+        fullText: effectiveLanguage === 'en' ? 'Energy Mode: Charging' : 'Chế Độ Năng Lượng: Đang Sạc'
+      };
+    }
+
+    if (pct !== null && pct <= 15) {
+      return {
+        color: 'red',
+        badgeClass: 'bg-rose-950/70 border-rose-500/60 text-rose-300 hover:bg-rose-900/70 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.3)]',
+        dotClass: 'bg-rose-500 animate-ping',
+        label: effectiveLanguage === 'en' ? 'Critical (Low)' : 'Yếu (Low)',
+        fullText: effectiveLanguage === 'en' ? 'Energy Mode: Critical Low' : 'Chế Độ Năng Lượng: Pin Cực Yếu'
+      };
+    }
+
+    if (pct !== null && pct <= 30) {
+      return {
+        color: 'orange',
+        badgeClass: 'bg-amber-950/60 border-amber-500/50 text-amber-300 hover:bg-amber-900/60',
+        dotClass: 'bg-amber-400',
+        label: effectiveLanguage === 'en' ? 'Medium' : 'Trung Bình',
+        fullText: effectiveLanguage === 'en' ? 'Energy Mode: Medium' : 'Chế Độ Năng Lượng: Trung Bình'
+      };
+    }
+
+    return {
+      color: 'green',
+      badgeClass: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/40',
+      dotClass: 'bg-emerald-400',
+      label: effectiveLanguage === 'en' ? 'Optimal' : 'Tối Ưu',
+      fullText: effectiveLanguage === 'en' ? 'Energy Mode: Optimal' : 'Chế Độ Năng Lượng: Tối Ưu'
+    };
+  };
+
+  const energyBadge = getEnergyBadge();
 
   // Fullscreen State & Change Listeners
   const [isFullscreen, setIsFullscreen] = useState<boolean>(() => {
@@ -365,6 +446,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Eye className="w-3.5 h-3.5" />
               </button>
+
+              <span className="w-[1px] h-3 bg-white/15 mx-0.5" />
+
+              {/* Connected Audience Aggregate Battery Levels (Real-time Average) */}
+              <AggregateBatteryIndicator />
             </div>
           )}
 
@@ -398,6 +484,29 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Battery Status Indicator */}
               <BatteryIndicator compact forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+
+              <span className="w-[1px] h-3 bg-white/15" />
+
+              {/* Energy Mode Badge (Green / Orange / Red) */}
+              <button
+                type="button"
+                id="btn-navbar-energy-mode"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  setIsBatterySaverModalOpen(true);
+                }}
+                data-tooltip={`${energyBadge.fullText} ${effectiveLanguage === 'en' ? '(Click for battery saver settings)' : '(Bấm để mở cài đặt tiết kiệm pin)'}`}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Energy Mode' : 'Chế Độ Năng Lượng'}
+                data-tooltip-placement="bottom"
+                data-tooltip-variant={energyBadge.color === 'red' ? 'danger' : energyBadge.color === 'orange' ? 'warning' : 'success'}
+                className={`has-tooltip min-h-[44px] px-2 py-0.5 rounded-[2px] border text-[10px] font-mono font-bold flex items-center gap-1.5 transition cursor-pointer select-none ${energyBadge.badgeClass}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${energyBadge.dotClass}`} />
+                <Zap className="w-3 h-3 text-current fill-current shrink-0" />
+                <span className="hidden xl:inline uppercase tracking-wider">{effectiveLanguage === 'en' ? 'Energy:' : 'Nguồn:'}</span>
+                <span>{energyBadge.label}</span>
+              </button>
 
               <span className="w-[1px] h-3 bg-white/15" />
 
@@ -835,6 +944,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
+
+                  {/* Energy Mode Mobile Badge Row */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+                      <span className="text-white/80">{effectiveLanguage === 'en' ? 'Energy Mode:' : 'Chế Độ Năng Lượng:'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        vibrateTap();
+                        soundFx.playClick();
+                        setIsBatterySaverModalOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`px-2.5 py-1 rounded-[2px] border text-[10px] font-bold flex items-center gap-1.5 transition cursor-pointer select-none ${energyBadge.badgeClass}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${energyBadge.dotClass}`} />
+                      <span>{energyBadge.label}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Admin Quick Options */}
@@ -962,6 +1092,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClose={() => setIsAudioSettingsOpen(false)}
         />
       )}
+
+      {/* Battery Saver & Energy Mode Settings Modal */}
+      <BatterySaverModal
+        isOpen={isBatterySaverModalOpen}
+        onClose={() => setIsBatterySaverModalOpen(false)}
+        forceLanguage={currentView === 'admin' ? 'vi' : undefined}
+      />
     </header>
   );
 };

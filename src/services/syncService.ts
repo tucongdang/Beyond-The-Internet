@@ -12,6 +12,7 @@ const STORAGE_KEY_GAME_STATE = 'BTI2026_GAME_STATE';
 const STORAGE_KEY_RESPONSES = 'BTI2026_RESPONSES';
 const STORAGE_KEY_PRESENCE = 'BTI2026_PRESENCE';
 const STORAGE_KEY_QR_SCAN_EVENTS = 'BTI2026_QR_SCAN_EVENTS';
+const STORAGE_KEY_LOCAL_AUDIT_LOGS = 'BTI2026_LOCAL_AUDIT_LOGS';
 
 export const DEFAULT_GAME_STATE: GameState = {
   active_module: 'GAME',
@@ -75,6 +76,9 @@ export const DEFAULT_GAME_STATE: GameState = {
   is_timer_paused: false,
   paused_remaining_seconds: 0,
   lobby_locked: false,
+  power_save_presentation: false,
+  power_save_auto_triggered: false,
+  power_save_refresh_rate_ms: 1000,
 
   teams: [
     { id: 'team_alpha', name: 'Đội Alpha', color: '#3b82f6' },
@@ -125,11 +129,13 @@ class RealtimeSyncService {
   private globalNotificationRecallListeners: Set<() => void> = new Set();
   private adminAlertListeners = new Set<(msg: string) => void>();
   private scanEventsListeners: Set<(events: QrScanEvent[], hourlyData: HourlyScanDataPoint[], metrics: QrScanTrendMetrics) => void> = new Set();
+  private auditLogListeners: Set<(logs: any[]) => void> = new Set();
 
   private cachedGameState: GameState = DEFAULT_GAME_STATE;
   private cachedResponses: Record<string, Record<string, UserResponse>> = {};
   private cachedPresence: Record<string, { online: boolean; last_active: number; name?: string; mssv?: string }> = {};
   private cachedScanEvents: QrScanEvent[] = [];
+  private cachedAuditLogs: any[] = [];
   private currentPingInfo: PingInfo = {
     latencyMs: null,
     quality: 'offline',
@@ -337,9 +343,20 @@ class RealtimeSyncService {
           this.saveLocalScanEvents();
         }
       }
+      const savedAuditLogs = localStorage.getItem(STORAGE_KEY_LOCAL_AUDIT_LOGS);
+      if (savedAuditLogs) {
+        this.cachedAuditLogs = JSON.parse(savedAuditLogs);
+      }
     } catch (e) {
       console.warn('Error loading localStorage sync state', e);
     }
+  }
+
+  private saveLocalAuditLogs() {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEY_LOCAL_AUDIT_LOGS, JSON.stringify(this.cachedAuditLogs.slice(0, 300)));
+    } catch {}
   }
 
   private saveLocalState() {
@@ -379,28 +396,96 @@ class RealtimeSyncService {
     return this.isFirebaseConnected && (typeof navigator === 'undefined' || navigator.onLine);
   }
 
+  public getLocalAuditLogs(): any[] {
+    return this.cachedAuditLogs;
+  }
+
+  public subscribeToAuditLogs(callback: (logs: any[]) => void): () => void {
+    this.auditLogListeners.add(callback);
+    callback(this.cachedAuditLogs);
+    return () => {
+      this.auditLogListeners.delete(callback);
+    };
+  }
+
+  public addLocalAuditLog(
+    type: ActivityLogType | string,
+    title: string,
+    description: string,
+    optionsOrMetadata?: Record<string, any>
+  ): any {
+    const now = Date.now();
+    const meta = optionsOrMetadata || {};
+    
+    let category = meta.category;
+    if (!category) {
+      if (type.startsWith('ADMIN_')) category = 'ADMIN_CONTROL';
+      else if (type === 'QUESTION_SUBMITTED' || type === 'USER_JOINED') category = 'USER_INTERACTION';
+      else if (type === 'VCNV_PREDICTION' || type === 'VCNV_REVEAL') category = 'VCNV_WORKFLOW';
+      else if (type === 'EMERGENCY_POLL') category = 'POLL_SURVEY';
+      else if (type === 'LUCKY_DRAW_WIN') category = 'LUCKY_DRAW';
+      else if (type === 'ITEM_ANALYSIS') category = 'PSYCHOMETRICS';
+      else category = 'ADMIN_CONTROL';
+    }
+
+    const newLogItem = {
+      id: meta.id || `audit_local_${now}_${getSecureRandomInt(1000, 9999)}`,
+      type,
+      category,
+      title,
+      description,
+      timestamp: now,
+      timestamp_iso: new Date(now).toISOString(),
+      actor_id: meta.actor_id || meta.uid || 'ADMIN_CONSOLE',
+      actor_role: meta.actor_role || (type.startsWith('ADMIN_') ? 'ADMIN' : 'SYSTEM'),
+      actor_name: meta.actor_name || meta.name || 'Ban Kỹ Thuật',
+      round_id: meta.round_id || this.cachedGameState?.round_name || '',
+      question_id: meta.question_id || meta.questionId || this.cachedGameState?.question_id || '',
+      latency_ms: typeof meta.latency_ms === 'number' ? meta.latency_ms : (meta.latency_sec ? Math.round(meta.latency_sec * 1000) : null),
+      score_delta: meta.score_delta ?? null,
+      research_tags: meta.research_tags || ['LOCAL_AUDIT'],
+      metadata: meta
+    };
+
+    // Prepend and limit to latest 300 entries in memory
+    this.cachedAuditLogs = [newLogItem, ...this.cachedAuditLogs.filter(l => l.id !== newLogItem.id)].slice(0, 300);
+    this.saveLocalAuditLogs();
+
+    this.auditLogListeners.forEach(cb => {
+      try { cb(this.cachedAuditLogs); } catch {}
+    });
+
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({ type: 'LOCAL_AUDIT_LOG_ADDED', payload: newLogItem });
+      } catch {}
+    }
+
+    return newLogItem;
+  }
+
+  public clearLocalAuditLogs(): void {
+    this.cachedAuditLogs = [];
+    this.saveLocalAuditLogs();
+    this.auditLogListeners.forEach(cb => {
+      try { cb([]); } catch {}
+    });
+  }
+
   public async logActivity(
     type: ActivityLogType | string,
     title: string,
     description: string,
     optionsOrMetadata?: Record<string, any>
   ): Promise<void> {
+    // Always record locally in memory first
+    const localEntry = this.addLocalAuditLog(type, title, description, optionsOrMetadata);
+
     if (!this.db || !this.getIsFirebaseConnected()) return;
     try {
-      const now = Date.now();
+      const now = localEntry.timestamp;
       const meta = optionsOrMetadata || {};
-      
-      // Infer research category if not provided
-      let category = meta.category;
-      if (!category) {
-        if (type.startsWith('ADMIN_')) category = 'ADMIN_CONTROL';
-        else if (type === 'QUESTION_SUBMITTED' || type === 'USER_JOINED') category = 'USER_INTERACTION';
-        else if (type === 'VCNV_PREDICTION' || type === 'VCNV_REVEAL') category = 'VCNV_WORKFLOW';
-        else if (type === 'EMERGENCY_POLL') category = 'POLL_SURVEY';
-        else if (type === 'LUCKY_DRAW_WIN') category = 'LUCKY_DRAW';
-        else if (type === 'ITEM_ANALYSIS') category = 'PSYCHOMETRICS';
-        else category = 'SYSTEM_TELEMETRY';
-      }
+      const category = localEntry.category;
 
       await addDoc(collection(this.db, 'activity_logs'), {
         type,
@@ -408,19 +493,19 @@ class RealtimeSyncService {
         title,
         description,
         timestamp: now,
-        timestamp_iso: new Date(now).toISOString(),
-        actor_id: meta.actor_id || meta.uid || '',
-        actor_role: meta.actor_role || (type.startsWith('ADMIN_') ? 'ADMIN' : 'AUDIENCE'),
-        actor_name: meta.actor_name || meta.name || '',
-        round_id: meta.round_id || '',
-        question_id: meta.question_id || meta.questionId || '',
-        latency_ms: typeof meta.latency_ms === 'number' ? meta.latency_ms : (meta.latency_sec ? Math.round(meta.latency_sec * 1000) : null),
-        score_delta: meta.score_delta ?? null,
-        research_tags: meta.research_tags || [],
+        timestamp_iso: localEntry.timestamp_iso,
+        actor_id: localEntry.actor_id,
+        actor_role: localEntry.actor_role,
+        actor_name: localEntry.actor_name,
+        round_id: localEntry.round_id,
+        question_id: localEntry.question_id,
+        latency_ms: localEntry.latency_ms,
+        score_delta: localEntry.score_delta,
+        research_tags: localEntry.research_tags,
         metadata: meta
       });
     } catch (error) {
-      console.warn('Failed to log activity:', error);
+      console.warn('Failed to log activity to Firestore:', error);
     }
   }
 
@@ -686,8 +771,14 @@ class RealtimeSyncService {
     this.allResponsesListeners.forEach(listener => listener(this.cachedResponses));
   }
 
+  private checkAutoPowerSavePresentation() {
+    // Projector power save auto-trigger removed per user requirement
+    return;
+  }
+
   private notifyPresenceListeners() {
     const activeCount = Object.values(this.cachedPresence).filter(p => p.online && (Date.now() - p.last_active < 30000)).length;
+    this.checkAutoPowerSavePresentation();
     this.presenceListeners.forEach(listener => listener(Math.max(1, activeCount), this.cachedPresence));
   }
 
@@ -1045,7 +1136,73 @@ class RealtimeSyncService {
   }
 
   public updateGameState(newState: Partial<GameState>): Promise<void> {
-    const updated: GameState = { ...this.cachedGameState, ...newState, last_updated: Date.now() };
+    const prev = this.cachedGameState;
+    const updated: GameState = { ...prev, ...newState, last_updated: Date.now() };
+
+    // Detect and record audit logs for major state changes
+    if (newState.lobby_locked !== undefined && newState.lobby_locked !== prev.lobby_locked) {
+      this.addLocalAuditLog(
+        'ADMIN_LOBBY_TOGGLE',
+        newState.lobby_locked ? '🔒 Khóa Sảnh Chờ (Lobby Locked)' : '🔓 Mở Sảnh Chờ (Lobby Unlocked)',
+        `Cập nhật trạng thái sảnh chờ khán giả: ${newState.lobby_locked ? 'ĐÃ KHÓA TRUY CẬP' : 'CHO PHÉP THAM GIA'}`,
+        { field: 'lobby_locked', value: newState.lobby_locked }
+      );
+    }
+
+    if ((newState as any).qr_config !== undefined || newState.qr_custom_caption !== undefined || newState.show_qr !== undefined) {
+      this.addLocalAuditLog(
+        'ADMIN_QR_CONFIG_UPDATE',
+        '📱 Cập Nhật Cấu Hình Mã QR',
+        `Admin đã cập nhật cấu hình mã QR hiển thị sân khấu (Tiêu đề: ${newState.qr_custom_caption || prev.qr_custom_caption || 'Truy cập BTI'}, Hiển thị: ${newState.show_qr ?? prev.show_qr ? 'HIỂN THỊ' : 'ẨN'})`,
+        { field: 'qr_config', caption: newState.qr_custom_caption, show_qr: newState.show_qr }
+      );
+    }
+
+    if (newState.lookup_locked !== undefined && newState.lookup_locked !== prev.lookup_locked) {
+      this.addLocalAuditLog(
+        'ADMIN_SECURITY_UPDATE',
+        newState.lookup_locked ? '🛡️ Khóa Tra Cứu Khán Giả (Anti-Lookup ON)' : '🔓 Mở Tra Cứu Khán Giả (Anti-Lookup OFF)',
+        `Cơ chế bảo mật chống tra cứu dữ liệu khán giả: ${newState.lookup_locked ? 'BẬT' : 'TẮT'}`,
+        { field: 'lookup_locked', value: newState.lookup_locked }
+      );
+    }
+
+    if (newState.anti_exit_protection !== undefined && newState.anti_exit_protection !== prev.anti_exit_protection) {
+      this.addLocalAuditLog(
+        'ADMIN_SECURITY_UPDATE',
+        newState.anti_exit_protection ? '🛡️ Bật Chế Độ Chống Thoát Trình Duyệt' : '🔓 Tắt Chế Độ Chống Thoát Trình Duyệt',
+        `Cơ chế cảnh báo chống thoát ứng dụng: ${newState.anti_exit_protection ? 'BẬT' : 'TẮT'}`,
+        { field: 'anti_exit_protection', value: newState.anti_exit_protection }
+      );
+    }
+
+    if (newState.seb_mode_enabled !== undefined && newState.seb_mode_enabled !== prev.seb_mode_enabled) {
+      this.addLocalAuditLog(
+        'ADMIN_SECURITY_UPDATE',
+        newState.seb_mode_enabled ? '🔒 Bật Kiosk Chống Gian Lận SEB' : '🔓 Tắt Kiosk Chống Gian Lận SEB',
+        `Chế độ Safe Exam Browser Kiosk toàn màn hình: ${newState.seb_mode_enabled ? 'ĐÃ BẬT' : 'ĐÃ TẮT'}`,
+        { field: 'seb_mode_enabled', value: newState.seb_mode_enabled }
+      );
+    }
+
+    if (newState.status !== undefined && newState.status !== prev.status) {
+      this.addLocalAuditLog(
+        'ADMIN_MATCH_STATUS',
+        '⚡ Chuyển Trạng Thái Thi Đấu',
+        `Chuyển trạng thái trận đấu từ [${prev.status || 'STANDBY'}] ➔ [${newState.status}]`,
+        { field: 'status', from: prev.status, to: newState.status }
+      );
+    }
+
+    if (newState.question_id !== undefined && newState.question_id !== prev.question_id) {
+      this.addLocalAuditLog(
+        'ADMIN_QUESTION_LOAD',
+        '❓ Nạp Câu Hỏi Mới Vào Sân Sân',
+        `Đã tải câu hỏi [${newState.question_id}] (${newState.round_name || prev.round_name || 'Vòng thi'})`,
+        { field: 'question_id', value: newState.question_id }
+      );
+    }
+
     this.cachedGameState = updated;
     this.saveLocalState();
     this.notifyStateListeners();

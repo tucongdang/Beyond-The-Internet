@@ -21,6 +21,7 @@ import {
 import { GameState, QR_PALETTES, QrPaletteId } from '../types';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
+import { RotatingSplitBackground } from './RotatingSplitBackground';
 import { syncService } from '../services/syncService';
 
 interface ProjectorWaitingRoomProps {
@@ -184,6 +185,11 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
       id="projector-waiting-room"
       className="w-full h-full min-h-[100dvh] flex flex-col justify-between p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#0c0414] via-[#150727] to-[#08020e] text-[#F5EFF9] relative overflow-hidden select-none animate-fadeIn"
     >
+      {/* Rotating Split Background active only during match break or pre-event countdown */}
+      {(isBreakActive || (schedule?.status === 'SCHEDULED' && !isTimeReached)) && (
+        <RotatingSplitBackground durationSeconds={10} darkColor="#190839" lightColor="#F7CAC9" opacity={0.08} isFixed={true} />
+      )}
+
       {/* High-Tech Stage Ambient Glows */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute top-1/2 -right-32 -translate-y-1/2 w-[500px] h-[500px] bg-[#F7CAC9]/10 rounded-full blur-3xl pointer-events-none" />
@@ -342,8 +348,15 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
 
             {/* Large Digital LED Countdown (Break Countdown or Scheduled Countdown) */}
             {isBreakActive && (matchBreak?.duration_seconds || 0) > 0 ? (
-              <div className="w-full p-4 sm:p-5 rounded-[4px] fluent-box border border-amber-400/60 shadow-2xl bg-gradient-to-r from-amber-950/90 via-[#260f38]/90 to-slate-950/90 backdrop-blur-xl animate-fadeIn">
-                <div className="flex items-center justify-between mb-3 border-b border-amber-400/20 pb-2">
+              <div className="w-full p-4 sm:p-5 rounded-[4px] fluent-box border border-amber-400/60 shadow-2xl bg-gradient-to-r from-amber-950/90 via-[#260f38]/90 to-slate-950/90 backdrop-blur-xl animate-fadeIn relative overflow-hidden">
+                {/* Background Motion Layers */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                  <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,rgba(168,85,247,0.12)_40%,transparent_70%)] animate-spin-slow opacity-80" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-amber-400/30 rounded-full animate-countdown-ripple" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-purple-400/20 rounded-full animate-countdown-ripple" style={{ animationDelay: '1s' }} />
+                </div>
+
+                <div className="relative z-10 flex items-center justify-between mb-3 border-b border-amber-400/20 pb-2">
                   <div className="flex items-center gap-2 text-xs font-mono text-amber-300 uppercase font-bold tracking-wider">
                     <Clock className="w-4 h-4 text-amber-400 animate-spin" />
                     <span>Thời gian giải lao / tạm dừng còn lại:</span>
@@ -353,9 +366,9 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-3 sm:gap-6 text-center py-1">
+                <div className="relative z-10 flex items-center justify-center gap-3 sm:gap-6 text-center py-1">
                   {/* Minutes */}
-                  <div className="p-4 sm:p-6 rounded-[4px] bg-black/80 border border-amber-400/50 shadow-inner flex-1 max-w-[180px]">
+                  <div className="p-4 sm:p-6 rounded-[4px] bg-black/80 border border-amber-400/50 shadow-inner flex-1 max-w-[180px] backdrop-blur-md">
                     <div className="text-4xl sm:text-6xl lg:text-7xl font-black font-mono text-amber-300 tracking-tight">
                       {String(breakCountdown.mins).padStart(2, '0')}
                     </div>
@@ -367,7 +380,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   <span className="text-3xl sm:text-5xl font-mono font-bold text-amber-400 animate-pulse">:</span>
 
                   {/* Seconds */}
-                  <div className="p-4 sm:p-6 rounded-[4px] bg-black/80 border border-amber-400/60 shadow-inner flex-1 max-w-[180px]">
+                  <div className="p-4 sm:p-6 rounded-[4px] bg-black/80 border border-amber-400/60 shadow-inner flex-1 max-w-[180px] backdrop-blur-md">
                     <div className="text-4xl sm:text-6xl lg:text-7xl font-black font-mono text-yellow-400 tracking-tight animate-pulse">
                       {String(breakCountdown.secs).padStart(2, '0')}
                     </div>
@@ -378,8 +391,15 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                 </div>
               </div>
             ) : schedule?.status === 'SCHEDULED' && !isTimeReached ? (
-              <div className="w-full p-4 sm:p-5 rounded-[4px] fluent-box border border-amber-500/40 shadow-2xl bg-gradient-to-r from-slate-950/90 via-[#1a0c2c]/90 to-slate-950/90 backdrop-blur-xl">
-                <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+              <div className="w-full p-4 sm:p-5 rounded-[4px] fluent-box border border-amber-500/40 shadow-2xl bg-gradient-to-r from-slate-950/90 via-[#1a0c2c]/90 to-slate-950/90 backdrop-blur-xl relative overflow-hidden">
+                {/* Background Motion Layers */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                  <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.15)_0%,rgba(168,85,247,0.1)_40%,transparent_70%)] animate-spin-slow opacity-80" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-amber-400/25 rounded-full animate-countdown-ripple" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-sky-400/15 rounded-full animate-countdown-ripple" style={{ animationDelay: '1s' }} />
+                </div>
+
+                <div className="relative z-10 flex items-center justify-between mb-3 border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2 text-xs font-mono text-amber-300 uppercase font-bold tracking-wider">
                     <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
                     <span>Thời gian đếm ngược chính xác tới giờ khai mạc:</span>
@@ -389,9 +409,9 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3 sm:gap-4 text-center">
+                <div className="relative z-10 grid grid-cols-4 gap-3 sm:gap-4 text-center">
                   {/* Days */}
-                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner">
+                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner backdrop-blur-md hover:border-amber-400/40 transition">
                     <div className="text-3xl sm:text-5xl lg:text-6xl font-black font-mono text-amber-300 tracking-tight">
                       {String(countdown.days).padStart(2, '0')}
                     </div>
@@ -401,7 +421,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </div>
 
                   {/* Hours */}
-                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner">
+                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner backdrop-blur-md hover:border-amber-400/40 transition">
                     <div className="text-3xl sm:text-5xl lg:text-6xl font-black font-mono text-amber-300 tracking-tight">
                       {String(countdown.hours).padStart(2, '0')}
                     </div>
@@ -411,7 +431,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </div>
 
                   {/* Minutes */}
-                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner">
+                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-white/10 shadow-inner backdrop-blur-md hover:border-amber-400/40 transition">
                     <div className="text-3xl sm:text-5xl lg:text-6xl font-black font-mono text-amber-300 tracking-tight">
                       {String(countdown.minutes).padStart(2, '0')}
                     </div>
@@ -421,7 +441,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </div>
 
                   {/* Seconds */}
-                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-amber-500/50 shadow-inner">
+                  <div className="p-3 sm:p-4 rounded-[3px] bg-slate-950/80 border border-amber-500/50 shadow-inner backdrop-blur-md hover:border-amber-400 transition">
                     <div className="text-3xl sm:text-5xl lg:text-6xl font-black font-mono text-yellow-400 tracking-tight animate-pulse">
                       {String(countdown.seconds).padStart(2, '0')}
                     </div>

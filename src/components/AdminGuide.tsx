@@ -29,7 +29,7 @@ import {
   Info
 } from 'lucide-react';
 
-type GuideSection = 'SCORING' | 'WORKFLOW' | 'SPECIAL_MODULES' | 'BROADCAST' | 'DATA_EXPORT' | 'SHORTCUTS' | 'ARCHITECTURE';
+type GuideSection = 'SCORING' | 'WORKFLOW' | 'SPECIAL_MODULES' | 'BROADCAST' | 'SECURITY_SESSION' | 'DATA_EXPORT' | 'SHORTCUTS' | 'ARCHITECTURE';
 
 export const AdminGuide: React.FC = () => {
   const [activeSection, setActiveSection] = useState<GuideSection>('SCORING');
@@ -40,6 +40,7 @@ export const AdminGuide: React.FC = () => {
     { id: 'WORKFLOW' as GuideSection, label: 'Quy Trình 4 Vòng Thi', icon: LayoutGrid, desc: 'Hướng dẫn điều khiển từng vòng & các bước thao tác' },
     { id: 'SPECIAL_MODULES' as GuideSection, label: 'Thăm Dò & Lucky Draw', icon: Sparkles, desc: 'Khảo sát khẩn cấp, Vòng quay may mắn & Word Cloud' },
     { id: 'BROADCAST' as GuideSection, label: 'Thông Báo & Thu Hồi', icon: Radio, desc: 'Phát tin khẩn, chạy chữ Marquee & thu hồi 1-click' },
+    { id: 'SECURITY_SESSION' as GuideSection, label: 'Bảo Mật & Phiên Đăng Nhập', icon: ShieldCheck, desc: 'Đếm ngược hết hạn 30 phút, Duy trì đăng nhập & Bảo vệ phiên' },
     { id: 'DATA_EXPORT' as GuideSection, label: 'Xuất Dữ Liệu & SPSS', icon: FileSpreadsheet, desc: 'Xuất CSV mã hóa nhị phân, JSON Dump & Audit log' },
     { id: 'SHORTCUTS' as GuideSection, label: 'Phím Tắt & Xử Lý Sự Cố', icon: Keyboard, desc: 'Bảng phím tắt thao tác nhanh & phương án backup' },
     { id: 'ARCHITECTURE' as GuideSection, label: 'Kiến Trúc Đa Màn Hình', icon: Server, desc: 'Mô hình Pub/Sub, Firestore State & Sync Engine' }
@@ -404,18 +405,71 @@ export const AdminGuide: React.FC = () => {
         </div>
       )}
 
-      {/* SECTION 5: XUẤT DỮ LIỆU & SPSS */}
+      {/* SECTION 5: BẢO MẬT & PHIÊN ĐĂNG NHẬP (SECURITY_SESSION) */}
+      {activeSection === 'SECURITY_SESSION' && (
+        <div className="space-y-6 animate-fadeIn">
+          <div className="fluent-box p-5 rounded-[4px] border border-white/10 space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+              <ShieldCheck className="w-5 h-5 text-amber-400" />
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                Bảo Mật Phiên Đăng Nhập & Quản Lý Thời Gian Hoạt Động (Session Security & Inactivity Safeguards)
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Feature 1: Admin Inactivity Auto-Logout */}
+              <div className="p-4 rounded-[2px] fluent-box-nested border border-amber-500/30 bg-amber-950/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <h4 className="text-xs font-bold text-amber-300 uppercase font-mono">
+                    1. Tự Động Đăng Xuất Admin (30 Phút Không Thao Tác)
+                  </h4>
+                </div>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  Để đảm bảo an toàn tối đa cho bảng điều khiển trung tâm khi Ban Tổ Chức rời khỏi vị trí:
+                </p>
+                <ul className="text-xs text-white/70 space-y-1.5 list-disc list-inside font-mono">
+                  <li><strong>Bộ đếm không hoạt động:</strong> Tự động tính thời gian từ thao tác chuột hoặc bàn phím cuối cùng.</li>
+                  <li><strong>Cảnh báo đếm ngược 2 phút:</strong> Khi còn 120 giây (ở phút thứ 28), hệ thống hiển thị Modal cảnh báo khẩn <code className="text-amber-300">SessionExpiringModal</code> kèm âm thanh thông báo.</li>
+                  <li><strong>Đồng hồ Mini trên Banner Header:</strong> Dải badge góc trên chuyển thành đồng hồ đếm ngược nhấp nháy <code className="text-amber-300">HẾT HẠN TRONG: 01:59</code>.</li>
+                  <li><strong>Gia hạn 1-Click:</strong> Bấm <code className="text-emerald-300">Duy Trì Đăng Nhập (Stay Logged In)</code> trên Modal hoặc bấm trực tiếp vào dải đồng hồ nhấp nháy trên Header để reset bộ đếm thêm 30 phút.</li>
+                </ul>
+              </div>
+
+              {/* Feature 2: Audience Session Persistence */}
+              <div className="p-4 rounded-[2px] fluent-box-nested border border-sky-500/30 bg-sky-950/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-sky-400 shrink-0" />
+                  <h4 className="text-xs font-bold text-sky-300 uppercase font-mono">
+                    2. Duy Trì Đăng Nhập Khán Giả (Keep Me Logged In)
+                  </h4>
+                </div>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  Trải nghiệm đăng nhập linh hoạt cho người chơi/khán giả trên điện thoại cá nhân:
+                </p>
+                <ul className="text-xs text-white/70 space-y-1.5 list-disc list-inside font-mono">
+                  <li><strong>Hộp chọn Onboarding:</strong> Tích chọn <code className="text-sky-300">Duy trì đăng nhập</code> trên giao diện Đăng nhập / Đăng ký / Quick Access.</li>
+                  <li><strong>Mã hóa an toàn:</strong> Hồ sơ khán giả được mã hóa qua <code className="text-cyan-300">secureStorage</code> &amp; <code className="text-cyan-300">localStorage</code>, tự động khôi phục ngay cả khi mở lại trình duyệt.</li>
+                  <li><strong>Chế độ thiết bị dùng chung:</strong> Bỏ chọn "Duy trì đăng nhập" sẽ chỉ lưu tài khoản trong phiên làm việc hiện tại (<code className="text-purple-300">sessionStorage</code>). Khi đóng tab/trình duyệt, tài khoản sẽ tự động xóa sạch để bảo vệ riêng tư.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 6: XUẤT DỮ LIỆU & SPSS */}
       {activeSection === 'DATA_EXPORT' && (
         <div className="space-y-6 animate-fadeIn">
           <div className="fluent-box p-5 rounded-[4px] border border-white/10 space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-white/10">
               <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
               <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                Xuất Dữ Liệu Nghiên Cứu Khoa Học & Hậu Kiểm (SPSS / CSV / Full Dump)
+                Xuất Dữ Liệu Nghiên Cứu Khoa Học & Hậu Kiểm (SPSS / CSV / Full Dump / Export Logs)
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="p-4 rounded-[2px] fluent-box-nested border border-white/10 space-y-2">
                 <h4 className="text-xs font-bold text-emerald-300 uppercase font-mono">
                   1. Chuẩn Hóa SPSS Tabular (1/0)
@@ -427,7 +481,7 @@ export const AdminGuide: React.FC = () => {
 
               <div className="p-4 rounded-[2px] fluent-box-nested border border-white/10 space-y-2">
                 <h4 className="text-xs font-bold text-cyan-300 uppercase font-mono">
-                  2. Full Database JSON Dump &amp; JSON Lines (.jsonl)
+                  2. Full Database JSON Dump &amp; JSONL
                 </h4>
                 <p className="text-xs text-white/70 leading-relaxed">
                   Sao lưu toàn bộ cấu trúc cơ sở dữ liệu trận đấu (Trạng thái câu hỏi, ngân hàng đề, chi tiết từng bài nộp, danh sách khán giả) để phục hồi hệ thống hoặc nạp vào các mô hình xử lý dữ liệu lớn (Python Pandas, Hugging Face, BigQuery).
@@ -435,11 +489,20 @@ export const AdminGuide: React.FC = () => {
               </div>
 
               <div className="p-4 rounded-[2px] fluent-box-nested border border-white/10 space-y-2">
-                <h4 className="text-xs font-bold text-amber-300 uppercase font-mono">
-                  3. Audit Action &amp; Research Log (Chuẩn Nghiên Cứu Khoa Học)
+                <h4 className="text-xs font-bold text-teal-300 uppercase font-mono">
+                  3. Export Logs (JSON Phiên Hoạt Động)
                 </h4>
                 <p className="text-xs text-white/70 leading-relaxed">
-                  Lưu vết thời gian thực mọi biến cố của Ban Tổ Chức (chuyển câu, khóa giờ, công bố đáp án), độ trễ phản xạ của thí sinh (Reaction Time ms), tham số đo lường độ khó Item Analysis và xuất dữ liệu chuẩn hóa phục vụ giải trình khiếu nại hoặc công bố nghiên cứu thực nghiệm (APA Format, SPSS, R).
+                  Nút <strong>"Export Logs (JSON)"</strong> trong phân hệ Nhật Ký Hoạt Động cho phép xuất ngay lập tức toàn bộ bộ nhớ tạm (Memory-based audit history) của phiên làm việc hiện tại dưới dạng tệp JSON chuẩn hóa để lưu trữ hoặc phân tích ngoại tuyến.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-[2px] fluent-box-nested border border-white/10 space-y-2">
+                <h4 className="text-xs font-bold text-amber-300 uppercase font-mono">
+                  4. Audit Action &amp; Research Log
+                </h4>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  Lưu vết thời gian thực mọi biến cố của Ban Tổ Chức (chuyển câu, khóa giờ, công bố đáp án), độ trễ phản xạ của thí sinh (Reaction Time ms), tham số đo lường độ khó Item Analysis và xuất dữ liệu chuẩn hóa phục vụ giải trình khiếu nại (APA Format, SPSS, R).
                 </p>
               </div>
             </div>

@@ -31,11 +31,30 @@ import {
 } from 'lucide-react';
 import { ActivityLogItem, ActivityLogCategory } from '../types';
 import { exportAuditLogsToCSV, exportToJSON, exportToJSONLines } from '../utils/exportUtils';
+import { syncService } from '../services/syncService';
 
 export const AdminActivityLog: React.FC = () => {
-  const [logs, setLogs] = useState<ActivityLogItem[]>([]);
+  const [firestoreLogs, setFirestoreLogs] = useState<ActivityLogItem[]>([]);
+  const [localLogs, setLocalLogs] = useState<ActivityLogItem[]>([]);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Combine and de-duplicate local memory audit logs with Firestore logs
+  const logs = useMemo(() => {
+    const map = new Map<string, ActivityLogItem>();
+    
+    // Add local logs first
+    localLogs.forEach(item => {
+      map.set(item.id, item);
+    });
+
+    // Merge Firestore logs (overwriting or complementing)
+    firestoreLogs.forEach(item => {
+      map.set(item.id, item);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
+  }, [firestoreLogs, localLogs]);
   
   // Research filter states
   const [activeCategory, setActiveCategory] = useState<ActivityLogCategory | 'ALL'>('ALL');
@@ -50,15 +69,22 @@ export const AdminActivityLog: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!db) return;
-    
+    // Subscribe to local memory audit logs from syncService
+    const unsubscribeLocal = syncService.subscribeToAuditLogs((auditLogs) => {
+      setLocalLogs(auditLogs || []);
+    });
+
+    if (!db) {
+      return () => unsubscribeLocal();
+    }
+
     const q = query(
       collection(db, 'activity_logs'),
       orderBy('timestamp', 'desc'),
       limit(limitCount)
     );
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeFirestore = onSnapshot(q, (snapshot) => {
       const newLogs = snapshot.docs.map(docSnap => {
         const data = docSnap.data();
         return {
@@ -87,12 +113,15 @@ export const AdminActivityLog: React.FC = () => {
           metadata: data.metadata || {}
         };
       }) as ActivityLogItem[];
-      setLogs(newLogs);
+      setFirestoreLogs(newLogs);
     }, (error) => {
       console.warn('Firestore activity_logs listener error:', error);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeLocal();
+      unsubscribeFirestore();
+    };
   }, [limitCount]);
 
   // Toggle JSON details expansion
@@ -226,6 +255,29 @@ export const AdminActivityLog: React.FC = () => {
     notify(`Đã xuất ${filteredLogs.length} bản ghi theo bộ lọc`);
   };
 
+  const handleExportSessionLogsJSON = () => {
+    const sessionLogsToExport = localLogs.length > 0 ? localLogs : logs;
+    if (sessionLogsToExport.length === 0) {
+      notify('Không có bản ghi nhật ký phiên nào để xuất', 'warning');
+      return;
+    }
+
+    const payload = {
+      app: 'Beyond The Internet 2026 Admin Portal',
+      exportType: 'SESSION_AUDIT_LOGS_JSON',
+      exportedAt: new Date().toISOString(),
+      timestamp: Date.now(),
+      totalRecords: sessionLogsToExport.length,
+      memoryLogCount: localLogs.length,
+      firestoreLogCount: firestoreLogs.length,
+      sessionMetrics: stats,
+      auditLogs: sessionLogsToExport
+    };
+
+    exportToJSON(payload, `BTI2026_Session_AuditLogs_${new Date().toISOString().slice(0, 10)}_${Date.now()}.json`);
+    notify(`Đã xuất thành công ${sessionLogsToExport.length} bản ghi nhật ký phiên ra tệp JSON!`);
+  };
+
   const handleExportJSON = () => {
     if (logs.length === 0) {
       notify('Không có dữ liệu để xuất', 'warning');
@@ -251,12 +303,17 @@ export const AdminActivityLog: React.FC = () => {
 
   const handleClearLogs = async () => {
     setIsClearDialogOpen(false);
-    if (!db) return;
+    syncService.clearLocalAuditLogs();
+
+    if (!db) {
+      notify('Đã xóa sạch bộ nhớ cục bộ nhật ký thao tác!');
+      return;
+    }
     
     notify('Đang tiến hành dọn dẹp toàn bộ nhật ký...', 'warning');
     
     let deletedCount = 0;
-    for (const log of logs) {
+    for (const log of firestoreLogs) {
       if (!log.id) continue;
       try {
         await deleteDoc(doc(db, 'activity_logs', log.id));
@@ -265,7 +322,7 @@ export const AdminActivityLog: React.FC = () => {
         console.error("Error deleting log", error);
       }
     }
-    notify(`Đã dọn sạch thành công ${deletedCount} bản ghi nhật ký`);
+    notify(`Đã dọn sạch thành công ${deletedCount} bản ghi nhật ký Firestore & bộ nhớ cục bộ`);
   };
 
   return (
@@ -288,12 +345,20 @@ export const AdminActivityLog: React.FC = () => {
           {/* Quick Export Suite Buttons */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
+              onClick={handleExportSessionLogsJSON}
+              className="px-3.5 py-2 text-xs font-black rounded-[2px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition cursor-pointer border border-emerald-400/40 transform active:scale-95"
+              title="Xuất dữ liệu nhật ký phiên hiện tại ra tệp JSON để lưu trữ hoặc phân tích ngoại tuyến"
+            >
+              <Download className="w-4 h-4 text-emerald-200" />
+              <span>Export Logs (JSON)</span>
+            </button>
+            <button
               onClick={handleExportResearchCSV}
               className="px-3 py-2 text-xs font-bold rounded-[2px] bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-2 shadow-lg transition cursor-pointer border border-cyan-400/40"
               title="Xuất tệp CSV Nghiên Cứu & Audit Log đầy đủ"
             >
               <FileSpreadsheet className="w-4 h-4" />
-              <span>Xuất CSV Nghiên Cứu</span>
+              <span>Xuất CSV</span>
             </button>
             <button
               onClick={handleExportJSON}
@@ -301,7 +366,7 @@ export const AdminActivityLog: React.FC = () => {
               title="Xuất Full JSON Dump cho R / Python / SPSS"
             >
               <Database className="w-4 h-4 text-purple-300" />
-              <span>Xuất JSON</span>
+              <span>Full JSON</span>
             </button>
             <button
               onClick={handleExportJSONL}

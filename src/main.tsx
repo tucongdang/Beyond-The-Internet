@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { AnimationControlProvider } from './contexts/AnimationControlContext';
 import './index.css';
 
 function initApp() {
@@ -18,7 +19,9 @@ function initApp() {
   if (rootElement) {
     createRoot(rootElement).render(
       <StrictMode>
-        <App />
+        <AnimationControlProvider>
+          <App />
+        </AnimationControlProvider>
       </StrictMode>,
     );
   }

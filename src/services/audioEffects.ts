@@ -58,6 +58,72 @@ class AudioQueueManager {
   }
 }
 
+export type SoundPackTheme = 'classic' | 'retro' | 'cyberpunk' | 'zen' | 'scifi';
+
+export interface SoundPackMeta {
+  id: SoundPackTheme;
+  nameVi: string;
+  nameEn: string;
+  descVi: string;
+  descEn: string;
+  iconEmoji: string;
+  badgeColor: string;
+  borderColor: string;
+}
+
+export const SOUND_PACKS: SoundPackMeta[] = [
+  {
+    id: 'classic',
+    nameVi: 'Trực Tiếp Olympia',
+    nameEn: 'Classic Game Show',
+    descVi: 'Hợp âm chuông ngân kinh điển, sôi nổi và truyền cảm hứng',
+    descEn: 'Classic major fanfare & chime arpeggios',
+    iconEmoji: '🏆',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    borderColor: 'border-amber-400/50'
+  },
+  {
+    id: 'retro',
+    nameVi: '8-Bit Arcade Pixel',
+    nameEn: '8-Bit Retro Arcade',
+    descVi: 'Âm thanh máy chơi game thùng NES/Game Boy retro vui nhộn',
+    descEn: 'Nostalgic chiptune square-wave coin & jump sounds',
+    iconEmoji: '👾',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    borderColor: 'border-emerald-400/50'
+  },
+  {
+    id: 'cyberpunk',
+    nameVi: 'Cyberpunk Synthwave',
+    nameEn: 'Cyberpunk Synthwave',
+    descVi: 'Sóng âm Synthwave Neon 2077 với sub-bass punch và laser arpeggio',
+    descEn: 'Futuristic synth chords, sub-bass lasers & glitch pulses',
+    iconEmoji: '⚡',
+    badgeColor: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40',
+    borderColor: 'border-fuchsia-400/50'
+  },
+  {
+    id: 'zen',
+    nameVi: 'Zen Chuông Thạch Anh',
+    nameEn: 'Zen Crystal Harmonics',
+    descVi: 'Âm vang chuông xoay Tây Tạng và tiếng gõ mộc thư thái',
+    descEn: 'Ethereal singing bowl harmonics & bamboo wood block resonance',
+    iconEmoji: '🎐',
+    badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+    borderColor: 'border-teal-400/50'
+  },
+  {
+    id: 'scifi',
+    nameVi: 'Vũ Trụ Quantum Warp',
+    nameEn: 'Sci-Fi Quantum Warp',
+    descVi: 'Hiệu ứng nhảy không gian du hành vũ trụ và khiên chắn năng lượng',
+    descEn: 'Quantum warp drive glissando & forcefield deflections',
+    iconEmoji: '🚀',
+    badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+    borderColor: 'border-sky-400/50'
+  }
+];
+
 class SoundEffectsService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = (() => {
@@ -73,6 +139,18 @@ class SoundEffectsService {
   })();
   private adminMuted: boolean = false;
   private ttsActive: boolean = false;
+  private soundPack: SoundPackTheme = (() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('bti_sound_pack') as SoundPackTheme;
+        if (saved && ['classic', 'retro', 'cyberpunk', 'zen', 'scifi'].includes(saved)) {
+          return saved;
+        }
+      } catch {}
+    }
+    return 'classic';
+  })();
+  private soundPackListeners: Set<(pack: SoundPackTheme) => void> = new Set();
   private queueManager = new AudioQueueManager(() => this.shouldSuppressAudio());
   private masterGain: GainNode | null = null;
   private volume: number = (() => {
@@ -89,6 +167,32 @@ class SoundEffectsService {
   })();
   private volumeListeners: Set<(vol: number) => void> = new Set();
   private audioActivityListeners: Set<(durationMs: number) => void> = new Set();
+
+  public getSoundPack(): SoundPackTheme {
+    return this.soundPack;
+  }
+
+  public setSoundPack(pack: SoundPackTheme): void {
+    if (!['classic', 'retro', 'cyberpunk', 'zen', 'scifi'].includes(pack)) return;
+    this.soundPack = pack;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('bti_sound_pack', pack);
+      } catch {}
+    }
+    this.soundPackListeners.forEach(listener => {
+      try {
+        listener(pack);
+      } catch {}
+    });
+  }
+
+  public subscribeSoundPack(listener: (pack: SoundPackTheme) => void): () => void {
+    this.soundPackListeners.add(listener);
+    return () => {
+      this.soundPackListeners.delete(listener);
+    };
+  }
 
   public notifyActivity(durationMs: number = 300) {
     if (this.shouldSuppressAudio()) return;
@@ -222,32 +326,9 @@ class SoundEffectsService {
     return this.enabled;
   }
 
-  /** Error feedback buzz/tone */
+  /** Error feedback buzz/tone (routes to active sound pack) */
   public playError() {
-    this.notifyActivity(300);
-    this.queueManager.enqueue(() => {
-      
-    const ctx = this.getAudioContext();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.15);
-      
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-      
-      osc.connect(gain);
-      gain.connect(this.getDestination(ctx));
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-    } catch {
-      // ignore audio errors
-    }
-  
-    }, 200);
+    this.playPackAudio(this.soundPack, false);
   }
 
   /** Urgent warning / broadcast alert tone */
@@ -379,59 +460,281 @@ class SoundEffectsService {
     this.playReveal(true);
   }
 
-  /** Reveal fanfare */
+  /** Preview any sound pack feedback immediately */
+  public previewSoundPack(pack: SoundPackTheme, isCorrect: boolean = true) {
+    this.playPackAudio(pack, isCorrect);
+  }
+
+  /** Main Reveal fanfare routing to the active sound pack theme */
   public playReveal(isCorrect = true) {
-    this.notifyActivity(isCorrect ? 800 : 600);
+    this.playPackAudio(this.soundPack, isCorrect);
+  }
+
+  /** Play theme-specific synthesizer feedback */
+  private playPackAudio(pack: SoundPackTheme, isCorrect: boolean) {
+    this.notifyActivity(isCorrect ? 800 : 500);
     this.queueManager.enqueue(() => {
-      
-    const ctx = this.getAudioContext();
-    if (!ctx) return;
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
 
-    try {
-      if (isCorrect) {
-        // Joyful major chord arpeggio
-        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-        notes.forEach((freq, index) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          const start = ctx.currentTime + index * 0.09;
+      try {
+        const now = ctx.currentTime;
+        const dest = this.getDestination(ctx);
 
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, start);
+        switch (pack) {
+          case 'retro': {
+            if (isCorrect) {
+              // 8-Bit chiptune coin / power-up arpeggio
+              const notes = [659.25, 830.61, 987.77, 1318.51, 1661.22]; // E5, G#5, B5, E6, G#6
+              const step = 0.045;
+              notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const start = now + idx * step;
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.2, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.08);
+                osc.connect(gain);
+                gain.connect(dest);
+                osc.start(start);
+                osc.stop(start + 0.08);
+              });
+            } else {
+              // 8-Bit downward pitch-drop wobble
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(520, now);
+              osc.frequency.exponentialRampToValueAtTime(120, now + 0.22);
+              gain.gain.setValueAtTime(0.22, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start(now);
+              osc.stop(now + 0.24);
+            }
+            break;
+          }
 
-          gain.gain.setValueAtTime(0.25, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+          case 'cyberpunk': {
+            if (isCorrect) {
+              // Cyberpunk sub punch + resonant neon chord sweep
+              const subOsc = ctx.createOscillator();
+              const subGain = ctx.createGain();
+              subOsc.type = 'sine';
+              subOsc.frequency.setValueAtTime(180, now);
+              subOsc.frequency.exponentialRampToValueAtTime(70, now + 0.09);
+              subGain.gain.setValueAtTime(0.3, now);
+              subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+              subOsc.connect(subGain);
+              subGain.connect(dest);
+              subOsc.start(now);
+              subOsc.stop(now + 0.1);
 
-          osc.connect(gain);
-          gain.connect(this.getDestination(ctx));
+              const filter = ctx.createBiquadFilter();
+              filter.type = 'lowpass';
+              filter.frequency.setValueAtTime(2600, now);
+              filter.frequency.exponentialRampToValueAtTime(800, now + 0.45);
+              filter.Q.value = 3.0;
+              filter.connect(dest);
 
-          osc.start(start);
-          osc.stop(start + 0.4);
-        });
-      } else {
-        // Gentle neutral descending tone
-        const notes = [440, 392, 349.23];
-        notes.forEach((freq, index) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          const start = ctx.currentTime + index * 0.12;
+              [523.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const start = now + idx * 0.05;
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.18, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.42);
+                osc.connect(gain);
+                gain.connect(filter);
+                osc.start(start);
+                osc.stop(start + 0.42);
+              });
+            } else {
+              // Cyberpunk glitch error detune
+              const osc1 = ctx.createOscillator();
+              const osc2 = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc1.type = 'sawtooth';
+              osc2.type = 'sawtooth';
+              osc1.frequency.setValueAtTime(145, now);
+              osc2.frequency.setValueAtTime(152, now); // beating interference
+              osc1.frequency.exponentialRampToValueAtTime(65, now + 0.22);
+              osc2.frequency.exponentialRampToValueAtTime(60, now + 0.22);
 
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, start);
+              gain.gain.setValueAtTime(0.26, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
 
-          gain.gain.setValueAtTime(0.2, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+              osc1.connect(gain);
+              osc2.connect(gain);
+              gain.connect(dest);
 
-          osc.connect(gain);
-          gain.connect(this.getDestination(ctx));
+              osc1.start(now);
+              osc2.start(now);
+              osc1.stop(now + 0.22);
+              osc2.stop(now + 0.22);
+            }
+            break;
+          }
 
-          osc.start(start);
-          osc.stop(start + 0.3);
-        });
+          case 'zen': {
+            if (isCorrect) {
+              // Tibetan singing bowl & crystal bell harmonics
+              const overtones = [880, 1760, 2640]; // A5, A6, E7
+              overtones.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                // Gentle shimmer vibrato
+                const lfo = ctx.createOscillator();
+                const lfoGain = ctx.createGain();
+                lfo.frequency.value = 5.5;
+                lfoGain.gain.value = 3.0;
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc.frequency);
+                lfo.start(now);
+                lfo.stop(now + 0.85);
+
+                const vol = i === 0 ? 0.22 : i === 1 ? 0.14 : 0.08;
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(vol, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+
+                osc.connect(gain);
+                gain.connect(dest);
+                osc.start(now);
+                osc.stop(now + 0.85);
+              });
+            } else {
+              // Warm wooden temple block / bamboo tap
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(360, now);
+              osc.frequency.exponentialRampToValueAtTime(170, now + 0.12);
+
+              gain.gain.setValueAtTime(0.24, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start(now);
+              osc.stop(now + 0.12);
+            }
+            break;
+          }
+
+          case 'scifi': {
+            if (isCorrect) {
+              // Sci-Fi quantum warp teleport glissando + celestial chime
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(360, now);
+              osc.frequency.exponentialRampToValueAtTime(1750, now + 0.32);
+
+              // 18Hz vibrato modulation
+              const lfo = ctx.createOscillator();
+              const lfoGain = ctx.createGain();
+              lfo.frequency.value = 18;
+              lfoGain.gain.value = 25;
+              lfo.connect(lfoGain);
+              lfoGain.connect(osc.frequency);
+              lfo.start(now);
+              lfo.stop(now + 0.35);
+
+              gain.gain.setValueAtTime(0.01, now);
+              gain.gain.linearRampToValueAtTime(0.22, now + 0.08);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start(now);
+              osc.stop(now + 0.42);
+
+              // High celestial bell ping
+              const pingOsc = ctx.createOscillator();
+              const pingGain = ctx.createGain();
+              pingOsc.type = 'sine';
+              pingOsc.frequency.setValueAtTime(2093, now + 0.15); // C7
+              pingGain.gain.setValueAtTime(0.18, now + 0.15);
+              pingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+              pingOsc.connect(pingGain);
+              pingGain.connect(dest);
+              pingOsc.start(now + 0.15);
+              pingOsc.stop(now + 0.48);
+            } else {
+              // Forcefield shield deflection
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(650, now);
+              osc.frequency.exponentialRampToValueAtTime(90, now + 0.26);
+
+              const filter = ctx.createBiquadFilter();
+              filter.type = 'bandpass';
+              filter.frequency.value = 420;
+              filter.Q.value = 4.0;
+
+              gain.gain.setValueAtTime(0.28, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+              osc.connect(filter);
+              filter.connect(gain);
+              gain.connect(dest);
+
+              osc.start(now);
+              osc.stop(now + 0.28);
+            }
+            break;
+          }
+
+          case 'classic':
+          default: {
+            if (isCorrect) {
+              // Joyful major chord arpeggio
+              const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+              notes.forEach((freq, index) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const start = now + index * 0.09;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.25, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+                osc.connect(gain);
+                gain.connect(dest);
+                osc.start(start);
+                osc.stop(start + 0.4);
+              });
+            } else {
+              // Gentle neutral descending tone
+              const notes = [440, 392, 349.23];
+              notes.forEach((freq, index) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const start = now + index * 0.12;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.2, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+                osc.connect(gain);
+                gain.connect(dest);
+                osc.start(start);
+                osc.stop(start + 0.3);
+              });
+            }
+            break;
+          }
+        }
+      } catch {
+        // ignore audio synthesis error
       }
-    } catch {}
-  
-    }, isCorrect ? 720 : 590);
+    }, isCorrect ? (pack === 'zen' ? 880 : 720) : (pack === 'zen' ? 300 : 450));
   }
 
   /** Start round tension swoosh */

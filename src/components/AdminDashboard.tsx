@@ -25,6 +25,10 @@ import {
 } from 'lucide-react';
 
 import { AdminMatchConfigSection } from './AdminMatchConfigSection';
+import { syncService } from '../services/syncService';
+import { soundFx } from '../services/audioEffects';
+import { vibrateTap } from '../utils/hapticUtils';
+import { AggregateBatteryIndicator } from './AggregateBatteryIndicator';
 
 interface AdminDashboardProps {
   onNavigate: (tabId: any) => void;
@@ -191,6 +195,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         onOpenFullScheduleModal={onOpenEventSchedule}
         triggerToast={triggerToast}
       />
+
+      {/* Power-Optimized Presentation Mode Banner & Dynamic Controls */}
+      {/* Audience Battery Monitoring Toolbar Card */}
+      <div className="p-4 rounded-[4px] border bg-slate-900/80 border-slate-800 text-slate-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-[3px] flex items-center justify-center shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Zap className="w-5 h-5" />
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                <span>Giám Sát Pin Khán Giả Realtime</span>
+              </h4>
+              <p className="text-xs text-white/70 max-w-3xl leading-relaxed">
+                Theo dõi mức pin trung bình, tần số polling tự động và xu hướng cạn pin của toàn bộ khán giả đang kết nối trực tiếp.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+            <AggregateBatteryIndicator triggerToast={triggerToast} />
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-6">
         {/* Nhóm 1: Vòng thi đấu */}

@@ -4,6 +4,7 @@ import { Clock, ShieldCheck, Megaphone, Radio, Sparkles, Wifi, Calendar } from '
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
+import { RotatingSplitBackground } from './RotatingSplitBackground';
 
 interface ClientLandingPageProps {
   gameState?: GameState;
@@ -79,6 +80,9 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
 
   return (
     <div className="min-h-full flex-1 w-full bg-transparent relative overflow-hidden flex flex-col items-center justify-center text-[#F5EFF9] p-4 sm:p-8 pb-20 select-none">
+      {/* Rotating Split Background active during pause / panic / break / standby */}
+      <RotatingSplitBackground durationSeconds={10} darkColor="#190839" lightColor="#F7CAC9" opacity={0.08} isFixed={true} />
+
       <div className="relative z-10 w-full max-w-lg mx-auto flex flex-col items-center text-center py-8 sm:py-12 animate-fadeIn">
         
         {/* Animated Clock / Horizon Radar Icon */}

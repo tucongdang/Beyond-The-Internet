@@ -34,12 +34,16 @@ import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
 import { LiveSubtitleOverlay } from './components/LiveSubtitleOverlay';
 import { LoudEnvironmentAlert } from './components/LoudEnvironmentAlert';
-import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode, useBatterySaver } from './utils/batterySaverUtils';
+import { FloatingDebugPanel } from './components/FloatingDebugPanel';
+import { AntiExitGuard } from './components/AntiExitGuard';
+import { SebAntiCheatGuard } from './components/SebAntiCheatGuard';
+import { useAnimationControl } from './contexts/AnimationControlContext';
+import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 
 export default function App() {
   const { localLanguage } = useLanguage();
-  const { isBatterySaver, batteryLevel } = useBatterySaver();
+  const { isBatterySaver, batteryLevel } = useAnimationControl();
 
   // Synchronize document lang attribute with active language
   useEffect(() => {
@@ -58,9 +62,35 @@ export default function App() {
   const [isQrFading, setIsQrFading] = useState(false);
   const [isCopiedQrUrl, setIsCopiedQrUrl] = useState(false);
   const [batteryToast, setBatteryToast] = useState<{message: string, show: boolean}>({ message: '', show: false });
+  const [isBatteryToastDismissed, setIsBatteryToastDismissed] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isAudienceQrDismissed, setIsAudienceQrDismissed] = useState(false);
   const [isLocalAudienceQrOpen, setIsLocalAudienceQrOpen] = useState(false);
+
+  // Persistent but dismissible Low Battery warning toast when device battery drops below 15%
+  useEffect(() => {
+    if (batteryLevel === null) return;
+
+    if (batteryLevel <= 0.15) {
+      if (!isBatteryToastDismissed) {
+        const pct = Math.round(batteryLevel * 100);
+        const msg = localLanguage !== 'vi'
+          ? `Low Battery Warning (${pct}%) — Please connect charger`
+          : `Cảnh báo pin yếu (${pct}%) — Vui lòng cắm sạc`;
+        setBatteryToast({ message: msg, show: true });
+      }
+    } else {
+      setIsBatteryToastDismissed(false);
+      setBatteryToast(prev => prev.show ? { message: '', show: false } : prev);
+    }
+  }, [batteryLevel, isBatteryToastDismissed, localLanguage]);
+
+  const handleDismissBatteryToast = useCallback(() => {
+    soundFx.playClick();
+    vibrateTap();
+    setIsBatteryToastDismissed(true);
+    setBatteryToast({ message: '', show: false });
+  }, []);
 
   // When admin broadcasts a new live QR, un-dismiss local audience modal
   useEffect(() => {
@@ -216,7 +246,17 @@ export default function App() {
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true';
+      if (sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
+        return true;
+      }
+      if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true' && localStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
+        sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+        const token = localStorage.getItem('BTI2026_ADMIN_TOKEN');
+        if (token) sessionStorage.setItem('BTI2026_ADMIN_TOKEN', token);
+        const user = localStorage.getItem('BTI2026_TECH_USER');
+        if (user) sessionStorage.setItem('BTI2026_TECH_USER', user);
+        return true;
+      }
     }
     return false;
   });
@@ -224,8 +264,12 @@ export default function App() {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = sessionStorage.getItem('BTI2026_TECH_USER');
-        return stored ? JSON.parse(stored) : null;
+        const storedSess = sessionStorage.getItem('BTI2026_TECH_USER');
+        if (storedSess) return JSON.parse(storedSess);
+        if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true') {
+          const storedLoc = localStorage.getItem('BTI2026_TECH_USER');
+          if (storedLoc) return JSON.parse(storedLoc);
+        }
       } catch {
         return null;
       }
@@ -233,7 +277,7 @@ export default function App() {
     return null;
   });
 
-  const handleAuthenticate = (techUser?: AdminUser) => {
+  const handleAuthenticate = (techUser?: AdminUser, keepLoggedIn: boolean = true) => {
     setIsAuthenticated(true);
     if (techUser) {
       setAdminUser(techUser);
@@ -242,6 +286,18 @@ export default function App() {
       sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
       if (techUser) {
         sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(techUser));
+      }
+      if (keepLoggedIn) {
+        localStorage.setItem('BTI2026_KEEP_LOGGED_IN', 'true');
+        localStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
+        if (techUser) {
+          localStorage.setItem('BTI2026_TECH_USER', JSON.stringify(techUser));
+        }
+      } else {
+        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+        localStorage.removeItem('BTI2026_ADMIN_AUTH');
+        localStorage.removeItem('BTI2026_TECH_USER');
+        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
       }
     }
   };
@@ -253,15 +309,69 @@ export default function App() {
       sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
       sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
       sessionStorage.removeItem('BTI2026_TECH_USER');
+
+      localStorage.removeItem('BTI2026_ADMIN_AUTH');
+      localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+      localStorage.removeItem('BTI2026_TECH_USER');
+      localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
     }
     setCurrentView('landing');
   };
+
+  // Automatic 30-minute inactivity logout timer for Admin session
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    let timerId: NodeJS.Timeout | null = null;
+
+    const logoutDueToInactivity = () => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
+        sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
+        sessionStorage.removeItem('BTI2026_TECH_USER');
+
+        localStorage.removeItem('BTI2026_ADMIN_AUTH');
+        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+        localStorage.removeItem('BTI2026_TECH_USER');
+        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+      }
+      setIsAuthenticated(false);
+      setAdminUser(null);
+      setCurrentView('landing');
+      alert('Phiên làm việc Quản trị (Admin) đã tự động đăng xuất sau 30 phút không hoạt động để bảo mật.');
+    };
+
+    const resetTimer = () => {
+      if (timerId) clearTimeout(timerId);
+      timerId = setTimeout(logoutDueToInactivity, INACTIVITY_TIMEOUT_MS);
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'touchmove', 'pointerdown', 'wheel'];
+
+    resetTimer();
+
+    events.forEach(evt => {
+      window.addEventListener(evt, resetTimer, { passive: true });
+    });
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+      events.forEach(evt => {
+        window.removeEventListener(evt, resetTimer);
+      });
+    };
+  }, [isAuthenticated]);
 
   // User Profile
   const handleAudienceLogout = () => {
     try {
       if (auth) {
         signOut(auth);
+      }
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('BTI2026_AUDIENCE_SESSION_ACTIVE');
+        localStorage.removeItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN');
       }
     } catch (e) {
       console.error('SignOut error:', e);
@@ -315,8 +425,16 @@ export default function App() {
   const [user, setUser] = useState<UserInfo | null>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const keepLoggedIn = localStorage.getItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN');
+        const sessionActive = sessionStorage.getItem('BTI2026_AUDIENCE_SESSION_ACTIVE');
+        if (keepLoggedIn === 'false' && !sessionActive) {
+          removeSecureItem('BTI2026_USER_PROFILE');
+          return null;
+        }
+
         const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
         if (saved) {
+          sessionStorage.setItem('BTI2026_AUDIENCE_SESSION_ACTIVE', 'true');
           if (!saved.anonymizedUid || saved.anonymizedUid.length !== 12) {
             saved.anonymizedUid = generate12DigitUID(
               saved.name || 'Audience',
@@ -572,6 +690,9 @@ export default function App() {
     }
     setUser(userInfo);
     setSecureItem('BTI2026_USER_PROFILE', userInfo);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('BTI2026_AUDIENCE_SESSION_ACTIVE', 'true');
+    }
     setIsOnboardingOpen(false);
     syncService.sendPresencePing(userInfo);
     
@@ -587,7 +708,7 @@ export default function App() {
       {/* --- GLOBAL APP BACKGROUND (Sync with Landing Page) --- */}
       {!(isHighContrast || isBatterySaver) && (
         <>
-          <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md">
+          <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md pointer-events-none">
             <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
@@ -653,9 +774,17 @@ export default function App() {
 
         
       {batteryToast.show && (
-        <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 right-4 z-50 bg-green-900/90 text-green-100 px-4 py-3 rounded-[2px] shadow-lg border border-green-500/50 flex items-center gap-2 animate-fadeIn">
-          <Zap className="w-5 h-5 text-green-400 animate-pulse" />
-          <span className="text-sm font-medium">{batteryToast.message}</span>
+        <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 right-4 z-50 bg-amber-950/95 text-amber-100 px-4 py-3 rounded-[3px] shadow-2xl border border-amber-500/60 flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-sm">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 animate-pulse" />
+          <span className="text-xs sm:text-sm font-medium leading-snug flex-1">{batteryToast.message}</span>
+          <button
+            type="button"
+            onClick={handleDismissBatteryToast}
+            className="p-1 text-amber-300 hover:text-white rounded-[2px] hover:bg-amber-500/20 transition cursor-pointer shrink-0"
+            title={localLanguage !== 'vi' ? 'Dismiss' : 'Đóng thông báo'}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -681,6 +810,8 @@ export default function App() {
               isInline={true}
               onComplete={handleUserComplete}
               currentUser={user}
+              isLobbyLocked={Boolean(gameState.lobby_locked)}
+              isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
               onExit={() => {
                 if (user && isOnboardingOpen) {
                   setIsOnboardingOpen(false);
@@ -721,6 +852,7 @@ export default function App() {
             isAuthenticated={isAuthenticated}
             onAuthenticated={handleAuthenticate}
             viewName="Ban Kỹ Thuật (Admin)"
+            isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
             onExit={() => setCurrentView('landing')}
           >
             <AdminPortal
@@ -1005,6 +1137,25 @@ export default function App() {
 
       {/* Smart Loud Environment Detection Banner */}
       <LoudEnvironmentAlert />
+
+      {/* Anti-Browser Exit Protection Guard */}
+      <AntiExitGuard 
+        enabled={currentView === 'audience'} 
+        user={user} 
+        gameState={gameState} 
+        showStatusPill={false} 
+        onConfirmExit={() => setCurrentView('landing')} 
+      />
+
+      {/* Safe Exam Browser (SEB) Anti-Cheat Protection Guard */}
+      <SebAntiCheatGuard 
+        enabled={currentView === 'audience'} 
+        user={user} 
+        gameState={gameState} 
+      />
+
+      {/* Secret ?splitDebug=1 Floating Debug Console */}
+      <FloatingDebugPanel gameState={gameState} />
     </div>
   );
 }

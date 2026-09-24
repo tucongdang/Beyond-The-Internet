@@ -25,7 +25,7 @@ import { snapshotService } from '../services/snapshotService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateCopy, vibrateShare, vibrateTap, vibrateGrandCelebration } from '../utils/hapticUtils';
 import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
-import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal } from 'lucide-react';
+import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, BatteryCharging, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal } from 'lucide-react';
 
 interface ProjectorViewProps {
   gameState: GameState;

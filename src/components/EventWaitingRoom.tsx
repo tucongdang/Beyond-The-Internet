@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { GameState, UserInfo } from '../types';
 import { soundFx } from '../services/audioEffects';
+import { RotatingSplitBackground } from './RotatingSplitBackground';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
 import { getUserDisplayUid } from '../utils/uidUtils';
@@ -119,8 +120,13 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
   const briefingNote = schedule?.briefing_note || 'Chào mừng các bạn khán giả! Vui lòng ổn định vị trí, kiểm tra kết nối mạng và sẵn sàng cho các vòng thi đấu trực tiếp.';
 
   return (
-    <div id="event-waiting-room" className="min-h-[calc(100dvh-5rem)] p-3 sm:p-5 md:p-8 flex flex-col items-center justify-center animate-in fade-in duration-300">
-      <div className="max-w-3xl w-full space-y-4 sm:space-y-6">
+    <div id="event-waiting-room" className="min-h-[calc(100dvh-5rem)] p-3 sm:p-5 md:p-8 flex flex-col items-center justify-center animate-in fade-in duration-300 relative">
+      {/* Rotating Split Background active only when scheduled countdown is running */}
+      {(!isTimeReached && schedule?.status === 'SCHEDULED') && (
+        <RotatingSplitBackground durationSeconds={10} darkColor="#190839" lightColor="#F7CAC9" opacity={0.08} isFixed={true} />
+      )}
+
+      <div className="max-w-3xl w-full space-y-4 sm:space-y-6 relative z-10">
         
         {/* Top Header Card: Title, Status Badge, Location */}
         <div className="fluent-box rounded-[4px] p-5 sm:p-7 relative overflow-hidden border border-sky-500/30 shadow-2xl bg-gradient-to-br from-slate-900/95 via-[#13092b]/95 to-slate-950/95">
@@ -167,42 +173,59 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           </div>
         </div>
 
-        {/* Countdown Timer Centerpiece */}
+        {/* Countdown Timer Centerpiece with Dynamic Animated Background Motion */}
         <div className="fluent-box rounded-[4px] p-5 sm:p-7 relative overflow-hidden border border-amber-500/30 shadow-xl bg-gradient-to-b from-slate-900/90 to-[#120826]/90 text-center">
-          <div className="flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-widest text-amber-400 font-bold mb-4">
-            <Clock className="w-4 h-4 text-amber-400" />
+          {/* Dynamic Motion Background Layers */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {/* Spinning & Pulsing Ambient Aura Mesh */}
+            <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.12)_0%,rgba(168,85,247,0.08)_35%,transparent_70%)] animate-spin-slow opacity-80" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl animate-pulse-glow" />
+            <div className="absolute -bottom-10 -right-10 w-72 h-72 bg-purple-600/20 rounded-full blur-2xl animate-mesh-wave" />
+
+            {/* Subtle Expanding Ripple Wave */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-amber-400/20 rounded-full animate-countdown-ripple" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-purple-400/15 rounded-full animate-countdown-ripple" style={{ animationDelay: '1s' }} />
+
+            {/* Ambient Floating Light Particle Dots */}
+            <div className="absolute bottom-4 left-1/4 w-1.5 h-1.5 bg-amber-300 rounded-full blur-[1px] animate-float-particle" style={{ animationDelay: '0s' }} />
+            <div className="absolute bottom-6 right-1/3 w-2 h-2 bg-sky-300 rounded-full blur-[1px] animate-float-particle" style={{ animationDelay: '2s' }} />
+            <div className="absolute bottom-2 right-1/4 w-1 h-1 bg-purple-300 rounded-full blur-[0.5px] animate-float-particle" style={{ animationDelay: '4s' }} />
+          </div>
+
+          <div className="relative z-10 flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-widest text-amber-400 font-bold mb-4">
+            <Clock className="w-4 h-4 text-amber-400 animate-bounce" />
             <span>ĐỒNG HỒ ĐẾM NGƯỢC ĐẾN GIỜ KHAI MẠC</span>
           </div>
 
           {!isTimeReached ? (
-            <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-lg mx-auto mb-4">
+            <div className="relative z-10 grid grid-cols-4 gap-2 sm:gap-4 max-w-lg mx-auto mb-4">
               {/* Days */}
-              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center">
+              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center backdrop-blur-sm transition hover:border-amber-400/40">
                 <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-white tracking-tight">
                   {String(countdown.days).padStart(2, '0')}
                 </span>
                 <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-400 uppercase mt-1">Ngày</span>
               </div>
               {/* Hours */}
-              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center">
+              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center backdrop-blur-sm transition hover:border-amber-400/40">
                 <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-amber-300 tracking-tight">
                   {String(countdown.hours).padStart(2, '0')}
                 </span>
                 <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-400 uppercase mt-1">Giờ</span>
               </div>
               {/* Minutes */}
-              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center">
+              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center backdrop-blur-sm transition hover:border-amber-400/40">
                 <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-sky-300 tracking-tight">
                   {String(countdown.minutes).padStart(2, '0')}
                 </span>
                 <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-400 uppercase mt-1">Phút</span>
               </div>
               {/* Seconds */}
-              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner flex flex-col items-center">
-                <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-emerald-400 tracking-tight animate-pulse">
+              <div className="p-3 sm:p-4 rounded-[4px] bg-slate-950/80 border border-amber-500/40 shadow-inner shadow-amber-500/10 flex flex-col items-center backdrop-blur-sm transition hover:border-amber-400">
+                <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-emerald-400 tracking-tight animate-pulse key={countdown.seconds}">
                   {String(countdown.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] sm:text-xs font-bold font-mono text-slate-400 uppercase mt-1">Giây</span>
+                <span className="text-[10px] sm:text-xs font-bold font-mono text-emerald-400/80 uppercase mt-1">Giây</span>
               </div>
             </div>
           ) : (

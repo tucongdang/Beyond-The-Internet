@@ -65,6 +65,8 @@ interface OnboardingModalProps {
   teamModeActive?: boolean;
   randomTeamAssignment?: boolean;
   isInline?: boolean;
+  isLobbyLocked?: boolean;
+  isLookupLocked?: boolean;
   onExit?: () => void;
   onClose?: () => void;
 }
@@ -79,6 +81,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   teamModeActive,
   randomTeamAssignment,
   isInline = false,
+  isLobbyLocked = false,
+  isLookupLocked = false,
   onExit,
   onClose
 }) => {
@@ -156,6 +160,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   // --- General UI State ---
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [keepLoggedIn, setKeepLoggedIn] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN');
+      return stored !== 'false';
+    }
+    return true;
+  });
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -636,6 +647,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLobbyLocked) {
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(
+        localLanguage !== 'vi'
+          ? 'Lobby is currently locked by Administrator. Registration of new audience members is disabled.'
+          : 'Cổng tham gia hiện đang bị khóa bởi Ban Tổ Chức. Không thể đăng ký tài khoản khán giả mới lúc này.'
+      );
+      return;
+    }
     if (!validateRegister()) {
       soundFx.playError();
       vibrateError();
@@ -870,6 +891,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       }
 
       // 4. IF FIRST TIME (NEW GOOGLE USER OR NO MSSV) -> PROMPT MSSV & UID VERIFICATION
+      if (isLobbyLocked) {
+        soundFx.playError();
+        vibrateError();
+        setErrorMsg(
+          localLanguage !== 'vi'
+            ? 'Lobby is currently locked by Administrator. New Google registrations are disabled.'
+            : 'Cổng tham gia hiện đang bị khóa bởi Ban Tổ Chức. Tài khoản Google mới chưa từng ghi danh không thể đăng ký lúc này.'
+        );
+        setLoading(false);
+        return;
+      }
+
       let derivedMssv = existingProfile?.mssv || '';
       if (!derivedMssv && googleUser.email) {
         const match = googleUser.email.match(/^(\d+)/);
@@ -931,6 +964,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   // Submit Google MSSV & 12-Digit UID Verification
   const handleGoogleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLobbyLocked) {
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(
+        localLanguage !== 'vi'
+          ? 'Lobby is currently locked by Administrator. Registration of new audience members is disabled.'
+          : 'Cổng tham gia hiện đang bị khóa bởi Ban Tổ Chức. Không thể đăng ký tài khoản khán giả mới lúc này.'
+      );
+      return;
+    }
     if (!googleAuthData) {
       setErrorMsg(localLanguage !== 'vi' ? 'Missing Google authentication data.' : 'Thiếu thông tin xác thực Google.');
       return;
@@ -1026,6 +1069,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   // -------------------------------------------------------------
   const handleCheckStatus = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLookupLocked) {
+      soundFx.playError();
+      vibrateError();
+      setErrorMsg(localLanguage !== 'vi' ? 'Account status lookup is disabled by Administrator.' : 'Chức năng tra cứu thông tin hiện đang bị khóa bởi Ban Tổ Chức.');
+      return;
+    }
     if (!checkQuery.trim()) return;
 
     setIsChecking(true);
@@ -1232,8 +1281,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     <div 
       className={`${
         isInline
-          ? 'fluent-box p-3.5 sm:p-5 md:p-6 max-w-lg md:max-w-4xl lg:max-w-5xl w-full relative overflow-hidden rounded-[4px] shadow-2xl border border-white/20 text-[#F5EFF9]'
-          : 'fluent-dialog relative fluent-box rounded-[4px] p-3.5 sm:p-5 md:p-6 w-full max-w-lg md:max-w-4xl lg:max-w-5xl shadow-2xl flex flex-col text-[#F5EFF9] max-h-[94dvh] overflow-hidden border border-white/20'
+          ? 'fluent-box p-3.5 sm:p-5 md:p-6 max-w-lg md:max-w-4xl lg:max-w-5xl w-full relative overflow-hidden rounded-[2px] shadow-2xl border border-white/20 text-[#F5EFF9]'
+          : 'fluent-dialog relative fluent-box rounded-[3px] p-3.5 sm:p-5 md:p-6 w-full max-w-lg md:max-w-4xl lg:max-w-5xl shadow-2xl flex flex-col text-[#F5EFF9] max-h-[94dvh] overflow-hidden border border-white/20'
       }`}
       onClick={(e) => e.stopPropagation()}
     >
@@ -1435,6 +1484,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
 
             {/* Dynamic Alerts */}
+            {isLobbyLocked && (
+              <div className="flex items-start gap-2.5 text-rose-200 bg-rose-950/90 p-2.5 sm:p-3 rounded-[2px] border border-rose-500/60 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-lg font-mono">
+                <Lock className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <strong className="text-rose-300 uppercase block font-bold">CỔNG THAM GIA ĐANG KHÓA (LOBBY LOCKED)</strong>
+                  <span className="text-[11px] text-rose-200/90 font-sans">
+                    Ban Tổ Chức đang ngưng nhận đăng ký khán giả mới. Nếu bạn đã có tài khoản, hãy đăng nhập qua tab <strong>Đăng Nhập</strong> hoặc <strong>Mã 12 Số</strong>.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {errorMsg && (
               <div className="flex items-start gap-2 text-rose-300 bg-rose-950/40 p-2 sm:p-2.5 rounded-[2px] border border-rose-500/30 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-inner">
                 <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
@@ -1524,6 +1585,26 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   disabled={loading}
                   apiEndpoint="/api/audience/captcha"
                 />
+
+                {/* Keep Me Logged In Toggle */}
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-white/80 py-0.5">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={keepLoggedIn}
+                      onChange={(e) => {
+                        setKeepLoggedIn(e.target.checked);
+                        try {
+                          localStorage.setItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN', e.target.checked ? 'true' : 'false');
+                        } catch {}
+                      }}
+                      className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
+                    />
+                    <span className="text-sky-200 font-medium">
+                      {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                    </span>
+                  </label>
+                </div>
 
                 <button
                   type="submit"
@@ -1976,21 +2057,48 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 apiEndpoint="/api/audience/captcha"
               />
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-sky-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono"
-              >
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span>{localLanguage !== 'vi' ? 'Complete Registration' : 'Hoàn Tất Đăng Ký Khán Giả'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </>
-                )}
-              </button>
+              {/* Keep Me Logged In Toggle */}
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-white/80 py-0.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={keepLoggedIn}
+                    onChange={(e) => {
+                      setKeepLoggedIn(e.target.checked);
+                      try {
+                        localStorage.setItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN', e.target.checked ? 'true' : 'false');
+                      } catch {}
+                    }}
+                    className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
+                  />
+                  <span className="text-sky-200 font-medium">
+                    {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                  </span>
+                </label>
+              </div>
+
+              {isLobbyLocked ? (
+                <div className="w-full py-2.5 sm:py-3 rounded-[2px] bg-rose-950/80 border border-rose-500/50 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed select-none font-mono shadow-md">
+                  <Lock className="w-4 h-4 text-rose-400 animate-pulse" />
+                  <span>{localLanguage !== 'vi' ? 'LOBBY LOCKED — REGISTRATION DISABLED' : 'CỔNG TẠM KHÓA — KHÔNG THỂ ĐĂNG KÝ MỚI'}</span>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-sky-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span>{localLanguage !== 'vi' ? 'Complete Registration' : 'Hoàn Tất Đăng Ký Khán Giả'}</span>
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </>
+                  )}
+                </button>
+              )}
             </form>
           )}
 
@@ -2195,38 +2303,52 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'CHECK_STATUS' && (
             <div className="space-y-3 sm:space-y-4 text-left">
-              <form onSubmit={handleCheckStatus} className="space-y-2 sm:space-y-3">
-                <p className="text-[10px] sm:text-xs text-white/60 leading-relaxed font-mono">
-                  {localLanguage !== 'vi'
-                    ? 'Lookup your registration and active status by entering your MSSV, Username, Email, or 12-Digit UID.'
-                    : 'Tra cứu thông tin tài khoản và mã định danh bằng cách nhập MSSV, Tên đăng nhập, Email hoặc Mã 12 số.'}
-                </p>
-
-                <div className="flex gap-1.5 sm:gap-2">
-                  <input
-                    type="text"
-                    required
-                    placeholder={localLanguage !== 'vi' ? 'Enter MSSV, Username, or UID...' : 'Nhập MSSV, Tên đăng nhập, hoặc UID...'}
-                    value={checkQuery}
-                    onChange={(e) => setCheckQuery(e.target.value)}
-                    className="flex-1 min-w-0 bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none uppercase transition placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isChecking}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-[2px] uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer font-mono shrink-0"
-                  >
-                    {isChecking ? (
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Search className="w-3.5 h-3.5" />
-                        <span>{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
-                      </>
-                    )}
-                  </button>
+              {isLookupLocked ? (
+                <div className="p-3.5 sm:p-4 rounded-[3px] bg-rose-950/80 border border-rose-500/50 text-rose-200 space-y-2 font-mono shadow-lg">
+                  <div className="flex items-center gap-2 text-rose-300 font-bold text-xs uppercase">
+                    <ShieldAlert className="w-4 h-4 text-rose-400 animate-pulse shrink-0" />
+                    <span>{localLanguage !== 'vi' ? 'LOOKUP FEATURE LOCKED' : 'CƠ CHẾ CHỐNG TRA CỨU ĐANG BẬT'}</span>
+                  </div>
+                  <p className="text-[11px] text-rose-100/90 leading-relaxed font-sans">
+                    {localLanguage !== 'vi'
+                      ? 'Account status search and profile probing are currently disabled by the Administrator to protect participant privacy.'
+                      : 'Ban Tổ Chức đang kích hoạt chế độ bảo mật dữ liệu và tạm ngưng tính năng tra cứu thông tin khán giả.'}
+                  </p>
                 </div>
-              </form>
+              ) : (
+                <form onSubmit={handleCheckStatus} className="space-y-2 sm:space-y-3">
+                  <p className="text-[10px] sm:text-xs text-white/60 leading-relaxed font-mono">
+                    {localLanguage !== 'vi'
+                      ? 'Lookup your registration and active status by entering your MSSV, Username, Email, or 12-Digit UID.'
+                      : 'Tra cứu thông tin tài khoản và mã định danh bằng cách nhập MSSV, Tên đăng nhập, Email hoặc Mã 12 số.'}
+                  </p>
+
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder={localLanguage !== 'vi' ? 'Enter MSSV, Username, or UID...' : 'Nhập MSSV, Tên đăng nhập, hoặc UID...'}
+                      value={checkQuery}
+                      onChange={(e) => setCheckQuery(e.target.value)}
+                      className="flex-1 min-w-0 bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none uppercase transition placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isChecking}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-[2px] uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer font-mono shrink-0"
+                    >
+                      {isChecking ? (
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="w-3.5 h-3.5" />
+                          <span>{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {checkResult && (
                 <div className="animate-fadeIn mt-2 sm:mt-3">
@@ -2343,6 +2465,26 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   onChange={(e) => setQuickUid(e.target.value.toUpperCase())}
                   className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-sky-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase tracking-widest font-bold placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
                 />
+              </div>
+
+              {/* Keep Me Logged In Toggle */}
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-white/80 py-0.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={keepLoggedIn}
+                    onChange={(e) => {
+                      setKeepLoggedIn(e.target.checked);
+                      try {
+                        localStorage.setItem('BTI2026_AUDIENCE_KEEP_LOGGED_IN', e.target.checked ? 'true' : 'false');
+                      } catch {}
+                    }}
+                    className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
+                  />
+                  <span className="text-sky-200 font-medium">
+                    {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                  </span>
+                </label>
               </div>
 
               <button

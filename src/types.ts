@@ -39,6 +39,8 @@ export interface ScoringResult {
   subType?: 'RISK_BOX' | 'CNV_KEYWORD' | 'STANDARD' | 'SAFE_CHOICE';
 }
 
+export type SoundPackTheme = 'classic' | 'retro' | 'cyberpunk' | 'zen' | 'scifi';
+
 export interface UserInfo {
   name: string;
   mssv: string;
@@ -52,6 +54,10 @@ export interface UserInfo {
   teamName?: string;
   email?: string;
   emailVerified?: boolean;
+  soundPack?: SoundPackTheme;
+  hapticIntensity?: 'Soft' | 'Medium' | 'Strong';
+  seb_verified?: boolean;
+  seb_violations?: number;
 }
 
 export interface QuestionTranslation {
@@ -309,6 +315,12 @@ export interface GameState {
   is_timer_paused?: boolean;
   paused_remaining_seconds?: number;
   lobby_locked?: boolean;
+  anti_exit_protection?: boolean;
+  lookup_locked?: boolean;
+  anti_lookup_protection?: boolean;
+  seb_mode_enabled?: boolean;
+  seb_strict_kiosk?: boolean;
+  seb_config_key?: string;
   team_mode_active?: boolean;
   random_team_assignment?: boolean;
   teams?: Array<{ id: string, name: string, color: string }>;
@@ -324,6 +336,11 @@ export interface GameState {
   next_question_wait_limit?: number;
   next_question_wait_start?: number;
   next_question_wait_message?: string;
+
+  // Power-Optimized Presentation Mode
+  power_save_presentation?: boolean;
+  power_save_auto_triggered?: boolean;
+  power_save_refresh_rate_ms?: number;
 
   // Emergency Ad-Hoc Poll
   emergency_poll?: EmergencyPoll | null;

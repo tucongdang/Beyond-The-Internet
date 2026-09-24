@@ -78,6 +78,11 @@
         "registeredAt": {
           "type": "number",
           "description": "Registration timestamp"
+        },
+        "soundPack": {
+          "type": "string",
+          "description": "Selected auditory sound pack theme for feedback cues",
+          "enum": ["classic", "retro", "cyberpunk", "zen", "scifi"]
         }
       },
       "required": ["uid", "name"]

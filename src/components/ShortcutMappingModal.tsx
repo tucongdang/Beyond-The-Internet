@@ -254,7 +254,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
       aria-labelledby="shortcut-modal-title"
     >
       <div 
-        className="fluent-dialog fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[4px] shadow-2xl shadow-purple-950/80 flex flex-col text-white"
+        className="fluent-dialog fluent-box border border-purple-500/40 bg-gradient-to-b from-slate-950 via-[#0a0f24] to-[#040612] w-full max-w-4xl rounded-[3px] shadow-2xl shadow-purple-950/80 flex flex-col text-white"
         onClick={(e) => e.stopPropagation()}
       >
         

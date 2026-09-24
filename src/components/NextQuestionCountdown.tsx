@@ -3,6 +3,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { Timer, Sparkles } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
+import { SlantedCountdownBar } from './CountdownTimer';
 
 interface NextQuestionCountdownProps {
   gameState?: GameState;
@@ -75,16 +76,11 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
         </div>
 
         {/* Progress Bar Container */}
-        <div className="w-full h-2.5 bg-black/50 backdrop-blur-[24px] saturate-150/50 rounded-[2px] overflow-hidden border border-white/10 p-0.5 shadow-inner">
-          <div
-            className={`h-full rounded-[2px] transition-all duration-150 ease-linear shadow-sm ${
-              isUrgent
-                ? 'fluent-acrylic-surface'
-                : 'fluent-acrylic-surface'
-            }`}
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
+        <SlantedCountdownBar
+          progressPercent={progressPercent}
+          heightClass="h-2.5 sm:h-3"
+          isUrgent={isUrgent}
+        />
       </div>
     );
   }
@@ -125,19 +121,11 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
 
       {/* Progress Bar */}
       <div className="space-y-1.5">
-        <div className="w-full h-3.5 sm:h-4 bg-black/50 backdrop-blur-[24px] saturate-150/60 rounded-[2px] overflow-hidden border border-white/15 p-0.5 shadow-inner relative">
-          <div
-            className={`h-full rounded-[2px] transition-all duration-150 ease-linear shadow-md relative overflow-hidden ${
-              isUrgent
-                ? 'fluent-acrylic-surface'
-                : 'fluent-acrylic-surface'
-            }`}
-            style={{ width: `${progressPercent}%` }}
-          >
-            {/* Shimmer light effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-          </div>
-        </div>
+        <SlantedCountdownBar
+          progressPercent={progressPercent}
+          heightClass="h-3.5 sm:h-4.5"
+          isUrgent={isUrgent}
+        />
         <div className="flex items-center justify-between text-[11px] font-mono text-white/60 px-1">
           <span>{localLanguage !== 'vi' ? 'Wait progress' : 'Tiến trình chờ'}</span>
           <span className="font-bold text-amber-300">{Math.round(progressPercent)}%</span>

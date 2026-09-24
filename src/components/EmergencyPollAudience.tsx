@@ -22,6 +22,7 @@ import confetti from '../utils/confetti';
 import { GameState, UserInfo, UserResponse, EmergencyPollSourceType } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
+import { SlantedCountdownBar } from './CountdownTimer';
 import {
   vibrateSubmit,
   vibrateSuccess,
@@ -282,11 +283,19 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
 
           {/* Countdown timer pill if active */}
           {poll.time_limit > 0 && poll.status === 'ACTIVE' && !isTimeUp && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] fluent-box-nested border border-white/20 font-mono font-black text-sm">
-              <Clock className="w-4 h-4 text-amber-300 animate-spin" />
-              <span className={timeLeft <= 5 ? 'text-rose-300 animate-pulse text-base' : 'text-white'}>
-                {timeLeft}s
-              </span>
+            <div className="flex items-center gap-2.5">
+              <SlantedCountdownBar
+                progressPercent={((timeLeft) / (poll.time_limit || 1)) * 100}
+                heightClass="h-3"
+                isUrgent={timeLeft <= 5}
+                className="w-20 sm:w-28 hidden sm:block"
+              />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] fluent-box-nested border border-white/20 font-mono font-black text-sm shrink-0">
+                <Clock className="w-4 h-4 text-amber-300 animate-spin" />
+                <span className={timeLeft <= 5 ? 'text-rose-300 animate-pulse text-base' : 'text-white'}>
+                  {timeLeft}s
+                </span>
+              </div>
             </div>
           )}
 
