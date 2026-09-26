@@ -565,7 +565,6 @@ body:has([aria-modal="true"]) {
 .animations-paused .animate-pulse-glow,
 .animations-paused .animate-countdown-ripple,
 .animations-paused .animate-float-particle,
-.animations-paused .animate-[#meshWave],
 .animations-paused .animate-mesh-wave,
 .animations-paused .animate-marquee,
 .animations-paused .animate-marquee-continuous,

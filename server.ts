@@ -2613,8 +2613,15 @@ Trả về duy nhất định dạng JSON thuần túy:
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath, {
-      setHeaders: (res) => {
+      maxAge: '1y',
+      immutable: true,
+      setHeaders: (res, filePath) => {
         res.set('Access-Control-Allow-Origin', '*');
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else if (filePath.includes('assets') || filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.woff2') || filePath.endsWith('.png') || filePath.endsWith('.svg')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
       }
     }));
     app.get('*', (req, res) => {

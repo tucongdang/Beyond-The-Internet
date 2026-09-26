@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { GameState, UserInfo } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
-import { Sparkles, Play, Square, Trophy, AlertCircle } from 'lucide-react';
+import { Sparkles, Play, Square, Trophy, AlertCircle, X } from 'lucide-react';
 import { getUserDisplayUid } from '../utils/uidUtils';
 import { getSecureRandomItem } from '../utils/cryptoUtils';
 
-export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any }> = ({ gameState, allResponses }) => {
+export interface LuckyDrawAdminProps {
+  gameState: GameState;
+  allResponses: any;
+  onExit?: () => void;
+}
+
+export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allResponses, onExit }) => {
   const [notification, setNotification] = useState<string | null>(null);
 
   const notify = (message: string) => {
@@ -77,6 +83,20 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
     );
   };
 
+  const handleExitLuckyDraw = () => {
+    soundFx.playClick();
+    syncService.updateGameState({
+      active_module: 'GAME',
+      lucky_draw: {
+        status: 'IDLE',
+        winner: null
+      }
+    });
+    if (onExit) {
+      onExit();
+    }
+  };
+
   const handleReset = () => {
     soundFx.playClick();
     syncService.updateGameState({
@@ -89,12 +109,28 @@ export const LuckyDrawAdmin: React.FC<{ gameState: GameState; allResponses: any 
 
   return (
     <div className="fluent-box border border-white/10 rounded-[2px] p-4 sm:p-6 space-y-6 text-white shadow-2xl">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
-        <h2 className="text-xs uppercase text-white font-bold tracking-widest font-mono flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#F7CAC9]" /> QUY TRÌNH QUAY SỐ TRÚNG THƯỞNG
-        </h2>
-        <div className="text-white/60 text-xs font-mono fluent-box-nested px-2.5 py-1.5 rounded-[2px] border border-white/10">
-          Tổng số ứng viên: <strong className="text-white text-sm">{candidates.length}</strong>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-xs uppercase text-white font-bold tracking-widest font-mono flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#F7CAC9]" /> QUY TRÌNH QUAY SỐ TRÚNG THƯỞNG
+          </h2>
+          <span className="px-2 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/30">
+            MÀN CHIẾU: LUCKY DRAW
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-white/60 text-xs font-mono fluent-box-nested px-2.5 py-1.5 rounded-[2px] border border-white/10">
+            Ứng viên: <strong className="text-white text-sm">{candidates.length}</strong>
+          </div>
+          <button
+            type="button"
+            onClick={handleExitLuckyDraw}
+            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-[2px] font-mono font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95 border border-rose-400/40"
+            title="Thoát chế độ quay số và trở về Đấu Trường câu hỏi (Tránh xung đột)"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Thoát Quay Số</span>
+          </button>
         </div>
       </div>
 

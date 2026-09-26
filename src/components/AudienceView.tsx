@@ -2789,25 +2789,38 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
           </div>
         )}
-        {/* Tab switch / focus departure warning toast */}
+        {/* Tab switch / focus departure warning toast (Full RED Warning) */}
         {showTabSwitchWarning && (
-          <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg animate-fadeIn shadow-2xl">
-            <div className="p-4 rounded-[2px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-rose-950/80">
-              <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0">
-                <AlertTriangle className="w-5 h-5 animate-bounce" />
+          <div 
+            id="audience-tab-warning"
+            className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-[95] w-[92%] max-w-lg animate-fadeIn shadow-2xl"
+          >
+            <div className="p-4 rounded-[3px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-2xl shadow-rose-950/90 ring-1 ring-rose-400/40">
+              <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0 mt-0.5">
+                <AlertTriangle className="w-5 h-5 text-rose-400 animate-bounce" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-sm text-rose-300">CẢNH BÁO: RỜI KHỎI TAB MÀN HÌNH</h4>
-                  <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-rose-500/30 text-rose-200 rounded-[2px]">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="font-bold text-sm text-rose-300 font-mono uppercase tracking-wider">
+                    CẢNH BÁO CHUYỂN MÀN HÌNH
+                  </h4>
+                  <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-rose-500/30 text-rose-200 rounded-[2px] shrink-0 border border-rose-400/30">
                     LẦN {tabSwitchCount}
                   </span>
                 </div>
-                <p className="text-xs text-rose-200/90 mt-1 leading-relaxed">
+                <p className="text-xs text-rose-100 font-medium mt-1 leading-relaxed">
+                  Hãy duy trì màn hình này để giữ kết nối ổn định và không bỏ lỡ điểm số câu hỏi!
+                </p>
+                <p className="text-[11px] text-rose-300/80 mt-1 leading-relaxed">
                   Hệ thống phát hiện bạn đã chuyển tab hoặc rời màn hình khi câu hỏi đang diễn ra. Thông số này được ghi nhận vào hệ thống.
                 </p>
               </div>
-              <button onClick={() => setShowTabSwitchWarning(false)} className="p-1 text-rose-400 hover:text-white cursor-pointer">
+              <button 
+                type="button"
+                onClick={() => setShowTabSwitchWarning(false)} 
+                className="p-1.5 text-rose-400 hover:text-white rounded hover:bg-rose-900/50 cursor-pointer shrink-0 transition"
+                title="Đóng cảnh báo"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>

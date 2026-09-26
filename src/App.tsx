@@ -17,16 +17,29 @@ import { vibrateTap, vibrateCopy } from './utils/hapticUtils';
 import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Palette, Sparkles, ScanLine, Zap } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { AudienceView } from './components/AudienceView';
-import { AdminPortal } from './components/AdminPortal';
-import { ProjectorView } from './components/ProjectorView';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ProfileModal } from './components/ProfileModal';
 import { generate12DigitUID } from './utils/uidUtils';
 import { getSecureItem, setSecureItem, removeSecureItem } from './utils/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PasswordGate } from './components/PasswordGate';
-import { LandingPage } from './components/LandingPage';
+
+// Code-split heavy views to shrink initial bundle for mobile audience devices
+const AdminPortal = React.lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
+const ProjectorView = React.lazy(() => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })));
+const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
 import { ClientLandingPage } from './components/ClientLandingPage';
+
+const ViewLoadingFallback: React.FC = () => (
+  <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#0f041c] text-white">
+    <div className="flex flex-col items-center gap-3 animate-fadeIn">
+      <div className="w-10 h-10 border-2 border-[#F7CAC9]/30 border-t-[#F7CAC9] rounded-full animate-spin" />
+      <span className="text-xs font-mono text-white/60 uppercase tracking-widest animate-pulse">
+        Đang tải giao diện...
+      </span>
+    </div>
+  </div>
+);
 import { NotificationToast } from './components/NotificationToast';
 import { OfflineBanner } from './components/OfflineBanner';
 import { InstallAppModal } from './components/InstallAppModal';
@@ -216,6 +229,7 @@ export default function App() {
   }, [audienceJoinUrl, handleCopyQrLink]);
 
   // Determine initial view from URL path or query parameter
+  
   const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
@@ -237,6 +251,17 @@ export default function App() {
     }
     return 'audience';
   });
+
+  // Automatically optimize Firebase sync listeners based on client role
+  useEffect(() => {
+    if (currentView === 'admin') {
+      syncService.setClientRole('ADMIN');
+    } else if (currentView === 'projector') {
+      syncService.setClientRole('PROJECTOR');
+    } else {
+      syncService.setClientRole('AUDIENCE');
+    }
+  }, [currentView]);
 
   // State synchronized from syncService
   const [currentResponses, setCurrentResponses] = useState<Record<string, UserResponse>>({});

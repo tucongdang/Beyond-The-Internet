@@ -73,8 +73,8 @@ const DEFAULT_SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   {
     id: 'TOGGLE_PLAY_PAUSE',
     category: 'HOST_CONTROL',
-    name: 'Tạm Dừng / Tiếp Tục Đồng Hồ (Play / Pause)',
-    description: 'Chạy đồng hồ khi ở trạng thái Chờ, tạm dừng đếm ngược khi đang chạy, tiếp tục đếm khi đang dừng',
+    name: 'Phím [Space] - Tiến Bước Chu Trình (Master Next Step)',
+    description: 'Tự động tiến bước chu trình trận đấu: 1. Bắt đầu -> 2. Khóa -> 3. Công bố -> 4. Câu tiếp theo',
     badgeColor: 'amber',
     isHostCommand: true,
     priorityOrder: 1,
@@ -116,17 +116,27 @@ const DEFAULT_SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   {
     id: 'HOST_CMD_2_PAUSE',
     category: 'HOST_CONTROL',
-    name: 'Phím [2] - Đóng Băng / Tiếp Tục Giờ (Pause / Resume)',
+    name: 'Phím [2 / P] - Đóng Băng / Tiếp Tục Giờ (Pause / Resume)',
     description: 'Đóng băng đồng hồ đếm ngược tức thì khi MC cần hội ý hoặc giải thích câu hỏi',
     badgeColor: 'amber',
     isHostCommand: true,
     priorityOrder: 3,
     defaultCombos: {
-      BROADCAST_HOST: [{ key: '2', label: '2' }],
-      CLASSIC_OLYMPIA: [{ key: 'p', label: 'P', altKey: true }],
-      CUSTOM: [{ key: '2', label: '2' }]
+      BROADCAST_HOST: [
+        { key: '2', label: '2' },
+        { key: 'p', label: 'P' },
+        { key: 'P', label: 'P' }
+      ],
+      CLASSIC_OLYMPIA: [
+        { key: '2', label: '2' },
+        { key: 'p', label: 'P' }
+      ],
+      CUSTOM: [{ key: '2', label: '2' }, { key: 'p', label: 'P' }]
     },
-    currentCombos: [{ key: '2', label: '2' }]
+    currentCombos: [
+      { key: '2', label: '2' },
+      { key: 'p', label: 'P' }
+    ]
   },
   {
     id: 'HOST_CMD_3_LOCK',
@@ -922,14 +932,24 @@ class ShortcutService {
   ): ShortcutDefinition | null {
     if (!this.enabled) return null;
 
-    // Check if user is typing in an input element
-    const activeEl = document.activeElement;
-    const isInput = options.isInputActive ?? (
-      activeEl &&
-      (activeEl.tagName === 'INPUT' ||
+    // Check if user is typing in an input element (Airtight guard)
+    const activeEl = document.activeElement as HTMLElement | null;
+    const targetEl = e.target as HTMLElement | null;
+    const isInput = options.isInputActive || Boolean(
+      (activeEl && (
+        activeEl.tagName === 'INPUT' ||
         activeEl.tagName === 'TEXTAREA' ||
         activeEl.tagName === 'SELECT' ||
-        (activeEl as HTMLElement).isContentEditable)
+        activeEl.isContentEditable ||
+        Boolean(activeEl.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'))
+      )) ||
+      (targetEl && (
+        targetEl.tagName === 'INPUT' ||
+        targetEl.tagName === 'TEXTAREA' ||
+        targetEl.tagName === 'SELECT' ||
+        targetEl.isContentEditable ||
+        Boolean(targetEl.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'))
+      ))
     );
 
     // Escape / Close Modals shortcut always closes open dialogs instantly even inside input focus
@@ -968,10 +988,10 @@ class ShortcutService {
       switch (shortcut.id) {
         // HOST COMMANDS
         case 'TOGGLE_PLAY_PAUSE':
-          if (handlers.togglePlayPauseTimer) {
-            handlers.togglePlayPauseTimer();
-          } else if (handlers.cycleMasterState) {
+          if (handlers.cycleMasterState) {
             handlers.cycleMasterState();
+          } else if (handlers.togglePlayPauseTimer) {
+            handlers.togglePlayPauseTimer();
           }
           break;
 
@@ -985,6 +1005,8 @@ class ShortcutService {
         case 'HOST_CMD_2_PAUSE':
           if (handlers.pauseResumeTimer) {
             handlers.pauseResumeTimer();
+          } else if (handlers.togglePlayPauseTimer) {
+            handlers.togglePlayPauseTimer();
           }
           break;
 

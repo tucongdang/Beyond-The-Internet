@@ -35,6 +35,15 @@ export interface UserScoreSummary {
  * Aggregate all responses across all questions and compute user rankings
  * Uses computeAudienceScoreFromResponses as the unified single source of truth.
  */
+interface LeaderboardCache {
+  responsesRef: Record<string, Record<string, UserResponse>> | null;
+  filterRound: string;
+  timestamp: number;
+  result: UserScoreSummary[];
+}
+
+let _lbCache: LeaderboardCache | null = null;
+
 export function calculateLeaderboard(
   allResponses: Record<string, Record<string, UserResponse>>,
   customQuestionBank?: QuestionItem[],
@@ -43,6 +52,17 @@ export function calculateLeaderboard(
 ): UserScoreSummary[] {
   if (!allResponses || Object.keys(allResponses).length === 0) {
     return [];
+  }
+
+  // Fast memoization cache to prevent CPU starvation on rapid response streams
+  const now = Date.now();
+  if (
+    _lbCache &&
+    _lbCache.responsesRef === allResponses &&
+    _lbCache.filterRound === filterRound &&
+    now - _lbCache.timestamp < 350
+  ) {
+    return _lbCache.result;
   }
 
   // 1. Identify all unique users across all questions
@@ -162,6 +182,12 @@ export function calculateLeaderboard(
     s.rank = idx + 1;
   });
 
+  _lbCache = {
+    responsesRef: allResponses,
+    filterRound,
+    timestamp: now,
+    result: summaries
+  };
   return summaries;
 }
 

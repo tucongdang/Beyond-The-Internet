@@ -34,12 +34,25 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
 
   const isProtectionActive = enabled && (gameState?.anti_exit_protection !== false);
 
+  // Debug: log protection state changes so operator can verify in DevTools
+  useEffect(() => {
+    if (isProtectionActive) {
+      console.log('[AntiExitGuard] 🛡️ Protection ACTIVE — beforeunload, popstate, hashchange listeners attached');
+    } else {
+      console.log('[AntiExitGuard] 🔓 Protection INACTIVE — enabled:', enabled, '| anti_exit_protection:', gameState?.anti_exit_protection);
+    }
+  }, [isProtectionActive, enabled, gameState?.anti_exit_protection]);
+
   // 1. Intercept beforeunload (closing tab, F5 refresh, closing browser, URL change)
+  //    Uses { capture: true } so this fires BEFORE any other beforeunload handler
+  //    that might call stopPropagation(). Also adds 'unload' as mobile fallback.
   useEffect(() => {
     if (!isProtectionActive) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Standard: preventDefault() triggers the browser's native "Leave site?" dialog
       e.preventDefault();
+      // Legacy fallback for older browsers: setting returnValue
       const warningMessage = localLanguage !== 'vi' 
         ? 'You are currently participating in a live session. Are you sure you want to exit?' 
         : 'Bạn đang tham gia trận đấu trực tiếp. Bạn có chắc chắn muốn thoát khỏi trình duyệt không?';
@@ -47,30 +60,37 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
       return warningMessage;
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Attach with capture: true to guarantee first execution
+    window.addEventListener('beforeunload', handleBeforeUnload, { capture: true });
+
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
     };
   }, [isProtectionActive, localLanguage]);
 
   // 2. Intercept popstate (browser back button & swipe back on mobile)
+  //    Pushes MULTIPLE history entries to make back-button interception more reliable,
+  //    especially on iOS Safari where a single pushState can be bypassed by rapid swipes.
   useEffect(() => {
     if (!isProtectionActive) return;
 
-    // Push initial history state so popstate can intercept back navigation
-    try {
-      window.history.pushState({ antiExitGuard: true }, '', window.location.href);
-    } catch {
-      // Ignore
-    }
-
-    const handlePopState = () => {
-      // Re-push state so user stays on current URL
+    // Push multiple history entries for more robust back-button blocking
+    const pushGuardEntries = () => {
       try {
-        window.history.pushState({ antiExitGuard: true }, '', window.location.href);
+        // Push 3 guard entries so rapid back presses are still caught
+        for (let i = 0; i < 3; i++) {
+          window.history.pushState({ antiExitGuard: true, idx: i }, '', window.location.href);
+        }
       } catch {
-        // Ignore
+        // Ignore — some environments restrict pushState calls
       }
+    };
+
+    pushGuardEntries();
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Re-push guard entries so subsequent back presses are also intercepted
+      pushGuardEntries();
 
       // Play warning sound and vibrate
       soundFx.playAlarm();
@@ -86,18 +106,42 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
     };
   }, [isProtectionActive]);
 
+  // 2b. Intercept hashchange (catches hash-based navigation that may bypass popstate)
+  useEffect(() => {
+    if (!isProtectionActive) return;
+
+    const handleHashChange = (e: HashChangeEvent) => {
+      // Prevent hash navigation by restoring the original URL
+      e.preventDefault();
+      try {
+        window.history.pushState({ antiExitGuard: true }, '', e.oldURL || window.location.href);
+      } catch {
+        // Ignore
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [isProtectionActive]);
+
   // 3. Handle Visibility change (warning when user switches tab or minimizes browser)
   useEffect(() => {
     if (!isProtectionActive) return;
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
+        // If AudienceView is already displaying the tab departure warning, skip duplicate toast
+        if (document.getElementById('audience-tab-warning')) {
+          return;
+        }
         // User returned to tab -> Show alert toast
         setIsToastVisible(true);
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         toastTimerRef.current = setTimeout(() => {
           setIsToastVisible(false);
-        }, 4000);
+        }, 4500);
       }
     };
 
@@ -108,14 +152,35 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
     };
   }, [isProtectionActive]);
 
+  // 4. Periodically re-verify history guard entries haven't been consumed
+  //    (iOS Safari can silently consume pushState entries on certain gestures)
+  useEffect(() => {
+    if (!isProtectionActive) return;
+
+    const interval = setInterval(() => {
+      try {
+        // Only push if we don't already have a guard entry (check via state)
+        if (!window.history.state?.antiExitGuard) {
+          window.history.pushState({ antiExitGuard: true, idx: 0 }, '', window.location.href);
+        }
+      } catch {
+        // Ignore
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isProtectionActive]);
+
   // Handle Stay in Match
   const handleStayInMatch = useCallback(() => {
     soundFx.playClick();
     vibrateSuccess();
     setShowExitConfirmModal(false);
-    // Re-push history entry
+    // Re-push history entries
     try {
-      window.history.pushState({ antiExitGuard: true }, '', window.location.href);
+      for (let i = 0; i < 3; i++) {
+        window.history.pushState({ antiExitGuard: true, idx: i }, '', window.location.href);
+      }
     } catch {
       // Ignore
     }
@@ -151,16 +216,21 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
         </div>
       )}
 
-      {/* Return to Tab Warning Toast - Fluent UI MessageBar Style */}
+      {/* Return to Tab Warning Toast - Full RED Alert */}
       {isToastVisible && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[90] max-w-md w-[92vw] bg-[#291800]/95 border border-[#F59E0B]/60 text-amber-100 p-3 rounded-[3px] shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 text-xs font-sans animate-bounce-short">
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-5 h-5 text-[#F59E0B] shrink-0 animate-pulse" />
-            <div>
-              <strong className="block text-amber-200 font-mono font-bold uppercase text-[11px]">
-                {localLanguage !== 'vi' ? 'Focus Loss Warning' : 'Cảnh Báo Chuyển Màn Hình'}
+        <div 
+          id="anti-exit-warning-toast"
+          className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-[90] max-w-md w-[92vw] bg-rose-950/95 border-2 border-rose-500 text-rose-100 p-3.5 rounded-[3px] shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-xs font-sans animate-bounce-short shadow-rose-950/90 ring-1 ring-rose-400/40"
+        >
+          <div className="flex items-start gap-2.5 min-w-0">
+            <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0 mt-0.5">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <strong className="block text-rose-200 font-mono font-bold uppercase text-[11px] tracking-wider">
+                {localLanguage !== 'vi' ? 'Screen Switch Warning' : 'CẢNH BÁO CHUYỂN MÀN HÌNH'}
               </strong>
-              <p className="text-[11px] text-amber-100/90 leading-tight">
+              <p className="text-[11px] text-rose-100/90 leading-relaxed mt-0.5">
                 {localLanguage !== 'vi' 
                   ? 'Please stay on this browser tab to keep your connection active and not miss quiz questions!'
                   : 'Hãy duy trì màn hình này để giữ kết nối ổn định và không bỏ lỡ điểm số câu hỏi!'}
@@ -170,7 +240,8 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
           <button
             type="button"
             onClick={() => setIsToastVisible(false)}
-            className="p-1 rounded hover:bg-amber-900/60 text-amber-300 transition shrink-0"
+            className="p-1.5 rounded hover:bg-rose-900/60 text-rose-400 hover:text-white transition shrink-0 cursor-pointer"
+            title="Đóng cảnh báo"
           >
             <X className="w-4 h-4" />
           </button>

@@ -306,6 +306,7 @@ export interface GameState {
   leaderboard_round_filter?: 'ALL' | 'R1' | 'R2' | 'R3' | 'R4';
   projector_scale?: number;
   projector_autofit?: boolean;
+  projector_safe_margin?: number;
   projector_show_cheer_meter?: boolean;
   projector_show_shout_marquee?: boolean;
   projector_cheer_expanded?: boolean;

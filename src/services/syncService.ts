@@ -63,6 +63,9 @@ export const DEFAULT_GAME_STATE: GameState = {
   qr_code_size: 280,
   qr_transparent_bg: false,
   projector_dimmed: false,
+  projector_scale: 1.0,
+  projector_autofit: true,
+  projector_safe_margin: 0,
   vcnv_clues: [false, false, false, false],
   vcnv_keyword: '',
   vcnv_status: 'IDLE',
@@ -117,6 +120,20 @@ class RealtimeSyncService {
   private spamCounters: Record<string, number> = {};
   private currentConfig: FirebaseConfig | null = null;
   private connectionListeners: Set<(connected: boolean) => void> = new Set();
+  private clientRole: 'AUDIENCE' | 'ADMIN' | 'PROJECTOR' = 'AUDIENCE';
+
+  public setClientRole(role: 'AUDIENCE' | 'ADMIN' | 'PROJECTOR') {
+    if (this.clientRole !== role) {
+      this.clientRole = role;
+      if (this.db) {
+        this.attachFirebaseListeners();
+      }
+    }
+  }
+
+  public getClientRole(): 'AUDIENCE' | 'ADMIN' | 'PROJECTOR' {
+    return this.clientRole;
+  }
 
   private stateListeners: Set<StateListener> = new Set();
   private responseListeners: Set<ResponseListener> = new Set();
@@ -711,9 +728,8 @@ class RealtimeSyncService {
       }));
     }
 
-    // 3. Listen to presence (always poll heavily or just use snapshot because it's low traffic)
-    // Actually presence we can leave as snapshot since it's just meta, but to be strict let's keep it.
-    if (!isBatterySaver) {
+    // 3. Listen to presence (Only ADMIN & PROJECTOR need full contestant presence list)
+    if (!isBatterySaver && this.clientRole !== 'AUDIENCE') {
       this.unsubscribes.push(onSnapshot(collection(this.db, 'presence'), (snapshot) => {
         this.setFirebaseConnected(true);
         const data: Record<string, any> = {};
@@ -729,10 +745,11 @@ class RealtimeSyncService {
       }));
     }
 
-    // 4. Listen to qr_scans (Scan History for Hourly Trends)
-    try {
-      const qScans = query(collection(this.db, 'qr_scans'), orderBy('timestamp', 'asc'), limit(500));
-      this.unsubscribes.push(onSnapshot(qScans, (snapshot) => {
+    // 4. Listen to qr_scans (Scan History for Hourly Trends - Only needed for Admin Portal)
+    if (this.clientRole === 'ADMIN') {
+      try {
+        const qScans = query(collection(this.db, 'qr_scans'), orderBy('timestamp', 'asc'), limit(500));
+        this.unsubscribes.push(onSnapshot(qScans, (snapshot) => {
         const events: QrScanEvent[] = [];
         snapshot.forEach(docSnap => {
           const docData = docSnap.data();
@@ -758,6 +775,7 @@ class RealtimeSyncService {
       }));
     } catch (e) {
       console.warn('Could not attach Firestore qr_scans listener:', e);
+    }
     }
   }
   // --- Broadcast / Local Notifications ---

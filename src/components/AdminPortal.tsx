@@ -60,7 +60,7 @@ import { ProjectorView } from './ProjectorView';
 import { QrScanTrendsChart } from './QrScanTrendsChart';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { QrDiagnosticOverlay, QrDiagnosticData } from './QrDiagnosticOverlay';
-import { Timer,  Shield,
+import { Timer, Shield, Printer, Scaling, EyeOff, ShieldAlert, Unlock,
   Activity,
   AlertOctagon,
   Wifi,
@@ -138,7 +138,8 @@ import {
   vibrateError,
   vibrateImpact,
   vibrateCopy,
-  vibrateShare
+  vibrateShare,
+  vibrateGrandCelebration
 } from '../utils/hapticUtils';
 
 interface AdminPortalProps {
@@ -274,6 +275,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     };
   }, [isAuthenticated, onLogout, showSessionWarningModal]);
 
+  const handleLogout = useCallback(() => {
+    try {
+      sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
+      sessionStorage.removeItem('BTI2026_TECH_USER');
+      sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
+      localStorage.removeItem('BTI2026_ADMIN_AUTH');
+      localStorage.removeItem('BTI2026_TECH_USER');
+      localStorage.removeItem('BTI2026_ADMIN_TOKEN');
+      localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
+    } catch {}
+    setIsAuthenticated(false);
+    setShowSessionWarningModal(false);
+    if (onLogout) {
+      onLogout();
+    }
+  }, [onLogout]);
+
   // Technical Staff Approval Management
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState<boolean>(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState<number>(0);
@@ -351,6 +369,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [customShortAnswerKey, setCustomShortAnswerKey] = useState('');
   const [customTimeLimit, setCustomTimeLimit] = useState(15);
   const [customExplanation, setCustomExplanation] = useState('');
+
+  // Focus Mode for live clutter-free operation
+  const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
+  // Header dropdown popovers ('NONE' | 'STAGE' | 'SAFETY' | 'UTILS')
+  const [activeHeaderMenu, setActiveHeaderMenu] = useState<'NONE' | 'STAGE' | 'SAFETY' | 'UTILS'>('NONE');
+
+  // Helper to map tab to workspace
+  const getWorkspaceForTab = (tab: typeof activeAdminTab): 'DASHBOARD' | 'ARENA' | 'INTERACTION' | 'RESULTS' | 'STUDIO' => {
+    if (tab === 'DASHBOARD') return 'DASHBOARD';
+    if (['KDC', 'VCNV', 'TT', 'VD'].includes(tab)) return 'ARENA';
+    if (['QA_MANAGER', 'CHAT_MANAGER', 'POLL_MANAGER', 'WORD_CLOUD', 'LUCKY_DRAW'].includes(tab)) return 'INTERACTION';
+    if (['STATS', 'POLL_HISTORY', 'SNAPSHOTS', 'ACTIVITY_LOG'].includes(tab)) return 'RESULTS';
+    return 'STUDIO';
+  };
 
   // Side panel question list controls in Round Tabs (KDC, TT, VD)
   const [sidePanelShowAll, setSidePanelShowAll] = useState<boolean>(false);
@@ -439,6 +471,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     urlByteLength: 0,
     qrVersionEstimate: 4
   });
+
+  // Close active header dropdown menu when clicking outside or pressing Escape
+  useEffect(() => {
+    if (activeHeaderMenu === 'NONE') return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('#header-dropdown-menu') && !target.closest('.header-menu-btn')) {
+        setActiveHeaderMenu('NONE');
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveHeaderMenu('NONE');
+    };
+    window.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeHeaderMenu]);
 
   // Synchronize local caption when external/remote QR caption updates
   useEffect(() => {
@@ -1504,6 +1556,73 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     triggerHudToast('QR', 'Đã tải ảnh mã QR xuống thiết bị!');
   }, [qrDataUrl, triggerHudToast]);
 
+  // Handler to print Standee / Poster QR Code for event hall
+  const handlePrintStandee = useCallback(() => {
+    if (!qrDataUrl) {
+      triggerHudToast('QR', 'Đang tạo mã QR, vui lòng thử lại sau giây lát');
+      return;
+    }
+    vibrateTap();
+    soundFx.playClick();
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (!printWindow) {
+      triggerHudToast('PRINT', 'Trình duyệt chặn popup, hãy mở khóa để in');
+      return;
+    }
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>BTI 2026 - Standee QR Đấu Trường</title>
+        <meta charset="utf-8">
+        <style>
+          @page { size: A4 portrait; margin: 12mm; }
+          body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #fff; color: #0f172a; margin: 0; padding: 20px; }
+          .card { border: 4px solid #0284c7; border-radius: 16px; padding: 36px 20px; max-width: 580px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+          .badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 12px; }
+          .title { font-size: 26px; font-weight: 900; color: #0369a1; text-transform: uppercase; margin: 0 0 6px 0; letter-spacing: 0.5px; }
+          .subtitle { font-size: 15px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+          .qr-box { display: inline-block; padding: 14px; background: #fff; border: 3px solid #0f172a; border-radius: 12px; margin-bottom: 18px; }
+          .qr-box img { width: 260px; height: 260px; display: block; }
+          .url-box { background: #f8fafc; border: 2px dashed #0284c7; border-radius: 8px; padding: 10px 18px; display: inline-block; font-family: monospace; font-size: 18px; font-weight: 800; color: #0369a1; margin-bottom: 22px; }
+          .steps { text-align: left; max-width: 440px; margin: 0 auto; background: #f1f5f9; border-radius: 10px; padding: 16px 20px; border-left: 5px solid #0284c7; }
+          .step { font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px; line-height: 1.4; }
+          .step:last-child { margin-bottom: 0; }
+          .footer { margin-top: 24px; font-size: 12px; color: #94a3b8; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="badge">LIVE GAMESHOW 2026</div>
+          <h1 class="title">BEYOND THE INTERNET</h1>
+          <div class="subtitle">ĐẤU TRƯỜNG TƯƠNG TÁC TRỰC TIẾP KHÁN GIẢ</div>
+          <div class="qr-box">
+            <img src="${qrDataUrl}" alt="BTI 2026 QR" />
+          </div>
+          <div>
+            <div class="url-box">${audienceJoinUrl || 'https://bti2026.app'}</div>
+          </div>
+          <div class="steps">
+            <div class="step">📱 <strong>Bước 1:</strong> Mở camera điện thoại quét mã QR hoặc nhập link trên.</div>
+            <div class="step">✍️ <strong>Bước 2:</strong> Nhập Họ tên và MSSV để đăng ký tham gia.</div>
+            <div class="step">🏆 <strong>Bước 3:</strong> Trả lời trực tiếp trên điện thoại & giành giải thưởng!</div>
+          </div>
+          <div class="footer">Ban Tổ Chức Beyond The Internet 2026 • Chúc bạn thi đấu thành công!</div>
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); }, 400);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    triggerHudToast('PRINT', 'Đã mở trang in Standee Poster A4/A3!');
+  }, [qrDataUrl, audienceJoinUrl, triggerHudToast]);
+
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passcode === DEFAULT_ADMIN_PASSCODE || passcode === 'admin123') {
@@ -1555,9 +1674,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       server_start_time: 0,
       show_summary: false,
       show_word_cloud: false,
+      show_qr: false,
       projector_view_mode: 'DEFAULT',
+      active_module: 'GAME',
+      lucky_draw: { status: 'IDLE', winner: null },
       grand_finale: null
     });
+    setActiveAdminTab(prev => (prev === 'LUCKY_DRAW' || prev === 'WORD_CLOUD') ? 'DASHBOARD' : prev);
 
     syncService.logActivity(
       'ADMIN_QUESTION_CHANGE',
@@ -1589,9 +1712,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       explanation: item?.explanation || gameState.explanation,
       show_summary: false,
       show_word_cloud: false,
+      show_qr: false,
       projector_view_mode: 'DEFAULT',
+      active_module: 'GAME',
+      lucky_draw: { status: 'IDLE', winner: null },
       grand_finale: null
     });
+    setActiveAdminTab(prev => prev === 'LUCKY_DRAW' ? 'DASHBOARD' : prev);
 
     syncService.logActivity(
       'ADMIN_STATUS_CHANGE',
@@ -1616,7 +1743,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     soundFx.playLock();
     syncService.updateGameState({
       status: 'LOCKED',
-      correct_key: correctKey
+      correct_key: correctKey,
+      active_module: 'GAME'
     });
 
     syncService.logActivity(
@@ -1643,7 +1771,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     syncService.updateGameState({
       status: 'REVEAL',
       correct_key: correctKey,
-      explanation: item?.explanation || gameState.explanation
+      explanation: item?.explanation || gameState.explanation,
+      active_module: 'GAME'
     });
 
     syncService.logActivity(
@@ -1667,7 +1796,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     syncService.updateGameState({
       status: 'STANDBY',
       correct_key: '',
-      server_start_time: 0
+      server_start_time: 0,
+      active_module: 'GAME',
+      lucky_draw: { status: 'IDLE', winner: null }
     });
 
     syncService.logActivity(
@@ -2740,608 +2871,750 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onContextMenu={handleContextMenu}
         className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 md:p-6 text-[#e5e5e5] space-y-3 sm:space-y-4 md:space-y-5 overflow-x-hidden min-w-0 bg-transparent"
       >
-      {/* Top Banner: Master Bento Telemetry Header */}
-      <header className="fluent-box p-3 sm:p-4 md:p-5 relative z-50 overflow-visible flex flex-row flex-wrap items-center justify-between gap-4">
-        {/* Brand & Telemetry Information */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[2px] fluent-acrylic-surface text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-lg shadow-blue-950/50 border border-blue-400/40 shrink-0">
-            <Shield className="w-5 h-5 sm:w-5 sm:h-5 text-blue-100" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-              <h1 className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white truncate sm:overflow-visible">
-                TRUNG TÂM ĐIỀU HÀNH BTI 2026
-              </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-bold bg-blue-600/80 text-blue-100 uppercase tracking-wider whitespace-nowrap border border-blue-400/40 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-400 animate-pulse" />
-                MÁY CHỦ CHÍNH • MASTER
-              </span>
-
-              {/* Session Activity & Live Warning Countdown Indicator Pill */}
-              {showSessionWarningModal ? (
-                <button
-                  type="button"
-                  onClick={() => handleExtendSession()}
-                  data-tooltip="Phiên sắp hết hạn! Bấm vào đây để gia hạn phiên làm việc (+30 phút) ngay lập tức."
-                  data-tooltip-title="Cảnh Báo Hết Hạn Phiên"
-                  className="has-tooltip inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-950/50 animate-pulse transition-all cursor-pointer hover:bg-amber-500/30"
-                >
-                  <span className="relative flex h-2 w-2 items-center justify-center shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-90"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
-                  </span>
-                  <Clock className="w-3 h-3 text-amber-400 shrink-0" />
-                  <span>HẾT HẠN TRONG:</span>
-                  <span className="text-amber-200 font-black font-mono">
-                    {String(Math.floor(sessionSecondsRemaining / 60)).padStart(2, '0')}:
-                    {String(sessionSecondsRemaining % 60).padStart(2, '0')}
-                  </span>
-                </button>
-              ) : (
-                <span 
-                  data-tooltip="Hệ thống đang theo dõi thời gian hoạt động Admin (30 phút không thao tác sẽ tự động đăng xuất, cảnh báo trước 2 phút)"
-                  data-tooltip-title="Theo Dõi Phiên Hoạt Động"
-                  className="has-tooltip inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[8px] sm:text-[9px] font-mono font-medium bg-[#0D1B2A]/80 text-sky-200 border border-sky-500/30 shadow-sm transition-all"
-                >
-                  <span className="relative flex h-2 w-2 items-center justify-center shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-400"></span>
-                  </span>
-                  <Clock className="w-3 h-3 text-sky-400 shrink-0" />
-                  <span className="hidden sm:inline">PHIÊN BẢO MẬT:</span>
-                  <span className="text-emerald-400 font-bold">THEO DÕI ACTIVE</span>
+            {/* ================= STREAMLINED BROADCAST HEADER ================= */}
+      {!isFocusMode ? (
+        <header className="fluent-box px-3 py-2 sm:px-4 sm:py-2.5 relative z-50 overflow-visible flex flex-row items-center justify-between gap-3 border border-white/10 rounded-[4px] shadow-lg bg-gradient-to-r from-[#170a2c]/95 via-[#0e041e]/95 to-[#1a082c]/95">
+          {/* Brand & Live Status */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-[3px] bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-950/50 border border-purple-400/40 shrink-0">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white truncate">
+                  BTI 2026 MASTER
+                </h1>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>LIVE: <strong className="text-white">{activeCount}</strong> kết nối</span>
                 </span>
+                {gameState.panic_mode && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-black bg-red-600 text-white animate-pulse shadow">
+                    🚨 ĐÃ KHÓA KHẨN
+                  </span>
+                )}
+                {gameState.match_break?.active && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-amber-500 text-slate-950">
+                    ☕ ĐANG NGHỈ TRẬN
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Controls & Dropdowns */}
+          <div className="flex items-center gap-1.5 sm:gap-2 relative">
+            {/* Quick Live QR Pill */}
+            <div className="flex items-center bg-black/40 border border-white/10 rounded-[3px] p-0.5 text-xs font-mono">
+              <button
+                type="button"
+                id="btn-admin-quick-qr"
+                onClick={() => handleToggleLiveQrModal()}
+                className={`px-2 py-1 rounded-[2px] font-bold transition flex items-center gap-1 cursor-pointer ${
+                  gameState.show_qr
+                    ? 'bg-sky-600 text-white border border-sky-400 shadow-sm'
+                    : 'text-white/60 hover:text-white'
+                }`}
+                title="Bật / Tắt hiển thị mã QR trên màn hình khán giả và màn chiếu"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">QR:</span> {gameState.show_qr ? 'BẬT' : 'TẮT'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyAudienceLink}
+                className="p-1 hover:text-white text-white/50 transition cursor-pointer"
+                title="Sao chép link phòng thi khán giả"
+              >
+                {isCopiedJoinUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+
+            {/* Focus Mode Trigger */}
+            <button
+              type="button"
+              id="btn-admin-focus-mode"
+              onClick={() => {
+                vibrateImpact();
+                setIsFocusMode(true);
+                triggerHudToast('FOCUS', 'Đã kích hoạt chế độ Tập Trung (Focus Mode)');
+              }}
+              className="px-2.5 py-1.5 rounded-[3px] bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer"
+              title="Chế độ tập trung tối đa (Ẩn tất cả menu phụ, chỉ giữ lại điều khiển câu hỏi)"
+            >
+              <Target className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden lg:inline">Tập Trung</span>
+            </button>
+
+            {/* Dropdown 1: 📺 Sân khấu & Màn chiếu */}
+            <div className="relative">
+              <button
+                type="button"
+                id="btn-header-menu-stage"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveHeaderMenu(prev => prev === 'STAGE' ? 'NONE' : 'STAGE');
+                }}
+                className={`header-menu-btn px-2.5 py-1.5 rounded-[3px] border text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                  activeHeaderMenu === 'STAGE'
+                    ? 'bg-sky-500 text-slate-950 border-sky-300 font-bold shadow'
+                    : 'bg-white/5 text-sky-300 border-sky-500/30 hover:bg-sky-950/50'
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sân Khấu</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+
+              {activeHeaderMenu === 'STAGE' && (
+                <div id="header-dropdown-menu" className="absolute right-0 top-full mt-1.5 w-64 bg-[#140827]/98 backdrop-blur-2xl border border-sky-500/40 rounded-[4px] p-1.5 shadow-2xl z-[100] text-xs space-y-1 animate-fadeIn">
+                  <div className="px-2.5 py-1 text-[10px] font-mono text-sky-400 font-bold uppercase border-b border-white/10 flex items-center justify-between">
+                    <span>Điều Khiển Màn Chiếu</span>
+                    <Monitor className="w-3 h-3" />
+                  </div>
+                  {/* Quick Screen Mode Switcher in Dropdown */}
+                  <div className="p-1.5 rounded-[2px] bg-black/40 border border-white/10 space-y-1">
+                    <span className="text-[9px] font-mono text-white/50 uppercase font-bold block">Chế độ chiếu sân khấu:</span>
+                    <div className="grid grid-cols-2 gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          syncService.updateGameState({ show_qr: false, show_summary: false, show_word_cloud: false, projector_view_mode: 'DEFAULT', active_module: 'GAME', lucky_draw: { status: 'IDLE', winner: null } });
+                          triggerHudToast('STAGE', 'Chiếu Câu Hỏi');
+                        }}
+                        className={`p-1 rounded-[2px] text-[10px] font-mono text-center font-bold border transition cursor-pointer ${
+                          !gameState.show_qr && !gameState.show_summary && !gameState.show_word_cloud && (gameState.projector_view_mode === 'DEFAULT' || !gameState.projector_view_mode)
+                            ? 'bg-sky-500 text-slate-950 border-sky-300'
+                            : 'bg-white/5 text-white/70 hover:text-white border-white/10'
+                        }`}
+                      >
+                        📺 Câu Hỏi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !gameState.show_qr;
+                          syncService.updateGameState({ show_qr: next, show_summary: false, show_word_cloud: false });
+                          triggerHudToast('STAGE (Q)', next ? 'Bật QR Sân Khấu' : 'Tắt QR Sân Khấu');
+                        }}
+                        className={`p-1 rounded-[2px] text-[10px] font-mono text-center font-bold border transition cursor-pointer ${
+                          gameState.show_qr
+                            ? 'bg-amber-400 text-slate-950 border-amber-300'
+                            : 'bg-white/5 text-white/70 hover:text-white border-white/10'
+                        }`}
+                      >
+                        📲 Mã QR (Q)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !gameState.show_summary;
+                          syncService.updateGameState({ show_summary: next, show_qr: false, show_word_cloud: false, projector_view_mode: next ? 'LEADERBOARD' : 'DEFAULT' });
+                          triggerHudToast('STAGE (B)', next ? 'Mở Bảng Điểm' : 'Tắt Bảng Điểm');
+                        }}
+                        className={`p-1 rounded-[2px] text-[10px] font-mono text-center font-bold border transition cursor-pointer ${
+                          gameState.show_summary
+                            ? 'bg-emerald-400 text-slate-950 border-emerald-300'
+                            : 'bg-white/5 text-white/70 hover:text-white border-white/10'
+                        }`}
+                      >
+                        🏆 Bảng Điểm (B)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !gameState.show_word_cloud;
+                          syncService.updateGameState({ show_word_cloud: next, show_qr: false, show_summary: false, projector_view_mode: next ? 'WORD_CLOUD' : 'DEFAULT' });
+                          triggerHudToast('STAGE (W)', next ? 'Mở Từ Khóa' : 'Tắt Từ Khóa');
+                        }}
+                        className={`p-1 rounded-[2px] text-[10px] font-mono text-center font-bold border transition cursor-pointer ${
+                          gameState.show_word_cloud
+                            ? 'bg-purple-400 text-slate-950 border-purple-300'
+                            : 'bg-white/5 text-white/70 hover:text-white border-white/10'
+                        }`}
+                      >
+                        ☁️ Từ Khóa (W)
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAnnouncerModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Megaphone className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="flex-1">Chữ Chạy Live (Marquee)</span>
+                    {gameState.announcer_overlay?.active && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMcCoPilotModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Mic className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Trợ Lý MC AI (Co-pilot)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAudioSettingsModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="flex-1">Cài Đặt Âm Thanh & TTS</span>
+                    {speechActive && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+                  </button>
+                  {speechActive && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        aiExplanationService.stopSpeech();
+                        setActiveHeaderMenu('NONE');
+                      }}
+                      className="w-full text-left px-2.5 py-1.5 rounded-[2px] bg-rose-950/60 hover:bg-rose-900 text-rose-300 flex items-center gap-2 cursor-pointer font-bold"
+                    >
+                      <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                      <span>⏹ Dừng Ngay Giọng Đọc</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSnapAudienceInteraction();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-pink-400" />
+                    <span>📸 Chụp Màn Chiếu ({snapshotCount})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onViewChange) onViewChange('projector');
+                      else window.open('/?view=projector', '_blank');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Mở Màn Chiếu Sân Khấu (Tab mới)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLightShowModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Hiệu Ứng Ánh Sáng (Light Show)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !gameState.projector_dimmed;
+                      syncService.updateGameState({ projector_dimmed: next });
+                      triggerHudToast('STAGE', next ? 'ĐÃ TẮT MÀN CHIẾU (MÀN ĐEN)' : 'ĐÃ BẬT LẠI MÀN CHIẾU');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-[2px] flex items-center gap-2 cursor-pointer transition ${
+                      gameState.projector_dimmed
+                        ? 'bg-amber-500/30 text-amber-200 border border-amber-400 font-bold'
+                        : 'hover:bg-white/10 text-white/90'
+                    }`}
+                  >
+                    <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="flex-1">Màn Đen Sân Khấu (Blackout)</span>
+                    {gameState.projector_dimmed && <span className="text-[10px] text-amber-300 font-mono font-bold">ĐANG BẬT</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      vibrateTap();
+                      syncService.updateGameState({ last_updated: Date.now() });
+                      triggerHudToast('SYNC', 'Đã cưỡng chế đồng bộ toàn bộ màn chiếu!');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Cưỡng Chế Đồng Bộ Sân Khấu</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !(gameState.projector_show_shout_marquee ?? true);
+                      syncService.updateGameState({ projector_show_shout_marquee: next });
+                      triggerHudToast('STAGE', next ? 'Bật Tiếng Hô Khán Giả' : 'Tắt Tiếng Hô Khán Giả');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Megaphone className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="flex-1">Dải Tiếng Hô Khán Giả</span>
+                    <span className="text-[10px] font-mono text-white/50">{(gameState.projector_show_shout_marquee ?? true) ? 'BẬT' : 'TẮT'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !(gameState.projector_show_cheer_meter ?? true);
+                      syncService.updateGameState({ projector_show_cheer_meter: next });
+                      triggerHudToast('STAGE', next ? 'Bật Nhịp Tim Cổ Vũ' : 'Tắt Nhịp Tim Cổ Vũ');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="flex-1">Thanh Nhịp Tim Cổ Vũ</span>
+                    <span className="text-[10px] font-mono text-white/50">{(gameState.projector_show_cheer_meter ?? true) ? 'BẬT' : 'TẮT'}</span>
+                  </button>
+
+                  {/* Remote Projector Scale & Viewport Control Section */}
+                  <div className="pt-2 mt-1 border-t border-white/10 px-2.5 pb-1">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-purple-300 font-bold mb-1.5">
+                      <span className="flex items-center gap-1.5">
+                        <Scaling className="w-3.5 h-3.5 text-purple-400" />
+                        TỈ LỆ MÀN CHIẾU (SCALE)
+                      </span>
+                      <span className="text-[10px] text-white/60 font-mono">
+                        {gameState.projector_autofit !== false ? 'Auto-Fit' : Math.round((gameState.projector_scale || 1.0) * 100) + '%'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const curr = gameState.projector_scale || 1.0;
+                          const next = Math.max(0.75, Number((curr - 0.05).toFixed(2)));
+                          syncService.updateGameState({ projector_scale: next, projector_autofit: false });
+                          triggerHudToast('STAGE', 'Tỉ lệ màn chiếu: ' + Math.round(next * 100) + '%');
+                        }}
+                        className="p-1 rounded bg-white/10 hover:bg-white/20 text-white text-xs cursor-pointer"
+                        title="Giảm scale 5%"
+                      >
+                        <ZoomOut className="w-3.5 h-3.5" />
+                      </button>
+
+                      {[0.85, 0.90, 0.95, 1.00, 1.05, 1.10].map(s => {
+                        const isSelected = !gameState.projector_autofit && Math.abs((gameState.projector_scale || 1.0) - s) < 0.02;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              syncService.updateGameState({ projector_scale: s, projector_autofit: false });
+                              triggerHudToast('STAGE', 'Đã đặt tỉ lệ màn chiếu: ' + Math.round(s * 100) + '%');
+                            }}
+                            className={'flex-1 py-0.5 rounded text-[10px] font-mono font-bold transition cursor-pointer text-center ' + (
+                              isSelected
+                                ? 'bg-purple-600 text-white ring-1 ring-purple-400'
+                                : 'bg-white/5 hover:bg-white/15 text-white/70'
+                            )}
+                          >
+                            {Math.round(s * 100)}%
+                          </button>
+                        );
+                      })}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const curr = gameState.projector_scale || 1.0;
+                          const next = Math.min(1.25, Number((curr + 0.05).toFixed(2)));
+                          syncService.updateGameState({ projector_scale: next, projector_autofit: false });
+                          triggerHudToast('STAGE', 'Tỉ lệ màn chiếu: ' + Math.round(next * 100) + '%');
+                        }}
+                        className="p-1 rounded bg-white/10 hover:bg-white/20 text-white text-xs cursor-pointer"
+                        title="Tăng scale 5%"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !(gameState.projector_autofit ?? true);
+                          syncService.updateGameState({ projector_autofit: next });
+                          triggerHudToast('STAGE', next ? 'Đã bật Auto-Fit màn chiếu' : 'Đã tắt Auto-Fit màn chiếu');
+                        }}
+                        className={'flex-1 py-1 px-2 rounded text-[10px] font-mono font-bold flex items-center justify-center gap-1 cursor-pointer transition ' + (
+                          (gameState.projector_autofit ?? true)
+                            ? 'bg-emerald-500 text-black shadow-sm'
+                            : 'bg-white/10 hover:bg-white/20 text-white/70'
+                        )}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                        <span>Auto-Fit: {(gameState.projector_autofit ?? true) ? 'BẬT' : 'TẮT'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          syncService.updateGameState({ projector_scale: 1.0, projector_autofit: true });
+                          triggerHudToast('STAGE', 'Đã đặt lại tỉ lệ 100% (Auto-Fit)');
+                        }}
+                        className="py-1 px-2 rounded bg-white/10 hover:bg-white/20 text-white/80 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer"
+                        title="Đặt lại tỉ lệ 100%"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>100%</span>
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      vibrateGrandCelebration();
+                      soundFx.playReveal(true);
+                      syncService.updateGameState({
+                        grand_finale: {
+                          active: true,
+                          winner: {
+                            uid: 'winner_ceremony',
+                            name: 'Quán Quân 2026',
+                            mssv: 'BTI-2026',
+                            totalScore: 9999,
+                            rank: 1
+                          },
+                          stageTheme: 'ROYAL_GOLD',
+                          timestamp: Date.now()
+                        },
+                        projector_effect: {
+                          type: 'CONFETTI',
+                          timestamp: Date.now()
+                        }
+                      });
+                      triggerHudToast('FINALE', 'Đã kích hoạt Lễ Vinh Danh Quán Quân!');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] bg-gradient-to-r from-amber-500/20 to-purple-500/20 hover:from-amber-500/30 hover:to-purple-500/30 border border-amber-400/40 text-amber-200 flex items-center gap-2 cursor-pointer font-bold"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Lễ Vinh Danh Quán Quân (Grand Finale)</span>
+                  </button>
+                </div>
               )}
             </div>
-            <p className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-normal sm:tracking-[0.15em] font-mono break-words">
-              Beyond The Internet 2026 • Điều Phối Trực Tiếp & Phân Tích Dữ Liệu
-            </p>
-          </div>
-        </div>
 
-        {/* Cụm 2.5: Tìm kiếm */}
-        <div className="hidden md:flex items-center flex-1 min-w-[300px] max-w-md mx-auto order-3 xl:order-2 mt-2 xl:mt-0">
-          <FluentSearchBar 
-            db={null}
-            questionBank={questionBank}
-            allResponses={allResponses}
-            onSelectResult={(type, id, name) => {
-              if (type === 'QUESTION') {
-                setActiveAdminTab('QUESTIONS');
-                triggerHudToast('SEARCH', `Đã chuyển đến câu hỏi: ${id}`);
-              } else if (type === 'USER') {
-                setActiveAdminTab('STATS');
-                triggerHudToast('SEARCH', `Đã chọn khán giả: ${name || id}`);
-              }
-            }}
-          />
-        </div>
-
-        {/* Fluent UI Header Action Bar (Cụm 3: Action Controls) */}
-        <div className="fluent-action-bar flex-wrap justify-start xl:justify-end gap-2.5 w-full xl:w-auto order-2 xl:order-3 mt-3 xl:mt-0">
-          
-          {/* Group 1: Màn Chiếu & Phát Sóng (Broadcast & Stage Display) */}
-          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-sky-950/20 border border-sky-500/20">
-            <span className="text-[9px] font-mono font-bold text-sky-400/80 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-sky-500/20 mr-0.5">
-              Phát Sống
-            </span>
-
-            {/* Snap Audience Interaction Button */}
-            <button
-              type="button"
-              id="btn-snap-audience-interaction-header"
-              onClick={() => handleSnapAudienceInteraction()}
-              disabled={isSnapping}
-              data-tooltip="Chụp ảnh màn chiếu sân khấu (Biểu đồ, Đám mây từ khóa, Phản hồi) lưu vào Nhật ký phát sóng"
-              data-tooltip-title="Chụp Màn Chiếu"
-              data-tooltip-variant="accent"
-              className={`has-tooltip fluent-action-btn ${
-                isSnapping
-                  ? 'bg-purple-900/90 text-purple-200 border-purple-500 animate-pulse'
-                  : 'fluent-acrylic-surface hover:from-pink-500 hover:to-indigo-500 text-white border-pink-400/50 shadow-md shadow-pink-950/40'
-              }`}
-            >
-              <Camera className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isSnapping ? 'animate-spin' : 'text-pink-200'}`} />
-              <span>{isSnapping ? 'Đang Chụp...' : '📸 Chụp Màn Chiếu'}</span>
-              <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono bg-black/40 text-pink-200 border border-pink-400/30">
-                {snapshotCount}
-              </span>
-            </button>
-
-            {/* Live Access QR Modal Toggle Button */}
-            <button
-              type="button"
-              id="btn-admin-header-live-qr"
-              onClick={() => handleToggleLiveQrModal()}
-              data-tooltip="Bật/Tắt hiển thị Modal QR trên tất cả màn hình Khán giả & Màn chiếu sân khấu"
-              data-tooltip-title="Mã QR Khán Giả"
-              data-tooltip-hotkey="Q"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.show_qr
-                  ? 'bg-sky-600 text-white border-sky-400 shadow-md shadow-sky-900/40 ring-1 ring-sky-300 animate-pulse'
-                  : 'text-sky-300 bg-sky-950/40 hover:bg-sky-900/50 border-sky-500/30'
-              }`}
-            >
-              <QrCode className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.show_qr ? 'text-white' : 'text-sky-400'}`} />
-              <span>Mã QR Live</span>
-              {gameState.show_qr ? (
-                <span className="px-1.5 py-0.2 text-[9px] font-mono bg-sky-950/80 rounded-[2px] text-sky-200 uppercase font-extrabold tracking-wider">
-                  BẬT
-                </span>
-              ) : (
-                <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-sky-500/30 text-sky-200">
-                  Q
-                </kbd>
-              )}
-            </button>
-
-            {/* Announcer Overlay Trigger */}
-            <button
-              type="button"
-              id="btn-admin-header-announcer"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setShowAnnouncerModal(true);
-              }}
-              data-tooltip="Phát thông báo chữ chạy (Marquee Ticker) trực tiếp dưới chân màn hình"
-              data-tooltip-title="Chữ Chạy Trực Tiếp"
-              data-tooltip-hotkey="O"
-              data-tooltip-variant="accent"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.announcer_overlay?.active && gameState.announcer_overlay?.text
-                  ? 'text-cyan-200 bg-cyan-950/70 border-cyan-500/70 shadow-md shadow-cyan-950/40 ring-1 ring-cyan-500/40 animate-pulse'
-                  : 'text-cyan-300 bg-cyan-950/30 hover:bg-cyan-900/40 border-cyan-500/30'
-              }`}
-            >
-              <Megaphone className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.announcer_overlay?.active && gameState.announcer_overlay?.text ? 'text-cyan-300 animate-bounce' : 'text-cyan-400'}`} />
-              <span>Chữ Chạy Live</span>
-              {gameState.announcer_overlay?.active && gameState.announcer_overlay?.text ? (
-                <span className="w-2 h-2 rounded-[2px] bg-cyan-400 animate-ping" />
-              ) : (
-                <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-cyan-500/30 text-cyan-200">O</kbd>
-              )}
-            </button>
-
-            {/* AI MC Co-pilot Trigger */}
-            <button
-              type="button"
-              id="btn-admin-header-mc-copilot"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setShowMcCoPilotModal(true);
-              }}
-              data-tooltip="AI gợi ý lời dẫn trực tiếp cho MC dựa trên phân phối đáp án khán giả"
-              data-tooltip-title="Trợ Lý MC AI"
-              data-tooltip-variant="accent"
-              className="has-tooltip fluent-action-btn text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border-amber-500/40"
-            >
-              <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-              <span>Trợ Lý MC AI</span>
-            </button>
-
-            {/* Audio Settings & TTS Control Button */}
-            <button
-              type="button"
-              id="btn-admin-header-audio-control"
-              onClick={() => {
-                vibrateTap();
-                setShowAudioSettingsModal(true);
-              }}
-              data-tooltip="Cài đặt âm lượng, chọn giọng đọc Gemini AI & điều khiển phát thanh"
-              data-tooltip-title="Âm Thanh & Giọng Đọc"
-              data-tooltip-variant="accent"
-              className={`has-tooltip fluent-action-btn ${
-                speechActive
-                  ? 'text-emerald-200 bg-emerald-950/80 border-emerald-500/70 shadow-md ring-1 ring-emerald-400 animate-pulse'
-                  : 'text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30'
-              }`}
-            >
-              <Volume2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${speechActive ? 'text-emerald-300 animate-bounce' : 'text-emerald-400'}`} />
-              <span>Âm Thanh & TTS</span>
-              {speechActive && (
-                <span className="w-2 h-2 rounded-[2px] bg-emerald-400 animate-ping" />
-              )}
-            </button>
-
-            {/* Emergency Stop Speech Button if Active */}
-            {speechActive && (
+            {/* Dropdown 2: 🚨 An toàn & Sự cố */}
+            <div className="relative">
               <button
                 type="button"
-                id="btn-admin-header-stop-speech"
-                onClick={() => {
-                  vibrateTap();
-                  aiExplanationService.stopSpeech();
+                id="btn-header-menu-safety"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveHeaderMenu(prev => prev === 'SAFETY' ? 'NONE' : 'SAFETY');
                 }}
-                data-tooltip="Dừng ngay lập tức giọng đọc AI Gemini đang phát"
-                data-tooltip-title="Dừng Đọc AI"
-                data-tooltip-variant="danger"
-                className="has-tooltip fluent-action-btn text-rose-200 bg-rose-950/90 hover:bg-rose-900 border-rose-500 font-bold animate-pulse shadow-md"
+                className={`header-menu-btn px-2.5 py-1.5 rounded-[3px] border text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                  activeHeaderMenu === 'SAFETY' || gameState.panic_mode
+                    ? 'bg-rose-600 text-white border-rose-400 shadow'
+                    : 'bg-white/5 text-rose-300 border-rose-500/30 hover:bg-rose-950/50'
+                }`}
               >
-                <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
-                <span>⏹ Dừng TTS</span>
+                <AlertOctagon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">An Toàn</span>
+                <ChevronDown className="w-3 h-3" />
               </button>
-            )}
-          </div>
 
-          {/* Group 2: An Ninh & Khảo Sát Khẩn (Security & Urgent Control) */}
-          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-rose-950/20 border border-rose-500/20">
-            <span className="text-[9px] font-mono font-bold text-rose-400/80 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-rose-500/20 mr-0.5">
-              An Ninh
-            </span>
-
-            {/* PANIC BUTTON */}
-            <button
-              type="button"
-              id="btn-admin-header-panic"
-              onClick={() => {
-                const nextState = !gameState.panic_mode;
-                syncService.updateGameState({ panic_mode: nextState });
-                triggerHudToast('PANIC', nextState ? 'ĐÃ KÍCH HOẠT KHÓA KHẨN CẤP' : 'Đã TẮT Khóa Khẩn Cấp');
-              }}
-              data-tooltip="[KHÓA KHẨN CẤP] Ẩn tất cả đáp án và khóa quyền gửi bài trên toàn bộ thiết bị khán giả ngay lập tức"
-              data-tooltip-title="Khóa Khẩn Cấp (Panic)"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.panic_mode
-                  ? 'bg-red-600 text-white border-red-400 shadow-md shadow-red-900/50 ring-2 ring-red-500 animate-pulse'
-                  : 'text-red-400 bg-red-950/40 hover:bg-red-900/50 border-red-500/30'
-              }`}
-            >
-              <AlertOctagon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.panic_mode ? 'text-white animate-bounce' : 'text-red-400'}`} />
-              <span className="font-bold">{gameState.panic_mode ? 'ĐÃ KHÓA KHẨN' : 'KHẨN CẤP'}</span>
-            </button>
-
-            {/* Emergency Poll Trigger */}
-            <button
-              type="button"
-              id="btn-admin-header-emergency-poll"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setShowEmergencyPollModal(true);
-              }}
-              data-tooltip="Tạo & phát câu hỏi khảo sát Yes/No tức thì cho khán giả"
-              data-tooltip-title="Khảo Sát Khẩn Cấp"
-              data-tooltip-hotkey="K"
-              data-tooltip-variant="danger"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED'
-                  ? 'text-rose-200 bg-rose-950/80 border-rose-500/70 shadow-md shadow-rose-950/40 ring-1 ring-rose-500/40 animate-pulse'
-                  : 'text-rose-300 bg-rose-950/30 hover:bg-rose-900/40 border-rose-500/30'
-              }`}
-            >
-              <AlertOctagon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? 'text-rose-400 animate-spin' : 'text-rose-400'}`} />
-              <span>Khảo Sát Nhanh</span>
-              {gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? (
-                <span className="w-2 h-2 rounded-[2px] bg-rose-500 animate-ping" />
-              ) : (
-                <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-rose-500/30 text-rose-200">K</kbd>
+              {activeHeaderMenu === 'SAFETY' && (
+                <div id="header-dropdown-menu" className="absolute right-0 top-full mt-1.5 w-64 bg-[#1a081e]/98 backdrop-blur-2xl border border-rose-500/40 rounded-[4px] p-1.5 shadow-2xl z-[100] text-xs space-y-1 animate-fadeIn">
+                  <div className="px-2.5 py-1 text-[10px] font-mono text-rose-400 font-bold uppercase border-b border-white/10 flex items-center justify-between">
+                    <span>Xử Lý Sự Cố Khẩn</span>
+                    <Shield className="w-3 h-3" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !gameState.panic_mode;
+                      syncService.updateGameState({ panic_mode: next });
+                      triggerHudToast('PANIC', next ? 'ĐÃ KHÓA KHẨN TOÀN HỆ THỐNG' : 'Đã tắt khóa khẩn');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className={`w-full text-left px-2.5 py-2 rounded-[2px] flex items-center gap-2 font-bold cursor-pointer ${
+                      gameState.panic_mode ? 'bg-red-600 text-white' : 'bg-red-950/40 text-red-300 hover:bg-red-900/60'
+                    }`}
+                  >
+                    <AlertOctagon className="w-4 h-4 text-white" />
+                    <span>{gameState.panic_mode ? 'TẮT KHÓA KHẨN CẤP' : '🚨 KHÓA KHẨN (PANIC)'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEmergencyPollModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Khảo Sát Nhanh Yes/No (Poll)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMatchBreakModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Coffee className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Tạm Dừng Trận / Nghỉ Giải Lao</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleLobbyLock();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-[2px] flex items-center gap-2 cursor-pointer transition ${
+                      gameState.lobby_locked
+                        ? 'bg-rose-950/80 text-rose-300 border border-rose-500/50 font-bold'
+                        : 'hover:bg-white/10 text-white/90'
+                    }`}
+                  >
+                    {gameState.lobby_locked ? <Lock className="w-3.5 h-3.5 text-rose-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
+                    <span className="flex-1">{gameState.lobby_locked ? 'Mở Cổng Khán Giả (Lobby)' : 'Khóa Cổng Khán Giả (Lobby)'}</span>
+                    <span className={`text-[10px] font-mono px-1 rounded ${gameState.lobby_locked ? 'bg-rose-900 text-rose-200' : 'bg-emerald-950 text-emerald-300'}`}>
+                      {gameState.lobby_locked ? 'ĐÃ KHÓA' : 'ĐANG MỞ'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const next = !(gameState.anti_exit_protection ?? true);
+                      await syncService.updateGameState({ anti_exit_protection: next });
+                      triggerHudToast('SECURITY', next ? 'Bật Chống Thoát Trình Duyệt' : 'Tắt Chống Thoát');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="flex-1">Chống Thoát Trình Duyệt</span>
+                    <span className="text-[10px] font-mono text-white/50">{(gameState.anti_exit_protection ?? true) ? 'BẬT' : 'TẮT'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const next = !gameState.seb_mode_enabled;
+                      await syncService.updateGameState({ seb_mode_enabled: next, seb_strict_kiosk: next });
+                      triggerHudToast('SECURITY', next ? 'Bật SEB Anti-Cheat Kiosk' : 'Tắt SEB Mode');
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="flex-1">Kiosk Chống Gian Lận SEB</span>
+                    <span className="text-[10px] font-mono text-white/50">{gameState.seb_mode_enabled ? 'BẬT' : 'TẮT'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAnnouncerModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 flex items-center gap-2 cursor-pointer font-bold"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Phát Thông Báo Khẩn (Broadcast)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsApprovalModalOpen(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Users className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="flex-1">Duyệt Kỹ Thuật Viên</span>
+                    {pendingApprovalCount > 0 && <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-black font-bold text-[9px]">{pendingApprovalCount}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveHeaderMenu('NONE');
+                      openConfirm(
+                        'Xóa Dữ Liệu & Đặt Lại Trận Đấu?',
+                        'CẢNH BÁO NGUY HIỂM: Hành động này sẽ xóa sạch toàn bộ phản hồi của khán giả và đặt lại toàn bộ điểm số. Bạn có chắc chắn?',
+                        () => {
+                          handleClearAllResponses();
+                        },
+                        'Đồng Ý Reset Tất Cả'
+                      );
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-rose-950/50 text-rose-400 flex items-center gap-2 cursor-pointer font-bold border-t border-white/5 pt-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>⚠️ Đặt Lại Trận Đấu (Reset All)</span>
+                  </button>
+                </div>
               )}
-            </button>
+            </div>
 
-            {/* Technical Staff Approval Button */}
-            <button
-              type="button"
-              id="btn-admin-header-approvals"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setIsApprovalModalOpen(true);
-              }}
-              data-tooltip="Quản lý và phê duyệt tài khoản nhân sự Ban Kỹ Thuật"
-              data-tooltip-title="Phê Duyệt Kỹ Thuật"
-              data-tooltip-variant={pendingApprovalCount > 0 ? 'warning' : 'accent'}
-              className={`has-tooltip fluent-action-btn ${
-                pendingApprovalCount > 0
-                  ? 'bg-amber-950/70 text-amber-200 border-amber-500/60 ring-1 ring-amber-500/50 animate-pulse'
-                  : 'text-sky-300 bg-sky-950/40 hover:bg-sky-900/50 border-sky-500/30'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-300" />
-              <span>Duyệt Kỹ Thuật</span>
-              {pendingApprovalCount > 0 ? (
-                <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono font-bold bg-amber-500 text-black shadow-sm">
-                  {pendingApprovalCount}
-                </span>
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              )}
-            </button>
-          </div>
-
-          {/* Group 2.5: Lịch Trình & Vận Hành Sự Kiện (Event Lifecycle & Leak Prevention) */}
-          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-indigo-950/30 border border-indigo-500/30">
-            <span className="text-[9px] font-mono font-bold text-indigo-400/90 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-indigo-500/30 mr-0.5">
-              Sự Kiện
-            </span>
-
-            {/* Event Schedule Config Button */}
-            <button
-              type="button"
-              id="btn-admin-header-event-schedule"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setShowEventScheduleModal(true);
-              }}
-              data-tooltip="Thiết lập ngày giờ tổ chức, bảo vệ rò rỉ đề trước giờ G và điều phối Bắt đầu / Kết thúc"
-              data-tooltip-title="Lịch Trình Sự Kiện"
-              data-tooltip-variant="accent"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.event_schedule?.enabled
-                  ? 'text-sky-200 bg-sky-950/80 border-sky-400/60 shadow-md ring-1 ring-sky-400/40'
-                  : 'text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/50 border-indigo-500/30'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
-              <span>{gameState.event_schedule?.match_name ? gameState.event_schedule.match_name : 'Lịch Trình'}</span>
-              {gameState.event_schedule?.enabled ? (
-                <span className={`px-1.5 py-0.2 rounded-[2px] text-[8px] font-mono font-bold uppercase tracking-wider ${
-                  gameState.event_schedule.status === 'SCHEDULED' ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40' :
-                  gameState.event_schedule.status === 'IN_PROGRESS' ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40' :
-                  'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                }`}>
-                  {gameState.event_schedule.status === 'SCHEDULED' ? 'CHỜ G' :
-                   gameState.event_schedule.status === 'IN_PROGRESS' ? 'ĐANG LIVE' : 'BẾ MẠC'}
-                </span>
-              ) : null}
-            </button>
-
-            {/* Nút BẮT ĐẦU SỰ KIỆN (Hiển thị khi chưa bắt đầu hoặc đang ở SCHEDULED) */}
-            {gameState.event_schedule?.status !== 'IN_PROGRESS' && (
+            {/* Dropdown 3: ⚙️ Tiện ích */}
+            <div className="relative">
               <button
                 type="button"
-                id="btn-admin-header-start-event"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  openConfirm(
-                    'Bắt Đầu Sự Kiện BTI 2026?',
-                    'Hành động này sẽ mở khóa toàn bộ khán giả trong Phòng Chờ Khai Mạc và đưa vào sàn đấu trực tiếp ngay lập tức! Bạn có chắc chắn?',
-                    async () => {
-                      const updatedSchedule = {
-                        ...(gameState.event_schedule || {}),
-                        enabled: true,
-                        status: 'IN_PROGRESS' as const,
-                        scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
-                        started_at: Date.now()
-                      };
-                      await syncService.updateGameState({
-                        event_schedule: updatedSchedule,
-                        status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
-                      });
-                      triggerHudToast('EVENT', '🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Khán giả đã vào sàn đấu.');
-                    },
-                    'Bắt Đầu Ngay'
-                  );
+                id="btn-header-menu-utils"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveHeaderMenu(prev => prev === 'UTILS' ? 'NONE' : 'UTILS');
                 }}
-                data-tooltip="Mở khóa toàn bộ khán giả từ Phòng Chờ vào sàn đấu trực tiếp"
-                data-tooltip-title="Bắt Đầu Sự Kiện"
-                data-tooltip-variant="success"
-                className="has-tooltip fluent-action-btn text-emerald-200 bg-emerald-950/70 hover:bg-emerald-900 border-emerald-400/60 font-bold shadow-md shadow-emerald-950/40 animate-pulse"
+                className={`header-menu-btn px-2.5 py-1.5 rounded-[3px] border text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer ${
+                  activeHeaderMenu === 'UTILS'
+                    ? 'bg-purple-500 text-slate-950 border-purple-300 font-bold shadow'
+                    : 'bg-white/5 text-purple-300 border-purple-500/30 hover:bg-purple-950/50'
+                }`}
               >
-                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-current" />
-                <span>Bắt Đầu</span>
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Tiện Ích</span>
+                <ChevronDown className="w-3 h-3" />
               </button>
-            )}
 
-            {/* Nút KẾT THÚC SỰ KIỆN (Hiển thị khi sự kiện đang diễn ra IN_PROGRESS) */}
-            {gameState.event_schedule?.status === 'IN_PROGRESS' && (
-              <button
-                type="button"
-                id="btn-admin-header-end-event"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  openConfirm(
-                    'Kết Thúc Sự Kiện BTI 2026?',
-                    'Hành động này sẽ bế mạc sự kiện, đóng lượt thi và chuyển toàn bộ khán giả sang màn hình Bế Mạc & Tổng Kết thành tích chung cuộc! Bạn có chắc chắn?',
-                    async () => {
-                      const updatedSchedule = {
-                        ...(gameState.event_schedule || {}),
-                        enabled: true,
-                        status: 'CONCLUDED' as const,
-                        ended_at: Date.now()
-                      };
-                      await syncService.updateGameState({
-                        event_schedule: updatedSchedule,
-                        show_qr: false
-                      });
-                      triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
-                    },
-                    'Đồng Ý Kết Thúc'
-                  );
-                }}
-                data-tooltip="Bế mạc sự kiện và chuyển tất cả khán giả sang màn hình Tổng Kết & Khảo Sát"
-                data-tooltip-title="Kết Thúc Sự Kiện"
-                data-tooltip-variant="danger"
-                className="has-tooltip fluent-action-btn text-rose-200 bg-rose-950/70 hover:bg-rose-900 border-rose-500/60 font-bold shadow-md shadow-rose-950/40"
-              >
-                <Flag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
-                <span>Kết Thúc</span>
-              </button>
-            )}
-          </div>
-
-          {/* Group 3: Điều Phối & Dữ Liệu (Stage Orchestration & Data) */}
-          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-amber-950/20 border border-amber-500/20">
-            <span className="text-[9px] font-mono font-bold text-amber-400/80 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-amber-500/20 mr-0.5">
-              Điều Phối
-            </span>
-
-            {/* Nút TẠM DỪNG TRẬN / ĐẾM NGƯỢC GIẢI LAO (Master Match Pause & Intermission Hub) */}
-            <button
-              type="button"
-              id="btn-admin-header-pause"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playClick();
-                setShowMatchBreakModal(true);
-              }}
-              data-tooltip="Bật bảng điều khiển Tạm Dừng Trận Đấu, Đóng băng câu hỏi hoặc Đếm ngược giải lao sân khấu (1m, 2m, 5m, 10m)"
-              data-tooltip-title="Tạm Dừng / Giải Lao Trận"
-              data-tooltip-variant="warning"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.match_break?.active
-                  ? 'text-amber-200 bg-amber-950/90 border-amber-400 shadow-md shadow-amber-950/60 ring-1 ring-amber-400 animate-pulse'
-                  : gameState.is_timer_paused || gameState.force_route === 'client_landing'
-                    ? 'text-amber-200 bg-amber-950/80 border-amber-400/80 shadow-md ring-1 ring-amber-400/50 animate-pulse'
-                    : 'text-amber-300 bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/30'
-              }`}
-            >
-              {gameState.match_break?.active ? (
-                <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 animate-bounce" />
-              ) : (
-                <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              {activeHeaderMenu === 'UTILS' && (
+                <div id="header-dropdown-menu" className="absolute right-0 top-full mt-1.5 w-56 bg-[#120726]/98 backdrop-blur-2xl border border-purple-500/40 rounded-[4px] p-1.5 shadow-2xl z-[100] text-xs space-y-1 animate-fadeIn">
+                  <div className="px-2.5 py-1 text-[10px] font-mono text-purple-300 font-bold uppercase border-b border-white/10 flex items-center justify-between">
+                    <span>Hệ Thống & Trợ Giúp</span>
+                    <Sliders className="w-3 h-3" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePrintStandee();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-sky-200 cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="flex-1">In Standee QR Hội Trường (A4/A3)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDownloadQrPng();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="flex-1">Tải Ảnh Mã QR (PNG HD)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSurveyModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="flex-1">Khảo Sát Khán Giả (Google Form)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEventScheduleModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="flex-1">Lịch Trình Trận Đấu & Phòng Chờ</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAiTranslateModalOpen(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="flex-1">Dịch Thuật Đa Ngôn Ngữ AI</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowShortcutsModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Keyboard className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="flex-1">Bảng Phím Tắt (Hotkeys)</span>
+                    <kbd className="px-1 text-[9px] bg-white/10 rounded">?</kbd>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowQuickNetworkMonitor(!showQuickNetworkMonitor);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Độ Trễ Mạng (Ping / RTT)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleExportSessionCSV();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Xuất CSV SPSS ({spssRows.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleLogout();
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-rose-950/60 text-rose-300 flex items-center gap-2 cursor-pointer border-t border-white/5 pt-1.5 font-bold"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Đăng Xuất Admin</span>
+                  </button>
+                </div>
               )}
-              <span className="font-bold">
-                {gameState.match_break?.active
-                  ? 'Đang Nghỉ Trận'
-                  : gameState.is_timer_paused
-                    ? `Tạm Dừng (${gameState.paused_remaining_seconds || 0}s)`
-                    : 'Tạm Dừng Trận'}
-              </span>
-              {(gameState.match_break?.active || gameState.is_timer_paused) && (
-                <span className="w-2 h-2 rounded-[2px] bg-amber-400 animate-ping" />
-              )}
-            </button>
-
-            {/* Nút TIẾP TỤC TRẬN (Master Resume Match) */}
-            <button
-              type="button"
-              id="btn-admin-header-resume"
-              onClick={() => {
-                vibrateTap();
-                soundFx.playStartRound();
-                
-                const updates: Partial<GameState> = {
-                  match_break: null,
-                  force_route: 'audience',
-                  force_route_ts: Date.now(),
-                  projector_view_mode: 'DEFAULT',
-                  show_summary: false
-                };
-
-                if (gameState.is_timer_paused) {
-                  const remainingToRestore = typeof gameState.paused_remaining_seconds === 'number' && gameState.paused_remaining_seconds > 0
-                    ? gameState.paused_remaining_seconds 
-                    : (gameState.time_limit || 20);
-                  
-                  const newServerStartTime = syncService.getSynchronizedNow() - (((gameState.time_limit || 20) - remainingToRestore) * 1000);
-                  updates.is_timer_paused = false;
-                  updates.paused_remaining_seconds = 0;
-                  updates.server_start_time = newServerStartTime;
-                  updates.status = 'ACTIVE';
-                }
-
-                syncService.updateGameState(updates);
-                triggerHudToast('RESUME', '🚀 ĐÃ TIẾP TỤC TRẬN ĐẤU! Toàn bộ sàn đấu và khán giả đã trở lại thi đấu.');
-              }}
-              data-tooltip="Đưa tất cả khán giả, màn chiếu và đồng hồ trở lại giao diện thi đấu trực tiếp"
-              data-tooltip-title="Tiếp Tục Trận Đấu"
-              data-tooltip-variant="success"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.match_break?.active || gameState.is_timer_paused || gameState.force_route === 'client_landing'
-                  ? 'text-emerald-100 bg-emerald-700 hover:bg-emerald-600 border-emerald-400 shadow-lg shadow-emerald-950/60 font-bold ring-1 ring-emerald-300 animate-pulse'
-                  : 'text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30'
-              }`}
-            >
-              <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 fill-current" />
-              <span>Tiếp Tục Trận</span>
-            </button>
-
-            {/* Show Summary / Leaderboard Button */}
-            <button
-              type="button"
-              id="btn-admin-header-summary"
-              onClick={() => {
-                const newSummaryState = !gameState.show_summary;
-                openConfirm(
-                  newSummaryState ? 'Mở Bảng Tổng Kết?' : 'Đóng Bảng Tổng Kết?',
-                  newSummaryState ? 'Mở Bảng Tổng Kết (Leaderboard) cho tất cả Khán giả và Màn chiếu?' : 'Đóng Bảng Tổng Kết?',
-                  () => {
-                    syncService.updateGameState({ show_summary: newSummaryState });
-                  },
-                  'Đồng ý'
-                );
-              }}
-              data-tooltip="Bật/Tắt hiển thị Bảng xếp hạng và Tổng kết điểm cho toàn bộ khán giả"
-              data-tooltip-title="Bảng Tổng Kết Trận"
-              data-tooltip-variant="accent"
-              className={`has-tooltip fluent-action-btn ${
-                gameState.show_summary 
-                  ? 'bg-amber-500 text-white shadow-md shadow-amber-500/40 border-amber-300'
-                  : 'text-amber-300 bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/30'
-              }`}
-            >
-              <Trophy className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${gameState.show_summary ? 'text-white' : 'text-amber-400'}`} />
-              <span>Bảng Tổng Kết</span>
-            </button>
-
-            {/* Export Session Responses CSV Button */}
-            <button
-              type="button"
-              id="btn-admin-export-csv"
-              onClick={handleExportSessionCSV}
-              data-tooltip="Xuất toàn bộ dữ liệu phản hồi của trận đấu hiện tại ra tệp CSV (SPSS / Excel)"
-              data-tooltip-title="Xuất Dữ Liệu SPSS"
-              data-tooltip-variant="success"
-              className="has-tooltip fluent-action-btn text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-500/40 shadow-sm"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-              <span>Xuất CSV</span>
-              <span className="px-1.5 py-0.2 rounded-[2px] text-[9px] font-mono bg-emerald-900/60 text-emerald-200 border border-emerald-500/30">
-                {spssRows.length}
-              </span>
-              <Download className="w-3 h-3 text-emerald-400/80" />
-            </button>
+            </div>
           </div>
-
-          {/* Group 4: Giám Sát & Trợ Giúp (Telemetry & Shortcuts) */}
-          <div className="fluent-action-group flex-wrap max-w-full flex-1 sm:flex-initial justify-start items-center gap-1.5 p-1 rounded-[4px] bg-purple-950/20 border border-purple-500/20">
-            <span className="text-[9px] font-mono font-bold text-purple-400/80 uppercase tracking-wider px-1 hidden lg:inline-block border-r border-purple-500/20 mr-0.5">
-              Trợ Giúp
-            </span>
-
-            <button
-              type="button"
-              id="btn-admin-header-network-monitor"
-              onClick={() => {
-                vibrateSelection();
-                setShowQuickNetworkMonitor(!showQuickNetworkMonitor);
-              }}
-              data-tooltip="Bật/Tắt đồ thị độ trễ Real-time Recharts nhanh (Ping / Network Monitor)"
-              data-tooltip-title="Giám Sát Mạng"
-              data-tooltip-variant="success"
-              className={`has-tooltip fluent-action-btn ${
-                showQuickNetworkMonitor
-                  ? 'text-emerald-200 bg-emerald-950/80 border-emerald-400/60 shadow-md shadow-emerald-950/40'
-                  : 'text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 border-emerald-500/30'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-              <span>Giám Sát Mạng</span>
-            </button>
-
-            <button
-              type="button"
-              id="btn-admin-header-shortcuts"
-              onClick={() => {
-                vibrateTap();
-                setShowShortcutsModal(true);
-              }}
-              data-tooltip="Phím tắt điều khiển nhanh cho MC / Host (Bấm ? hoặc F1)"
-              data-tooltip-title="Bảng Phím Tắt"
-              className="has-tooltip fluent-action-btn text-purple-300 bg-purple-950/30 hover:bg-purple-900/40 border-purple-500/30"
-            >
-              <Keyboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" />
-              <span>Phím Tắt</span>
-              <kbd className="px-1.5 py-0.2 text-[9px] sm:text-[10px] font-mono bg-white/10 rounded-[2px] border border-purple-500/30 text-purple-200">?</kbd>
-            </button>
+        </header>
+      ) : (
+        /* Minimal Focus Mode Header */
+        <header className="fluent-box px-4 py-2 flex items-center justify-between border border-purple-500/40 bg-purple-950/40 rounded-[4px] shadow-lg animate-fadeIn">
+          <div className="flex items-center gap-2 text-xs font-mono text-white">
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping" />
+            <strong className="text-purple-300 uppercase tracking-wider">🎯 CHẾ ĐỘ TẬP TRUNG (FOCUS MODE)</strong>
+            <span className="text-white/40">•</span>
+            <span>Câu: <strong className="text-white font-bold">{gameState.question_id || 'Chưa nạp'}</strong></span>
+            <span className="text-white/40">•</span>
+            <span>Live: <strong className="text-emerald-400 font-bold">{activeCount}</strong> kết nối</span>
           </div>
-        </div>
-      </header>
+          <button
+            type="button"
+            id="btn-admin-exit-focus"
+            onClick={() => setIsFocusMode(false)}
+            className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-[2px] text-xs font-mono font-bold transition cursor-pointer flex items-center gap-1.5 border border-white/20"
+          >
+            <span>✕ Thoát Tập Trung</span>
+          </button>
+        </header>
+      )}
 
       {/* Quick Collapsible Network Latency Visualizer */}
       {showQuickNetworkMonitor && (
@@ -3427,130 +3700,274 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
-      {/* TWO-TIER TAB NAVIGATION */}
-      <div className="flex flex-col gap-1.5 mb-2">
-        {/* Tier 1: Top Level Categories */}
-        <div className="fluent-box rounded-[2px] p-1 overflow-hidden bg-black/40 border border-white/5">
-          <TabList
-            selectedValue={
-              ['KDC', 'VCNV', 'TT', 'VD'].includes(activeAdminTab) ? 'ROUNDS' :
-              ['POLL_MANAGER', 'QA_MANAGER', 'CHAT_MANAGER', 'WORD_CLOUD', 'POLL_HISTORY'].includes(activeAdminTab) ? 'INTERACTION' :
-              ['QUESTIONS', 'STATS', 'LUCKY_DRAW', 'SNAPSHOTS', 'ACTIVITY_LOG', 'GUIDE'].includes(activeAdminTab) ? 'SYSTEM' :
-              'DASHBOARD'
-            }
-            onTabSelect={(_e, data) => {
-              vibrateTap();
-              soundFx.playClick();
-              const top = data.value;
-              if (top === 'DASHBOARD') setActiveAdminTab('DASHBOARD');
-              else if (top === 'ROUNDS') setActiveAdminTab('KDC');
-              else if (top === 'INTERACTION') setActiveAdminTab('QA_MANAGER');
-              else if (top === 'SYSTEM') setActiveAdminTab('STATS');
-            }}
-            size="medium"
-            appearance="transparent"
-            className="fluent-tablist custom-scrollbar snap-x snap-mandatory touch-pan-x"
-          >
-            <Tab value="DASHBOARD" icon={<LayoutDashboard className="w-4 h-4" />}>
-              <span className="font-bold text-[11px] sm:text-xs">Tổng Quan</span>
-            </Tab>
-            <Tab value="ROUNDS" icon={<Flame className="w-4 h-4" />}>
-              <span className="font-bold text-[11px] sm:text-xs">Vòng Thi</span>
-            </Tab>
-            <Tab value="INTERACTION" icon={<MessageSquare className="w-4 h-4" />}>
-              <span className="font-bold text-[11px] sm:text-xs">Tương Tác</span>
-            </Tab>
-            <Tab value="SYSTEM" icon={<Settings className="w-4 h-4" />}>
-              <span className="font-bold text-[11px] sm:text-xs">Hệ Thống</span>
-            </Tab>
-          </TabList>
-        </div>
+      {/* Lucky Draw Active Stage Control Banner */}
+      {gameState.active_module === 'LUCKY_DRAW' && (
+        <div 
+          id="admin-lucky-draw-live-banner"
+          className="fluent-box p-3 bg-gradient-to-r from-purple-950/95 via-pink-950/80 to-purple-950/95 border-2 border-pink-400/60 rounded-[2px] shadow-2xl flex flex-wrap items-center justify-between gap-3 animate-fadeIn mb-2"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[2px] bg-pink-400 text-slate-950 flex items-center justify-center font-bold shadow-md shrink-0 animate-bounce">
+              <Sparkles className="w-5 h-5 fill-current" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-pink-300 font-bold">
+                  SÂN KHẤU MÀN CHIẾU ĐANG PHÁT QUAY SỐ MAY MẮN
+                </span>
+                <span className="w-2 h-2 rounded-[2px] bg-pink-400 animate-ping" />
+              </div>
+              <div className="text-xs text-white/80 font-mono">
+                {gameState.lucky_draw?.status === 'SPINNING' ? (
+                  <span className="text-amber-300 font-bold">⚡ Đang quay số ngẫu nhiên...</span>
+                ) : gameState.lucky_draw?.status === 'REVEALED' && gameState.lucky_draw.winner ? (
+                  <span className="text-emerald-300 font-bold">🎉 Đã trúng giải: {gameState.lucky_draw.winner.name} ({gameState.lucky_draw.winner.mssv})</span>
+                ) : (
+                  <span>Sẵn sàng quay số may mắn cho khán giả</span>
+                )}
+              </div>
+            </div>
+          </div>
 
-        {/* Tier 2: Sub-tabs based on active top-tier category */}
-        {!['DASHBOARD'].includes(
-            ['KDC', 'VCNV', 'TT', 'VD'].includes(activeAdminTab) ? 'ROUNDS' :
-            ['POLL_MANAGER', 'QA_MANAGER', 'CHAT_MANAGER', 'WORD_CLOUD', 'POLL_HISTORY'].includes(activeAdminTab) ? 'INTERACTION' :
-            ['QUESTIONS', 'STATS', 'LUCKY_DRAW', 'SNAPSHOTS', 'ACTIVITY_LOG', 'GUIDE'].includes(activeAdminTab) ? 'SYSTEM' :
-            'DASHBOARD'
-        ) && (
-          <div className="fluent-box rounded-[2px] p-1 overflow-hidden">
-            <TabList
-              id="admin-round-tablist"
-              selectedValue={activeAdminTab}
-              onTabSelect={(_e, data) => {
-                const selectedId = data.value as typeof activeAdminTab;
+          <div className="flex items-center gap-2">
+            {activeAdminTab !== 'LUCKY_DRAW' && (
+              <button
+                type="button"
+                onClick={() => {
+                  vibrateTap();
+                  setActiveAdminTab('LUCKY_DRAW');
+                }}
+                className="fluent-btn px-3 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-pink-300" />
+                <span>Mở Bảng Quay Số</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              id="btn-admin-stop-lucky-draw"
+              onClick={() => {
                 vibrateTap();
                 soundFx.playClick();
-                setActiveAdminTab(selectedId);
-                if (selectedId === 'LUCKY_DRAW') {
-                  syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
-                } else if (gameState.active_module === 'LUCKY_DRAW') {
-                  syncService.updateGameState({ active_module: 'GAME' });
-                }
-                if (selectedId === 'VCNV') {
-                  const vcnvQ = questionBank.find(q => q.round_name.includes('Vượt Chướng Ngại Vật') || q.id.startsWith('VCNV'));
-                  if (vcnvQ && gameState.question_id !== vcnvQ.id) {
-                    handleLoadQuestion(vcnvQ.id);
-                  }
-                }
+                syncService.updateGameState({
+                  active_module: 'GAME',
+                  lucky_draw: { status: 'IDLE', winner: null }
+                });
+                triggerHudToast('STAGE', 'Đã đóng quay số, trả màn chiếu về chế độ câu hỏi');
               }}
-              size="small"
-              appearance="transparent"
-              className="fluent-tablist custom-scrollbar snap-x snap-mandatory touch-pan-x"
-              onWheel={(e) => {
-                if (e.deltaY !== 0) {
-                  e.currentTarget.scrollLeft += e.deltaY;
-                }
-              }}
+              className="fluent-btn px-3.5 py-2 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-lg active:scale-95"
+              title="Đóng chế độ quay số và khôi phục màn chiếu hiển thị câu hỏi"
             >
-              {(
-                ['KDC', 'VCNV', 'TT', 'VD'].includes(activeAdminTab) ? [
-                  { id: 'KDC', label: '1. Khởi Động', badge: '45', icon: Zap },
-                  { id: 'VCNV', label: '2. Chướng Ngại Vật', icon: LayoutGrid },
-                  { id: 'TT', label: '3. Tăng Tốc', badge: '4', icon: Flame },
-                  { id: 'VD', label: '4. Về Đích', icon: Target }
-                ] :
-                ['POLL_MANAGER', 'QA_MANAGER', 'CHAT_MANAGER', 'WORD_CLOUD', 'POLL_HISTORY'].includes(activeAdminTab) ? [
-                  { id: 'QA_MANAGER', label: 'Hỏi Đáp Q&A', icon: MessageSquare },
-                  { id: 'CHAT_MANAGER', label: 'Chat Khán Giả', badge: 'LIVE', badgeVariant: 'live', icon: Megaphone },
-                  { id: 'POLL_MANAGER', label: 'Khảo Sát Live', badge: 'LIVE', badgeVariant: 'live', icon: BarChart3 },
-                  { id: 'WORD_CLOUD', label: 'Mây Từ Khóa', icon: Cloud },
-                  { id: 'POLL_HISTORY', label: 'Lịch Sử Poll', badge: (gameState.emergency_poll_history?.length || 0) > 0 ? `${gameState.emergency_poll_history?.length}` : undefined, icon: History }
-                ] :
-                [
-                  { id: 'STATS', label: 'Thống Kê', icon: Trophy },
-                  { id: 'QUESTIONS', label: 'Ngân Hàng CH', badge: `${questionBank.length}`, icon: ListPlus },
-                  { id: 'LUCKY_DRAW', label: 'Quay Số', icon: Sparkles },
-                  { id: 'SNAPSHOTS', label: 'Khoảnh Khắc', badge: snapshotCount > 0 ? `${snapshotCount}` : undefined, icon: Camera },
-                  { id: 'ACTIVITY_LOG', label: 'Nhật Ký', icon: Clock },
-                  { id: 'GUIDE', label: 'Hướng Dẫn', icon: BookOpen }
-                ]
-              ).map(tab => (
-                <Tab
-                  key={tab.id}
-                  value={tab.id}
-                  id={`admin-fluent-tab-${tab.id.toLowerCase()}`}
-                  icon={<tab.icon className={`w-3.5 h-3.5 shrink-0 transition-transform ${activeAdminTab === tab.id ? 'text-sky-300 scale-110' : 'text-white/60'}`} />}
-                  className="has-tooltip snap-start min-w-max"
-                >
-                  <span className="flex items-center gap-1.5 select-none font-mono text-[11px]">
-                    <span>{tab.label}</span>
-                    {tab.badge && (
-                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-[2px] border ${
-                        activeAdminTab === tab.id
-                          ? 'bg-white/20 text-white border-white/30'
-                          : 'bg-white/10 text-white/70 border-white/10'
-                      } ${tab.badgeVariant === 'live' ? 'animate-pulse text-amber-300 border-amber-400/40' : ''}`}>
-                        {tab.badge}
-                      </span>
-                    )}
-                  </span>
-                </Tab>
-              ))}
-            </TabList>
+              <X className="w-4 h-4" />
+              <span>Thoát Quay Số</span>
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* ================= 4 CLEAN WORKSPACES NAVIGATION ================= */}
+      {!isFocusMode && (
+        <div className="space-y-1.5">
+          {/* Tier 1: 4 Main Workspaces */}
+          <div className="fluent-box rounded-[3px] p-1 bg-black/40 border border-white/10 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: 'DASHBOARD', label: '🏠 1. TỔNG QUAN', defaultTab: 'DASHBOARD' },
+                { id: 'ARENA', label: '🎮 2. ĐẤU TRƯỜNG', defaultTab: 'KDC' },
+                { id: 'INTERACTION', label: '💬 3. TƯƠNG TÁC', defaultTab: 'QA_MANAGER' },
+                { id: 'RESULTS', label: '📊 4. KẾT QUẢ & SPSS', defaultTab: 'STATS' },
+                { id: 'STUDIO', label: '📚 5. NGÂN HÀNG ĐỀ', defaultTab: 'QUESTIONS' },
+              ].map(ws => {
+                const isSelected = getWorkspaceForTab(activeAdminTab) === ws.id;
+                return (
+                  <button
+                    key={ws.id}
+                    type="button"
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      if (ws.id === 'DASHBOARD') {
+                        setActiveAdminTab('DASHBOARD');
+                      } else if (ws.id === 'ARENA') {
+                        if (!['KDC', 'VCNV', 'TT', 'VD'].includes(activeAdminTab)) setActiveAdminTab('KDC');
+                      } else if (ws.id === 'INTERACTION') {
+                        if (!['QA_MANAGER', 'CHAT_MANAGER', 'POLL_MANAGER', 'WORD_CLOUD', 'LUCKY_DRAW'].includes(activeAdminTab)) setActiveAdminTab('QA_MANAGER');
+                      } else if (ws.id === 'RESULTS') {
+                        if (!['STATS', 'POLL_HISTORY', 'SNAPSHOTS', 'ACTIVITY_LOG'].includes(activeAdminTab)) setActiveAdminTab('STATS');
+                      } else {
+                        if (!['QUESTIONS', 'GUIDE'].includes(activeAdminTab)) setActiveAdminTab('QUESTIONS');
+                      }
+                    }}
+                    className={`px-3 sm:px-4 py-1.5 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-300'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <span>{ws.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Summary / Finale Trigger */}
+            <div className="flex items-center gap-2 px-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const nextState = !gameState.show_summary;
+                  syncService.updateGameState({ show_summary: nextState });
+                  triggerHudToast('SUMMARY', nextState ? 'Đã mở Bảng Xếp Hạng trên màn chiếu' : 'Đã đóng BXH');
+                }}
+                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-mono font-bold transition flex items-center gap-1 cursor-pointer border ${
+                  gameState.show_summary
+                    ? 'bg-amber-500 text-slate-950 border-amber-300 shadow'
+                    : 'fluent-box-nested text-amber-300 border-amber-500/30 hover:bg-amber-400/10'
+                }`}
+                title="Bật/Tắt hiển thị Bảng Tổng Kết (Leaderboard) cho toàn bộ khán giả & màn chiếu"
+              >
+                <Trophy className="w-3.5 h-3.5" />
+                <span>{gameState.show_summary ? 'Đang Mở BXH' : 'Mở BXH Sân Khấu'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Tier 2: Sub-tabs within Selected Workspace */}
+          <div className="fluent-box rounded-[3px] p-1 flex flex-wrap items-center gap-1 border border-white/5 bg-white/5">
+            {getWorkspaceForTab(activeAdminTab) === 'DASHBOARD' && (
+              <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-0.5 w-full text-xs font-mono text-white/60">
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="font-bold text-white/80">Trung Tâm Chỉ Huy Tổng Quan</span>
+                  <span className="text-white/30 hidden sm:inline">•</span>
+                  <span className="hidden sm:inline">Chọn nhanh module để vận hành</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-white/40 hidden md:inline">Vào nhanh:</span>
+                  <button type="button" onClick={() => setActiveAdminTab('KDC')} className="px-2 py-0.5 rounded-[2px] bg-white/5 hover:bg-white/10 text-sky-300 hover:text-white border border-white/10 cursor-pointer">Vòng 1</button>
+                  <button type="button" onClick={() => setActiveAdminTab('VCNV')} className="px-2 py-0.5 rounded-[2px] bg-white/5 hover:bg-white/10 text-orange-300 hover:text-white border border-white/10 cursor-pointer">VCNV</button>
+                  <button type="button" onClick={() => setActiveAdminTab('TT')} className="px-2 py-0.5 rounded-[2px] bg-white/5 hover:bg-white/10 text-rose-300 hover:text-white border border-white/10 cursor-pointer">Tăng Tốc</button>
+                  <button type="button" onClick={() => setActiveAdminTab('VD')} className="px-2 py-0.5 rounded-[2px] bg-white/5 hover:bg-white/10 text-emerald-300 hover:text-white border border-white/10 cursor-pointer">Về Đích</button>
+                </div>
+              </div>
+            )}
+            {getWorkspaceForTab(activeAdminTab) === 'ARENA' && (
+              [
+                { id: 'KDC', label: '1. Khởi Động', icon: Zap },
+                { id: 'VCNV', label: '2. Chướng Ngại Vật', icon: LayoutGrid },
+                { id: 'TT', label: '3. Tăng Tốc', icon: Flame },
+                { id: 'VD', label: '4. Về Đích', icon: Target },
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveAdminTab(sub.id);
+                    if (sub.id === 'VCNV') {
+                      const vcnvQ = questionBank.find(q => q.round_name.includes('Vượt Chướng Ngại Vật') || q.id.startsWith('VCNV'));
+                      if (vcnvQ && gameState.question_id !== vcnvQ.id) {
+                        handleLoadQuestion(vcnvQ.id);
+                      }
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-[2px] text-xs font-mono font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                    activeAdminTab === sub.id
+                      ? 'bg-white/20 text-white font-bold border border-white/30 shadow-sm'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <sub.icon className={`w-3.5 h-3.5 ${activeAdminTab === sub.id ? 'text-sky-300' : 'text-white/40'}`} />
+                  <span>{sub.label}</span>
+                </button>
+              ))
+            )}
+
+            {getWorkspaceForTab(activeAdminTab) === 'INTERACTION' && (
+              [
+                { id: 'QA_MANAGER', label: 'Hỏi Đáp (Q&A)', icon: MessageSquare },
+                { id: 'CHAT_MANAGER', label: 'Chat Khán Giả', icon: Megaphone },
+                { id: 'POLL_MANAGER', label: 'Khảo Sát Live', icon: BarChart3 },
+                { id: 'WORD_CLOUD', label: 'Mây Từ Khóa', icon: Cloud },
+                { id: 'LUCKY_DRAW', label: 'Quay Số May Mắn', icon: Sparkles },
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveAdminTab(sub.id);
+                    if (sub.id === 'LUCKY_DRAW') {
+                      syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
+                    } else if (gameState.active_module === 'LUCKY_DRAW') {
+                      syncService.updateGameState({ active_module: 'GAME' });
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-[2px] text-xs font-mono font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                    activeAdminTab === sub.id
+                      ? 'bg-white/20 text-white font-bold border border-white/30 shadow-sm'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <sub.icon className={`w-3.5 h-3.5 ${activeAdminTab === sub.id ? 'text-amber-300' : 'text-white/40'}`} />
+                  <span>{sub.label}</span>
+                </button>
+              ))
+            )}
+
+            {getWorkspaceForTab(activeAdminTab) === 'RESULTS' && (
+              [
+                { id: 'STATS', label: 'Bảng Xếp Hạng & SPSS', icon: Trophy },
+                { id: 'POLL_HISTORY', label: 'Lịch Sử Khảo Sát', icon: History },
+                { id: 'SNAPSHOTS', label: 'Khoảnh Khắc Phát Sóng', icon: Camera },
+                { id: 'ACTIVITY_LOG', label: 'Nhật Ký Điều Hành', icon: Clock },
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveAdminTab(sub.id);
+                  }}
+                  className={`px-3 py-1 rounded-[2px] text-xs font-mono font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                    activeAdminTab === sub.id
+                      ? 'bg-white/20 text-white font-bold border border-white/30 shadow-sm'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <sub.icon className={`w-3.5 h-3.5 ${activeAdminTab === sub.id ? 'text-emerald-300' : 'text-white/40'}`} />
+                  <span>{sub.label}</span>
+                </button>
+              ))
+            )}
+
+            {getWorkspaceForTab(activeAdminTab) === 'STUDIO' && (
+              [
+                { id: 'QUESTIONS', label: 'Soạn & Quản Lý Đề', icon: ListPlus },
+                { id: 'GUIDE', label: 'Hướng Dẫn Vận Hành', icon: BookOpen },
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    setActiveAdminTab(sub.id);
+                  }}
+                  className={`px-3 py-1 rounded-[2px] text-xs font-mono font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                    activeAdminTab === sub.id
+                      ? 'bg-white/20 text-white font-bold border border-white/30 shadow-sm'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <sub.icon className={`w-3.5 h-3.5 ${activeAdminTab === sub.id ? 'text-purple-300' : 'text-white/40'}`} />
+                  <span>{sub.label}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Live Poll Results Dashboard Overlay */}
       {gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' && (
@@ -3561,459 +3978,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         />
       )}
 
-      {/* ================= TOURNAMENT MATCH CONFIGURATION & STAGE BRANDING SECTION ================= */}
-      <AdminMatchConfigSection
-        gameState={gameState}
-        onOpenFullScheduleModal={() => {
-          vibrateTap();
-          soundFx.playClick();
-          setShowEventScheduleModal(true);
-        }}
-        triggerToast={(msg) => triggerHudToast('EVENT', msg)}
-      />
 
-      {/* ================= STAGE PROJECTOR REMOTE CONTROL HUB ================= */}
-      <ProjectorControlHub
-        gameState={gameState}
-        activeCount={activeCount}
-        triggerHudToast={triggerHudToast}
-        openConfirm={openConfirm}
-        onOpenLightShow={() => setShowLightShowModal(true)}
-        onOpenGrandFinale={() => {
-          syncService.updateGameState({ show_summary: true, projector_view_mode: 'LEADERBOARD' });
-          triggerHudToast('FINALE', 'Đã kích hoạt Lễ Đăng Quang (Grand Finale)!');
-        }}
-      />
 
-      {/* ================= QUICK ACTIONS PANEL (RESET QUESTION, FORCE LOCK, URGENT BROADCAST, PAUSE TIMER, RESET SCORES, LOBBY LOCK) ================= */}
-      <QuickActionsPanel
-        gameState={gameState}
-        activeCount={activeCount}
-        openConfirm={openConfirm}
-        triggerHudToast={triggerHudToast}
-        onClearCurrentResponses={handleClearCurrentResponses}
-        onClearAllResponses={handleClearAllResponses}
-        onLockVoting={handleLockVoting}
-        onOpenShortcuts={() => setShowShortcutsModal(true)}
-      />
-
-      {/* ================= LIVE ACCESS QR CODE SECTION (MASTER AUDIENCE GATEWAY & BROADCAST TOGGLE) ================= */}
-      <section
-        id="section-live-access-qr"
-        className={`border transition-all duration-300 overflow-hidden ${
-          gameState.show_qr
-            ? 'bg-gradient-to-r from-sky-950/40 via-[#18113c]/40 to-blue-950/40 border-sky-500/50 shadow-xl shadow-sky-950/40 ring-1 ring-sky-500/30 rounded-[2px]'
-            : 'fluent-box'
-        }`}
-      >
-        <div className="p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4">
-          {/* Header row with Title, Live Status Pill, and Clear Toggle Switch */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-[2px] flex items-center justify-center border transition ${
-                gameState.show_qr
-                  ? 'fluent-box-nested text-sky-300 border-sky-400/60 shadow-lg shadow-sky-500/30'
-                  : 'fluent-box-nested text-white/50 border-white/10'
-              }`}>
-                <QrCode className={`w-5 h-5 ${gameState.show_qr ? 'text-sky-300 animate-pulse' : 'text-white/60'}`} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    Live Access QR • Cổng Tham Gia Khán Giả
-                  </h2>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] flex items-center gap-1.5 transition ${
-                    gameState.show_qr
-                      ? 'fluent-box-nested text-emerald-300 border border-emerald-500/40 animate-pulse'
-                      : 'fluent-box-nested text-white/50 border border-white/10'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-[2px] ${gameState.show_qr ? 'bg-emerald-400 animate-ping' : 'bg-white/30'}`} />
-                    {gameState.show_qr ? 'ĐANG PHÁT TOÀN HỆ THỐNG (LIVE BROADCAST)' : 'ĐANG ẨN (STANDBY)'}
-                  </span>
-                </div>
-                <p className="text-[11px] sm:text-xs text-white/50 mt-0.5">
-                  Điều khiển trạng thái hiển thị Modal QR trên toàn bộ điện thoại khán giả và màn chiếu sân khấu
-                </p>
-              </div>
-            </div>
-
-            {/* Clear Toggle Switch & Controls */}
-            <div className="flex items-center gap-2.5 sm:gap-3 self-end sm:self-auto">
-              <span className="text-xs font-mono text-white/60 hidden md:inline">
-                Modal QR:
-              </span>
-              
-              {/* Prominent Cross-Device Toggle Switch */}
-              <button
-                type="button"
-                id="toggle-live-access-qr-switch"
-                role="switch"
-                aria-checked={Boolean(gameState.show_qr)}
-                onClick={() => handleToggleLiveQrModal()}
-                className={`relative inline-flex h-8 w-16 shrink-0 cursor-pointer rounded-[2px] border-2 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-500/50 ${
-                  gameState.show_qr
-                    ? 'bg-sky-600 border-sky-400 shadow-lg shadow-sky-600/40'
-                    : 'fluent-box-nested border-white/20 hover:border-white/30'
-                }`}
-                title={gameState.show_qr ? 'Nhấn để tắt Modal QR trên toàn hệ thống' : 'Nhấn để mở Modal QR cho tất cả khán giả và màn chiếu'}
-              >
-                <span className="sr-only">Bật hoặc Tắt Live Access QR</span>
-                <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-[2px] bg-white shadow-md ring-0 transition duration-300 ease-in-out ${
-                    gameState.show_qr ? 'translate-x-8 bg-sky-100' : 'translate-x-0.5 bg-white/70'
-                  }`}
-                />
-              </button>
-
-              <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-[2px] border transition ${
-                gameState.show_qr
-                  ? 'fluent-box-nested text-sky-300 border-sky-500/40'
-                  : 'fluent-box-nested text-white/40 border-white/10'
-              }`}>
-                {gameState.show_qr ? 'BẬT (ON)' : 'TẮT (OFF)'}
-              </span>
-
-              <kbd className="hidden sm:inline px-2 py-1 text-[10px] font-mono fluent-box-nested text-white/60 rounded-[2px] border border-white/10" title="Nhấn phím Q để Bật/Tắt nhanh">
-                Q
-              </kbd>
-
-              <button
-                type="button"
-                onClick={() => setIsLiveQrSectionCollapsed(!isLiveQrSectionCollapsed)}
-                className="p-1.5 fluent-box-nested hover:fluent-box-nested border border-white/10 text-white/60 hover:text-white rounded-[2px] transition text-xs"
-                title={isLiveQrSectionCollapsed ? 'Mở rộng chi tiết mã QR' : 'Thu gọn chi tiết'}
-              >
-                <ChevronDown className={`w-4 h-4 transition duration-200 ${isLiveQrSectionCollapsed ? '-rotate-90' : ''}`} />
-              </button>
-            </div>
-          </div>
-
-          {/* Interactive QR Preview and Quick Entry Information (Collapsible) */}
-          {!isLiveQrSectionCollapsed && (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center pt-1 animate-fadeIn">
-              {/* Left side: High-contrast QR Code Thumbnail with Seamless Optical Cross-Fade */}
-              <div className="md:col-span-4 lg:col-span-3 flex flex-col items-center justify-center p-3 fluent-box-nested space-y-2">
-                <div
-                  className={`p-2.5 rounded-[2px] shadow-xl relative group cursor-pointer transition transform hover:scale-[1.02] ${
-                    gameState.qr_transparent_bg
-                      ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%),linear-gradient(-45deg,transparent_75%,#242424_75%)] bg-[size:12px_12px] bg-[#141414] ring-1 ring-emerald-400/40'
-                      : 'bg-white'
-                  }`}
-                  onClick={() => handleToggleLiveQrModal(true)}
-                  title="Nhấn để phóng to / mở Modal QR toàn màn hình"
-                >
-                  <CrossFadeQrCode
-                    dataUrl={qrDataUrl}
-                    alt="Live Access QR"
-                    sizeClass="w-32 h-32 sm:w-36 sm:h-36"
-                    loadingFallback={
-                      <div className="w-32 h-32 sm:w-36 sm:h-36 fluent-box-nested rounded-[2px] flex items-center justify-center text-xs text-white/40 font-mono">
-                        Đang tạo QR...
-                      </div>
-                    }
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-[2px] transition flex items-center justify-center gap-1.5 text-white text-xs font-bold font-mono">
-                    <Eye className="w-4 h-4 text-sky-400" /> Mở Phóng To
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border ${
-                    gameState.qr_transparent_bg
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                      : 'bg-white/10 text-white/70 border-white/10'
-                  }`}>
-                    {gameState.qr_transparent_bg ? 'Alpha Trong Suốt' : 'Nền Đặc'}
-                  </span>
-                </div>
-                {(adminQrCaption || gameState.qr_custom_caption) && (
-                  <div className="w-full text-center px-2 py-1 bg-sky-950/70 border border-sky-500/30 rounded-[2px] text-[10px] font-mono font-bold text-sky-200 truncate" title={adminQrCaption || gameState.qr_custom_caption}>
-                    ✨ {adminQrCaption || gameState.qr_custom_caption}
-                  </div>
-                )}
-              </div>
-
-              {/* Right side: Live Access Entry Details & Broadcast Actions */}
-              <div className="md:col-span-8 lg:col-span-9 space-y-3">
-                {/* URL Display Box */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between flex-wrap gap-1">
-                    <span className="text-[11px] font-mono uppercase text-sky-400 font-bold flex items-center gap-1.5">
-                      <ExternalLink className="w-3.5 h-3.5" /> Đường Dẫn Trực Tiếp Vào Phòng Thi Đấu:
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-[2px] border border-sky-400/20">
-                        <ScanLine className="w-3 h-3 text-sky-400" />
-                        <span>Ước tính quét: <strong className="text-sky-300 font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
-                      </span>
-                      <span className="text-[10px] font-mono text-white/50 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-[2px] border border-emerald-400/20">
-                        <Users className="w-3 h-3 text-emerald-400" />
-                        <span>Online: <strong className="text-emerald-400 font-bold">{activeCount}</strong></span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <div className="flex-1 fluent-box-nested border border-white/15 focus-within:border-sky-500 rounded-[2px] px-3 py-2 text-xs font-mono text-white/90 truncate flex items-center justify-between">
-                      <span className="truncate select-all text-sky-200">{audienceJoinUrl || 'Đang chuẩn bị link phòng thi...'}</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      id="btn-copy-audience-link"
-                      onClick={handleCopyAudienceLink}
-                      className={`px-3.5 py-2 rounded-[2px] text-xs font-bold font-mono transition flex items-center justify-center gap-1.5 shrink-0 border hover-effect cursor-pointer ${
-                        isCopiedJoinUrl
-                          ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/30'
-                          : 'fluent-box text-white border-white/15'
-                      }`}
-                      title="Sao chép link tham gia vào clipboard"
-                    >
-                      {isCopiedJoinUrl ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{isCopiedJoinUrl ? 'Đã Sao Chép!' : 'Sao Chép Link'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Custom Short Caption Input Field (Displays below QR code across all devices) */}
-                <div className="pt-2 border-t border-white/10 space-y-1.5">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <label htmlFor="input-dash-qr-caption" className="flex items-center gap-1.5 text-xs font-mono font-bold text-white uppercase tracking-wider">
-                      <Type className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Tiêu Đề Phụ Dưới Mã QR (Custom Caption):</span>
-                    </label>
-                    {(adminQrCaption || gameState.qr_custom_caption) && (
-                      <button
-                        type="button"
-                        id="btn-clear-dash-qr-caption"
-                        onClick={() => handleUpdateQrCaption('')}
-                        className="text-[10px] font-mono text-rose-300 hover:text-rose-200 transition underline cursor-pointer"
-                      >
-                        Xóa chữ
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="relative flex items-center">
-                    <input
-                      id="input-dash-qr-caption"
-                      type="text"
-                      maxLength={60}
-                      value={adminQrCaption}
-                      onChange={(e) => handleUpdateQrCaption(e.target.value)}
-                      placeholder="Ví dụ: Tham gia Vòng 1, Quét để bình chọn, Join for Round 1..."
-                      className="w-full bg-black/40 border border-white/20 rounded-[2px] px-2.5 py-1.5 text-xs text-white font-mono placeholder:text-white/30 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400/50 pr-12 transition"
-                    />
-                    <span className="absolute right-2 text-[10px] font-mono text-white/40 pointer-events-none">
-                      {adminQrCaption.length}/60
-                    </span>
-                  </div>
-
-                  {/* Quick Preset Chips */}
-                  <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                    <span className="text-[10px] font-mono text-white/40">Gợi ý:</span>
-                    {[
-                      'Tham gia Vòng 1',
-                      'Tham gia VCNV',
-                      'Tham gia Tăng Tốc',
-                      'Bình chọn Khán Giả',
-                      'Join for Round 1',
-                    ].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => handleUpdateQrCaption(preset)}
-                        className={`px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono border transition cursor-pointer ${
-                          adminQrCaption === preset
-                            ? 'bg-sky-500/30 text-sky-200 border-sky-400 font-bold shadow-sm'
-                            : 'bg-white/5 hover:bg-sky-500/20 text-white/60 hover:text-sky-300 border-white/10'
-                        }`}
-                      >
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* QR Code Background Mode (Solid vs Transparent for Broadcast Overlay) */}
-                <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white uppercase tracking-wider">
-                    <Layers className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Nền Mã QR (Broadcast Overlay):</span>
-                  </div>
-
-                  <div className="inline-flex rounded-[2px] p-0.5 fluent-box-nested border border-white/15 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleQrTransparentBg(false)}
-                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[2px] transition flex items-center gap-1 cursor-pointer ${
-                        !gameState.qr_transparent_bg
-                          ? 'bg-sky-500 text-white font-bold shadow-sm'
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                      title="Nền màu đặc theo bảng màu"
-                    >
-                      <span>Nền Đặc (Solid)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleQrTransparentBg(true)}
-                      className={`px-2.5 py-1 text-[11px] font-mono font-semibold rounded-[2px] transition flex items-center gap-1 cursor-pointer ${
-                        gameState.qr_transparent_bg
-                          ? 'bg-emerald-500 text-white font-bold shadow-sm'
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                      title="Nền trong suốt Alpha để chèn lên overlay OBS / vMix"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-                      <span>Trong Suốt (Alpha)</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Inactivity Auto-Close Timeout (60s default to prevent screen blocking) */}
-                <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white uppercase tracking-wider">
-                    <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Tự Động Đóng QR Sau (Inactivity Timeout):</span>
-                  </div>
-
-                  <div className="inline-flex rounded-[2px] p-0.5 fluent-box-nested border border-white/15 shrink-0">
-                    {[
-                      { seconds: 0, label: 'Tắt' },
-                      { seconds: 30, label: '30s' },
-                      { seconds: 60, label: '60s (Chuẩn)' },
-                      { seconds: 120, label: '120s' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.seconds}
-                        type="button"
-                        id={`btn-dash-qr-timeout-${opt.seconds}`}
-                        onClick={() => handleSetQrTimeout(opt.seconds)}
-                        className={`px-2 py-1 text-[11px] font-mono font-semibold rounded-[2px] transition cursor-pointer ${
-                          qrAutoCloseSeconds === opt.seconds
-                            ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                            : 'text-white/60 hover:text-white'
-                        }`}
-                        title={opt.seconds === 0 ? 'Tắt tự đóng' : `Tự động đóng sau ${opt.seconds}s không hoạt động`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* QR Code Color Palette Toggle Control (Persisted to Firebase) */}
-                <div className="pt-2 border-t border-white/10 space-y-2">
-                  <div className="flex items-center justify-between flex-wrap gap-1.5">
-                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white uppercase tracking-wider">
-                      <Palette className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Bảng Màu QR Code Toàn Hệ Thống:</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        id="btn-dashboard-reset-qr"
-                        onClick={handleResetQrSettings}
-                        className="px-2 py-0.5 rounded-[2px] border border-white/15 bg-white/5 hover:bg-amber-400/15 hover:border-amber-400/50 text-white/70 hover:text-amber-300 transition text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer shadow-sm"
-                        title="Khôi phục kích thước, bảng màu và kiểu nền về mặc định"
-                      >
-                        <RotateCcw className="w-3 h-3 text-amber-400" />
-                        <span>Mặc định (Reset)</span>
-                      </button>
-                      <span className="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded-[2px] border border-amber-500/20">
-                        Tự động đồng bộ toàn hệ thống
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                    {(Object.keys(QR_PALETTES) as QrPaletteId[]).map((paletteKey) => {
-                      const pal = QR_PALETTES[paletteKey];
-                      const isSelected = ((gameState.qr_color_palette as QrPaletteId) || 'purple_gold') === paletteKey;
-                      return (
-                        <button
-                          key={paletteKey}
-                          type="button"
-                          id={`btn-qr-palette-${paletteKey}`}
-                          onClick={() => handleSetQrPalette(paletteKey)}
-                          className={`p-2.5 rounded-[2px] border text-left transition relative cursor-pointer group flex flex-col justify-between overflow-hidden min-w-0 ${
-                            isSelected
-                              ? `bg-white/10 ${pal.borderClass} ring-1 ring-white/30 shadow-lg`
-                              : 'bg-black/30 border-white/10 hover:border-white/25 hover:bg-white/5'
-                          }`}
-                          title={`Chọn bảng màu: ${pal.name} - ${pal.description}`}
-                        >
-                          <div className="flex items-center justify-between gap-1 mb-1.5 min-w-0 w-full">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                              <span
-                                className="w-3 h-3 rounded-full shrink-0 shadow-sm border border-white/30"
-                                style={{ backgroundColor: pal.dotColor }}
-                              />
-                              <span className="text-[11px] font-bold font-mono text-white truncate" title={pal.labelVi}>
-                                {pal.labelVi}
-                              </span>
-                            </div>
-                            {isSelected && (
-                              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-amber-400 text-slate-950 rounded-[2px] flex items-center gap-0.5 shrink-0 whitespace-nowrap shadow-sm">
-                                <Check className="w-2.5 h-2.5 stroke-[3]" /> Chọn
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between text-[10px] font-mono text-white/50 pt-1 border-t border-white/5 min-w-0 w-full">
-                            <span className="truncate">{pal.dark}</span>
-                            <span className="w-3 h-3 rounded-[2px] border border-white/30 shrink-0" style={{ backgroundColor: pal.dark }} />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Broadcast Action Buttons Row */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    id="btn-download-live-qr-png"
-                    onClick={handleDownloadQrPng}
-                    className="px-3.5 py-2 fluent-box hover-effect text-white rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 border border-white/10 cursor-pointer"
-                    title="Tải ảnh QR Code định dạng PNG chất lượng cao để in ấn hoặc chiếu màn hình"
-                  >
-                    <Download className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Tải Ảnh QR (.PNG)</span>
-                  </button>
-
-                  {onViewChange && (
-                    <button
-                      type="button"
-                      onClick={() => onViewChange('audience')}
-                      className="px-3.5 py-2 fluent-box hover-effect text-purple-300 rounded-[2px] text-xs font-bold font-mono transition flex items-center gap-1.5 border border-purple-500/30 cursor-pointer"
-                      title="Mở tab giả lập khán giả để kiểm thử trải nghiệm quét QR"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Xem Giao Diện Khán Giả</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="text-[10px] text-white/40 font-mono fluent-box-nested px-3 py-1.5 flex items-center gap-1.5">
-                  <span>⚡</span>
-                  <span>Đồng bộ 2 chiều tức thời qua Firestore Realtime Stream — Bật công tắc để mở Modal QR đồng thời trên tất cả thiết bị.</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Main Content Area with Fluent UI v2 Transition */}
+{/* Main Content Area with Fluent UI v2 Transition */}
       <div key={activeAdminTab} className="fluent-tab-panel">
         {activeAdminTab === 'DASHBOARD' ? (
           <AdminDashboard 
             onNavigate={setActiveAdminTab} 
             gameState={gameState} 
             snapshotCount={snapshotCount} 
+            activeCount={activeCount} 
             onOpenEventSchedule={() => {
               vibrateTap();
               soundFx.playClick();
@@ -4943,7 +4917,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       ) : activeAdminTab === 'LUCKY_DRAW' ? (
         <div className="space-y-6">
-          <LuckyDrawAdmin gameState={gameState} allResponses={allResponses} />
+          <LuckyDrawAdmin
+            gameState={gameState}
+            allResponses={allResponses}
+            onExit={() => {
+              setActiveAdminTab('DASHBOARD');
+              triggerHudToast('STAGE', 'Đã thoát quay số, trở về Đấu Trường câu hỏi');
+            }}
+          />
         </div>
       ) : activeAdminTab === 'POLL_HISTORY' ? (
         /* ================= TAB 9: LỊCH SỬ KHẢO SÁT KHẨN CẤP (EMERGENCY POLL HISTORY) ================= */
@@ -5728,31 +5709,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </section>
 
               {/* Bento Block 1.5: Host Pacing Control & Telemetry Meter */}
-              <HostPacingWidget
-                submittedCount={totalCurrentVotes}
-                totalCount={Math.max(activeCount, totalCurrentVotes, 1)}
-                percent={Math.round((totalCurrentVotes / Math.max(activeCount, totalCurrentVotes, 1)) * 100)}
-                isGameActive={gameState.status === 'ACTIVE'}
-                settings={pacingSettings}
-                onUpdateSettings={handleUpdatePacingSettings}
-                recentPacingEvents={recentPacingHistory}
-                onQuickLock={handleLockVoting}
-              />
-
-              {/* Bento Block 2: Master Action Controls & MC Workflow Stepper */}
-              <section className="fluent-box-nested border border-white/10 rounded-[2px] p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
+              {/* Bento Block: Streamlined Master Action Controls & Stepper */}
+              <div className="space-y-3">
                 <GlobalTimerWidget
                   gameState={gameState}
                   onStartQuestion={handleStartQuestion}
                   onLockVoting={handleLockVoting}
                   onRevealResults={handleRevealResults}
                   onReturnToStandby={handleReturnToStandby}
+                  onNavigateNext={handleNavigateNextQuestion}
+                  onCycleMasterState={handleCycleMasterState}
+                  onOpenShortcuts={() => setShowShortcutsModal(true)}
+                  totalVotes={totalCurrentVotes}
+                  totalAudience={Math.max(activeCount, totalCurrentVotes, 1)}
                   onEliminateRandom2={handleEliminateRandom2Options}
                   autoEliminateEvery10s={autoEliminateEvery10s}
                   onToggleAutoEliminate={() => setAutoEliminateEvery10s(!autoEliminateEvery10s)}
                   onTriggerHudToast={triggerHudToast}
                 />
-              </section>
+              </div>
             </>
           )}
 
@@ -6487,20 +6462,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </button>
                         )}
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-3 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={handlePrintStandee}
+                            className="py-2.5 fluent-box-nested hover:fluent-box-nested text-sky-300 font-bold text-[11px] uppercase tracking-wider rounded-[2px] transition border border-sky-400/30 flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                            title="In Standee / Poster A4/A3 dán hội trường"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-sky-400" />
+                            <span>In Standee</span>
+                          </button>
+
                           <button
                             type="button"
                             onClick={handleDownloadQrPng}
-                            className="py-2.5 fluent-box-nested hover:fluent-box-nested text-white font-bold text-xs uppercase tracking-wider rounded-[2px] transition border border-white/15 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
+                            className="py-2.5 fluent-box-nested hover:fluent-box-nested text-white font-bold text-[11px] uppercase tracking-wider rounded-[2px] transition border border-white/15 flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                            title="Tải ảnh mã QR PNG chất lượng cao"
                           >
-                            <Download className="w-3.5 h-3.5 text-sky-400" />
+                            <Download className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Tải Ảnh QR</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleToggleLiveQrModal(false)}
-                            className="py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider rounded-[2px] transition shadow-lg shadow-rose-950/40 border border-rose-400/50 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                            className="py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] uppercase tracking-wider rounded-[2px] transition shadow-lg shadow-rose-950/40 border border-rose-400/50 flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                            title="Đóng cửa sổ chiếu mã QR"
                           >
                             <X className="w-3.5 h-3.5" />
                             <span>Tắt Chiếu</span>

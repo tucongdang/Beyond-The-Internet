@@ -55,15 +55,242 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
   const [audienceJoinUrl, setAudienceJoinUrl] = useState<string>('');
   const [isCopiedUrl, setIsCopiedUrl] = useState<boolean>(false);
   const isLongQuestion = (gameState?.question_text || '').length > 180;
+  const hasLongOptions = useMemo(() => {
+    const opts = Object.values(gameState?.options || {});
+    return opts.some(opt => String(opt || '').length > 40);
+  }, [gameState?.options]);
+
+  // Projector Scaling & Viewport Engine State
+  const [localScale, setLocalScale] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_projector_scale');
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed >= 0.7 && parsed <= 1.4) return parsed;
+      }
+    }
+    return gameState.projector_scale || 1.0;
+  });
+
+  const [autoFit, setAutoFit] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_projector_autofit');
+      if (saved !== null) return saved === 'true';
+    }
+    return gameState.projector_autofit ?? true;
+  });
+
+  const [overscanMargin, setOverscanMargin] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bti_projector_overscan');
+      if (saved !== null) {
+        const val = parseInt(saved, 10);
+        if ([0, 2, 4].includes(val)) return val;
+      }
+    }
+    return gameState.projector_safe_margin || 0;
+  });
+
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(() => {
+    if (typeof document !== 'undefined') {
+      return Boolean(document.fullscreenElement);
+    }
+    return false;
+  });
+
+  const [viewportDim, setViewportDim] = useState<{ width: number; height: number; aspect: string }>(() => {
+    if (typeof window !== 'undefined') {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const ratio = w / (h || 1);
+      const aspect =
+        Math.abs(ratio - 16 / 9) < 0.05
+          ? '16:9'
+          : Math.abs(ratio - 16 / 10) < 0.05
+          ? '16:10'
+          : Math.abs(ratio - 4 / 3) < 0.05
+          ? '4:3'
+          : Math.abs(ratio - 21 / 9) < 0.08
+          ? '21:9'
+          : ratio.toFixed(2) + ':1';
+      return { width: w, height: h, aspect };
+    }
+    return { width: 1920, height: 1080, aspect: '16:9' };
+  });
+
+  const [isControlsPinned, setIsControlsPinned] = useState<boolean>(false);
+  const [isMouseActive, setIsMouseActive] = useState<boolean>(false);
+  const mouseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [scaleToast, setScaleToast] = useState<{ text: string; id: number } | null>(null);
+  const scaleToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Synchronize remote changes from Admin
+  useEffect(() => {
+    if (typeof gameState.projector_scale === 'number') {
+      setLocalScale(gameState.projector_scale);
+    }
+  }, [gameState.projector_scale]);
+
+  useEffect(() => {
+    if (typeof gameState.projector_autofit === 'boolean') {
+      setAutoFit(gameState.projector_autofit);
+    }
+  }, [gameState.projector_autofit]);
+
+  useEffect(() => {
+    if (typeof gameState.projector_safe_margin === 'number') {
+      setOverscanMargin(gameState.projector_safe_margin);
+    }
+  }, [gameState.projector_safe_margin]);
+
+  // Viewport resize and fullscreen change listeners
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const ratio = w / (h || 1);
+      const aspect =
+        Math.abs(ratio - 16 / 9) < 0.05
+          ? '16:9'
+          : Math.abs(ratio - 16 / 10) < 0.05
+          ? '16:10'
+          : Math.abs(ratio - 4 / 3) < 0.05
+          ? '4:3'
+          : Math.abs(ratio - 21 / 9) < 0.08
+          ? '21:9'
+          : ratio.toFixed(2) + ':1';
+      setViewportDim({ width: w, height: h, aspect });
+    };
+
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      if (mouseTimerRef.current) clearTimeout(mouseTimerRef.current);
+      if (scaleToastTimeoutRef.current) clearTimeout(scaleToastTimeoutRef.current);
+    };
+  }, []);
+
+  // Compute effective scale factor (combines auto-fit and manual scale)
+  const effectiveScale = useMemo(() => {
+    let scale = localScale;
+    if (autoFit && typeof window !== 'undefined') {
+      const scaleX = viewportDim.width / 1920;
+      const scaleY = viewportDim.height / 1080;
+      const fitScale = Math.min(scaleX, scaleY);
+      const clampedFit = Math.max(0.75, Math.min(fitScale, 1.30));
+      scale = Number((clampedFit * (localScale / 1.0)).toFixed(3));
+    }
+    return Math.max(0.65, Math.min(scale, 1.40));
+  }, [localScale, autoFit, viewportDim]);
+
+  const showToastNotification = (msg: string) => {
+    if (scaleToastTimeoutRef.current) clearTimeout(scaleToastTimeoutRef.current);
+    setScaleToast({ text: msg, id: Date.now() });
+    scaleToastTimeoutRef.current = setTimeout(() => {
+      setScaleToast(null);
+    }, 2200);
+  };
+
+  const handleSetScale = (newScale: number) => {
+    const clamped = Math.max(0.7, Math.min(1.35, Number(newScale.toFixed(2))));
+    setLocalScale(clamped);
+    try {
+      localStorage.setItem('bti_projector_scale', clamped.toString());
+    } catch (_) {}
+    vibrateTap();
+    soundFx.playClick();
+    showToastNotification('Tỉ lệ: ' + Math.round(clamped * 100) + '%');
+  };
+
+  const handleZoomIn = () => {
+    handleSetScale(localScale + 0.05);
+  };
+
+  const handleZoomOut = () => {
+    handleSetScale(localScale - 0.05);
+  };
+
+  const handleResetZoom = () => {
+    handleSetScale(1.0);
+    showToastNotification('Tỉ lệ: 100% (Mặc định)');
+  };
+
+  const handleToggleAutoFit = () => {
+    const next = !autoFit;
+    setAutoFit(next);
+    try {
+      localStorage.setItem('bti_projector_autofit', next ? 'true' : 'false');
+    } catch (_) {}
+    vibrateTap();
+    soundFx.playClick();
+    showToastNotification(next ? 'Auto-Fit: BẬT' : 'Auto-Fit: TẮT');
+  };
+
+  const handleCycleOverscan = () => {
+    const next = overscanMargin === 0 ? 2 : overscanMargin === 2 ? 4 : 0;
+    setOverscanMargin(next);
+    try {
+      localStorage.setItem('bti_projector_overscan', next.toString());
+    } catch (_) {}
+    vibrateTap();
+    soundFx.playClick();
+    showToastNotification('Viền an toàn (Safe Margin): ' + next + '%');
+  };
+
+  const handleToggleFullscreen = async () => {
+    vibrateTap();
+    soundFx.playClick();
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        showToastNotification('Toàn màn hình: BẬT');
+      } else {
+        await document.exitFullscreen();
+        showToastNotification('Toàn màn hình: TẮT');
+      }
+    } catch (err) {
+      console.warn('Fullscreen toggle failed:', err);
+    }
+  };
+
+  const handleSyncScaleToCloud = async () => {
+    vibrateTap();
+    soundFx.playClick();
+    try {
+      await syncService.updateGameState({
+        projector_scale: localScale,
+        projector_autofit: autoFit,
+        projector_safe_margin: overscanMargin
+      });
+      showToastNotification('Đã đồng bộ tỉ lệ lên hệ thống!');
+    } catch (err) {
+      console.error('Failed to sync projector scale:', err);
+      showToastNotification('Đồng bộ thất bại!');
+    }
+  };
+
+  const handleUserActivity = () => {
+    setIsMouseActive(true);
+    if (mouseTimerRef.current) clearTimeout(mouseTimerRef.current);
+    mouseTimerRef.current = setTimeout(() => {
+      setIsMouseActive(false);
+    }, 4000);
+  };
   const {
     containerRef: questionContainerRef,
     textRef: questionTextRef,
     style: optimalQuestionStyle
   } = useAdaptiveFontSize(gameState?.question_text || '', {
-    minFontSize: 18,
-    maxFontSize: 46,
+    minFontSize: 20,
+    maxFontSize: 52,
     checkHeight: true,
-    lineHeight: 1.3
+    lineHeight: 1.28
   });
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const [isCapturingSnapshot, setIsCapturingSnapshot] = useState<boolean>(false);
@@ -241,6 +468,14 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
+      if ((e.key === 'Escape' || e.key === 'x' || e.key === 'X') && gameState.active_module === 'LUCKY_DRAW') {
+        e.preventDefault();
+        syncService.updateGameState({
+          active_module: 'GAME',
+          lucky_draw: { status: 'IDLE', winner: null }
+        });
+        return;
+      }
       if ((e.key === 'b' || e.key === 'B') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         setShowBarChart(prev => {
@@ -312,9 +547,31 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         e.preventDefault();
         handleCaptureProjectorSnapshot();
       }
+      if ((e.key === '+' || e.key === '=') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleZoomIn();
+        return;
+      }
+      if ((e.key === '-' || e.key === '_') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleZoomOut();
+        return;
+      }
+      if (e.key === '0' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleResetZoom();
+        return;
+      }
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        handleToggleAutoFit();
+        return;
+      }
       if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         setIsControlsVisible(prev => !prev);
+        setIsControlsPinned(prev => !prev);
+        return;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -522,20 +779,231 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
   if ((isScheduledStage || isConcludedStage || isStandbyStage) && !gameState.show_summary && !gameState.grand_finale?.active && !isVirtual) {
     return (
-      <ProjectorWaitingRoom
-        gameState={gameState}
-        activeCount={activeCount}
-        qrDataUrl={qrDataUrl}
-        audienceJoinUrl={audienceJoinUrl}
-        isPanic={Boolean(gameState.panic_mode)}
-      />
+      <div 
+        id="projector-viewport-root"
+        className="fixed inset-0 w-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#0D0420] flex items-center justify-center select-none"
+        onMouseMove={handleUserActivity}
+        onClick={handleUserActivity}
+      >
+        {/* --- EXACT AUDIENCE BACKGROUND (Sync with AudienceView & App.tsx) --- */}
+        <div className="fixed inset-0 z-0 bg-[#190839]/50 backdrop-blur-md pointer-events-none">
+          <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
+          <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+        <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+        <div
+          id="projector-view-stage"
+          style={{
+            transform: effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined,
+            transformOrigin: 'center center',
+            width: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+            height: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+            padding: overscanMargin > 0 ? `${overscanMargin * 0.5}vh ${overscanMargin * 0.5}vw` : undefined,
+            transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, height 0.2s ease'
+          }}
+          className="h-full w-full relative overflow-hidden"
+        >
+          <ProjectorWaitingRoom
+            gameState={gameState}
+            activeCount={activeCount}
+            qrDataUrl={qrDataUrl}
+            audienceJoinUrl={audienceJoinUrl}
+            isPanic={Boolean(gameState.panic_mode)}
+          />
+        </div>
+
+      {/* Toast Notification for Scale / Stage Changes */}
+      {scaleToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none animate-fadeIn">
+          <div className="px-4 py-2 rounded-[2px] bg-[#140628]/95 border border-purple-500/50 shadow-2xl backdrop-blur-xl text-white font-mono text-xs sm:text-sm font-bold flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-purple-400 animate-pulse" />
+            <span>{scaleToast.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Operator Toolbar */}
+      {!isVirtual && (
+        <div 
+          className={`fixed bottom-3 right-3 sm:right-6 z-50 transition-all duration-300 ${
+            isControlsVisible || isControlsPinned || isMouseActive ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-25 hover:opacity-100 translate-y-1 hover:translate-y-0'
+          }`}
+        >
+          {(isControlsVisible || isControlsPinned) ? (
+            <div className="fluent-acrylic-surface bg-[#0f0524]/95 border border-purple-500/40 rounded-[2px] p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-2xl flex flex-col gap-2 max-w-xl text-white animate-fadeIn">
+              <div className="flex items-center justify-between gap-3 pb-1.5 border-b border-white/10 text-xs font-mono">
+                <div className="flex items-center gap-2">
+                  <Scaling className="w-4 h-4 text-purple-400" />
+                  <span className="font-bold uppercase tracking-wider text-purple-200">ĐIỀU KHIỂN MÀN CHIẾU</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-white/50">
+                  <span className="px-1.5 py-0.5 rounded bg-white/10 font-bold text-white/80">
+                    {viewportDim.width}×{viewportDim.height} ({viewportDim.aspect})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsControlsPinned(prev => !prev)}
+                    className={`p-1 rounded hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300' : 'text-white/40'}`}
+                    title={isControlsPinned ? 'Đang ghim thanh điều khiển' : 'Ghim thanh điều khiển (không tự ẩn)'}
+                  >
+                    {isControlsPinned ? '📌' : '📍'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsControlsVisible(false);
+                      setIsControlsPinned(false);
+                    }}
+                    className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition cursor-pointer"
+                    title="Ẩn thanh điều khiển (Phím tắt: T)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Scale Bar Controls */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-mono text-white/60 mr-1">Scale:</span>
+
+                {/* Zoom Out Button */}
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  disabled={localScale <= 0.7}
+                  className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition cursor-pointer font-bold font-mono"
+                  title="Thu nhỏ (-5%) [Phím: -]"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Preset Chips */}
+                {[0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.20].map(s => {
+                  const isActive = Math.abs(localScale - s) < 0.02;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleSetScale(s)}
+                      className={`px-2 py-1 rounded-[2px] text-[10px] font-mono font-bold transition cursor-pointer ${
+                        isActive
+                          ? 'bg-purple-600 text-white shadow-md shadow-purple-600/50 ring-1 ring-purple-400'
+                          : 'bg-white/5 hover:bg-white/15 text-white/70 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      {Math.round(s * 100)}%
+                    </button>
+                  );
+                })}
+
+                {/* Zoom In Button */}
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  disabled={localScale >= 1.35}
+                  className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition cursor-pointer font-bold font-mono"
+                  title="Phóng to (+5%) [Phím: +]"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Reset Button */}
+                <button
+                  type="button"
+                  onClick={handleResetZoom}
+                  className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[10px] font-mono font-bold flex items-center gap-1 transition cursor-pointer border border-white/10"
+                  title="Đặt lại 100% [Phím: 0]"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>100%</span>
+                </button>
+              </div>
+
+              {/* Quick Actions Row */}
+              <div className="flex items-center gap-1.5 pt-1 border-t border-white/10 flex-wrap">
+                {/* Auto-Fit Toggle Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleAutoFit}
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    autoFit
+                      ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/30'
+                      : 'bg-white/10 hover:bg-white/20 text-white/70 border border-white/10'
+                  }`}
+                  title="Tự động tính tỉ lệ theo độ phân giải màn hình [Phím: F]"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Auto-Fit: {autoFit ? 'BẬT' : 'TẮT'}</span>
+                </button>
+
+                {/* Overscan Safe Margin Toggle */}
+                <button
+                  type="button"
+                  onClick={handleCycleOverscan}
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    overscanMargin > 0
+                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/30'
+                      : 'bg-white/10 hover:bg-white/20 text-white/70 border border-white/10'
+                  }`}
+                  title="Viền an toàn chống cắt mép máy chiếu (Overscan)"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Viền: {overscanMargin}%</span>
+                </button>
+
+                {/* Fullscreen Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleFullscreen}
+                  className="px-2.5 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-white/10"
+                  title="Bật/Tắt chế độ toàn màn hình [F11]"
+                >
+                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span>{isFullscreen ? 'Thu nhỏ' : 'Toàn màn hình'}</span>
+                </button>
+
+                {/* Cloud Sync Button */}
+                <button
+                  type="button"
+                  onClick={handleSyncScaleToCloud}
+                  className="px-2.5 py-1 rounded-[2px] bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-purple-400/30"
+                  title="Lưu tỉ lệ này lên máy chủ để các màn chiếu khác cùng nhận"
+                >
+                  <span>☁️ Lưu đồng bộ</span>
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
+      </div>
     );
   }
 
   return (
     <div 
-      id="projector-view-stage"
-      className={`h-[100dvh] max-h-[100dvh] w-full ${theme.bgGradient} text-[#F5EFF9] p-2.5 sm:p-3 md:p-3.5 lg:p-4 ${hasAnnouncer ? 'pb-16 sm:pb-20' : ''} flex flex-col justify-between select-none relative overflow-hidden transition-colors duration-700`}>
+      id="projector-viewport-root"
+      className="fixed inset-0 w-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#0D0420] flex items-center justify-center select-none"
+      onMouseMove={handleUserActivity}
+      onClick={handleUserActivity}
+    >
+      {/* --- EXACT AUDIENCE BACKGROUND (Sync with AudienceView & App.tsx) --- */}
+      <div className="fixed inset-0 z-0 bg-[#190839]/50 backdrop-blur-md pointer-events-none">
+        <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
+        <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+      <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+      <div 
+        id="projector-view-stage"
+        style={{
+          transform: effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined,
+          transformOrigin: 'center center',
+          width: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+          height: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+          padding: overscanMargin > 0 ? `${overscanMargin * 0.5}vh ${overscanMargin * 0.5}vw` : undefined,
+          transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, height 0.2s ease'
+        }}
+        className={`h-full w-full ${theme.bgGradient} text-[#F5EFF9] p-2.5 sm:p-3 md:p-3.5 lg:p-4.5 ${hasAnnouncer ? 'pb-16 sm:pb-20' : ''} flex flex-col justify-between relative overflow-hidden transition-colors duration-700`}>
       {/* Screen flash on capture */}
       {snapshotFlash && !isVirtual && (
         <div className="fixed inset-0 z-[100] bg-white/70 pointer-events-none transition-opacity duration-300 animate-fadeOut" />
@@ -561,7 +1029,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       )}
 
       {/* Stage Header (Bento Style) */}
-      <header className={`relative z-10 fluent-box p-2.5 px-3.5 sm:px-4 flex items-center justify-between gap-3 transition-all duration-500 group shrink-0`}>
+      <header className={`relative z-10 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto fluent-box p-2.5 px-4 sm:px-6 flex items-center justify-between gap-4 transition-all duration-500 group shrink-0 rounded-[3px] border border-white/10 shadow-lg backdrop-blur-xl bg-slate-950/40`}>
         <div className="flex items-center gap-2.5 flex-wrap">
           <div className={`w-8 h-8 shrink-0 rounded-[2px] fluent-box-nested text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold shadow-lg`}>
             <Radio className="w-4 h-4 animate-pulse" />
@@ -613,7 +1081,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
       {/* Audience Light Show Stage Indicator (Fluent UI Non-Overlapping Bar) */}
       {gameState.audience_light_show?.active && !isVirtual && (
-        <div className="relative z-10 my-1 px-4 py-2 rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-150 border border-amber-400/60 text-amber-300 font-mono text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 animate-pulse">
+        <div className="relative z-10 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto my-1 px-4 py-2 rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-150 border border-amber-400/60 text-amber-300 font-mono text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 animate-pulse">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-[2px] bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
               <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
@@ -632,9 +1100,27 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       <NextQuestionCountdown gameState={gameState} className="relative z-10 my-2" />
 
       {/* Stage Main Body */}
-      <main className="relative z-10 flex-1 min-h-0 w-full flex flex-col justify-center items-center my-auto py-0.5 overflow-hidden">
-        {gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE') ? (
-          <LuckyDrawProjector gameState={gameState} />
+      <main className="relative z-10 flex-1 min-h-0 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto flex flex-col justify-center items-center my-auto py-2 sm:py-3.5 lg:py-5 overflow-hidden">
+        {gameState.active_module === 'LUCKY_DRAW' ? (
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* Quick Exit Floating Button for Projector Operator */}
+            <div className="absolute top-2 right-4 z-50">
+              <button
+                type="button"
+                onClick={() => {
+                  syncService.updateGameState({
+                    active_module: 'GAME',
+                    lucky_draw: { status: 'IDLE', winner: null }
+                  });
+                }}
+                className="opacity-0 hover:opacity-90 transition px-2.5 py-1 bg-black/70 hover:bg-rose-600 text-white rounded-[2px] text-xs font-mono font-bold flex items-center gap-1 border border-white/20 cursor-pointer shadow-lg"
+                title="Thoát quay số và trở về màn hình câu hỏi (Phím tắt: ESC)"
+              >
+                <span>✕ Thoát Quay Số</span>
+              </button>
+            </div>
+            <LuckyDrawProjector gameState={gameState} />
+          </div>
         ) : gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? (
           <EmergencyPollProjector
             gameState={gameState}
@@ -642,7 +1128,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             activeCount={activeCount}
           />
         ) : activeProjectorMode === 'BAR_CHART' ? (
-          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
             <ProjectorResponseBarChart
               gameState={gameState}
               responses={responses}
@@ -650,7 +1136,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             />
           </div>
         ) : activeProjectorMode === 'WORD_CLOUD' ? (
-          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
             <ProjectorWordCloud
               gameState={gameState}
               responses={responses}
@@ -658,7 +1144,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             />
           </div>
         ) : activeProjectorMode === 'RESPONSE_LIST' ? (
-          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
             <ProjectorResponseList
               responses={responses}
               gameState={gameState}
@@ -666,7 +1152,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             />
           </div>
         ) : (activeProjectorMode === 'LEADERBOARD') ? (
-          <div className="w-full max-w-[99vw] xl:max-w-[98vw] mx-auto animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
             <Leaderboard
               allResponses={allResponses}
               gameState={gameState}
@@ -679,7 +1165,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           /* Dedicated Stage Visual for Round 2: Vượt Chướng Ngại Vật */
           !isVcnvOpened ? (
             /* Standby Stage Visual (Matching Client Landing) */
-            <div className="text-center max-w-3xl mx-auto space-y-6 bg-[#241148]/90 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-8 sm:p-12 shadow-2xl backdrop-blur-md animate-fadeIn flex-1 min-h-0 flex flex-col justify-center items-center my-auto">
+            <div className="text-center max-w-2xl mx-auto space-y-6 bg-[#241148]/85 backdrop-blur-xl border border-[#3E1D74] rounded-[4px] p-8 sm:p-12 shadow-2xl animate-fadeIn flex-1 min-h-0 flex flex-col justify-center items-center my-auto">
               <div className="relative w-32 h-32 mx-auto mb-4 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-[2px] border-2 border-[#F7CAC9]/20 animate-ping" />
                 <div className="absolute inset-3 rounded-[2px] border border-[#F7CAC9]/40 animate-pulse" />
@@ -701,7 +1187,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               </p>
             </div>
           ) : (
-            <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-between h-full">
+            <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-4 sm:space-y-6 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center my-auto">
               <div className="flex items-center justify-between">
                 <span className="px-4 py-1 rounded-[2px] text-xs font-mono uppercase tracking-wider bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT
@@ -720,7 +1206,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               </div>
 
               {/* 2-Column Responsive Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-center">
                 {/* LEFT COLUMN: Heatmaps, Risk Box banners, and Keyword Summary */}
                 <div className="lg:col-span-6 space-y-3">
                   {/* Live Heatmap tag word-cloud for VCNV Predictions (Hidden when round is finalized to prevent vertical stack overload) */}
@@ -766,22 +1252,22 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* STAGE RISK BOX ANNOUNCEMENT BANNER */}
                   {gameState.vcnv_risk_status === 'ACTIVE_ANSWER' && (
-                    <div className="p-3 rounded-[2px] fluent-box shadow-2xl space-y-1 text-white animate-fadeIn">
+                    <div className="p-4 sm:p-5 rounded-[2px] fluent-box border border-amber-500/40 shadow-2xl space-y-2 text-white animate-fadeIn">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-[2px] fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-[2px] fluent-box-nested text-amber-400 flex items-center justify-center font-bold text-base">
                             ⚡
                           </div>
                           <div>
-                            <h4 className="text-[11px] font-bold text-amber-300 uppercase font-mono text-left">
+                            <h4 className="text-xs sm:text-sm font-bold text-amber-300 uppercase font-mono text-left tracking-wide">
                               THÍ SINH [{gameState.vcnv_risk_claimed_by?.name || 'SÂN KHẤU'}] ĐÃ CHỌN Ô MẠO HIỂM
                             </h4>
-                            <p className="text-[10px] text-slate-400 text-left">
-                              Bình chọn đang hiển thị trên thiết bị di động
+                            <p className="text-xs text-slate-300 text-left mt-0.5">
+                              Bình chọn đang hiển thị trực tiếp trên thiết bị di động của khán giả
                             </p>
                           </div>
                         </div>
-                        <span className="text-[9px] font-mono px-2 py-0.5 fluent-box-nested text-amber-300 border border-amber-500/30 rounded-[2px] font-bold">
+                        <span className="text-xs font-mono px-2.5 py-1 fluent-box-nested text-amber-300 border border-amber-500/30 rounded-[2px] font-bold">
                           🔥 {riskSubmissionsCount} KHÁN GIẢ ĐANG DỰ ĐOÁN
                         </span>
                       </div>
@@ -789,15 +1275,38 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   )}
 
                   {gameState.vcnv_risk_status === 'FROZEN' && (
-                    <div className="p-3 rounded-[2px] fluent-box border border-[#3E1D74] shadow-2xl text-[#F5EFF9] space-y-1 animate-fadeIn">
+                    <div className="p-4 sm:p-5 rounded-[2px] fluent-box border border-[#3E1D74] shadow-2xl text-[#F5EFF9] space-y-1 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-mono uppercase text-[#F7CAC9] font-bold tracking-wider block">
+                        <span className="text-xs sm:text-sm font-mono uppercase text-[#F7CAC9] font-bold tracking-wider block">
                           🔒 CÂU TRẢ LỜI Ô MẠO HIỂM ĐÃ ĐÓNG BĂNG
                         </span>
                       </div>
-                      <p className="text-[10px] text-[#B6A6D8] text-left">
+                      <p className="text-xs text-[#B6A6D8] text-left mt-1">
                         Tiếp tục các hàng ngang. Khán giả đoán đúng cả hai nhận được <strong>200 điểm</strong>!
                       </p>
+                    </div>
+                  )}
+
+                  {/* Stage Info & Live Guidance Box */}
+                  {!gameState.vcnv_summary_active && gameState.vcnv_risk_status !== 'REVEALED' && (
+                    <div className="p-4 sm:p-5 rounded-[2px] bg-[#241148]/40 border border-[#3E1D74] shadow-xl backdrop-blur-md space-y-2.5 text-left">
+                      <div className="flex items-center gap-2 text-[#F7CAC9] font-mono text-xs font-bold uppercase tracking-wider">
+                        <Sparkles className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
+                        <span>QUY TẮC BÌNH CHỌN VÒNG 2</span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-[#F5EFF9]/90 leading-relaxed font-sans">
+                        Khán giả theo dõi các gợi ý hàng ngang trên sân khấu và gửi dự đoán từ khóa chướng ngại vật trên điện thoại để ghi điểm vào bảng xếp hạng.
+                      </p>
+                      <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#B6A6D8]">
+                        <span className="flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Đoán đúng từ khóa: <strong className="text-emerald-300 font-bold">+100 điểm</strong></span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Đoán đúng ô mạo hiểm: <strong className="text-amber-300 font-bold">+120 điểm</strong></span>
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -902,30 +1411,30 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 </div>
 
                 {/* RIGHT COLUMN: 4 Horizontal Clues Stack ("Thiết kế dạng cột") */}
-                <div className="lg:col-span-6 space-y-2.5">
-                  <div className="grid grid-cols-1 gap-2">
+                <div className="lg:col-span-6 space-y-3">
+                  <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
                     {[0, 1, 2, 3].map(idx => {
                       const isOpen = (gameState.vcnv_clues || [])[idx];
                       const text = (gameState.vcnv_clue_texts || [])[idx];
                       return (
                         <div
                           key={idx}
-                          className={`py-2 px-3.5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
+                          className={`py-3 sm:py-3.5 lg:py-4 px-4 sm:px-5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
                             isOpen
                               ? 'bg-[#F7CAC9]/15 backdrop-blur-md border-[#F7CAC9] text-[#FCEEEC] ring-2 ring-[#F7CAC9]/30'
                               : 'bg-[#241148]/40 backdrop-blur-md border-[#3E1D74] text-[#B6A6D8]/50'
                           }`}
                         >
                           <div className="text-left">
-                            <span className="text-[9px] font-mono uppercase tracking-widest text-white/50 block mb-0.5">
+                            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-white/50 block mb-0.5">
                               Gợi ý hàng ngang #{idx + 1}
                             </span>
-                            <h3 className="text-xs lg:text-sm font-bold text-white uppercase">
+                            <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white uppercase tracking-wide">
                               {isOpen ? (text ? text : 'HÀNG NGANG ĐÃ MỞ') : 'HÀNG NGANG BÍ ẨN'}
                             </h3>
                           </div>
                           <div
-                            className={`w-8 h-8 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-xs ${
+                            className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-sm sm:text-base ${
                               isOpen ? 'bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9]' : 'bg-[#0D0420]/50 backdrop-blur-md border border-[#3E1D74]/50 text-[#B6A6D8]'
                             }`}
                           >
@@ -938,21 +1447,21 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   {/* Center Box Stage Matrix */}
                   {gameState.vcnv_center_visible && (
-                    <div className={`py-2 px-3.5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
+                    <div className={`py-3 sm:py-3.5 lg:py-4 px-4 sm:px-5 rounded-[2px] border-2 transition-all flex items-center justify-between shadow-lg ${
                       gameState.vcnv_center_status
                         ? 'fluent-box-nested border-amber-500 text-amber-200 ring-2 ring-amber-500/30'
                         : 'fluent-box-nested border-white/10 text-white/40'
                     }`}>
                       <div className="text-left">
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-white/50 block mb-0.5">
+                        <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-white/50 block mb-0.5">
                           Ô Trung Tâm
                         </span>
-                        <h3 className="text-xs lg:text-sm font-bold text-white uppercase">
+                        <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white uppercase tracking-wide">
                           {gameState.vcnv_center_status ? (gameState.vcnv_center_text || 'Ô TRUNG TÂM ĐÃ MỞ') : 'Ô TRUNG TÂM BÍ ẨN'}
                         </h3>
                       </div>
                       <div
-                        className={`w-8 h-8 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-xs ${
+                        className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-[2px] flex items-center justify-center font-bold font-mono text-sm sm:text-base ${
                           gameState.vcnv_center_status ? 'fluent-box-nested text-amber-300' : 'fluent-box-nested'
                         }`}
                       >
@@ -966,7 +1475,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           )
         ) : gameState.status === 'STANDBY' ? (
           /* Standby Stage Visual (Bento Style) */
-          <div className="text-center max-w-3xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-8 sm:p-12 lg:p-16 min-h-[45vh] md:min-h-[56vh] flex flex-col justify-center items-center shadow-2xl">
+          <div className="text-center max-w-3xl mx-auto space-y-6 bg-[#241148]/50 backdrop-blur-md border border-[#3E1D74] rounded-[2px] p-8 sm:p-12 lg:p-16 min-h-[45vh] md:min-h-[56vh] flex flex-col justify-center items-center shadow-2xl my-auto">
             <div className="w-24 h-24 rounded-[2px] bg-[#F7CAC9]/20 backdrop-blur-md border border-[#F7CAC9]/30 flex items-center justify-center mx-auto text-[#F7CAC9] shadow-xl shadow-[#0D0420]/20">
               <Shield className="w-12 h-12 animate-pulse" />
             </div>
@@ -982,7 +1491,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           </div>
         ) : (
           /* Active / Locked / Reveal Stage Display (Bento Grid) */
-          <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto space-y-2.5 lg:space-y-3 flex-1 min-h-0 flex flex-col justify-between h-full">
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-4 lg:space-y-5 flex-1 min-h-0 flex flex-col justify-center my-auto">
             {/* Category & Timer row */}
             <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-2">
@@ -1058,11 +1567,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             )}
 
             {/* Responsive Side-by-Side 2-Column layout for computers / tablets */}
-            <div className={`grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 items-stretch flex-1 min-h-0 h-full`}>
+            <div className={`grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-7 xl:gap-9 items-stretch flex-1 min-h-0 h-full my-auto`}>
               
               {/* LEFT Column: Question Bento Card */}
               <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col" : "md:col-span-5 flex flex-col h-full min-h-0"}>
-                <div className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 shadow-2xl flex flex-col justify-between relative h-full flex-1 min-h-0`}>
+                <div className={`fluent-question-box p-6 sm:p-7 lg:p-8 xl:p-9 shadow-2xl flex flex-col justify-between relative h-full flex-1 min-h-0 rounded-[3px] border border-white/10 backdrop-blur-2xl`}>
                   <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-3 relative z-10 shrink-0">
                     <span className="text-[11px] sm:text-xs uppercase text-[#F7CAC9] font-mono tracking-widest font-bold flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F7CAC9] animate-pulse" />
@@ -1356,7 +1865,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       </div>
                     </div>
 
-                    <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-2.5 sm:gap-3 md:gap-3.5 h-full flex-1 min-h-0 auto-rows-fr`}>
+                    <div className={`grid grid-cols-1 sm:grid-cols-2 ${(!hasLongOptions && isLongQuestion) ? 'lg:grid-cols-4' : ''} gap-2.5 sm:gap-3 md:gap-3.5 h-full flex-1 min-h-0 auto-rows-fr`}>
                       {Object.entries(gameState.options || {}).map(([key, label]) => {
                         const count = voteStats.counts[key] || 0;
                         const percent = voteStats.total > 0 ? Math.round((count / voteStats.total) * 100) : 0;
@@ -1391,7 +1900,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                                   {gameState.option_images?.[key] && (
                                     <img src={gameState.option_images[key]} alt={`Option ${key}`} className="w-full max-h-40 object-cover rounded-[2px] shadow-md border border-white/10 mb-2" />
                                   )}
-                                  <span className={`stage-fluid-option text-base sm:text-lg md:text-xl font-bold tracking-tight block ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
+                                  <span className={`stage-fluid-option font-bold tracking-tight block ${
+                                    String(label || '').length > 65
+                                      ? 'text-xs sm:text-sm md:text-base'
+                                      : String(label || '').length > 35
+                                      ? 'text-sm sm:text-base md:text-lg'
+                                      : 'text-base sm:text-lg md:text-xl xl:text-2xl'
+                                  } ${isEliminated ? 'line-through text-white/50' : 'text-white'}`}>
                                     {label}
                                   </span>
                                   {isEliminated && (
@@ -1471,7 +1986,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
       {/* Realtime Audience Cheer & Intensity Meter */}
       {(gameState.projector_show_cheer_meter !== false && showCheerMeter && activeProjectorMode !== 'LEADERBOARD' && !isLeaderboardVisible) && (
-        <div className="relative z-20 my-2.5 animate-fadeIn">
+        <div className="relative z-20 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto my-2 animate-fadeIn">
           <ProjectorCheerMeter
             theme={gameState.projectorTheme}
             isProjector={true}
@@ -1482,13 +1997,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
       {/* Real-time Audience Shout Marquee Ticker */}
       {(gameState.projector_show_shout_marquee !== false && showShoutMarquee && activeProjectorMode !== 'LEADERBOARD' && !isLeaderboardVisible) && (
-        <div className="relative z-20 my-1.5 animate-fadeIn">
+        <div className="relative z-20 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto my-1.5 animate-fadeIn">
           <AudienceShoutMarquee variant="projector" className="rounded-[2px]" />
         </div>
       )}
 
       {/* Stage Footer (Clean Fluent UI Telemetry Bar - Display Only) */}
-      <footer className="relative z-10 flex items-center justify-between gap-3 border-t border-white/10 pt-2 text-[10px] text-white/40 font-mono whitespace-nowrap overflow-x-auto scrollbar-none shrink-0">
+      <footer className="relative z-10 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto flex items-center justify-between gap-3 border-t border-white/10 pt-2.5 text-[10px] text-white/40 font-mono whitespace-nowrap overflow-x-auto scrollbar-none shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="font-bold text-white/70 tracking-wider">BEYOND THE INTERNET 2026</span>
           <span>•</span>
@@ -1622,6 +2137,172 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* Live Broadcast Announcer Overlay */}
       {!isVirtual && (
         <AnnouncerOverlay overlay={gameState.announcer_overlay} mode="projector" />
+      )}
+      </div>
+
+      {/* Toast Notification for Scale / Stage Changes */}
+      {scaleToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none animate-fadeIn">
+          <div className="px-4 py-2 rounded-[2px] bg-[#140628]/95 border border-purple-500/50 shadow-2xl backdrop-blur-xl text-white font-mono text-xs sm:text-sm font-bold flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-purple-400 animate-pulse" />
+            <span>{scaleToast.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Operator Toolbar */}
+      {!isVirtual && (
+        <div 
+          className={`fixed bottom-3 right-3 sm:right-6 z-50 transition-all duration-300 ${
+            isControlsVisible || isControlsPinned || isMouseActive ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-25 hover:opacity-100 translate-y-1 hover:translate-y-0'
+          }`}
+        >
+          {(isControlsVisible || isControlsPinned) ? (
+            <div className="fluent-acrylic-surface bg-[#0f0524]/95 border border-purple-500/40 rounded-[2px] p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-2xl flex flex-col gap-2 max-w-xl text-white animate-fadeIn">
+              <div className="flex items-center justify-between gap-3 pb-1.5 border-b border-white/10 text-xs font-mono">
+                <div className="flex items-center gap-2">
+                  <Scaling className="w-4 h-4 text-purple-400" />
+                  <span className="font-bold uppercase tracking-wider text-purple-200">ĐIỀU KHIỂN MÀN CHIẾU</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-white/50">
+                  <span className="px-1.5 py-0.5 rounded bg-white/10 font-bold text-white/80">
+                    {viewportDim.width}×{viewportDim.height} ({viewportDim.aspect})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsControlsPinned(prev => !prev)}
+                    className={`p-1 rounded hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300' : 'text-white/40'}`}
+                    title={isControlsPinned ? 'Đang ghim thanh điều khiển' : 'Ghim thanh điều khiển (không tự ẩn)'}
+                  >
+                    {isControlsPinned ? '📌' : '📍'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsControlsVisible(false);
+                      setIsControlsPinned(false);
+                    }}
+                    className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition cursor-pointer"
+                    title="Ẩn thanh điều khiển (Phím tắt: T)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Scale Bar Controls */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-mono text-white/60 mr-1">Scale:</span>
+
+                {/* Zoom Out Button */}
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  disabled={localScale <= 0.7}
+                  className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition cursor-pointer font-bold font-mono"
+                  title="Thu nhỏ (-5%) [Phím: -]"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Preset Chips */}
+                {[0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.20].map(s => {
+                  const isActive = Math.abs(localScale - s) < 0.02;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleSetScale(s)}
+                      className={`px-2 py-1 rounded-[2px] text-[10px] font-mono font-bold transition cursor-pointer ${
+                        isActive
+                          ? 'bg-purple-600 text-white shadow-md shadow-purple-600/50 ring-1 ring-purple-400'
+                          : 'bg-white/5 hover:bg-white/15 text-white/70 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      {Math.round(s * 100)}%
+                    </button>
+                  );
+                })}
+
+                {/* Zoom In Button */}
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  disabled={localScale >= 1.35}
+                  className="w-7 h-7 rounded-[2px] bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition cursor-pointer font-bold font-mono"
+                  title="Phóng to (+5%) [Phím: +]"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Reset Button */}
+                <button
+                  type="button"
+                  onClick={handleResetZoom}
+                  className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[10px] font-mono font-bold flex items-center gap-1 transition cursor-pointer border border-white/10"
+                  title="Đặt lại 100% [Phím: 0]"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>100%</span>
+                </button>
+              </div>
+
+              {/* Quick Actions Row */}
+              <div className="flex items-center gap-1.5 pt-1 border-t border-white/10 flex-wrap">
+                {/* Auto-Fit Toggle Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleAutoFit}
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    autoFit
+                      ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/30'
+                      : 'bg-white/10 hover:bg-white/20 text-white/70 border border-white/10'
+                  }`}
+                  title="Tự động tính tỉ lệ theo độ phân giải màn hình [Phím: F]"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Auto-Fit: {autoFit ? 'BẬT' : 'TẮT'}</span>
+                </button>
+
+                {/* Overscan Safe Margin Toggle */}
+                <button
+                  type="button"
+                  onClick={handleCycleOverscan}
+                  className={`px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    overscanMargin > 0
+                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/30'
+                      : 'bg-white/10 hover:bg-white/20 text-white/70 border border-white/10'
+                  }`}
+                  title="Viền an toàn chống cắt mép máy chiếu (Overscan)"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Viền: {overscanMargin}%</span>
+                </button>
+
+                {/* Fullscreen Button */}
+                <button
+                  type="button"
+                  onClick={handleToggleFullscreen}
+                  className="px-2.5 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-white/10"
+                  title="Bật/Tắt chế độ toàn màn hình [F11]"
+                >
+                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span>{isFullscreen ? 'Thu nhỏ' : 'Toàn màn hình'}</span>
+                </button>
+
+                {/* Cloud Sync Button */}
+                <button
+                  type="button"
+                  onClick={handleSyncScaleToCloud}
+                  className="px-2.5 py-1 rounded-[2px] bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-purple-400/30"
+                  title="Lưu tỉ lệ này lên máy chủ để các màn chiếu khác cùng nhận"
+                >
+                  <span>☁️ Lưu đồng bộ</span>
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       )}
     </div>
   );
