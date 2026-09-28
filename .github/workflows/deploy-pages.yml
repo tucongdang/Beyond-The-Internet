@@ -35,7 +35,14 @@ jobs:
 
       - name: Build static site
         run: |
-          npm run build:pages
+          if ! npm run build:pages > build_output.txt 2>&1; then
+            echo "## ❌ Chi tiết lỗi Vite Build trên Ubuntu" >> $GITHUB_STEP_SUMMARY
+            echo '```bash' >> $GITHUB_STEP_SUMMARY
+            cat build_output.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat build_output.txt
+            exit 1
+          fi
           cp dist/index.html dist/404.html
 
       - name: Upload GitHub Pages artifact
