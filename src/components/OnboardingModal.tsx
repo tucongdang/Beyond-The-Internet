@@ -479,21 +479,99 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/audience/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: loginIdentifier.trim(),
-          password: loginPassword,
-          captchaId: loginCaptchaId,
-          captchaAnswer: loginCaptchaAnswer.trim()
-        })
-      });
+      let isServerAvailable = true;
+      let res: Response | null = null;
+      let data: any = null;
 
-      const data = await res.json();
+      try {
+        res = await fetch('/api/audience/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identifier: loginIdentifier.trim(),
+            password: loginPassword,
+            captchaId: loginCaptchaId,
+            captchaAnswer: loginCaptchaAnswer.trim()
+          })
+        });
+
+        if (res.status === 404) {
+          isServerAvailable = false;
+        } else {
+          data = await res.json();
+        }
+      } catch (networkErr) {
+        console.warn('[OnboardingModal] Backend API unreachable, activating Firebase fallback:', networkErr);
+        isServerAvailable = false;
+      }
+
+      // -------------------------------------------------------------
+      // Static Hosting Mode Fallback (GitHub Pages without Express backend)
+      // -------------------------------------------------------------
+      if (!isServerAvailable) {
+        // Validate local CAPTCHA if it was generated client-side
+        if (loginCaptchaId.startsWith('local_fallback_')) {
+          const expected = loginCaptchaId.replace('local_fallback_', '').trim();
+          if (loginCaptchaAnswer.trim() !== expected) {
+            setErrorMsg(localLanguage !== 'vi' ? 'CAPTCHA answer is incorrect.' : 'Mã bảo vệ CAPTCHA không chính xác.');
+            soundFx.playError();
+            vibrateError();
+            return;
+          }
+        }
+
+        const cleanId = loginIdentifier.trim();
+        const cleanMssv = cleanId.toUpperCase();
+        const uid = `aud_${cleanMssv}`;
+        
+        let userObj: UserInfo = {
+          uid,
+          name: cleanId,
+          mssv: cleanMssv,
+          anonymizedUid: `BTI-${cleanMssv}`,
+          registeredAt: Date.now()
+        };
+
+        // Load or create profile in Firestore users collection
+        if (db) {
+          try {
+            const userRef = doc(db, 'users', uid);
+            const snap = await getDoc(userRef);
+            if (snap.exists()) {
+              const uData = snap.data();
+              userObj = {
+                uid: uData.uid || uid,
+                name: uData.name || cleanId,
+                mssv: uData.mssv || cleanMssv,
+                gender: uData.gender,
+                birthYear: uData.birthYear,
+                anonymizedUid: uData.anonymizedUid || `BTI-${cleanMssv}`,
+                teamId: uData.teamId,
+                teamName: uData.teamName,
+                email: uData.email,
+                emailVerified: uData.emailVerified ?? true,
+                registeredAt: uData.registeredAt || Date.now()
+              };
+            } else {
+              await setDoc(userRef, removeUndefined(userObj), { merge: true });
+            }
+          } catch (fbErr) {
+            console.warn('[OnboardingModal] Firestore join fallback note:', fbErr);
+          }
+        }
+
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+        onComplete(userObj);
+        return;
+      }
+
+      if (!res) {
+        throw new Error('No response');
+      }
 
       // Check if user requires email verification before access
-      if (!res.ok && data.requiresEmailVerification) {
+      if (!res.ok && data?.requiresEmailVerification) {
         soundFx.playError();
         vibrateError();
         const verifyEmail = data.email || (loginIdentifier.includes('@') ? loginIdentifier.trim() : '');
@@ -533,7 +611,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         return;
       }
 
-      if (res.ok && data.success && data.user) {
+      if (res.ok && data?.success && data?.user) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
         const userObj: UserInfo = {
@@ -598,7 +676,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
         soundFx.playError();
         vibrateError();
-        setErrorMsg(data.error || (localLanguage !== 'vi' ? 'Invalid credentials.' : 'Thông tin đăng nhập không chính xác.'));
+        setErrorMsg(data?.error || (localLanguage !== 'vi' ? 'Invalid credentials.' : 'Thông tin đăng nhập không chính xác.'));
       }
     } catch {
       soundFx.playError();
@@ -703,28 +781,70 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
       }
 
-      // 2. Register account on backend server
-      const res = await fetch('/api/audience/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // 2. Register account on backend server (with static hosting Firestore fallback)
+      let isServerAvailable = true;
+      let res: Response | null = null;
+      let data: any = null;
+
+      try {
+        res = await fetch('/api/audience/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: regName.trim(),
+            mssv: regMssv.trim().toUpperCase(),
+            username: regUsername.trim() || regMssv.trim().toLowerCase(),
+            email: cleanEmail,
+            emailVerified: Boolean(fbUser?.emailVerified),
+            password: regPassword,
+            gender: regGender,
+            birthYear: regBirthYear,
+            anonymizedUid: regAnonymizedUid,
+            teamId: regTeamId || undefined,
+            note: regNote.trim() || undefined,
+            captchaId: regCaptchaId,
+            captchaAnswer: regCaptchaAnswer.trim()
+          })
+        });
+
+        if (res.status === 404) {
+          isServerAvailable = false;
+        } else {
+          data = await res.json();
+        }
+      } catch (err) {
+        console.warn('[OnboardingModal] Backend register unreachable, activating direct Firestore registration');
+        isServerAvailable = false;
+      }
+
+      if (!isServerAvailable) {
+        const cleanMssv = regMssv.trim().toUpperCase();
+        const userObj: UserInfo = {
+          uid: fbUser?.uid || `aud_${cleanMssv}`,
           name: regName.trim(),
-          mssv: regMssv.trim().toUpperCase(),
-          username: regUsername.trim() || regMssv.trim().toLowerCase(),
-          email: cleanEmail,
-          emailVerified: Boolean(fbUser?.emailVerified),
-          password: regPassword,
+          mssv: cleanMssv,
           gender: regGender,
           birthYear: regBirthYear,
           anonymizedUid: regAnonymizedUid,
           teamId: regTeamId || undefined,
-          note: regNote.trim() || undefined,
-          captchaId: regCaptchaId,
-          captchaAnswer: regCaptchaAnswer.trim()
-        })
-      });
+          email: cleanEmail,
+          emailVerified: true,
+          registeredAt: Date.now()
+        };
 
-      const data = await res.json();
+        if (db) {
+          try {
+            await setDoc(doc(db, 'users', userObj.uid), removeUndefined(userObj), { merge: true });
+          } catch (e) {
+            console.warn('Firestore fallback register note:', e);
+          }
+        }
+
+        soundFx.playPacingChime('complete');
+        vibrateSuccess();
+        onComplete(userObj);
+        return;
+      }
       if (res.ok && data.success && data.user) {
         soundFx.playPacingChime('complete');
         vibrateSuccess();
