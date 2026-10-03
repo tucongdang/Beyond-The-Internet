@@ -46,6 +46,7 @@ import { db, auth, removeUndefined } from '../firebase';
 import { soundFx } from '../services/audioEffects';
 import { t } from '../utils/i18n';
 import { generate12DigitUID } from '../utils/uidUtils';
+import { hashClientPassword } from '../utils/cryptoUtils';
 import { CaptchaChallenge } from './CaptchaChallenge';
 import {
   vibrateTap,
@@ -495,7 +496,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           })
         });
 
-        if (res.status === 404) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.status === 404 && !contentType.includes('application/json')) {
+          // Static file server (e.g. GitHub Pages without Express backend)
           isServerAvailable = false;
         } else {
           data = await res.json();
@@ -506,7 +509,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       }
 
       // -------------------------------------------------------------
-      // Static Hosting Mode Fallback (GitHub Pages without Express backend)
+      // Static Hosting Mode Fallback (GitHub Pages with direct Firestore)
       // -------------------------------------------------------------
       if (!isServerAvailable) {
         // Validate local CAPTCHA if it was generated client-side
@@ -524,22 +527,34 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         const cleanMssv = cleanId.toUpperCase();
         const uid = `aud_${cleanMssv}`;
         
-        let userObj: UserInfo = {
-          uid,
-          name: cleanId,
-          mssv: cleanMssv,
-          anonymizedUid: `BTI-${cleanMssv}`,
-          registeredAt: Date.now()
-        };
+        let foundUser: UserInfo | null = null;
+        let isUserRegistered = false;
 
-        // Load or create profile in Firestore users collection
+        // Check Firestore users collection
         if (db) {
           try {
             const userRef = doc(db, 'users', uid);
             const snap = await getDoc(userRef);
             if (snap.exists()) {
               const uData = snap.data();
-              userObj = {
+              isUserRegistered = true;
+
+              // Verify password if passwordHash exists
+              if (uData.passwordHash && uData.salt) {
+                const computed = await hashClientPassword(loginPassword, uData.salt);
+                if (computed !== uData.passwordHash) {
+                  soundFx.playError();
+                  vibrateError();
+                  setErrorMsg(
+                    localLanguage !== 'vi'
+                      ? 'Incorrect password. Please try again.'
+                      : 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!'
+                  );
+                  return;
+                }
+              }
+
+              foundUser = {
                 uid: uData.uid || uid,
                 name: uData.name || cleanId,
                 mssv: uData.mssv || cleanMssv,
@@ -552,22 +567,73 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 emailVerified: uData.emailVerified ?? true,
                 registeredAt: uData.registeredAt || Date.now()
               };
-            } else {
-              await setDoc(userRef, removeUndefined(userObj), { merge: true });
             }
           } catch (fbErr) {
-            console.warn('[OnboardingModal] Firestore join fallback note:', fbErr);
+            console.warn('[OnboardingModal] Firestore lookup error:', fbErr);
           }
+        }
+
+        // Check local storage registry fallback
+        if (!foundUser) {
+          try {
+            const rawReg = localStorage.getItem('bti_registered_audience');
+            if (rawReg) {
+              const regList = JSON.parse(rawReg);
+              const localMatch = regList.find((u: any) => u.mssv === cleanMssv || u.username === cleanId.toLowerCase());
+              if (localMatch) {
+                isUserRegistered = true;
+                if (localMatch.passwordHash && localMatch.salt) {
+                  const computed = await hashClientPassword(loginPassword, localMatch.salt);
+                  if (computed !== localMatch.passwordHash) {
+                    soundFx.playError();
+                    vibrateError();
+                    setErrorMsg(
+                      localLanguage !== 'vi'
+                        ? 'Incorrect password. Please try again.'
+                        : 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!'
+                    );
+                    return;
+                  }
+                }
+                foundUser = localMatch;
+              }
+            }
+          } catch {}
+        }
+
+        // CRITICAL: Reject login if account is NOT registered!
+        if (!isUserRegistered || !foundUser) {
+          soundFx.playError();
+          vibrateError();
+          setErrorMsg(
+            localLanguage !== 'vi'
+              ? 'Account has not been registered yet. Please switch to the "Register" tab to create an account.'
+              : 'Tài khoản chưa được đăng ký! Vui lòng chuyển sang tab "Đăng Ký" để tạo tài khoản trước.'
+          );
+          return;
         }
 
         soundFx.playPacingChime('complete');
         vibrateSuccess();
-        onComplete(userObj);
+        onComplete(foundUser);
         return;
       }
 
       if (!res) {
         throw new Error('No response');
+      }
+
+      // Check if backend reported account is not registered
+      if (res.status === 404 && data?.notRegistered) {
+        soundFx.playError();
+        vibrateError();
+        setErrorMsg(
+          data?.error ||
+          (localLanguage !== 'vi'
+            ? 'Account has not been registered yet. Please switch to the "Register" tab to create an account.'
+            : 'Tài khoản chưa được đăng ký! Vui lòng chuyển sang tab "Đăng Ký" để tạo tài khoản trước.')
+        );
+        return;
       }
 
       // Check if user requires email verification before access
@@ -807,7 +873,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           })
         });
 
-        if (res.status === 404) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.status === 404 && !contentType.includes('application/json')) {
           isServerAvailable = false;
         } else {
           data = await res.json();
@@ -819,8 +886,32 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
       if (!isServerAvailable) {
         const cleanMssv = regMssv.trim().toUpperCase();
+        const uid = fbUser?.uid || `aud_${cleanMssv}`;
+
+        // Prevent registering an MSSV that already exists
+        if (db) {
+          try {
+            const existingSnap = await getDoc(doc(db, 'users', uid));
+            if (existingSnap.exists()) {
+              soundFx.playError();
+              vibrateError();
+              setErrorMsg(
+                localLanguage !== 'vi'
+                  ? 'This Student ID (MSSV) is already registered. Please switch to the Login tab.'
+                  : 'MSSV này đã được đăng ký tài khoản. Vui lòng chuyển sang tab Đăng Nhập!'
+              );
+              return;
+            }
+          } catch (checkErr) {
+            console.warn('[OnboardingModal] Registration check note:', checkErr);
+          }
+        }
+
+        const salt = Math.random().toString(36).substring(2, 10);
+        const passwordHash = await hashClientPassword(regPassword, salt);
+
         const userObj: UserInfo = {
-          uid: fbUser?.uid || `aud_${cleanMssv}`,
+          uid,
           name: regName.trim(),
           mssv: cleanMssv,
           gender: regGender,
@@ -832,13 +923,29 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           registeredAt: Date.now()
         };
 
+        const storedRecord = {
+          ...userObj,
+          username: regUsername.trim().toLowerCase() || cleanMssv.toLowerCase(),
+          passwordHash,
+          salt,
+          isRegistered: true
+        };
+
         if (db) {
           try {
-            await setDoc(doc(db, 'users', userObj.uid), removeUndefined(userObj), { merge: true });
+            await setDoc(doc(db, 'users', userObj.uid), removeUndefined(storedRecord), { merge: true });
           } catch (e) {
             console.warn('Firestore fallback register note:', e);
           }
         }
+
+        // Cache in local storage registry
+        try {
+          const rawReg = localStorage.getItem('bti_registered_audience');
+          const regList = rawReg ? JSON.parse(rawReg) : [];
+          regList.push(storedRecord);
+          localStorage.setItem('bti_registered_audience', JSON.stringify(regList));
+        } catch {}
 
         soundFx.playPacingChime('complete');
         vibrateSuccess();

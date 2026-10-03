@@ -721,8 +721,15 @@ async function startServer() {
         ? verifyPassword(password, user.salt, user.passwordHash)
         : { valid: false, needsRehash: false };
 
-      if (!user || !pwdCheck.valid) {
-        return res.status(401).json({ error: "Thông tin tài khoản hoặc mật khẩu không chính xác." });
+      if (!user) {
+        return res.status(404).json({
+          error: "Tài khoản chưa được đăng ký. Vui lòng chuyển sang tab Đăng Ký để tạo tài khoản.",
+          notRegistered: true
+        });
+      }
+
+      if (!pwdCheck.valid) {
+        return res.status(401).json({ error: "Mật khẩu không chính xác. Vui lòng kiểm tra lại." });
       }
 
       // Check if user account is not yet activated/verified

@@ -117,3 +117,17 @@ export function getSecureRandomChars(length: number, charset: string = 'ABCDEFGH
   }
   return result;
 }
+
+/**
+ * Computes a SHA-256 salted hash for client-side password verification in static hosting environments
+ */
+export async function hashClientPassword(password: string, salt: string): Promise<string> {
+  const enc = new TextEncoder();
+  const data = enc.encode(`${password}:${salt}`);
+  if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+    const hashBuf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  return password;
+}
+
