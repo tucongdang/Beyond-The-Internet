@@ -40,6 +40,31 @@ export function isUserSelectedForSurvey(
 }
 
 /**
+ * Validates and normalizes Google Form URLs for safe usage in href/src sinks.
+ * Allows only http(s) and Google Forms hosts.
+ */
+export function sanitizeGoogleFormUrl(rawUrl: string): string {
+  let url = (rawUrl || '').trim();
+  if (!url) return '';
+
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    const isHttp = urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    const isGoogleFormsHost = hostname === 'docs.google.com' || hostname === 'forms.gle';
+
+    if (!isHttp || !isGoogleFormsHost) return '';
+    return urlObj.toString();
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Formats a Google Form URL with embedded=true and optional prefill entries
  */
 export function buildGoogleFormUrl(
@@ -47,42 +72,27 @@ export function buildGoogleFormUrl(
   user?: { name?: string; mssv?: string; uid?: string } | null,
   embedded: boolean = false
 ): string {
-  let url = (config.form_url || '').trim();
-  if (!url) return '';
+  const safeBaseUrl = sanitizeGoogleFormUrl(config.form_url || '');
+  if (!safeBaseUrl) return '';
 
-  // Ensure protocol
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `https://${url}`;
+  const urlObj = new URL(safeBaseUrl);
+
+  // If it's a docs.google.com/forms link and embedded is requested
+  if (embedded && urlObj.hostname.includes('google.com') && urlObj.pathname.includes('/forms')) {
+    urlObj.searchParams.set('embedded', 'true');
   }
 
-  // Handle embedded parameter for Google Forms
-  try {
-    const urlObj = new URL(url);
-
-    // If it's a docs.google.com/forms link and embedded is requested
-    if (embedded && urlObj.hostname.includes('google.com') && urlObj.pathname.includes('/forms')) {
-      urlObj.searchParams.set('embedded', 'true');
-    }
-
-    // Prefill Name if configured
-    if (config.prefill_name_entry && user?.name) {
-      urlObj.searchParams.set(config.prefill_name_entry.trim(), user.name.trim());
-    }
-
-    // Prefill MSSV / Student ID if configured
-    if (config.prefill_mssv_entry && user?.mssv) {
-      urlObj.searchParams.set(config.prefill_mssv_entry.trim(), user.mssv.trim());
-    }
-
-    return urlObj.toString();
-  } catch {
-    // Fallback if URL parsing fails on custom strings
-    if (embedded && !url.includes('embedded=true')) {
-      const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}embedded=true`;
-    }
-    return url;
+  // Prefill Name if configured
+  if (config.prefill_name_entry && user?.name) {
+    urlObj.searchParams.set(config.prefill_name_entry.trim(), user.name.trim());
   }
+
+  // Prefill MSSV / Student ID if configured
+  if (config.prefill_mssv_entry && user?.mssv) {
+    urlObj.searchParams.set(config.prefill_mssv_entry.trim(), user.mssv.trim());
+  }
+
+  return urlObj.toString();
 }
 
 /**

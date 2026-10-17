@@ -2421,16 +2421,23 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                   );
                 })()}
 
-                {previewStage === 'FORM' && (
+                {previewStage === 'FORM' && (() => {
+                  const previewFormUrl = buildGoogleFormUrl(
+                    { form_url: formUrl },
+                    { name: 'Khán giả BTI', mssv: '2026-TEST' },
+                    true
+                  );
+
+                  return (
                   <div className="space-y-3">
                     <div className="p-2 rounded-[3px] bg-slate-900 border border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
                       <span className="flex items-center gap-1.5 text-slate-200">
                         <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
                         Điền trực tiếp trong ứng dụng
                       </span>
-                      {formUrl ? (
+                      {previewFormUrl ? (
                         <a
-                          href={formUrl}
+                          href={previewFormUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#F7CAC9] hover:text-[#f8d7d6] flex items-center gap-1 font-bold"
@@ -2443,9 +2450,9 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                     </div>
 
                     <div className="relative w-full h-[360px] bg-slate-900/90 rounded-[4px] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-center p-4">
-                      {formUrl ? (
+                      {previewFormUrl ? (
                         <iframe
-                          src={buildGoogleFormUrl({ form_url: formUrl }, { name: 'Khán giả BTI', mssv: '2026-TEST' }, true)}
+                          src={previewFormUrl}
                           title="Xem trước biểu mẫu Google Form"
                           className="w-full h-full border-0 rounded-[3px]"
                           loading="lazy"
@@ -2462,6 +2469,9 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                         </div>
                       )}
                     </div>
+                  </div>
+                  );
+                })()}
 
                     <div className="flex items-center justify-between pt-2 gap-2">
                       <button
