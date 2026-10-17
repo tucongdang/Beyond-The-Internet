@@ -907,7 +907,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           }
         }
 
-        const salt = Math.random().toString(36).substring(2, 10);
+        const saltBytes = new Uint8Array(8);
+        globalThis.crypto.getRandomValues(saltBytes);
+        const salt = Array.from(saltBytes, (b) => b.toString(16).padStart(2, '0')).join('');
         const passwordHash = await hashClientPassword(regPassword, salt);
 
         const userObj: UserInfo = {

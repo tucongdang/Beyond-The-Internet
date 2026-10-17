@@ -704,7 +704,10 @@ export default function App() {
 
   const handleUserComplete = async (userInfo: UserInfo) => {
     if (!userInfo.uid) {
-      userInfo.uid = `aud_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const uidRandBytes = new Uint8Array(4);
+      globalThis.crypto.getRandomValues(uidRandBytes);
+      const uidSuffix = Array.from(uidRandBytes, (b) => b.toString(36)).join('').slice(0, 5);
+      userInfo.uid = `aud_${Date.now()}_${uidSuffix}`;
     }
     if (!userInfo.anonymizedUid || userInfo.anonymizedUid.length !== 12) {
       userInfo.anonymizedUid = generate12DigitUID(
