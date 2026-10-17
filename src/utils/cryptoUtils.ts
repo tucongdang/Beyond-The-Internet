@@ -119,15 +119,47 @@ export function getSecureRandomChars(length: number, charset: string = 'ABCDEFGH
 }
 
 /**
- * Computes a SHA-256 salted hash for client-side password verification in static hosting environments
+ * Computes a PBKDF2-HMAC-SHA-256 salted hash for client-side password verification in static hosting environments.
+ * Uses a high iteration count to increase computational cost against offline cracking.
  */
 export async function hashClientPassword(password: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
-  const data = enc.encode(`${password}:${salt}`);
-  if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
-    const hashBuf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const passwordBytes = enc.encode(password);
+  const saltBytes = enc.encode(salt);
+  const iterations = 310000;
+  const keyLengthBytes = 32; // 256-bit derived key
+
+  if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.importKey && crypto.subtle.deriveBits) {
+    const baseKey = await crypto.subtle.importKey(
+      'raw',
+      passwordBytes,
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits']
+    );
+
+    const derivedBits = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: saltBytes,
+        iterations,
+        hash: 'SHA-256'
+      },
+      baseKey,
+      keyLengthBytes * 8
+    );
+
+    return Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  return password;
+
+  // Fallback for environments without Web Crypto (e.g. some Node runtimes)
+  try {
+    const nodeCrypto = require('crypto');
+    return nodeCrypto
+      .pbkdf2Sync(password, salt, iterations, keyLengthBytes, 'sha256')
+      .toString('hex');
+  } catch {
+    throw new Error('[cryptoUtils] Secure hashing is unavailable in this environment');
+  }
 }
 
