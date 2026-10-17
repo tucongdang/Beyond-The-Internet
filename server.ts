@@ -149,32 +149,16 @@ async function startServer() {
     return crypto.scryptSync(password, salt, 64).toString('hex');
   }
 
-  function legacyHmacHash(password: string, salt: string): string {
-    return crypto.createHmac('sha256', salt).update(password).digest('hex');
-  }
-
   function verifyPassword(password: string, salt: string, expectedHash: string): { valid: boolean; needsRehash: boolean } {
     if (!password || !salt || !expectedHash) return { valid: false, needsRehash: false };
 
-    // 1. Try modern scrypt key derivation
+    // Validate using modern scrypt key derivation only
     try {
       const computedScrypt = hashPassword(password, salt);
       const a = Buffer.from(computedScrypt, 'hex');
       const b = Buffer.from(expectedHash, 'hex');
       if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
         return { valid: true, needsRehash: false };
-      }
-    } catch {
-      // Continue to fallback
-    }
-
-    // 2. Backward compatibility fallback for legacy HMAC-SHA256 hashes
-    try {
-      const computedLegacy = legacyHmacHash(password, salt);
-      const a = Buffer.from(computedLegacy, 'hex');
-      const b = Buffer.from(expectedHash, 'hex');
-      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
-        return { valid: true, needsRehash: true };
       }
     } catch {
       // Continue
