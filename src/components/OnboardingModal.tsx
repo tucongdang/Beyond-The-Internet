@@ -939,11 +939,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           }
         }
 
-        // Cache in local storage registry
+        // Cache in local storage registry (exclude sensitive authentication fields)
         try {
           const rawReg = localStorage.getItem('bti_registered_audience');
           const regList = rawReg ? JSON.parse(rawReg) : [];
-          regList.push(storedRecord);
+          const { passwordHash: _passwordHash, salt: _salt, ...cachedRecord } = storedRecord;
+          regList.push(cachedRecord);
           localStorage.setItem('bti_registered_audience', JSON.stringify(regList));
         } catch {}
 
