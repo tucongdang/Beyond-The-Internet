@@ -76,9 +76,11 @@ export function buildGoogleFormUrl(
   if (!safeBaseUrl) return '';
 
   const urlObj = new URL(safeBaseUrl);
+  const hostname = urlObj.hostname.toLowerCase();
 
-  // If it's a docs.google.com/forms link and embedded is requested
-  if (embedded && urlObj.hostname.includes('google.com') && urlObj.pathname.includes('/forms')) {
+  // If it's a google.com/forms link and embedded is requested
+  const isGoogleHost = hostname === 'google.com' || hostname.endsWith('.google.com');
+  if (embedded && isGoogleHost && urlObj.pathname.includes('/forms')) {
     urlObj.searchParams.set('embedded', 'true');
   }
 
