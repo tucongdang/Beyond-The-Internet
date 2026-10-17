@@ -44,7 +44,10 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
     if (typeof window !== 'undefined') {
       let guestId = localStorage.getItem('BTI_SURVEY_GUEST_ID');
       if (!guestId) {
-        guestId = 'guest_' + Math.random().toString(36).substring(2, 10);
+        const randomBytes = new Uint8Array(6);
+        window.crypto.getRandomValues(randomBytes);
+        const randomSuffix = Array.from(randomBytes, (byte) => (byte % 36).toString(36)).join('').substring(0, 8);
+        guestId = 'guest_' + randomSuffix;
         localStorage.setItem('BTI_SURVEY_GUEST_ID', guestId);
       }
       return guestId;
