@@ -38,6 +38,7 @@ import { ShareGameModal } from './ShareGameModal';
 import { Leaderboard } from './Leaderboard';
 import { AudienceRealtimeLeaderboard } from './AudienceRealtimeLeaderboard';
 import { LuckyDrawAudience } from './LuckyDrawAudience';
+import { AudienceChatbot } from './AudienceChatbot';
 import { MatchBreakAudienceOverlay } from './MatchBreakAudienceOverlay';
 import { NextQuestionCountdown } from './NextQuestionCountdown';
 import { CountdownTimer } from './CountdownTimer';

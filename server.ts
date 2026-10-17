@@ -2458,6 +2458,136 @@ Trả về duy nhất định dạng JSON thuần túy:
   });
 
   // -------------------------------------------------------------
+  // Audience Assistant Chatbot with Gemini 3.8 Flash & Anti-Cheat Protection
+  // -------------------------------------------------------------
+  const AUDIENCE_ASSISTANT_SYSTEM_INSTRUCTION = `Bạn là "Trợ lý Khán Giả AI" chính thức của Đấu trường Trí tuệ & Công nghệ "Beyond The Internet 2026" (BTI 2026 Assistant).
+Nhiệm vụ của bạn:
+1. HƯỚNG DẪN LUẬT THI ĐẤU 4 VÒNG:
+   - Vòng 1 (Khởi Động): 45 câu hỏi trắc nghiệm kiến thức nhanh (20s - 30s/câu). Mỗi câu trả lời đúng được cộng 10 điểm.
+   - Vòng 2 (Vượt Chướng Ngại Vật - VCNV): 4 gợi ý hàng ngang (mỗi hàng ngang đúng +20 điểm) và 1 Từ khóa chướng ngại vật trung tâm (+100 điểm). Nếu thí sinh/khán giả kích hoạt "Ô Mạo Hiểm" và đoán trúng cả 2 từ khóa sẽ nhận tới +120 đến +200 điểm!
+   - Vòng 3 (Tăng Tốc): 4 câu hỏi tốc độ cao. Gồm câu hỏi loại trừ 6 phương án (hệ thống tự động loại bỏ 2 phương án sai sau mỗi 10 giây) hoặc câu hỏi sắp xếp thứ tự logic. Thí sinh nộp bài càng nhanh điểm càng cao (tối đa 40 điểm/câu).
+   - Vòng 4 (Về Đích): Gói câu hỏi phân loại (20 - 30 điểm). Có quyền đặt "Ngôi Sao Hy Vọng" - trả lời đúng nhân đôi điểm, trả lời sai bị trừ 50% số điểm của câu hỏi đó.
+2. HƯỚNG DẪN KỸ THUẬT & KHẮC PHỤC SỰ CỐ:
+   - Nếu bị gián đoạn kết nối, lag hoặc mất mạng: Nhấn nút "Đồng bộ" trên thanh menu trên cùng hoặc vuốt tải lại trang. Hệ thống lưu trữ điểm số và định danh UID thời gian thực trên đám mây Firestore, đảm bảo không bị mất điểm hay lịch sử làm bài.
+   - Luôn giữ màn hình ở trạng thái hoạt động: Không nên chuyển sang ứng dụng khác hoặc đóng tab để tránh kích hoạt cảnh báo rời màn hình (Anti-Exit Guard).
+   - Kiểm tra pin và sạc dự phòng để đảm bảo thiết bị hoạt động suốt trận đấu.
+3. THÔNG TIN SỰ KIỆN & GIẢI THƯỞNG BTI 2026:
+   - Giải Nhất (Quán Quân), Giải Nhì, Giải Ba và Giải Khán Giả Tương Tác Xuất Sắc Nhất.
+   - Có các phần quà lưu niệm tại bàn tiếp tân và vòng quay may mắn (Lucky Draw) dành cho toàn thể khán giả tham dự trực tiếp tại hội trường.
+
+🛡️ QUY TẮC BẢO MẬT & CHỐNG GIAN LẬN ĐỀ THI (BẮT BUỘC TUÂN THỦ 100%):
+- BẠN TUYỆT ĐỐI KHÔNG BAO GIỜ:
+  + Cung cấp đáp án, gợi ý đáp án, hoặc suy luận chọn phương án A, B, C, D, E, F cho bất kỳ câu hỏi nào đang thi đấu hoặc câu hỏi kiểm tra.
+  + Giải câu đố, tính toán hộ đáp án các câu hỏi đang diễn ra trên sàn đấu.
+  + Tiết lộ từ khóa hàng ngang hay từ khóa chướng ngại vật khi vòng thi chưa kết thúc.
+- KHI NGƯỜI DÙNG HỎI:
+  + "Đáp án câu này là gì?", "Chọn câu nào?", "A hay B đúng?", "Gợi ý cho tôi câu 3", "Giải giúp bài này"...
+  + HOẶC sao chép nội dung câu hỏi trắc nghiệm đưa vào để nhờ bạn giải:
+  => BẠN PHẢI TỪ CHỐI LỊCH SỰ NGAY LẬP TỨC với thông điệp: "🛡️ Vì tính bảo mật và công bằng của giải đấu Beyond The Internet 2026, mình không thể giải đề, tiết lộ hay gợi ý đáp án cho các câu hỏi thi đấu. Hãy tin tưởng vào kiến thức và trực giác của bạn nhé! Chúc bạn thi đấu thật tốt!"
+- Phong cách giao tiếp: Thân thiện, tôn trọng, truyền cảm hứng, dùng emoji vừa phải, ngắn gọn, súc tích, dễ đọc trên màn hình điện thoại di động.`;
+
+  const audienceChatLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 40,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+      if (isDev) return true;
+      const ip = req.ip || req.socket.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    },
+    message: { error: "Bạn đang gửi tin nhắn quá nhanh. Vui lòng chờ ít giây rồi thử lại." }
+  });
+
+  app.post("/api/audience-chat", audienceChatLimiter, async (req, res) => {
+    try {
+      const {
+        messages,
+        userInfo,
+        currentQuestionStatus,
+        currentRoundName,
+        roundName,
+        status,
+        promptContext,
+        gameStateContext
+      } = req.body;
+      const apiKey = process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        return res.status(500).json({ error: "Lỗi cấu hình server: chưa thiết lập AI API key." });
+      }
+
+      if (!Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: "Thiếu danh sách tin nhắn." });
+      }
+
+      // Limit history to last 8 turns and sanitize text
+      const sanitizedMessages = messages.slice(-8).map(m => ({
+        role: m.role === 'model' || m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: String(m.content || m.text || '').slice(0, 800) }]
+      })).filter(m => m.parts[0].text.trim().length > 0);
+
+      if (sanitizedMessages.length === 0) {
+        return res.status(400).json({ error: "Nội dung tin nhắn không hợp lệ." });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      });
+
+      // Context injection from gameState (Active Round Name and Status)
+      const resolvedRoundName = currentRoundName || roundName || gameStateContext?.round_name || 'Khởi động';
+      const resolvedStatus = currentQuestionStatus || status || gameStateContext?.status || 'STANDBY';
+
+      const userContext = userInfo?.name 
+        ? `\nKhán giả đang trò chuyện tên: ${userInfo.name}${userInfo.mssv ? ` (MSSV: ${userInfo.mssv})` : ''}. Hãy xưng hô thân mật, lịch sự.`
+        : '';
+
+      const gameStateContextText = `
+[NGỮ CẢNH TRẬN ĐẤU THỜI GIAN THỰC TỪ GAMESTATE]:
+- Vòng thi hiện tại đang diễn ra: "${resolvedRoundName}"
+- Trạng thái vòng đấu / câu hỏi: "${resolvedStatus}"
+${resolvedStatus === 'ACTIVE' 
+  ? 'LƯU Ý BẢO MẬT: Câu hỏi đang đếm ngược trực tiếp trên sàn đấu (ACTIVE). Tuyệt đối cảnh giác không hỗ trợ giải đề, không tiết lộ đáp án hay gợi ý phương án trắc nghiệm cho khán giả.' 
+  : resolvedStatus === 'LOCKED'
+  ? 'Trạng thái LOCKED: Đã khóa nộp câu trả lời, đang chờ công bố kết quả.'
+  : resolvedStatus === 'REVEAL'
+  ? 'Trạng thái REVEAL: Đang công bố và giải thích đáp án trên màn chiếu.'
+  : 'Trạng thái STANDBY: Đang ở khoảng nghỉ giữa các câu hỏi hoặc chuẩn bị bước vào vòng thi tiếp theo.'}
+Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể lệ, hãy chủ động nhắc đến vòng "${resolvedRoundName}" và tư vấn thể lệ của vòng này.`;
+
+      const extraPromptContext = promptContext ? `\n[NGỮ CẢNH BỔ SUNG]: ${String(promptContext).slice(0, 400)}` : '';
+
+      const fullSystemInstruction = AUDIENCE_ASSISTANT_SYSTEM_INSTRUCTION + userContext + gameStateContextText + extraPromptContext;
+
+      // Call Gemini 3.8 Flash with fallback to lightweight models
+      const response = await generateWithFallback(ai, {
+        contents: sanitizedMessages,
+        config: {
+          systemInstruction: fullSystemInstruction,
+          temperature: 0.7,
+          topP: 0.95
+        }
+      });
+
+      const reply = response.text || "Xin chào bạn! Mình là Trợ lý Khán giả BTI 2026. Mình luôn sẵn sàng giải đáp về luật thi, cách tính điểm và hỗ trợ kỹ thuật kết nối cho bạn!";
+
+      res.json({ reply });
+    } catch (error: any) {
+      console.warn("Audience Chat API Error:", error?.message || error);
+      if (isResourceExhaustedError(error)) {
+        return res.status(429).json({ error: "Hạn mức trợ lý AI tạm thời đạt giới hạn. Vui lòng thử lại sau giây lát." });
+      }
+      res.json({
+        reply: "Chào bạn! Hiện tại kết nối đến Trợ lý AI đang có chút gián đoạn. Bạn vẫn có thể xem hướng dẫn luật thi và cách tính điểm ở mục Tài Liệu hoặc báo cho Ban Kỹ Thuật tại bàn hỗ trợ nhé!"
+      });
+    }
+  });
+
+  // -------------------------------------------------------------
   // Google Workspace Proxy Endpoints (Overcomes Browser CORS Restrictions)
   // -------------------------------------------------------------
   app.post("/api/google/forms", async (req, res) => {

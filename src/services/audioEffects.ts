@@ -166,6 +166,7 @@ class SoundEffectsService {
     return 0.8;
   })();
   private volumeListeners: Set<(vol: number) => void> = new Set();
+  private enabledListeners: Set<(enabled: boolean) => void> = new Set();
   private audioActivityListeners: Set<(durationMs: number) => void> = new Set();
 
   public getSoundPack(): SoundPackTheme {
@@ -320,6 +321,18 @@ class SoundEffectsService {
         localStorage.setItem('bti_soundfx_enabled', String(enabled));
       } catch {}
     }
+    this.enabledListeners.forEach(listener => {
+      try {
+        listener(enabled);
+      } catch {}
+    });
+  }
+
+  public subscribeEnabled(listener: (enabled: boolean) => void): () => void {
+    this.enabledListeners.add(listener);
+    return () => {
+      this.enabledListeners.delete(listener);
+    };
   }
 
   public isEnabled(): boolean {
@@ -1017,6 +1030,134 @@ class SoundEffectsService {
       gain.connect(this.getDestination(ctx));
       osc.start(now);
       osc.stop(now + 0.09);
+    } catch {}
+  }
+
+  /**
+   * Subtle 'message sent' sound effect for chat/assistant widget
+   * Gentle, soft ascending whoosh/blip providing pleasant tactile feedback
+   */
+  public playMessageSent() {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+    this.notifyActivity(120);
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      if (this.soundPack === 'retro') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(580, now);
+        osc.frequency.setValueAtTime(880, now + 0.04);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      } else if (this.soundPack === 'cyberpunk') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(1040, now + 0.07);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+      } else if (this.soundPack === 'zen') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, now);
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.1);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      } else {
+        // Classic & SciFi: Subtle silky ascending sine blip
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.065); // G5
+
+        // Gentle attack & fast smooth decay
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.13, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+      }
+
+      osc.connect(gain);
+      gain.connect(this.getDestination(ctx));
+
+      osc.start(now);
+      osc.stop(now + 0.11);
+    } catch {}
+  }
+
+  /**
+   * Subtle 'message received' sound effect for chat/assistant widget
+   * Gentle, friendly two-tone chime/bubble pop for incoming AI messages
+   */
+  public playMessageReceived() {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+    this.notifyActivity(180);
+
+    try {
+      const now = ctx.currentTime;
+
+      if (this.soundPack === 'retro') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(659.25, now);
+        osc.frequency.setValueAtTime(987.77, now + 0.05);
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+        osc.connect(gain);
+        gain.connect(this.getDestination(ctx));
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (this.soundPack === 'cyberpunk') {
+        [783.99, 1174.66].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const t = now + idx * 0.05;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.1, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+          osc.connect(gain);
+          gain.connect(this.getDestination(ctx));
+          osc.start(t);
+          osc.stop(t + 0.08);
+        });
+      } else if (this.soundPack === 'zen') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.getDestination(ctx));
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } else {
+        // Classic, SciFi & Default: Two gentle melodious harmonic notes (E5 -> A5)
+        const notes = [659.25, 880.00];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const startTime = now + idx * 0.065;
+          const duration = 0.11;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startTime);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.02, startTime + duration);
+
+          gain.gain.setValueAtTime(0.01, startTime);
+          gain.gain.linearRampToValueAtTime(0.12, startTime + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.getDestination(ctx));
+
+          osc.start(startTime);
+          osc.stop(startTime + duration);
+        });
+      }
     } catch {}
   }
 

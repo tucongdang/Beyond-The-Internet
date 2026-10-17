@@ -50,6 +50,7 @@ import { LoudEnvironmentAlert } from './components/LoudEnvironmentAlert';
 import { FloatingDebugPanel } from './components/FloatingDebugPanel';
 import { AntiExitGuard } from './components/AntiExitGuard';
 import { SebAntiCheatGuard } from './components/SebAntiCheatGuard';
+import { ChatAssistantWidget } from './components/ChatAssistantWidget';
 import { useAnimationControl } from './contexts/AnimationControlContext';
 import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
@@ -1181,6 +1182,13 @@ export default function App() {
 
       {/* Secret ?splitDebug=1 Floating Debug Console */}
       <FloatingDebugPanel gameState={gameState} />
+
+      {/* Floating Chat Assistant Widget & Modal (Bottom-Right Corner) */}
+      <ChatAssistantWidget
+        gameState={gameState}
+        user={user}
+        currentView={currentView}
+      />
     </div>
   );
 }

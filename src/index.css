@@ -1620,4 +1620,32 @@ body.battery-saver-active,
   }
 }
 
+/* Typing animation for chat assistant */
+@keyframes typingDot {
+  0%, 80%, 100% {
+    transform: translateY(0) scale(0.85);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translateY(-4px) scale(1.18);
+    opacity: 1;
+  }
 }
+
+.animate-typing-dot-1 {
+  animation: typingDot 1.2s infinite ease-in-out;
+  animation-delay: 0s;
+}
+
+.animate-typing-dot-2 {
+  animation: typingDot 1.2s infinite ease-in-out;
+  animation-delay: 0.2s;
+}
+
+.animate-typing-dot-3 {
+  animation: typingDot 1.2s infinite ease-in-out;
+  animation-delay: 0.4s;
+}
+
+}
+
