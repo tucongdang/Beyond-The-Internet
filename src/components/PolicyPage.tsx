@@ -25,7 +25,8 @@ import {
   Clock,
   X,
   Bookmark,
-  BookmarkCheck
+  BookmarkCheck,
+  ArrowUp
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateCopy } from '../utils/hapticUtils';
@@ -77,6 +78,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
   const [dpoMessage, setDpoMessage] = useState('');
   const [activeArticleIndex, setActiveArticleIndex] = useState<number | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   const lastAutosavedRef = useRef<{ tab: PolicyTab; scrollTop: number; scrollProgress: number } | null>(null);
   const [lastAutosaveBadge, setLastAutosaveBadge] = useState<boolean>(false);
@@ -96,7 +98,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
   });
   const [bookmarkToast, setBookmarkToast] = useState<string | null>(null);
 
-  // Track window/container scroll progress
+  // Track window/container scroll progress and Back to Top threshold (> 500px)
   useEffect(() => {
     const handleScroll = () => {
       if (typeof window === 'undefined') return;
@@ -108,6 +110,8 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       const scrollTop = window.scrollY || document.documentElement.scrollTop || container.scrollTop || 0;
       const scrollHeight = (document.documentElement.scrollHeight || container.scrollHeight || 1) - window.innerHeight;
       
+      setShowBackToTop(scrollTop > 500);
+
       if (scrollHeight > 0) {
         const progress = Math.min(100, Math.max(0, Math.round((scrollTop / scrollHeight) * 100)));
         setScrollProgress(progress);
@@ -131,6 +135,16 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       }
     };
   }, [activeTab]);
+
+  const handleScrollToTop = () => {
+    soundFx.playClick();
+    vibrateTap();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const mainEl = document.querySelector('main');
+    if (mainEl && mainEl.parentElement) {
+      mainEl.parentElement.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Automated 5-second scroll position autosave to LocalStorage
   useEffect(() => {
@@ -321,6 +335,18 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       setTimeout(() => setBookmarkToast(null), 2500);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleCopyArticleLink = (artId: string, artTitle: string) => {
+    soundFx.playClick();
+    vibrateCopy();
+    if (typeof window !== 'undefined') {
+      const url = `${window.location.origin}${window.location.pathname}?view=policy&tab=${activeTab.toLowerCase()}#${artId}`;
+      navigator.clipboard?.writeText(url);
+      const msg = localLanguage !== 'vi' ? `Copied link to ${artTitle}` : `Đã chép link: ${artTitle}`;
+      setBookmarkToast(msg);
+      setTimeout(() => setBookmarkToast(null), 2500);
     }
   };
 
@@ -616,21 +642,28 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
         {/* Banner Section */}
         <div className="p-5 sm:p-6 rounded-[4px] bg-gradient-to-r from-[#1E0B38] via-[#15072B] to-[#120524] border border-[#F7CAC9]/30 shadow-xl relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1.5 text-left">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-[2px] bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 font-mono text-[11px] font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="space-y-2 text-left">
+              {/* Zero-Pill Unboxed Metadata with Typographic Separators */}
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-white/80">
+                <span className="flex items-center gap-1.5 text-emerald-300 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{PDPD_LAW_REFERENCE}</span>
-                </div>
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-300 font-mono text-[11px] font-semibold">
+                </span>
+                <span aria-hidden="true" className="text-white/30">·</span>
+                <span className="flex items-center gap-1 text-sky-300">
                   <Clock className="w-3.5 h-3.5 text-sky-400" />
                   <span>{localLanguage !== 'vi' ? readingTimeEstimate.labelEn : readingTimeEstimate.labelVi}</span>
-                </div>
+                </span>
+                <span aria-hidden="true" className="text-white/30">·</span>
+                <span className="text-purple-200">
+                  {localLanguage !== 'vi' ? `Version ${PDPD_CONSENT_VERSION}` : `Phiên bản ${PDPD_CONSENT_VERSION}`}
+                </span>
               </div>
+
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide uppercase font-mono">
                 {localLanguage !== 'vi' ? 'Legal Framework & Privacy Policy' : 'Quy Chế Pháp Lý & Chính Sách Bảo Mật'}
               </h2>
-              <p className="text-xs sm:text-sm text-[#F7CAC9]/90 max-w-2xl font-sans">
+              <p className="text-xs sm:text-sm text-[#F7CAC9]/90 max-w-2xl font-sans leading-relaxed">
                 {localLanguage !== 'vi'
                   ? 'Official transparency statement of the Beyond The Internet 2026 Academic Competition regarding personal data protection, anti-cheat regulations, and ethical AI utilization.'
                   : 'Văn bản công khai chính thức của Cuộc thi Học thuật Beyond The Internet 2026 về bảo vệ dữ liệu cá nhân, quy chế thi đấu liêm chính và nguyên tắc sử dụng Trí tuệ Nhân tạo có trách nhiệm.'}
@@ -638,9 +671,8 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
             </div>
 
             <div className="shrink-0 text-left sm:text-right font-mono text-xs text-white/60 space-y-1">
-              <div>Phiên bản: <strong className="text-white">{PDPD_CONSENT_VERSION}</strong></div>
               <div>Hiệu lực: <strong className="text-white">Mùa giải 2026</strong></div>
-              <div className="text-[10px] text-emerald-400">Trạng thái: Đang áp dụng</div>
+              <div className="text-[10px] text-emerald-400 font-semibold">Trạng thái: Đang áp dụng chính thức</div>
             </div>
           </div>
         </div>
@@ -716,7 +748,13 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                 )}
               </div>
 
-              {/* Table of Contents jump pill badges */}
+              {searchQuery && (
+                <span className="text-[11px] font-mono text-[#F7CAC9] font-semibold shrink-0">
+                  {localLanguage !== 'vi' ? `Found ${filteredArticles.length} matching clause(s)` : `Tìm thấy ${filteredArticles.length} điều khoản`}
+                </span>
+              )}
+
+              {/* Table of Contents jump badges */}
               <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 custom-scrollbar text-[10px] font-mono">
                 <span className="text-white/40 shrink-0 mr-1 flex items-center gap-0.5">
                   <Filter className="w-3 h-3" />
@@ -767,12 +805,25 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                         : 'bg-white/5 border-white/10 hover:border-white/20'
                     }`}
                   >
-                    <h3 className="text-sm sm:text-base font-bold text-[#F7CAC9] flex items-center gap-2 font-mono mb-2">
-                      <span className="px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] text-xs font-black">
-                        Điều {art.num}
-                      </span>
-                      <span>{art.title}</span>
-                    </h3>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3 className="text-sm sm:text-base font-bold text-[#F7CAC9] flex items-center gap-2 font-mono">
+                        <span className="px-2 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] text-xs font-black">
+                          Điều {art.num}
+                        </span>
+                        <span>{art.title}</span>
+                      </h3>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopyArticleLink(art.id, art.title)}
+                        className="p-1 px-2 rounded bg-white/5 hover:bg-white/15 text-white/60 hover:text-[#F7CAC9] transition cursor-pointer text-[11px] font-mono flex items-center gap-1 shrink-0 border border-white/10"
+                        title={localLanguage !== 'vi' ? 'Copy link to this clause' : 'Sao chép đường dẫn trực tiếp điều khoản này'}
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span className="hidden sm:inline">{localLanguage !== 'vi' ? 'Copy Link' : 'Sao Chép Link'}</span>
+                      </button>
+                    </div>
+
                     <p className="text-xs sm:text-sm text-white/85 pl-2 sm:pl-7 leading-relaxed">
                       {art.content}
                     </p>
@@ -1006,6 +1057,20 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
           <BookmarkCheck className="w-4 h-4 text-amber-400 shrink-0" />
           <span>{bookmarkToast}</span>
         </div>
+      )}
+
+      {/* Smooth Back to Top Floating Button */}
+      {showBackToTop && (
+        <button
+          type="button"
+          id="btn-policy-back-to-top"
+          onClick={handleScrollToTop}
+          className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 p-3 rounded-full bg-[#1c0836]/90 hover:bg-[#F7CAC9] text-[#F7CAC9] hover:text-[#190839] border border-[#F7CAC9]/40 shadow-2xl backdrop-blur-md transition-all duration-300 active:scale-90 animate-fadeIn flex items-center justify-center cursor-pointer group print:hidden"
+          title={localLanguage !== 'vi' ? 'Scroll smoothly back to top' : 'Cuộn mượt về đầu trang'}
+          aria-label="Back to top"
+        >
+          <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+        </button>
       )}
 
     </div>

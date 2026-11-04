@@ -1051,44 +1051,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Permanent Global Footer with Privacy & Legal Link across all views */}
-      {currentView !== 'projector' && currentView !== 'policy' && (
-        <footer
-          id="global-permanent-app-footer"
-          role="contentinfo"
-          className="shrink-0 w-full border-t border-white/10 bg-[#090218]/95 backdrop-blur-xl px-4 py-2 sm:py-2.5 text-center text-xs font-mono text-white/60 select-none z-30 shadow-lg"
-        >
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-[11px] text-white/50">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span className="font-bold text-white/70">BTI 2026</span>
-              <span>•</span>
-              <span className="hidden sm:inline">Academic Interactive Gameshow</span>
-              <span className="sm:hidden">Interactive Arena</span>
-            </div>
 
-            {/* Permanent 'Privacy & Legal' Action Link */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                id="footer-permanent-privacy-legal-btn"
-                onClick={() => handleNavigateToPolicy()}
-                className="inline-flex items-center gap-1.5 text-xs text-[#F7CAC9] hover:text-white font-mono font-semibold underline decoration-[#F7CAC9]/40 hover:decoration-white transition cursor-pointer group"
-                title={localLanguage !== 'vi' ? 'Open Privacy Policy and Legal Terms' : 'Mở Chính Sách Bảo Mật & Quy Chế Pháp Lý (Nghị định 13/2023)'}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#F7CAC9] group-hover:scale-110 transition-transform" />
-                <span>{localLanguage !== 'vi' ? 'Privacy & Legal' : 'Chính Sách & Pháp Lý (Privacy & Legal)'}</span>
-              </button>
-
-              <span className="text-white/20">|</span>
-
-              <span className="text-[10px] text-white/40 font-mono">
-                {PDPD_CONSENT_VERSION}
-              </span>
-            </div>
-          </div>
-        </footer>
-      )}
 
       {user && (
         <ProfileModal

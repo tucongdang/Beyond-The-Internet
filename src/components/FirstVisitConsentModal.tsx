@@ -65,7 +65,17 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
         {/* Glow accent */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-400 via-[#F7CAC9] to-indigo-500" />
 
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        {/* Close X Button to dismiss fixed bottom banner immediately */}
+        <button
+          type="button"
+          onClick={handleAcceptAll}
+          className="absolute top-2.5 right-2.5 p-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition cursor-pointer z-10"
+          title={localLanguage !== 'vi' ? 'Dismiss notice' : 'Đóng thông báo'}
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pr-6 sm:pr-8">
           
           {/* Main Info */}
           <div className="flex items-start gap-3 flex-1">
