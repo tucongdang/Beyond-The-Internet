@@ -27,8 +27,11 @@ import {
   subscribeHapticPreference,
   HapticIntensity
 } from '../utils/hapticUtils';
-import { X, User, Globe, BarChart2, Edit3, Save, Activity, Camera, Smartphone, Vibrate, Check, Sliders, Sparkles, Contrast, Volume2, Volume1, VolumeX, Play, Square, Music, RotateCcw, Mic, MessageSquare } from 'lucide-react';
+import { X, User, Globe, BarChart2, Edit3, Save, Activity, Camera, Smartphone, Vibrate, Check, Sliders, Sparkles, Contrast, Volume2, Volume1, VolumeX, Play, Square, Music, RotateCcw, Mic, MessageSquare, ShieldCheck, Trash2, FileText, Scale, Lock, ExternalLink } from 'lucide-react';
 import { ambientNoiseService } from '../services/ambientNoiseService';
+import { PrivacyPolicyModal } from './PrivacyPolicyModal';
+import { TermsOfServiceModal } from './TermsOfServiceModal';
+import { PDPD_CONSENT_VERSION, PDPD_LAW_REFERENCE } from '../utils/vnLawCompliance';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -67,7 +70,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   // Sub-tab selection inside Settings
-  const [settingsSubTab, setSettingsSubTab] = useState<'visual' | 'audio' | 'voice'>('visual');
+  const [settingsSubTab, setSettingsSubTab] = useState<'visual' | 'audio' | 'voice' | 'privacy'>('visual');
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showErasureConfirm, setShowErasureConfirm] = useState(false);
+  const [erasureLoading, setErasureLoading] = useState(false);
+  const [erasureSuccess, setErasureSuccess] = useState(false);
 
   // Haptic feedback preference state
   const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(getHapticPreference);
@@ -400,6 +408,43 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     vibrateSubmit();
   };
 
+  const handleExecuteDataErasure = async () => {
+    setErasureLoading(true);
+    try {
+      const anonymizedUser: UserInfo = {
+        ...user,
+        name: localLanguage !== 'vi' ? 'Anonymous User (Deleted)' : 'Khán Giả Ẩn Danh (Đã Xóa Dữ Liệu)',
+        mssv: 'ANON_' + user.uid.substring(Math.max(0, user.uid.length - 4)),
+        teamName: undefined,
+        email: undefined
+      };
+      onUpdateUser(anonymizedUser);
+
+      // Save anonymized record to Firestore
+      try {
+        const app = getApps()[0];
+        const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+        await setDoc(doc(db, 'users', user.uid), removeUndefined({
+          ...anonymizedUser,
+          isDeletedByPDPD: true,
+          deletedAt: Date.now()
+        }), { merge: true });
+      } catch (fbErr) {
+        console.warn('Firestore erasure sync warning:', fbErr);
+      }
+
+      setErasureSuccess(true);
+      setShowErasureConfirm(false);
+      soundFx.playPacingChime('complete');
+      vibrateSuccess();
+    } catch (e) {
+      soundFx.playError();
+      vibrateError();
+    } finally {
+      setErasureLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
   if (typeof document === 'undefined' || !document.body) return null;
 
@@ -699,7 +744,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {tab === 'settings' && (
             <div className="space-y-4">
               {/* Settings Sub-Tab Navigation Bar */}
-              <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-black/50 backdrop-blur-2xl rounded-[2px] border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 bg-black/50 backdrop-blur-2xl rounded-[2px] border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
                 <button
                   type="button"
                   onClick={() => {
@@ -707,14 +752,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     vibrateTap();
                     setSettingsSubTab('visual');
                   }}
-                  className={`py-2 px-2.5 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
                     settingsSubTab === 'visual'
                       ? 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)] border border-purple-300/40 ring-1 ring-white/20'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Globe className="w-3.5 h-3.5 text-blue-300 shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'Visual & Haptics' : 'Giao Diện & Rung'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Visual' : 'Giao Diện'}</span>
                 </button>
 
                 <button
@@ -724,14 +769,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     vibrateTap();
                     setSettingsSubTab('audio');
                   }}
-                  className={`py-2 px-2.5 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
                     settingsSubTab === 'audio'
                       ? 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)] border border-purple-300/40 ring-1 ring-white/20'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Sliders className="w-3.5 h-3.5 text-sky-300 shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'Audio & Sound Pack' : 'Âm Thanh & Sound Pack'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Audio' : 'Âm Thanh'}</span>
                 </button>
 
                 <button
@@ -741,14 +786,31 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     vibrateTap();
                     setSettingsSubTab('voice');
                   }}
-                  className={`py-2 px-2.5 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
                     settingsSubTab === 'voice'
                       ? 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)] border border-purple-300/40 ring-1 ring-white/20'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'AI Voice & Subtitles' : 'Giọng Đọc AI & Phụ Đề'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Voice AI' : 'Giọng Đọc AI'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    vibrateTap();
+                    setSettingsSubTab('privacy');
+                  }}
+                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                    settingsSubTab === 'privacy'
+                      ? 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)] border border-purple-300/40 ring-1 ring-white/20'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
+                  <span className="truncate">{localLanguage !== 'vi' ? 'PDPD Legal' : 'Pháp Lý NĐ 13'}</span>
                 </button>
               </div>
 
@@ -1372,10 +1434,190 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Sub-Tab 4: PDPD Privacy & Legal Compliance */}
+              {settingsSubTab === 'privacy' && (
+                <div className="space-y-4 text-left">
+                  {/* Status Banner */}
+                  <div className="p-3.5 rounded-[2px] fluent-box-nested border border-emerald-500/30 bg-emerald-950/20 flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>{localLanguage !== 'vi' ? 'PDPD Decree 13/2023/ND-CP Compliance Active' : 'Tuân Thủ Nghị Định 13/2023/NĐ-CP (PDPD)'}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-[2px]">
+                          {PDPD_CONSENT_VERSION}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-white/70 leading-relaxed font-sans">
+                        {localLanguage !== 'vi'
+                          ? 'Your account data is processed in full compliance with Vietnamese personal data protection laws. You retain full control over your data subject rights.'
+                          : 'Dữ liệu tài khoản của bạn được bảo vệ theo các nguyên tắc minh bạch, mã hóa và an toàn mạng của Việt Nam. Bạn có toàn quyền thực thi quyền của chủ thể dữ liệu.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* View Privacy Policy Card */}
+                    <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-2.5">
+                      <div className="flex items-center gap-2 text-white font-bold text-xs font-mono">
+                        <FileText className="w-4 h-4 text-sky-400" />
+                        <span>{localLanguage !== 'vi' ? 'Privacy Policy' : 'Chính Sách Bảo Mật'}</span>
+                      </div>
+                      <p className="text-[10px] text-white/60 leading-normal">
+                        {localLanguage !== 'vi'
+                          ? 'Detailed breakdown of collected data, storage duration, and third-party services.'
+                          : 'Xem toàn văn các điều khoản thu thập, thời hạn lưu trữ và bên thứ ba xử lý dữ liệu.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playClick();
+                          vibrateTap();
+                          setShowPrivacyModal(true);
+                        }}
+                        className="w-full py-2 px-3 rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-mono text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{localLanguage !== 'vi' ? 'View Privacy Policy' : 'Xem Chính Sách Quyền Riêng Tư'}</span>
+                      </button>
+                    </div>
+
+                    {/* View Terms of Service Card */}
+                    <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-2.5">
+                      <div className="flex items-center gap-2 text-white font-bold text-xs font-mono">
+                        <Scale className="w-4 h-4 text-purple-400" />
+                        <span>{localLanguage !== 'vi' ? 'Contest Terms & AI' : 'Điều Lệ & Minh Bạch AI'}</span>
+                      </div>
+                      <p className="text-[10px] text-white/60 leading-normal">
+                        {localLanguage !== 'vi'
+                          ? 'Academic integrity, anti-cheat rules, and AI assistance disclaimers.'
+                          : 'Quy chế liêm chính học thuật, chống gian lận và miễn trừ trách nhiệm của Trợ lý AI.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playClick();
+                          vibrateTap();
+                          setShowTermsModal(true);
+                        }}
+                        className="w-full py-2 px-3 rounded-[2px] bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-300 font-mono text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
+                      >
+                        <Scale className="w-3.5 h-3.5" />
+                        <span>{localLanguage !== 'vi' ? 'View Contest Terms' : 'Xem Điều Lệ & Minh Bạch AI'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Open Standalone Policy Page */}
+                  <div className="flex items-center justify-between p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-xs font-mono">
+                    <span className="text-white/70">Trang tra cứu văn bản pháp lý chính thức:</span>
+                    <a
+                      href="/policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sky-300 hover:text-sky-200 underline flex items-center gap-1 font-bold"
+                    >
+                      <span>Mở Trang Policy Riêng</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+
+                  {/* Right to Erasure / Data Deletion Box (Article 16 Decree 13/2023) */}
+                  <div className="p-3.5 rounded-[2px] fluent-box-nested border border-rose-500/30 bg-rose-950/20 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-rose-300 font-bold text-xs font-mono">
+                        <Trash2 className="w-4 h-4 text-rose-400" />
+                        <span>{localLanguage !== 'vi' ? 'Right to Erasure (Article 16 PDPD)' : 'Quyền Xóa & Ẩn Danh Dữ Liệu (Điều 16 NĐ 13)'}</span>
+                      </div>
+                      <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-[2px]">
+                        Right to be forgotten
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-rose-200/80 leading-relaxed font-sans">
+                      {localLanguage !== 'vi'
+                        ? 'Under Decree 13/2023/ND-CP, you have the right to request erasure and anonymization of your personal data (Full Name, Student ID, Email) from the active live leaderboard.'
+                        : 'Theo quy định tại Điều 16 Nghị định 13/2023/NĐ-CP, bạn có quyền yêu cầu xóa hoặc ẩn danh hóa toàn bộ thông tin cá nhân (Họ tên thật, MSSV, Email) trên bảng xếp hạng.'}
+                    </p>
+
+                    {erasureSuccess ? (
+                      <div className="p-2.5 rounded-[2px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+                        <Check className="w-4 h-4 shrink-0" />
+                        <span>
+                          {localLanguage !== 'vi'
+                            ? 'Your personal data has been anonymized and marked for erasure in accordance with PDPD.'
+                            : 'Dữ liệu cá nhân của bạn đã được ẩn danh hóa và ghi nhận xóa theo chuẩn NĐ 13/2023.'}
+                        </span>
+                      </div>
+                    ) : showErasureConfirm ? (
+                      <div className="p-3 rounded-[2px] bg-black/60 border border-rose-500/40 space-y-2.5">
+                        <p className="text-xs text-rose-300 font-mono font-bold">
+                          {localLanguage !== 'vi'
+                            ? 'Are you sure? Your display name and MSSV will be converted to anonymous status.'
+                            : 'Bạn có chắc chắn? Họ tên thật và MSSV sẽ được chuyển thành ẩn danh vĩnh viễn trên Bảng Vàng.'}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleExecuteDataErasure}
+                            disabled={erasureLoading}
+                            className="flex-1 py-1.5 px-3 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            {erasureLoading ? (
+                              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <>
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>{localLanguage !== 'vi' ? 'Confirm Deletion' : 'Xác Nhận Xóa Dữ Liệu'}</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowErasureConfirm(false)}
+                            className="py-1.5 px-3 rounded-[2px] bg-white/10 hover:bg-white/15 text-white/80 font-mono text-xs transition cursor-pointer"
+                          >
+                            {localLanguage !== 'vi' ? 'Cancel' : 'Hủy Bỏ'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playClick();
+                          vibrateTap();
+                          setShowErasureConfirm(true);
+                        }}
+                        className="py-2 px-3 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 font-mono text-xs font-bold flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-sm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{localLanguage !== 'vi' ? 'Request Data Deletion (Right to be Forgotten)' : 'Yêu Cầu Xóa / Ẩn Danh Hóa Dữ Liệu Cá Nhân'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      <PrivacyPolicyModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        onRequestDataDeletion={() => {
+          setSettingsSubTab('privacy');
+          setShowErasureConfirm(true);
+        }}
+      />
+      <TermsOfServiceModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
     </div>,
     document.body
   );

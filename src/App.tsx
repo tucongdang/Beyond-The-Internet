@@ -14,7 +14,7 @@ import { auth, db, removeUndefined } from './firebase';
 import QRCode from 'qrcode';
 import { soundFx } from './services/audioEffects';
 import { vibrateTap, vibrateCopy } from './utils/hapticUtils';
-import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Palette, Sparkles, ScanLine, Zap } from 'lucide-react';
+import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Palette, Sparkles, ScanLine, Zap, ShieldCheck } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { AudienceView } from './components/AudienceView';
 import { OnboardingModal } from './components/OnboardingModal';
@@ -23,12 +23,15 @@ import { generate12DigitUID } from './utils/uidUtils';
 import { getSecureItem, setSecureItem, removeSecureItem } from './utils/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PasswordGate } from './components/PasswordGate';
+import { PDPD_CONSENT_VERSION } from './utils/vnLawCompliance';
 
 // Code-split heavy views to shrink initial bundle for mobile audience devices
 const AdminPortal = React.lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
 const ProjectorView = React.lazy(() => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })));
 const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
 import { ClientLandingPage } from './components/ClientLandingPage';
+import { FirstVisitConsentModal } from './components/FirstVisitConsentModal';
+import { PolicyPage } from './components/PolicyPage';
 
 const ViewLoadingFallback: React.FC = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#0f041c] text-white">
@@ -231,10 +234,13 @@ export default function App() {
 
   // Determine initial view from URL path or query parameter
   
-  const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector'>(() => {
+  const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
       const params = new URLSearchParams(window.location.search);
+      if (path.includes('policy') || path.includes('privacy') || params.get('view') === 'policy' || params.get('view') === 'privacy' || params.get('page') === 'policy' || params.get('page') === 'privacy') {
+        return 'policy';
+      }
       if (path.includes('admin') || params.get('view') === 'admin') {
         return 'admin';
       }
@@ -252,6 +258,116 @@ export default function App() {
     }
     return 'audience';
   });
+
+  // Track previous view state to ensure users can return smoothly to where they were
+  const [previousView, setPreviousView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy' | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('BTI2026_PREV_VIEW');
+        if (stored && ['landing', 'client_landing', 'audience', 'admin', 'projector'].includes(stored)) {
+          return stored as any;
+        }
+      } catch {}
+    }
+    return null;
+  });
+
+  const getPreviousViewDisplayName = useCallback((viewKey: string | null): string => {
+    switch (viewKey) {
+      case 'admin':
+        return localLanguage !== 'vi' ? 'Admin Portal' : 'Ban Quản Trị (Admin)';
+      case 'client_landing':
+        return localLanguage !== 'vi' ? 'Waiting Room' : 'Phòng Chờ Thi Đấu';
+      case 'audience':
+        return localLanguage !== 'vi' ? 'Live Arena' : 'Đấu Trường Khán Giả';
+      case 'landing':
+        return localLanguage !== 'vi' ? 'Home' : 'Trang Chủ BTI';
+      case 'projector':
+        return localLanguage !== 'vi' ? 'Stage Projector' : 'Màn Chiếu Sân Khấu';
+      default: {
+        const hasSavedProfile = Boolean(getSecureItem('BTI2026_USER_PROFILE'));
+        return hasSavedProfile ? (localLanguage !== 'vi' ? 'Live Arena' : 'Đấu Trường') : (localLanguage !== 'vi' ? 'Home' : 'Trang Chủ');
+      }
+    }
+  }, [localLanguage]);
+
+  const handleNavigateToPolicy = useCallback((targetTab?: 'PRIVACY' | 'TERMS_AI' | 'SUBJECT_RIGHTS') => {
+    soundFx.playClick();
+    vibrateTap();
+    if (currentView !== 'policy') {
+      setPreviousView(currentView);
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('BTI2026_PREV_VIEW', currentView);
+        } catch {}
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', 'policy');
+        if (targetTab) {
+          url.searchParams.set('tab', targetTab.toLowerCase());
+        }
+        window.history.pushState({ prevView: currentView }, '', url.toString());
+      }
+    }
+    setCurrentView('policy');
+  }, [currentView]);
+
+  const handleBackFromPolicy = useCallback(() => {
+    soundFx.playClick();
+    vibrateTap();
+    let targetView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' = 'landing';
+    if (previousView && previousView !== 'policy') {
+      targetView = previousView as any;
+    } else {
+      let stored: string | null = null;
+      try {
+        stored = typeof window !== 'undefined' ? sessionStorage.getItem('BTI2026_PREV_VIEW') : null;
+      } catch {}
+      if (stored && ['landing', 'client_landing', 'audience', 'admin', 'projector'].includes(stored)) {
+        targetView = stored as any;
+      } else {
+        const savedUser = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
+        targetView = savedUser ? 'audience' : 'landing';
+      }
+    }
+
+    setCurrentView(targetView);
+    if (typeof window !== 'undefined' && window.history) {
+      const url = new URL(window.location.href);
+      if (targetView === 'audience') {
+        url.searchParams.delete('view');
+      } else {
+        url.searchParams.set('view', targetView);
+      }
+      url.searchParams.delete('tab');
+      url.searchParams.delete('page');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [previousView]);
+
+  // Synchronize browser popstate (back / forward navigation) with view state
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('policy') || path.includes('privacy') || params.get('view') === 'policy' || params.get('view') === 'privacy' || params.get('page') === 'policy') {
+          setCurrentView('policy');
+        } else if (e.state?.prevView && ['landing', 'client_landing', 'audience', 'admin', 'projector'].includes(e.state.prevView)) {
+          setCurrentView(e.state.prevView);
+        } else if (params.get('view')) {
+          const v = params.get('view') as any;
+          if (['landing', 'client_landing', 'audience', 'admin', 'projector'].includes(v)) {
+            setCurrentView(v);
+          }
+        } else {
+          const savedUser = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
+          setCurrentView(savedUser ? 'audience' : 'landing');
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Automatically optimize Firebase sync listeners based on client role
   useEffect(() => {
@@ -748,10 +864,14 @@ export default function App() {
       {/* Audience Notification Toast (Hidden on Admin & Projector views) */}
       <NotificationToast userUid={user?.uid} gameState={gameState} currentView={currentView} />
       {/* Top Navigation */}
-      {currentView !== 'projector' && (
+      {currentView !== 'projector' && currentView !== 'policy' && (
       <Navbar
         currentView={currentView}
         onViewChange={(view) => {
+          if (view === 'policy') {
+            handleNavigateToPolicy();
+            return;
+          }
           setCurrentView(view);
           // Sync URL query without full reload
           if (typeof window !== 'undefined' && window.history) {
@@ -817,7 +937,22 @@ export default function App() {
         </div>
       )}
 
-      {currentView === 'landing' && (
+        {currentView === 'policy' && (
+          <PolicyPage
+            onBack={handleBackFromPolicy}
+            previousViewName={getPreviousViewDisplayName(previousView)}
+            currentUser={user}
+            onRequestDataDeletion={() => {
+              if (user) {
+                setIsProfileModalOpen(true);
+              } else {
+                setIsOnboardingOpen(true);
+              }
+            }}
+          />
+        )}
+
+        {currentView === 'landing' && (
           <LandingPage
             gameState={gameState}
             onEnterAudience={() => {
@@ -829,6 +964,7 @@ export default function App() {
             }}
             onEnterAdmin={() => setCurrentView('admin')}
             onEnterProjector={() => setCurrentView('projector')}
+            onEnterPolicy={() => handleNavigateToPolicy()}
           />
         )}
 
@@ -914,6 +1050,45 @@ export default function App() {
           </PasswordGate>
         )}
       </main>
+
+      {/* Permanent Global Footer with Privacy & Legal Link across all views */}
+      {currentView !== 'projector' && currentView !== 'policy' && (
+        <footer
+          id="global-permanent-app-footer"
+          role="contentinfo"
+          className="shrink-0 w-full border-t border-white/10 bg-[#090218]/95 backdrop-blur-xl px-4 py-2 sm:py-2.5 text-center text-xs font-mono text-white/60 select-none z-30 shadow-lg"
+        >
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-[11px] text-white/50">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span className="font-bold text-white/70">BTI 2026</span>
+              <span>•</span>
+              <span className="hidden sm:inline">Academic Interactive Gameshow</span>
+              <span className="sm:hidden">Interactive Arena</span>
+            </div>
+
+            {/* Permanent 'Privacy & Legal' Action Link */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                id="footer-permanent-privacy-legal-btn"
+                onClick={() => handleNavigateToPolicy()}
+                className="inline-flex items-center gap-1.5 text-xs text-[#F7CAC9] hover:text-white font-mono font-semibold underline decoration-[#F7CAC9]/40 hover:decoration-white transition cursor-pointer group"
+                title={localLanguage !== 'vi' ? 'Open Privacy Policy and Legal Terms' : 'Mở Chính Sách Bảo Mật & Quy Chế Pháp Lý (Nghị định 13/2023)'}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#F7CAC9] group-hover:scale-110 transition-transform" />
+                <span>{localLanguage !== 'vi' ? 'Privacy & Legal' : 'Chính Sách & Pháp Lý (Privacy & Legal)'}</span>
+              </button>
+
+              <span className="text-white/20">|</span>
+
+              <span className="text-[10px] text-white/40 font-mono">
+                {PDPD_CONSENT_VERSION}
+              </span>
+            </div>
+          </div>
+        </footer>
+      )}
 
       {user && (
         <ProfileModal
@@ -1192,6 +1367,11 @@ export default function App() {
         user={user}
         currentView={currentView}
       />
+
+      {/* First-visit Privacy & PDPD Consent Notice (Decree 13/2023/ND-CP) */}
+      {currentView !== 'policy' && (
+        <FirstVisitConsentModal onOpenFullPolicy={() => handleNavigateToPolicy()} />
+      )}
     </div>
   );
 }

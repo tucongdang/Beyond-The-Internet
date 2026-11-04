@@ -58,6 +58,10 @@ export interface UserInfo {
   hapticIntensity?: 'Soft' | 'Medium' | 'Strong';
   seb_verified?: boolean;
   seb_violations?: number;
+  consentGiven?: boolean;
+  consentTimestamp?: number;
+  consentVersion?: string;
+  ageConfirmation?: boolean;
 }
 
 export interface QuestionTranslation {

@@ -25,6 +25,7 @@ import { UserInfo, AudienceQAQuestion, QAQuestionCategory, QASettings } from '..
 import { qaService, QA_CATEGORIES } from '../services/qaService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateError, vibrateImpact, vibrateSelection } from '../utils/hapticUtils';
+import { checkContentCompliance } from '../utils/vnLawCompliance';
 
 interface AudienceQAModalProps {
   isOpen: boolean;
@@ -133,6 +134,18 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
       setSubmitError(t("qa_err_empty", localLanguage));
       return;
     }
+
+    // Real-time compliance check for Q&A questions
+    const compliance = checkContentCompliance(questionText.trim(), 'QA');
+    if (!compliance.isSafe || compliance.severity === 'BLOCKED') {
+      vibrateError();
+      soundFx.playAlarm();
+      setSubmitError(compliance.reasonVi || 'Câu hỏi chưa phù hợp với chuẩn mực an toàn mạng hoặc quy chế sự kiện.');
+      return;
+    }
+
+    const safeQuestionText = compliance.sanitizedText || questionText.trim();
+
     if (cooldownSec > 0) {
       vibrateError();
       setSubmitError(t("qa_err_cooldown", localLanguage).replace("{cooldown}", String(cooldownSec)));
@@ -143,7 +156,7 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
     setSubmitError('');
 
     const res = await qaService.submitQuestion(
-      questionText,
+      safeQuestionText,
       user,
       isAnonymous,
       category

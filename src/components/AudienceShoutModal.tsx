@@ -11,6 +11,7 @@ import {
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateWarning } from '../utils/hapticUtils';
 import confetti from '../utils/confetti';
+import { checkContentCompliance } from '../utils/vnLawCompliance';
 import { 
   Megaphone, 
   Send, 
@@ -119,6 +120,17 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
       return;
     }
 
+    // Real-time compliance check for public LED / Projector shouts
+    const compliance = checkContentCompliance(trimmed, 'SHOUT');
+    if (!compliance.isSafe || compliance.severity === 'BLOCKED') {
+      setErrorMessage(compliance.reasonVi || (localLanguage !== 'vi' ? 'Content violates cyber safety rules.' : 'Nội dung chứa từ ngữ chưa chuẩn mực theo quy chuẩn văn hóa giải đấu.'));
+      vibrateWarning();
+      soundFx.playAlarm();
+      return;
+    }
+
+    const safeText = compliance.sanitizedText || trimmed;
+
     if (cooldownRemaining > 0) {
       setErrorMessage(localLanguage !== 'vi' ? `Please wait ${cooldownRemaining}s to send again` : `Vui lòng chờ ${cooldownRemaining}s để gửi tiếp`);
       vibrateWarning();
@@ -134,7 +146,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
         sender_name: user.name || (localLanguage !== 'vi' ? 'Audience' : 'Khán giả'),
         sender_mssv: user.mssv || '',
         sender_avatar: user.avatarSeed,
-        text: trimmed,
+        text: safeText,
         emoji: selectedEmoji,
         color: selectedColor
       });

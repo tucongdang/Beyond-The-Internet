@@ -55,6 +55,9 @@ import {
   vibrateError,
   vibrateSelection
 } from '../utils/hapticUtils';
+import { validateUsernameCompliance, PDPD_CONSENT_VERSION } from '../utils/vnLawCompliance';
+import { PrivacyPolicyModal } from './PrivacyPolicyModal';
+import { TermsOfServiceModal } from './TermsOfServiceModal';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -114,6 +117,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [regCaptchaAnswer, setRegCaptchaAnswer] = useState('');
   const [googleLinkedUid, setGoogleLinkedUid] = useState<string | null>(null);
   const [googleLinkedEmail, setGoogleLinkedEmail] = useState<string | null>(null);
+  const [regConsentAgreed, setRegConsentAgreed] = useState(false);
+  const [regAgeConfirmed, setRegAgeConfirmed] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   // --- Firebase Email Verification State ---
   const [pendingVerifyEmail, setPendingVerifyEmail] = useState<string>('');
@@ -760,6 +767,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!regName.trim() || regName.trim().length < 2) {
       newErrors.name = localLanguage !== 'vi' ? 'Name must be at least 2 characters.' : 'Họ và tên tối thiểu 2 ký tự.';
+    } else {
+      const nameComp = validateUsernameCompliance(regName);
+      if (!nameComp.isValid) {
+        newErrors.name = localLanguage !== 'vi' ? 'Name contains restricted or sensitive terms.' : (nameComp.messageVi || 'Tên hiển thị chưa hợp lệ.');
+      }
     }
     if (!regMssv.trim()) {
       newErrors.mssv = localLanguage !== 'vi' ? 'MSSV is required.' : 'MSSV không được bỏ trống.';
@@ -783,6 +795,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
     if (!regCaptchaAnswer.trim()) {
       newErrors.captcha = localLanguage !== 'vi' ? 'Please solve the CAPTCHA.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.';
+    }
+    if (!regConsentAgreed) {
+      newErrors.consent = localLanguage !== 'vi' 
+        ? 'You must agree to the Privacy Policy and Contest Terms (Decree 13/2023/ND-CP).' 
+        : 'Bạn cần đồng ý với Chính sách Bảo vệ Dữ liệu Cá nhân & Điều lệ Cuộc thi (Nghị định 13/2023/NĐ-CP).';
+    }
+    if (!regAgeConfirmed) {
+      newErrors.age = localLanguage !== 'vi'
+        ? 'Please confirm you are 16+ or have parental/guardian consent.'
+        : 'Vui lòng xác nhận bạn đủ 16 tuổi trở lên hoặc có sự đồng ý của cha mẹ/người giám hộ.';
     }
 
     setErrors(newErrors);
@@ -869,7 +891,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             teamId: regTeamId || undefined,
             note: regNote.trim() || undefined,
             captchaId: regCaptchaId,
-            captchaAnswer: regCaptchaAnswer.trim()
+            captchaAnswer: regCaptchaAnswer.trim(),
+            consentGiven: true,
+            consentTimestamp: Date.now(),
+            consentVersion: PDPD_CONSENT_VERSION,
+            ageConfirmation: true
           })
         });
 
@@ -922,7 +948,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           teamId: regTeamId || undefined,
           email: cleanEmail,
           emailVerified: true,
-          registeredAt: Date.now()
+          registeredAt: Date.now(),
+          consentGiven: true,
+          consentTimestamp: Date.now(),
+          consentVersion: PDPD_CONSENT_VERSION,
+          ageConfirmation: true
         };
 
         const storedRecord = {
@@ -2307,6 +2337,108 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </label>
               </div>
 
+              {/* PDPD Consent Checkbox & Legal Transparency Card (Nghị định 13/2023/NĐ-CP & Điều lệ BTI 2026) */}
+              <div className={`p-3 sm:p-3.5 rounded-[4px] border transition-all text-left ${
+                errors.consent || errors.age
+                  ? 'bg-rose-950/40 border-rose-500 shadow-md shadow-rose-950/50'
+                  : 'bg-gradient-to-b from-[#1E0B38]/90 to-[#120524]/90 border-sky-400/30'
+              }`}>
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                  <div className="flex items-center gap-1.5 text-sky-300 font-mono text-[11px] font-bold">
+                    <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
+                    <span className="uppercase tracking-wider">Đồng Thuận Dữ Liệu & Quy Chế</span>
+                  </div>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-200">
+                    NĐ 13/2023/NĐ-CP
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {/* Checkbox 1: Age Confirmation */}
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      id="checkbox-reg-age"
+                      checked={regAgeConfirmed}
+                      onChange={(e) => {
+                        setRegAgeConfirmed(e.target.checked);
+                        if (errors.age) setErrors({ ...errors, age: undefined });
+                      }}
+                      className="w-4 h-4 mt-0.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500 shrink-0 group-hover:border-sky-400"
+                    />
+                    <span className="text-[10px] sm:text-[11px] text-white/90 font-sans leading-snug">
+                      {localLanguage !== 'vi' 
+                        ? 'I confirm I am 16+ years of age or have obtained parental/guardian consent to participate.' 
+                        : 'Tôi xác nhận từ đủ 16 tuổi trở lên hoặc có sự đồng ý của cha mẹ/người giám hộ hợp pháp.'} <span className="text-rose-400 font-bold">*</span>
+                    </span>
+                  </label>
+                  {errors.age && (
+                    <p className="text-[10px] text-rose-300 pl-6 flex items-center gap-1 font-mono">
+                      <AlertCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                      <span>{errors.age}</span>
+                    </p>
+                  )}
+
+                  {/* Checkbox 2: Consent to Policy & Contest Terms */}
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      id="checkbox-reg-consent"
+                      checked={regConsentAgreed}
+                      onChange={(e) => {
+                        setRegConsentAgreed(e.target.checked);
+                        if (errors.consent) setErrors({ ...errors, consent: undefined });
+                      }}
+                      className="w-4 h-4 mt-0.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500 shrink-0 group-hover:border-sky-400"
+                    />
+                    <span className="text-[10px] sm:text-[11px] text-white/90 font-sans leading-snug">
+                      {localLanguage !== 'vi' ? 'I have read, understood and agree to the ' : 'Tôi đã đọc, hiểu rõ và đồng ý với '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowPrivacyModal(true);
+                        }}
+                        className="text-sky-300 hover:text-sky-200 underline font-semibold cursor-pointer"
+                      >
+                        {localLanguage !== 'vi' ? 'Privacy Policy' : 'Chính Sách Bảo Vệ Dữ Liệu Cá Nhân'}
+                      </button>
+                      {localLanguage !== 'vi' ? ' and ' : ' cùng '}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowTermsModal(true);
+                        }}
+                        className="text-sky-300 hover:text-sky-200 underline font-semibold cursor-pointer"
+                      >
+                        {localLanguage !== 'vi' ? 'Contest Terms & AI Transparency' : 'Điều Lệ Cuộc Thi & Minh Bạch AI'}
+                      </button>. <span className="text-rose-400 font-bold">*</span>
+                    </span>
+                  </label>
+                  {errors.consent && (
+                    <p className="text-[10px] text-rose-300 pl-6 flex items-center gap-1 font-mono">
+                      <AlertCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                      <span>{errors.consent}</span>
+                    </p>
+                  )}
+
+                  {/* Direct link to standalone policy page */}
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-white/50 pl-6 border-t border-white/5">
+                    <span>Phiên bản pháp lý: v1.0-pdpd-2026</span>
+                    <a
+                      href="/policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sky-300 hover:text-sky-100 flex items-center gap-1 hover:underline"
+                    >
+                      <span>Mở Trang Policy Riêng</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               {isLobbyLocked ? (
                 <div className="w-full py-2.5 sm:py-3 rounded-[2px] bg-rose-950/80 border border-rose-500/50 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed select-none font-mono shadow-md">
                   <Lock className="w-4 h-4 text-rose-400 animate-pulse" />
@@ -2967,6 +3099,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           )}
         </div>
       </div>
+
+      <PrivacyPolicyModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+      />
+      <TermsOfServiceModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
     </div>
   );
 

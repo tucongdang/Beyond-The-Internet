@@ -41,6 +41,7 @@ import { vibrateTap, vibrateWarning } from '../utils/hapticUtils';
 import { TypingIndicator } from './TypingIndicator';
 import { syncService } from '../services/syncService';
 import { calculateLeaderboard, UserScoreSummary } from '../utils/leaderboardUtils';
+import { checkContentCompliance } from '../utils/vnLawCompliance';
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 export type SystemMessageType = 'status_update' | 'technical_alert' | 'security_alert' | 'game_event' | 'general';
@@ -544,6 +545,32 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     const textToSend = (customPrompt || inputText).trim();
     if (!textToSend || isLoading) return;
 
+    // Real-time Vietnamese legal and cybersecurity compliance check
+    const compliance = checkContentCompliance(textToSend, 'CHAT');
+    if (!compliance.isSafe || compliance.severity === 'BLOCKED') {
+      vibrateWarning();
+      soundFx.playAlarm();
+      const blockedMsg: ChatMessage = {
+        id: `user_blocked_${Date.now()}`,
+        role: 'user',
+        content: textToSend,
+        timestamp: Date.now()
+      };
+      const securityAlertMsg: ChatMessage = {
+        id: `compliance_block_${Date.now()}`,
+        role: 'system',
+        systemType: 'security_alert',
+        title: 'CẢNH BÁO AN TOÀN MẠNG & QUY CHẾ BTI 2026',
+        content: `🛡️ ${compliance.reasonVi || 'Tin nhắn của bạn không phù hợp với chuẩn mực an toàn mạng hoặc quy chế thi đấu. Vui lòng điều chỉnh lại.'}`,
+        timestamp: Date.now() + 10
+      };
+      setMessages(prev => [...prev, blockedMsg, securityAlertMsg]);
+      setInputText('');
+      return;
+    }
+
+    const safeText = compliance.sanitizedText || textToSend;
+
     vibrateTap();
     if (onMessageSent) {
       onMessageSent();
@@ -554,7 +581,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}`,
       role: 'user',
-      content: textToSend,
+      content: safeText,
       timestamp: Date.now()
     };
 
@@ -564,7 +591,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
     setIsLoading(true);
 
     // If active question is running and user asks directly for the exam answer
-    if (currentStatus === 'ACTIVE' && isSuspiciousCheatingQuery(textToSend)) {
+    if (currentStatus === 'ACTIVE' && isSuspiciousCheatingQuery(safeText)) {
       vibrateWarning();
       setTimeout(() => {
         const securityAlertMsg: ChatMessage = {
@@ -911,6 +938,15 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
                 }`}>
                   {currentStatus}
                 </span>
+              </div>
+
+              {/* AI Transparency & Regulatory Disclaimer (Nghị định 13/2023 & Minh bạch AI) */}
+              <div className="bg-[#100320] border-b border-white/5 px-3 py-1 flex items-center justify-between text-[9px] font-mono text-white/50 shrink-0">
+                <span className="flex items-center gap-1 text-purple-300">
+                  <Shield className="w-2.5 h-2.5 text-purple-400" />
+                  <span>Trợ lý AI tự động (Gemini 3.8 Flash)</span>
+                </span>
+                <span className="text-white/40">Mang tính tham khảo • Tuân thủ NĐ 13/2023</span>
               </div>
 
               {/* Active Question Warning Alert Banner */}

@@ -2429,68 +2429,66 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                   );
 
                   return (
-                  <div className="space-y-3">
-                    <div className="p-2 rounded-[3px] bg-slate-900 border border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
-                      <span className="flex items-center gap-1.5 text-slate-200">
-                        <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                        Điền trực tiếp trong ứng dụng
-                      </span>
-                      {previewFormUrl ? (
-                        <a
-                          href={previewFormUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#F7CAC9] hover:text-[#f8d7d6] flex items-center gap-1 font-bold"
-                        >
-                          Mở tab mới <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-amber-400 text-[11px] font-mono">Chưa nhập URL form</span>
-                      )}
-                    </div>
+                    <div className="space-y-3">
+                      <div className="p-2 rounded-[3px] bg-slate-900 border border-white/10 flex items-center justify-between text-xs text-slate-300 font-mono">
+                        <span className="flex items-center gap-1.5 text-slate-200">
+                          <ClipboardList className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                          Điền trực tiếp trong ứng dụng
+                        </span>
+                        {previewFormUrl ? (
+                          <a
+                            href={previewFormUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#F7CAC9] hover:text-[#f8d7d6] flex items-center gap-1 font-bold"
+                          >
+                            Mở tab mới <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span className="text-amber-400 text-[11px] font-mono">Chưa nhập URL form</span>
+                        )}
+                      </div>
 
-                    <div className="relative w-full h-[360px] bg-slate-900/90 rounded-[4px] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-center p-4">
-                      {previewFormUrl ? (
-                        <iframe
-                          src={previewFormUrl}
-                          title="Xem trước biểu mẫu Google Form"
-                          className="w-full h-full border-0 rounded-[3px]"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="space-y-3 max-w-sm">
-                          <FileSpreadsheet className="w-10 h-10 text-slate-500 mx-auto" />
-                          <p className="text-xs text-slate-300">
-                            Chưa có URL Google Form nào được cấu hình cho khảo sát này.
-                          </p>
-                          <p className="text-[11px] text-slate-400 font-mono">
-                            Vui lòng nhập đường dẫn biểu mẫu tại tab <strong>CẤU HÌNH CHUNG</strong> hoặc tạo tự động ở tab <strong>GOOGLE WORKSPACE</strong>.
-                          </p>
-                        </div>
-                      )}
+                      <div className="relative w-full h-[360px] bg-slate-900/90 rounded-[4px] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+                        {previewFormUrl ? (
+                          <iframe
+                            src={previewFormUrl}
+                            title="Xem trước biểu mẫu Google Form"
+                            className="w-full h-full border-0 rounded-[3px]"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="space-y-3 max-w-sm">
+                            <FileSpreadsheet className="w-10 h-10 text-slate-500 mx-auto" />
+                            <p className="text-xs text-slate-300">
+                              Chưa có URL Google Form nào được cấu hình cho khảo sát này.
+                            </p>
+                            <p className="text-[11px] text-slate-400 font-mono">
+                              Vui lòng nhập đường dẫn biểu mẫu tại tab <strong>CẤU HÌNH CHUNG</strong> hoặc tạo tự động ở tab <strong>GOOGLE WORKSPACE</strong>.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewStage('INVITE')}
+                          className="px-3.5 py-2 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold transition cursor-pointer"
+                        >
+                          ← Quay lại thông tin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewStage('VOUCHER')}
+                          className="px-4 py-2 rounded-[3px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
+                        >
+                          Đã Gửi Form → Xem Phiếu Quà Tặng
+                        </button>
+                      </div>
                     </div>
-                  </div>
                   );
                 })()}
-
-                    <div className="flex items-center justify-between pt-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewStage('INVITE')}
-                        className="px-3.5 py-2 rounded-[3px] bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-semibold transition cursor-pointer"
-                      >
-                        ← Quay lại thông tin
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPreviewStage('VOUCHER')}
-                        className="px-4 py-2 rounded-[3px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider transition shadow cursor-pointer"
-                      >
-                        Đã Gửi Form → Xem Phiếu Quà Tặng
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {previewStage === 'VOUCHER' && (
                   <div className="space-y-4">

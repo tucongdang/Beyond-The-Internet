@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, PingInfo, AdminUser, TECHNICAL_ROLES } from '../types';
-import { Users, Shield, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap } from 'lucide-react';
+import { Users, Shield, ShieldCheck, Scale, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
@@ -13,8 +13,8 @@ import { useBatterySaver } from '../utils/batterySaverUtils';
 import { BatterySaverModal } from './BatterySaverModal';
 
 interface NavbarProps {
-  currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector';
-  onViewChange: (view: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector') => void;
+  currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy';
+  onViewChange: (view: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy') => void;
   gameState: GameState;
   activeCount: number;
   user: UserInfo | null;
@@ -607,6 +607,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {/* Policy & Legal Portal Link */}
+            <button
+              id="btn-navbar-policy"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                onViewChange('policy');
+              }}
+              data-tooltip={effectiveLanguage === 'en' ? 'Privacy Policy & Legal Framework (Decree 13/2023)' : 'Chính Sách Bảo Mật & Pháp Lý (Nghị định 13/2023)'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Legal & Policy' : 'Chính Sách & Pháp Lý'}
+              data-tooltip-placement="bottom"
+              className={`has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] transition cursor-pointer flex items-center justify-center ${
+                currentView === 'policy'
+                  ? 'bg-[#F7CAC9] text-[#190839]'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </button>
+
             {/* Fullscreen Toggle */}
             <button
               id="btn-toggle-fullscreen"
@@ -846,6 +866,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="text-[10px] text-white/50">{isFullscreen ? 'ON' : 'OFF'}</span>
                 </button>
 
+                {/* Policy Page Link */}
+                <button
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    onViewChange('policy');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2.5 bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#F7CAC9]" />
+                    <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (NĐ 13)'}</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-sky-300">v1.0</span>
+                </button>
+
                 {/* Return Home */}
                 <button
                   onClick={() => {
@@ -1077,6 +1114,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span className="text-[10px] text-sky-200">Sliders</span>
                     </button>
                   )}
+
+                  {/* Policy Page Link */}
+                  <button
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      onViewChange('policy');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-3 py-2.5 bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#F7CAC9]" />
+                      <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (NĐ 13)'}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-sky-300">v1.0</span>
+                  </button>
                 </div>
               </div>
             )}

@@ -10,6 +10,7 @@ interface LandingPageProps {
   onEnterAudience: () => void;
   onEnterAdmin: () => void;
   onEnterProjector: () => void;
+  onEnterPolicy?: () => void;
   gameState?: GameState;
 }
 
@@ -17,6 +18,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onEnterAudience,
   onEnterAdmin,
   onEnterProjector,
+  onEnterPolicy,
   gameState
 }) => {
   const { localLanguage } = useLanguage();
@@ -297,9 +299,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
       
       {/* Footer */}
-      <div className="mt-4 pb-6 text-center">
+      <div className="mt-4 pb-6 text-center space-y-2">
+        <div className="flex items-center justify-center gap-3 text-xs font-mono text-[#F7CAC9]/80">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              if (onEnterPolicy) {
+                onEnterPolicy();
+              } else if (typeof window !== 'undefined') {
+                window.location.href = '?view=policy';
+              }
+            }}
+            className="hover:text-white underline decoration-dotted transition cursor-pointer flex items-center gap-1"
+          >
+            <span>{localLanguage !== 'vi' ? 'Privacy Policy & Data Protection (Decree 13/2023)' : 'Chính Sách Bảo Vệ Dữ Liệu Cá Nhân (NĐ 13/2023/NĐ-CP)'}</span>
+          </button>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              if (onEnterPolicy) {
+                onEnterPolicy();
+              } else if (typeof window !== 'undefined') {
+                window.location.href = '?view=policy';
+              }
+            }}
+            className="hover:text-white underline decoration-dotted transition cursor-pointer"
+          >
+            <span>{localLanguage !== 'vi' ? 'Contest Terms & AI Transparency' : 'Điều Lệ Cuộc Thi & Minh Bạch AI'}</span>
+          </button>
+        </div>
         <p className="text-[10px] text-[#B6A6D8]/50 font-mono tracking-widest uppercase">
-          Beyond The Internet 2026 • Academic Gameshow Live System
+          Beyond The Internet 2026 • Academic Gameshow Live System • Phiên bản {localLanguage !== 'vi' ? 'v1.0-pdpd-2026' : 'v1.0-pdpd-2026'}
         </p>
       </div>
 
