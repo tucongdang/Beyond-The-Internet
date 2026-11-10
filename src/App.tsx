@@ -698,7 +698,7 @@ export default function App() {
     }
   }, [user, currentView]);
 
-  // Handle forced routing from admin
+  // Handle forced routing from admin (keep policy page fixed, never redirect while user is reading)
   useEffect(() => {
     if (gameState.force_route_ts && gameState.force_route_ts > lastRouteTs) {
       setLastRouteTs(gameState.force_route_ts);
@@ -772,14 +772,6 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [user]);
-
-  // Keep soundEnabled synced with global soundFx state (e.g. when toggled inside AudioSettingsModal)
-  useEffect(() => {
-    const unsubscribe = soundFx.subscribeEnabled((enabled) => {
-      setSoundEnabled(enabled);
-    });
-    return () => unsubscribe();
-  }, []);
 
   // Sound toggle handler
   const handleToggleSound = () => {
@@ -876,9 +868,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-[100dvh] h-[100dvh] overflow-hidden bg-transparent text-[#F5EFF9] font-sans flex flex-col antialiased selection:bg-[#F7CAC9] selection:text-[#190839] relative z-0">
+    <div className={`min-h-[100dvh] h-[100dvh] overflow-hidden ${currentView === 'policy' ? 'bg-[#0D0420]' : 'bg-transparent'} text-[#F5EFF9] font-sans flex flex-col antialiased selection:bg-[#F7CAC9] selection:text-[#190839] relative z-0`}>
       {/* --- GLOBAL APP BACKGROUND (Sync with Landing Page) --- */}
-      {!(isHighContrast || isBatterySaver) && (
+      {!(isHighContrast || isBatterySaver || currentView === 'policy') && (
         <>
           <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md pointer-events-none">
             <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
@@ -961,7 +953,7 @@ export default function App() {
       />
       )}
       {/* Main View Area */}
-      <main className={`flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto ${currentView === 'policy' ? 'bg-[#0D0420]' : ''}`}>
+      <main className={`flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto ${currentView === 'policy' ? 'bg-[#0D0420] min-h-full h-full' : ''}`}>
 
         {currentView === 'client_landing' && (
           <ClientLandingPage gameState={gameState} />

@@ -98,25 +98,17 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
   });
   const [bookmarkToast, setBookmarkToast] = useState<string | null>(null);
 
-  // Track window/main scroll container progress and Back to Top threshold (> 400px)
+  // Track window/container scroll progress and Back to Top threshold (> 400px)
   useEffect(() => {
-    const getScrollMetrics = () => {
-      const mainEl = document.querySelector('main');
-      if (mainEl && mainEl.scrollHeight > mainEl.clientHeight + 10) {
-        return {
-          scrollTop: mainEl.scrollTop,
-          scrollHeight: Math.max(1, mainEl.scrollHeight - mainEl.clientHeight),
-        };
-      }
-      const docTop = window.scrollY || document.documentElement.scrollTop || 0;
-      const docHeight = Math.max(1, (document.documentElement.scrollHeight || 1) - window.innerHeight);
-      return { scrollTop: docTop, scrollHeight: docHeight };
-    };
-
     const handleScroll = () => {
       if (typeof window === 'undefined') return;
-      const { scrollTop, scrollHeight } = getScrollMetrics();
-
+      
+      const mainEl = document.querySelector('main');
+      const scrollTop = mainEl && mainEl.scrollTop > 0 ? mainEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+      const scrollHeight = mainEl && mainEl.scrollHeight > mainEl.clientHeight
+        ? (mainEl.scrollHeight - mainEl.clientHeight)
+        : ((document.documentElement.scrollHeight || 1) - window.innerHeight);
+      
       setShowBackToTop(scrollTop > 400);
 
       if (scrollHeight > 0) {
@@ -128,28 +120,28 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     };
 
     const mainEl = document.querySelector('main');
-    window.addEventListener('scroll', handleScroll, { passive: true });
     if (mainEl) {
       mainEl.addEventListener('scroll', handleScroll, { passive: true });
     }
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     handleScroll();
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       if (mainEl) {
         mainEl.removeEventListener('scroll', handleScroll);
       }
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [activeTab]);
 
   const handleScrollToTop = () => {
     soundFx.playClick();
     vibrateTap();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     const mainEl = document.querySelector('main');
     if (mainEl) {
       mainEl.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Automated 5-second scroll position autosave to LocalStorage
@@ -158,12 +150,11 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
 
     const intervalId = setInterval(() => {
       const mainEl = document.querySelector('main');
-      const currentScrollTop = mainEl && mainEl.scrollHeight > mainEl.clientHeight + 10
-        ? mainEl.scrollTop
-        : (window.scrollY || document.documentElement.scrollTop || 0);
-      const scrollHeight = mainEl && mainEl.scrollHeight > mainEl.clientHeight + 10
-        ? Math.max(1, mainEl.scrollHeight - mainEl.clientHeight)
-        : Math.max(1, (document.documentElement.scrollHeight || 1) - window.innerHeight);
+      const currentScrollTop = mainEl && mainEl.scrollTop > 0 ? mainEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+      
+      const scrollHeight = mainEl && mainEl.scrollHeight > mainEl.clientHeight
+        ? (mainEl.scrollHeight - mainEl.clientHeight)
+        : ((document.documentElement.scrollHeight || 1) - window.innerHeight);
       const currentProgress = scrollHeight > 0 
         ? Math.min(100, Math.max(0, Math.round((currentScrollTop / scrollHeight) * 100))) 
         : 100;
@@ -248,9 +239,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     vibrateSuccess();
 
     const mainEl = document.querySelector('main');
-    const currentScrollTop = mainEl && mainEl.scrollHeight > mainEl.clientHeight + 10
-      ? mainEl.scrollTop
-      : (window.scrollY || document.documentElement.scrollTop || 0);
+    const currentScrollTop = mainEl && mainEl.scrollTop > 0 ? mainEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
 
     const currentUrl = typeof window !== 'undefined'
       ? `${window.location.origin}${window.location.pathname}?view=policy&tab=${activeTab.toLowerCase()}`
@@ -311,19 +300,19 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       const mainEl = document.querySelector('main');
 
       if (savedBookmark.scrollTop > 0) {
-        window.scrollTo({ top: savedBookmark.scrollTop, behavior: 'smooth' });
         if (mainEl) {
           mainEl.scrollTo({ top: savedBookmark.scrollTop, behavior: 'smooth' });
         }
+        window.scrollTo({ top: savedBookmark.scrollTop, behavior: 'smooth' });
       } else if (savedBookmark.scrollProgress > 0) {
-        const scrollHeight = mainEl && mainEl.scrollHeight > mainEl.clientHeight + 10
-          ? Math.max(1, mainEl.scrollHeight - mainEl.clientHeight)
-          : Math.max(1, (document.documentElement.scrollHeight || 1) - window.innerHeight);
+        const scrollHeight = mainEl && mainEl.scrollHeight > mainEl.clientHeight
+          ? (mainEl.scrollHeight - mainEl.clientHeight)
+          : ((document.documentElement.scrollHeight || 1) - window.innerHeight);
         const targetY = Math.round((savedBookmark.scrollProgress / 100) * scrollHeight);
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
         if (mainEl) {
           mainEl.scrollTo({ top: targetY, behavior: 'smooth' });
         }
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
       }
     }, 100);
 
@@ -378,91 +367,207 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     return localLanguage !== 'vi' ? 'Back' : 'Quay Lại';
   }, [previousViewName, localLanguage]);
 
-  // Articles data for tab 1 with search indexing (Updated to Law 91/2025/QH15 & Decree 356/2025/ND-CP)
-  const articles = useMemo(() => [
+  interface ArticleClause {
+    id: string;
+    num: number;
+    title: string;
+    intro: string;
+    items: Array<{
+      label?: string;
+      text: string;
+    }>;
+    note?: string;
+  }
+
+  // Articles data for tab 1 with structured clauses (Law 91/2025/QH15 & Decree 356/2025/ND-CP)
+  const articles: ArticleClause[] = useMemo(() => [
     {
       id: 'dieu-1',
       num: 1,
       title: 'Bên Kiểm Soát & Bên Xử Lý Dữ Liệu',
-      content: 'Ban Tổ Chức Cuộc Thi Học Thuật Beyond The Internet 2026 phối hợp cùng Bộ phận Kỹ thuật & Công nghệ Hội trường thực hiện vai trò Bên Kiểm soát và Xử lý dữ liệu cá nhân.',
-      bullets: [
-        'Phạm vi áp dụng: Toàn bộ dữ liệu phát sinh qua tương tác web-app đấu trường trực tiếp (Live Arena), hạ tầng cơ sở dữ liệu Firebase Firestore và dịch vụ máy chủ tính điểm.',
-        'Nguyên tắc minh bạch: Xử lý đúng mục đích đã thông báo, giới hạn dữ liệu ở mức tối thiểu cần thiết cho việc vận hành cuộc thi học thuật.'
-      ]
+      intro: 'Căn cứ quy định về vai trò của Bên Kiểm soát dữ liệu và Bên Xử lý dữ liệu cá nhân theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15:',
+      items: [
+        {
+          label: 'Đơn vị kiểm soát và xử lý',
+          text: 'Ban Tổ Chức Cuộc Thi Học Thuật Beyond The Internet 2026 phối hợp cùng Bộ phận Kỹ thuật & Công nghệ Hội trường.'
+        },
+        {
+          label: 'Phạm vi áp dụng',
+          text: 'Áp dụng đối với toàn bộ dữ liệu phát sinh qua tương tác web-app đấu trường trực tiếp (Live Arena), hạ tầng cơ sở dữ liệu Firebase Firestore và dịch vụ máy chủ tính điểm.'
+        },
+        {
+          label: 'Trách nhiệm pháp lý',
+          text: 'Bảo đảm an toàn bảo mật, tính toàn vẹn dữ liệu và thực thi đầy đủ quyền của chủ thể dữ liệu trong suốt thời gian diễn ra giải đấu.'
+        }
+      ],
+      note: 'Tuân thủ Điều 2 & Điều 7 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15.'
     },
     {
       id: 'dieu-2',
       num: 2,
-      title: 'Phân Loại Dữ Liệu Cá Nhân Cơ Bản & Nhạy Cảm (Điều 4 NĐ 356/2025/NĐ-CP)',
-      content: 'Hệ thống phân loại và giới hạn chặt chẽ phạm vi dữ liệu thu thập theo quy định tại Điều 3 và Điều 4 Nghị định 356/2025/NĐ-CP:',
-      bullets: [
-        'Dữ liệu cá nhân cơ bản: Mã số sinh viên (MSSV), Họ và tên, Tên hiển thị (Nickname), Giới tính, Năm sinh, Địa chỉ Email xác thực tài khoản và Đội thi yêu thích. Hệ thống tự động sinh Mã định danh ẩn danh UID 12 số để đại diện cho người chơi trên màn chiếu và bảng xếp hạng công cộng mà không làm lộ thông tin định danh.',
-        'Dữ liệu kỹ thuật & dữ liệu tương tác trong phiên thi (liên quan điểm l khoản 1 Điều 4 Nghị định 356/2025/NĐ-CP): Thời gian nộp đáp án (mili-giây), phương án trả lời câu hỏi, điểm số các vòng, độ trễ mạng (Ping/RTT) và nhật ký chuyển tab trong giờ mở câu hỏi nhằm chống gian lận.',
-        'Cam kết không thu thập ngoài phạm vi: Hệ thống KHÔNG thu thập dữ liệu vị trí GPS, dữ liệu sinh trắc học, thông tin tài chính/ngân hàng và KHÔNG gắn công cụ theo dõi hành vi để chạy quảng cáo thương mại.'
-      ]
+      title: 'Phân Loại Dữ Liệu Cá Nhân Cơ Bản & Dữ Liệu Kỹ Thuật (Điều 4 NĐ 356/2025/NĐ-CP)',
+      intro: 'Hệ thống phân định minh bạch các nhóm thông tin thu thập nhằm phục vụ tổ chức thi đấu và phòng chống gian lận theo Nghị định 356/2025/NĐ-CP:',
+      items: [
+        {
+          label: 'Dữ liệu cá nhân cơ bản (Điều 3 & Phụ lục I NĐ 356/2025)',
+          text: 'Mã số sinh viên/học sinh (MSSV/MSHS), Họ và tên, Tên hiển thị (Nickname), Giới tính, Năm sinh, Địa chỉ Email xác thực tài khoản và Đội thi yêu thích.'
+        },
+        {
+          label: 'Mã định danh ẩn danh UID 12 số',
+          text: 'Hệ thống tự động sinh Mã định danh ẩn danh UID 12 số trên thiết bị để đại diện cho người chơi trên màn chiếu LED và bảng xếp hạng công cộng, ngăn chặn lộ danh tính thực tế.'
+        },
+        {
+          label: 'Dữ liệu kỹ thuật & phiên thi (Điểm l khoản 1 Điều 4 NĐ 356/2025)',
+          text: 'Thời gian nộp đáp án (mili-giây), phương án trả lời câu hỏi, điểm số các vòng, độ trễ mạng (Ping/RTT) và nhật ký chuyển tab trong giờ mở câu hỏi nhằm chống gian lận.'
+        },
+        {
+          label: 'Cam kết dữ liệu không thu thập',
+          text: 'Hệ thống KHÔNG thu thập dữ liệu vị trí GPS chính xác, sinh trắc học, thông tin tài chính/ngân hàng và KHÔNG gắn công cụ theo dõi hành vi phục vụ quảng cáo thương mại.'
+        }
+      ],
+      note: 'Dữ liệu nhạy cảm theo Phụ lục II Nghị định 356/2025/NĐ-CP hoàn toàn không được thu thập.'
     },
     {
       id: 'dieu-3',
       num: 3,
       title: 'Mục Đích Xử Lý & Nguyên Tắc Đồng Ý (Điều 9 Luật 91/2025/QH15)',
-      content: 'Dữ liệu chỉ được xử lý sau khi người tham gia chủ động tích chọn đồng ý rõ ràng (không dùng ô tích sẵn; sự im lặng hoặc tiếp tục sử dụng không được coi là đồng ý theo khoản 4 Điều 9 Luật 91/2025/QH15 và khoản 3 Điều 6 Nghị định 356/2025/NĐ-CP) cho 04 mục đích cụ thể:',
-      bullets: [
-        'Xác thực tài khoản tham gia đấu trường câu hỏi trực tiếp và đồng bộ trạng thái thi đấu.',
-        'Tính toán điểm số, tốc độ phản hồi và xếp hạng trên Bảng xếp hạng thời gian thực (Live Leaderboard).',
-        'Đối soát danh tính chính xác khi trao giải thưởng hiện vật/học bổng và cấp giấy chứng nhận tham gia.',
-        'Đảm bảo an ninh mạng, chống gian lận học thuật và ngăn chặn các cuộc tấn công bằng bot tự động.'
-      ]
+      intro: 'Dữ liệu chỉ được xử lý sau khi người tham gia chủ động tích chọn đồng ý rõ ràng. Không sử dụng ô tích sẵn; im lặng hoặc tiếp tục sử dụng không được coi là đồng ý (khoản 4 Điều 9 Luật 91/2025/QH15 và khoản 3 Điều 6 Nghị định 356/2025/NĐ-CP). Các mục đích xử lý bao gồm:',
+      items: [
+        {
+          label: 'Xác thực tài khoản thi đấu',
+          text: 'Định danh người tham gia đấu trường câu hỏi trực tiếp và lưu trữ tiến trình làm bài an toàn.'
+        },
+        {
+          label: 'Tổng hợp bảng xếp hạng thời gian thực',
+          text: 'Tính toán điểm số, xếp hạng trực tiếp (Live Leaderboard) và hiển thị kết quả trên màn chiếu LED hội trường.'
+        },
+        {
+          label: 'Đối soát trao giải & cấp chứng nhận',
+          text: 'Xác minh danh tính người chiến thắng để trao thưởng hiện vật, quay số may mắn (Lucky Draw) và cấp giấy chứng nhận tham gia.'
+        },
+        {
+          label: 'Bảo đảm an toàn an ninh mạng',
+          text: 'Ngăn chặn bot tự động, phòng chống gian lận thi cử và đảm bảo tính công bằng của giải đấu.'
+        }
+      ],
+      note: 'Người dùng có quyền thay đổi hoặc rút lại sự đồng ý bất cứ lúc nào tại trang này hoặc mục Hồ Sơ.'
     },
     {
       id: 'dieu-4',
       num: 4,
       title: 'Biện Pháp Bảo Vệ & Thông Báo Sự Cố (Điều 23 Luật 91/2025 & Luật ANM 116/2025)',
-      content: 'Hệ thống áp dụng các biện pháp bảo mật kỹ thuật và tổ chức theo chuẩn an toàn thông tin mạng:',
-      bullets: [
-        'Mã hóa mật khẩu & truyền tải: Mật khẩu tài khoản được băm một chiều bằng thuật toán PBKDF2/scrypt kèm salt ngẫu nhiên độc lập tại cả phía máy khách (Client) và máy chủ (Server), tuyệt đối không lưu trữ mật khẩu dạng văn bản thuần (plain text). Toàn bộ kết nối truyền tải qua giao thức TLS/HTTPS.',
-        'Quy trình ứng phó sự cố 72 giờ: Trường hợp phát sinh sự cố rò rỉ hoặc xâm phạm dữ liệu cá nhân, Ban Tổ Chức thực hiện thông báo tới cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất trong vòng 72 giờ theo khoản 1 Điều 23 Luật 91/2025/QH15 và Điều 28 Nghị định 356/2025/NĐ-CP.'
-      ]
+      intro: 'Ban Tổ Chức áp dụng các giải pháp kỹ thuật và an toàn thông tin theo tiêu chuẩn bảo mật hiện đại nhằm bảo vệ tối đa dữ liệu người dùng:',
+      items: [
+        {
+          label: 'Mã hóa mật khẩu một chiều',
+          text: 'Mật khẩu tài khoản được băm bằng thuật toán PBKDF2/scrypt kèm chuỗi ngẫu nhiên (salt) độc lập tại cả phía Client và Server, tuyệt đối không lưu trữ dạng văn bản thuần (plain text).'
+        },
+        {
+          label: 'Mã hóa đường truyền TLS/HTTPS',
+          text: 'Mọi dữ liệu trao đổi giữa thiết bị người dùng và máy chủ đều được mã hóa bằng giao thức HTTPS/WSS an toàn.'
+        },
+        {
+          label: 'Cơ chế cách ly dữ liệu',
+          text: 'Dữ liệu khán giả được phân tách quyền nghiêm ngặt theo quy tắc bảo mật Firestore Rules và token xác thực phiên.'
+        },
+        {
+          label: 'Thông báo sự cố trong 72 giờ',
+          text: 'Trường hợp phát sinh sự cố rò rỉ hoặc xâm phạm dữ liệu cá nhân, Ban Tổ Chức thực hiện quy trình thông báo tới cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất trong vòng 72 giờ theo khoản 1 Điều 23 Luật 91/2025/QH15 và Điều 28 Nghị định 356/2025/NĐ-CP.'
+        }
+      ],
+      note: 'Tuân thủ Điều 23 Luật 91/2025/QH15 & Điều 7 Luật An ninh mạng số 116/2025/QH15.'
     },
     {
       id: 'dieu-5',
       num: 5,
       title: 'Thời Hạn Lưu Trữ Dữ Liệu & Nhật Ký Hệ Thống',
-      content: 'Thời hạn lưu trữ được phân tách rõ giữa dữ liệu cuộc thi và nhật ký bảo mật:',
-      bullets: [
-        'Dữ liệu cá nhân phục vụ giải đấu: Lưu trữ trong suốt thời gian diễn ra cuộc thi BTI 2026 và tối đa 60 ngày sau đêm Chung kết để hoàn tất đối soát giải thưởng, sau đó được xóa hoặc ẩn danh hóa không thể khôi phục.',
-        'Nhật ký kỹ thuật an ninh mạng: Lưu trữ bảo mật theo quy định tại Luật An ninh mạng số 116/2025/QH15 và Nghị định 333/2026/NĐ-CP phục vụ công tác đảm bảo an toàn thông tin.'
-      ]
+      intro: 'Thời hạn lưu trữ dữ liệu cá nhân được quy định chặt chẽ, tối thiểu hóa thời gian lưu giữ thông tin:',
+      items: [
+        {
+          label: 'Dữ liệu phục vụ giải đấu',
+          text: 'Được lưu trữ trong suốt thời gian diễn ra cuộc thi BTI 2026 và tối đa 60 ngày sau đêm Chung kết để hoàn tất công tác đối soát giải thưởng, sau đó tự động xóa hoặc ẩn danh hóa vĩnh viễn.'
+        },
+        {
+          label: 'Nhật ký an ninh mạng (System Logs)',
+          text: 'Lưu trữ bảo mật theo quy định tại Luật An ninh mạng số 116/2025/QH15 và Nghị định 333/2026/NĐ-CP phục vụ công tác thanh tra an toàn thông tin khi có yêu cầu.'
+        },
+        {
+          label: 'Dữ liệu lưu tạm trên thiết bị (LocalStorage)',
+          text: 'Khán giả có thể chủ động xóa sạch dữ liệu phiên bất cứ lúc nào qua nút "Xóa Dữ Liệu Khỏi Máy" tại Hồ Sơ Cá Nhân.'
+        }
+      ],
+      note: 'Sau 60 ngày kể từ khi kết thúc giải đấu, toàn bộ dữ liệu cá nhân định danh sẽ được tự động xóa bỏ.'
     },
     {
       id: 'dieu-6',
       num: 6,
       title: 'Bên Thứ Ba & Chuyển Dữ Liệu Xuyên Biên Giới (Điều 20 Luật 91/2025/QH15)',
-      content: 'Ban Tổ Chức tuyệt đối không mua bán dữ liệu cá nhân dưới mọi hình thức (khoản 6 Điều 7 Luật 91/2025/QH15) và không chia sẻ dữ liệu cho mục đích quảng cáo. Để vận hành đồng bộ thời gian thực và trợ lý giải đáp thể lệ, ứng dụng sử dụng hạ tầng đám mây đặt tại nước ngoài của Google LLC (thuộc phạm vi Điều 20 Luật 91/2025/QH15 và Điều 18 Nghị định 356/2025/NĐ-CP):',
-      bullets: [
-        'Google Cloud Platform & Firebase Authentication/Firestore: Lưu trữ tài khoản, trạng thái câu hỏi và bảng điểm thời gian thực.',
-        'Google Gemini API: Xử lý tin nhắn hỏi đáp thể lệ và tạo giọng đọc câu hỏi (hệ thống tự động lược bỏ thông tin định danh cá nhân như SĐT/Email/CCCD trước khi gửi yêu cầu).'
-      ]
+      intro: 'Ban Tổ Chức tuyệt đối không mua bán dữ liệu cá nhân dưới mọi hình thức (khoản 6 Điều 7 Luật 91/2025/QH15) và không chia sẻ cho bên thứ ba vì mục đích quảng cáo. Để vận hành hệ thống, ứng dụng sử dụng các dịch vụ đám mây đặt ngoài lãnh thổ Việt Nam:',
+      items: [
+        {
+          label: 'Google Cloud Platform & Firebase Firestore',
+          text: 'Lưu trữ tài khoản, trạng thái câu hỏi và bảng điểm thi đấu theo thời gian thực (máy chủ đám mây của Google LLC).'
+        },
+        {
+          label: 'Google Gemini API',
+          text: 'Xử lý tương tác hỏi đáp thể lệ qua Trợ lý AI và tạo giọng đọc âm thanh. Toàn bộ thông tin định danh (SĐT, Email, CCCD) đều được hệ thống tự động lọc bỏ (redact) trước khi gửi qua API.'
+        },
+        {
+          label: 'Quy chuẩn chuyển dữ liệu xuyên biên giới',
+          text: 'Việc lưu trữ trên đám mây nước ngoài thuộc phạm vi chuyển dữ liệu xuyên biên giới theo Điều 20 Luật 91/2025/QH15 và Điều 18 Nghị định 356/2025/NĐ-CP.'
+        }
+      ],
+      note: 'Dữ liệu gửi sang dịch vụ AI bên ngoài luôn được khử thông tin định danh trước khi xử lý.'
     },
     {
       id: 'dieu-7',
       num: 7,
       title: 'Bảo Vệ Dữ Liệu Trẻ Em & Người Chưa Thành Niên (Điều 24 Luật 91/2025/QH15)',
-      content: 'Căn cứ Điều 24 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và Luật Trẻ em 2016, đối với người tham gia là trẻ em (dưới 16 tuổi), việc xử lý dữ liệu cá nhân và công bố thông tin phải có sự đồng ý của cha mẹ hoặc người đại diện theo pháp luật (kèm sự đồng ý của trẻ từ đủ 7 tuổi trở lên).',
-      bullets: [
-        'Ban Tổ Chức ngừng xử lý và xóa dữ liệu cá nhân của trẻ em ngay khi cha mẹ/người giám hộ rút lại sự đồng ý hoặc theo yêu cầu của cơ quan bảo vệ trẻ em.'
-      ]
+      intro: 'Căn cứ Điều 24 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và Luật Trẻ em 2016, hệ thống thực thi chính sách bảo vệ nghiêm ngặt đối với người tham gia là trẻ em (dưới 16 tuổi):',
+      items: [
+        {
+          label: 'Sự đồng ý của người giám hộ',
+          text: 'Đối với thí sinh dưới 16 tuổi, việc xử lý dữ liệu cá nhân và công bố thông tin phải có sự đồng ý của cha mẹ hoặc người đại diện theo pháp luật.'
+        },
+        {
+          label: 'Sự đồng ý của trẻ từ đủ 7 tuổi trở lên',
+          text: 'Bắt buộc phải có thêm sự đồng ý của chính trẻ từ đủ 7 tuổi trở lên theo quy định tại khoản 2 Điều 24 Luật 91/2025/QH15.'
+        },
+        {
+          label: 'Bảo vệ hình ảnh học đường',
+          text: 'Không công khai danh tính đầy đủ, trường lớp hay hình ảnh cá nhân của thí sinh dưới 16 tuổi khi chưa được người giám hộ chấp thuận bằng văn bản.'
+        }
+      ],
+      note: 'Bảo đảm quyền riêng tư tối cao cho học sinh và người chưa thành niên tham gia giải đấu.'
     },
     {
       id: 'dieu-8',
       num: 8,
-      title: 'Quyền Của Chủ Thể Dữ Liệu & Thời Hạn Thực Hiện (Điều 4 Luật 91/2025 & Điều 5 NĐ 356/2025)',
-      content: 'Chủ thể dữ liệu có đầy đủ các quyền theo khoản 1 Điều 4 Luật 91/2025/QH15 (quyền được biết, đồng ý, rút lại sự đồng ý theo Điều 10, xem, chỉnh sửa, yêu cầu cung cấp, xóa dữ liệu, hạn chế/phản đối xử lý và khiếu nại). Thời hạn phản hồi tuân thủ Điều 5 Nghị định 356/2025/NĐ-CP:',
-      bullets: [
-        'Phản hồi & hướng dẫn thủ tục: Chậm nhất trong 02 ngày làm việc kể từ khi nhận yêu cầu.',
-        'Xem, chỉnh sửa hoặc yêu cầu cung cấp dữ liệu: Hoàn thành trong 10–15 ngày.',
-        'Rút lại sự đồng ý, hạn chế hoặc phản đối xử lý dữ liệu: Hoàn thành trong 15–20 ngày.',
-        'Yêu cầu xóa dữ liệu cá nhân: Hoàn thành trong 20–30 ngày (hoặc người dùng có thể kích hoạt xóa/ẩn danh hóa tức thì ngay trong mục Hồ Sơ Cá Nhân trên ứng dụng).'
-      ]
+      title: 'Quyền Của Chủ Thể Dữ Liệu & Thời Hạn Xử Lý (Điều 4 Luật 91/2025 & Điều 5 NĐ 356/2025)',
+      intro: 'Chủ thể dữ liệu có đầy đủ 11 nhóm quyền theo quy định tại khoản 1 Điều 4 Luật 91/2025/QH15. Thời hạn thực hiện yêu cầu tuân thủ nghiêm ngặt Điều 5 Nghị định 356/2025/NĐ-CP:',
+      items: [
+        {
+          label: 'Thời hạn phản hồi & hướng dẫn thủ tục',
+          text: 'Trong vòng 02 ngày làm việc kể từ ngày tiếp nhận yêu cầu hợp lệ của chủ thể dữ liệu.'
+        },
+        {
+          label: 'Thời hạn xem, chỉnh sửa & cung cấp dữ liệu',
+          text: 'Trong vòng 10 – 15 ngày làm việc theo quy định.'
+        },
+        {
+          label: 'Thời hạn rút đồng ý, hạn chế hoặc phản đối xử lý',
+          text: 'Trong vòng 15 – 20 ngày làm việc.'
+        },
+        {
+          label: 'Thời hạn xóa dữ liệu cá nhân',
+          text: 'Trong vòng 20 – 30 ngày làm việc (người dùng có thể xóa/ẩn danh hóa ngay lập tức qua công cụ tự phục vụ trên ứng dụng).'
+        },
+        {
+          label: 'Phương thức tiếp nhận',
+          text: 'Qua biểu mẫu yêu cầu trực tuyến tại Mục 3 trang này hoặc gửi văn bản trực tiếp tới Bộ phận DPO (Email: bti2026.dpo@edu.vn).'
+        }
+      ],
+      note: 'Biểu mẫu gửi yêu cầu trực tuyến có sẵn ngay tại Tab 3 (Quyền Chủ Thể & DPO).'
     }
   ], []);
 
@@ -471,8 +576,9 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     const q = searchQuery.toLowerCase().trim();
     return articles.filter(a => 
       a.title.toLowerCase().includes(q) || 
-      a.content.toLowerCase().includes(q) ||
-      (a.bullets && a.bullets.some(b => b.toLowerCase().includes(q))) ||
+      a.intro.toLowerCase().includes(q) ||
+      a.items.some(it => it.text.toLowerCase().includes(q) || (it.label && it.label.toLowerCase().includes(q))) ||
+      (a.note && a.note.toLowerCase().includes(q)) ||
       `điều ${a.num}`.includes(q)
     );
   }, [articles, searchQuery]);
@@ -482,8 +588,8 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     let wordCount = 0;
     if (activeTab === 'PRIVACY') {
       wordCount = articles.reduce((acc, art) => {
-        const bulletWords = art.bullets ? art.bullets.join(' ').split(/\s+/).length : 0;
-        return acc + art.title.split(/\s+/).length + art.content.split(/\s+/).length + bulletWords;
+        const itemsWords = art.items.reduce((sum, item) => sum + (item.label ? item.label.split(/\s+/).length : 0) + item.text.split(/\s+/).length, 0);
+        return acc + art.title.split(/\s+/).length + art.intro.split(/\s+/).length + itemsWords + (art.note ? art.note.split(/\s+/).length : 0);
       }, 0);
     } else if (activeTab === 'TERMS_AI') {
       wordCount = 650; // Estimated words for Terms & AI tab
@@ -499,7 +605,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
   }, [activeTab, articles]);
 
   return (
-    <div className="w-full min-h-full h-max shrink-0 grow bg-[#0D0420] text-[#F5EFF9] flex flex-col font-sans select-text">
+    <div className="w-full bg-[#0D0420] text-[#F5EFF9] flex flex-col font-sans select-text h-max grow min-h-full">
       
       {/* Top Sticky Header */}
       <header className="sticky top-0 z-40 bg-[#16062f]/95 backdrop-blur-xl border-b border-[#F7CAC9]/20 px-4 sm:px-6 py-3 print:hidden shadow-lg">
@@ -620,13 +726,13 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
             </strong>
             {lastAutosaveBadge && (
               <span className="text-[9px] text-amber-300 font-mono flex items-center gap-1 animate-pulse ml-1.5">
-                <span className="w-1.5 h-1.5 rounded-[2px] bg-amber-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 <span>{localLanguage !== 'vi' ? 'Auto-saved' : 'Tự động lưu'}</span>
               </span>
             )}
           </div>
 
-          <div className="flex-1 max-w-[200px] sm:max-w-xs h-1.5 bg-black/50 border border-white/10 rounded-[2px] overflow-hidden">
+          <div className="flex-1 max-w-[200px] sm:max-w-xs h-1.5 bg-black/50 border border-white/10 rounded-full overflow-hidden">
             <div 
               className={`h-full transition-all duration-150 ${
                 scrollProgress >= 100 
@@ -640,11 +746,11 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       </header>
 
       {/* Main Content Area */}
-      <div className="grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         
         {/* Saved Bookmark / Auto-saved Prompt Bar if saved position exists */}
         {savedBookmark && (
-          <div className="p-3 sm:p-3.5 rounded-[2px] bg-amber-950/40 border border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-200 font-mono shadow-lg print:hidden animate-fadeIn">
+          <div className="p-3 sm:p-3.5 rounded-[4px] bg-amber-950/40 border border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-200 font-mono shadow-lg print:hidden animate-fadeIn">
             <div className="flex items-center gap-2.5 overflow-hidden min-w-[240px] flex-1">
               <div className="w-7 h-7 rounded-[2px] bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
                 <BookmarkCheck className="w-4 h-4 animate-bounce" />
@@ -656,7 +762,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                       ? (localLanguage !== 'vi' ? 'Auto-Saved Reading Position (5s)' : 'Vị Trí Tự Động Lưu (5s)') 
                       : (localLanguage !== 'vi' ? 'Saved Reading Bookmark' : 'Dấu Trang Đã Lưu')}
                   </span>
-                  <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/30 text-amber-200 text-[10px]">
+                  <span className="px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200 text-[10px]">
                     {savedBookmark.scrollProgress}%
                   </span>
                 </div>
@@ -693,7 +799,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
         )}
 
         {/* Banner Section */}
-        <div className="p-5 sm:p-6 rounded-[2px] bg-gradient-to-r from-[#1E0B38] via-[#15072B] to-[#120524] border border-[#F7CAC9]/30 shadow-xl relative overflow-hidden">
+        <div className="p-5 sm:p-6 rounded-[4px] bg-gradient-to-r from-[#1E0B38] via-[#15072B] to-[#120524] border border-[#F7CAC9]/30 shadow-xl relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-2 text-left">
               {/* Zero-Pill Unboxed Metadata with Typographic Separators */}
@@ -869,7 +975,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopyArticleLink(art.id, art.title)}
-                        className="p-1 px-2 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/60 hover:text-[#F7CAC9] transition cursor-pointer text-[11px] font-mono flex items-center gap-1 shrink-0 border border-white/10"
+                        className="p-1 px-2 rounded bg-white/5 hover:bg-white/15 text-white/60 hover:text-[#F7CAC9] transition cursor-pointer text-[11px] font-mono flex items-center gap-1 shrink-0 border border-white/10"
                         title={localLanguage !== 'vi' ? 'Copy link to this clause' : 'Sao chép đường dẫn trực tiếp điều khoản này'}
                       >
                         <Copy className="w-3 h-3" />
@@ -877,18 +983,35 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                       </button>
                     </div>
 
-                    <div className="text-xs sm:text-sm text-white/85 pl-2 sm:pl-7 leading-relaxed space-y-2">
-                      <p>{art.content}</p>
-                      {art.bullets && art.bullets.length > 0 && (
-                        <ul className="list-disc list-outside ml-4 space-y-1.5 text-white/80">
-                          {art.bullets.map((item, idx) => (
-                            <li key={idx} className="leading-relaxed">
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                    {/* Introductory lead paragraph */}
+                    <p className="text-xs sm:text-sm text-white/90 pl-2 sm:pl-7 leading-relaxed font-sans mb-3 font-medium">
+                      {art.intro}
+                    </p>
+
+                    {/* Bulleted list of clauses (ul / li) */}
+                    <ul className="pl-2 sm:pl-7 space-y-2 text-xs sm:text-sm text-white/80 list-none">
+                      {art.items.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                          <span className="text-[#F7CAC9] font-bold select-none shrink-0 mt-0.5">•</span>
+                          <span className="flex-1">
+                            {item.label && (
+                              <strong className="text-sky-200 font-semibold mr-1.5 font-mono">
+                                {item.label}:
+                              </strong>
+                            )}
+                            <span className="text-white/85">{item.text}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Statutory reference footer note */}
+                    {art.note && (
+                      <div className="mt-3.5 pl-2 sm:pl-7 pt-2.5 border-t border-white/10 text-[11px] font-mono text-[#F7CAC9]/80 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>{art.note}</span>
+                      </div>
+                    )}
                   </section>
                 ))
               )}
@@ -1134,7 +1257,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
           type="button"
           id="btn-policy-back-to-top"
           onClick={handleScrollToTop}
-          className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 p-3 rounded-[2px] bg-[#1c0836]/90 hover:bg-[#F7CAC9] text-[#F7CAC9] hover:text-[#190839] border border-[#F7CAC9]/40 shadow-2xl backdrop-blur-md transition-all duration-300 active:scale-90 animate-fadeIn flex items-center justify-center cursor-pointer group print:hidden"
+          className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 p-3 rounded-full bg-[#1c0836]/90 hover:bg-[#F7CAC9] text-[#F7CAC9] hover:text-[#190839] border border-[#F7CAC9]/40 shadow-2xl backdrop-blur-md transition-all duration-300 active:scale-90 animate-fadeIn flex items-center justify-center cursor-pointer group print:hidden"
           title={localLanguage !== 'vi' ? 'Scroll smoothly back to top' : 'Cuộn mượt về đầu trang'}
           aria-label="Back to top"
         >
