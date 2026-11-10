@@ -1573,12 +1573,12 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               <div className={isLongQuestion ? "col-span-1 md:col-span-12 flex flex-col" : "md:col-span-5 flex flex-col h-full min-h-0"}>
                 <div className={`fluent-question-box p-6 sm:p-7 lg:p-8 xl:p-9 shadow-2xl flex flex-col justify-between relative h-full flex-1 min-h-0 rounded-[3px] border border-white/10 backdrop-blur-2xl`}>
                   <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-3 relative z-10 shrink-0">
-                    <span className="text-[11px] sm:text-xs uppercase text-[#F7CAC9] font-mono tracking-widest font-bold flex items-center gap-1.5">
+                    <span className="text-[11px] sm:text-xs text-[#F7CAC9] font-mono tracking-wider font-bold flex items-center gap-1.5 uppercase">
                       <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F7CAC9] animate-pulse" />
-                      Payload • [{gameState.question_id}]
+                      <span>{gameState.round_name || 'Câu Hỏi'} · {gameState.question_id}</span>
                     </span>
                     <span className="text-[10px] sm:text-[11px] font-mono text-white/60 tracking-wider">
-                      {gameState.round_name}
+                      Trực Tiếp Sân Khấu
                     </span>
                   </div>
                   {gameState.round_type === 'BLIND_POLL' && gameState.status === 'ACTIVE' ? (
@@ -1635,7 +1635,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
                   <div className="pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/40 shrink-0">
                     <span>BEYOND THE INTERNET 2026</span>
-                    <span>LIVE STAGE MATRIX</span>
+                    <span>MÀN CHIẾU SÂN KHẤU</span>
                   </div>
                 </div>
               </div>

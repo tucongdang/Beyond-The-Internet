@@ -312,9 +312,9 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
               </div>
             </div>
 
-            {/* Fluent Footer Note */}
-            <div className="bg-[#001026]/80 border-t border-slate-800 px-4 py-2 text-[10px] font-mono text-center text-slate-400">
-              Fluent Design System • Anti-Exit Protection Guard
+            {/* Footer Note */}
+            <div className="bg-[#001026]/80 border-t border-slate-800 px-4 py-2 text-[11px] font-sans text-center text-slate-400">
+              {localLanguage !== 'vi' ? 'Your responses and score are safely preserved' : 'Câu trả lời và điểm số của bạn luôn được lưu an toàn'}
             </div>
           </div>
         </div>

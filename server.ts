@@ -2795,7 +2795,7 @@ Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể 
         }
       }
     }));
-    app.get('*', (req, res) => {
+    app.get('{*splat}', (req, res) => {
       const indexPath = path.join(distPath, 'index.html');
       if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath, (err) => {

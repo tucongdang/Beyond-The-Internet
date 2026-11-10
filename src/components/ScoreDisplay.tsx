@@ -188,12 +188,12 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block">{t("view_score_total", localLanguage)}</span>
               <div className="flex items-baseline gap-1.5 relative">
-                <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight leading-none relative">
+                <span className="text-xl sm:text-2xl font-black font-mono tabular-nums text-white tracking-tight leading-none relative">
                   {displayScore.toLocaleString('vi-VN')}
                   {popups.map(p => (
                     <span 
                       key={p.id} 
-                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono text-yellow-200 animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
+                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono tabular-nums text-yellow-200 animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
                     >
                       +{p.diff}
                     </span>
@@ -365,22 +365,22 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               <span className="text-[11px]">{isFullscreen ? (t("view_score_full_exit_short", localLanguage)) : (t("view_score_full_enter_short", localLanguage))}</span>
             </button>
 
-            {/* Battle Royale Survival Status Pill */}
+            {/* Battle Royale Survival Status (Clean unboxed metadata) */}
             {survivalStats.totalContestants > 0 && (
               <div 
-                className="hidden xl:flex items-center gap-1 px-2.5 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold"
+                className="hidden xl:flex items-center gap-1.5 px-2 py-1 text-purple-200 text-xs font-mono font-bold"
                 title={`Đấu trường sinh tử: ${survivalStats.survivorsCount}/${survivalStats.totalContestants} bất bại (${survivalStats.survivalRate}%)`}
               >
                 <Shield className={`w-3.5 h-3.5 ${survivalStats.isUserAlive ? 'text-emerald-400' : 'text-slate-400'}`} />
-                <span className="text-[11px] uppercase">
-                  {survivalStats.isUserAlive ? 'Bất Bại' : 'Đã Hạ'} ({survivalStats.survivorsCount})
+                <span className="text-[11px] uppercase tracking-wider">
+                  {survivalStats.isUserAlive ? 'Bất Bại' : 'Đã Hạ'} (<strong className="tabular-nums font-mono text-white">{survivalStats.survivorsCount}</strong>)
                 </span>
               </div>
             )}
 
-            <div className="hidden lg:flex px-3 py-1.5 rounded-[2px] fluent-box-nested border border-purple-500/40 text-purple-200 text-xs font-mono font-bold items-center gap-1.5">
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-purple-200 text-xs font-mono font-bold">
               <Star className="w-3.5 h-3.5 text-purple-400 fill-purple-400/50" />
-              <span>{t("score_rank", localLanguage).toUpperCase()} #{stats.rank}</span>
+              <span>{t("score_rank", localLanguage).toUpperCase()} <strong className="text-white tabular-nums font-mono">#{stats.rank}</strong></span>
             </div>
             <div className="px-2 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect">
               {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}

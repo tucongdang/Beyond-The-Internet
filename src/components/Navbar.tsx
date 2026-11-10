@@ -283,21 +283,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (gameState.event_schedule?.enabled) {
       if (gameState.event_schedule.status === 'SCHEDULED') {
         return (
-          <div className="px-2 py-0.5 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-amber-300 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Waiting Room' : 'Phòng Chờ'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Waiting Room' : 'Phòng Chờ'}</span>
           </div>
         );
       }
       if (gameState.event_schedule.status === 'CONCLUDED') {
         return (
-          <div className="px-2 py-0.5 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-purple-300 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-purple-400 rounded-full" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Concluded' : 'Bế Mạc'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Concluded' : 'Bế Mạc'}</span>
           </div>
         );
       }
@@ -306,39 +302,31 @@ export const Navbar: React.FC<NavbarProps> = ({
     switch (gameState.status) {
       case 'ACTIVE':
         return (
-          <div className="px-2 py-0.5 bg-emerald-950/40 border border-emerald-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-emerald-300 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_6px_#34d399]" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Active' : 'Đang Đấu'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Active' : 'Đang Đấu'}</span>
           </div>
         );
       case 'LOCKED':
         return (
-          <div className="px-2 py-0.5 bg-amber-950/40 border border-amber-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-amber-300 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Locked' : 'Đã Khóa'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Locked' : 'Đã Khóa'}</span>
           </div>
         );
       case 'REVEAL':
         return (
-          <div className="px-2 py-0.5 bg-purple-950/40 border border-purple-500/30 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-purple-300 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse shadow-[0_0_6px_#c084fc]" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Result' : 'Kết Quả'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Result' : 'Kết Quả'}</span>
           </div>
         );
       case 'STANDBY':
       default:
         return (
-          <div className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-[2px] flex items-center gap-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 text-white/50 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-white/40 rounded-full" />
-            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-white/50 uppercase tracking-wider">
-              {effectiveLanguage === 'en' ? 'Standby' : 'Chờ Khởi Động'}
-            </span>
+            <span>{effectiveLanguage === 'en' ? 'Standby' : 'Chờ Khởi Động'}</span>
           </div>
         );
     }
@@ -518,7 +506,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="has-tooltip min-h-[44px] px-2 flex items-center gap-1 text-white/80"
               >
                 <Users className="w-3 h-3 text-emerald-400" />
-                <span className="text-[10px] font-extrabold text-emerald-400">{activeCount}</span>
+                <span className="text-[10px] font-extrabold text-emerald-400 font-mono tabular-nums">{activeCount}</span>
               </div>
             </div>
           )}

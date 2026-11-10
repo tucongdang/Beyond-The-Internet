@@ -3773,11 +3773,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div className="fluent-box rounded-[3px] p-1 bg-black/40 border border-white/10 flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
-                { id: 'DASHBOARD', label: '🏠 1. TỔNG QUAN', defaultTab: 'DASHBOARD' },
-                { id: 'ARENA', label: '🎮 2. ĐẤU TRƯỜNG', defaultTab: 'KDC' },
-                { id: 'INTERACTION', label: '💬 3. TƯƠNG TÁC', defaultTab: 'QA_MANAGER' },
-                { id: 'RESULTS', label: '📊 4. KẾT QUẢ & SPSS', defaultTab: 'STATS' },
-                { id: 'STUDIO', label: '📚 5. NGÂN HÀNG ĐỀ', defaultTab: 'QUESTIONS' },
+                { id: 'DASHBOARD', label: '01. TỔNG QUAN', defaultTab: 'DASHBOARD' },
+                { id: 'ARENA', label: '02. ĐẤU TRƯỜNG', defaultTab: 'KDC' },
+                { id: 'INTERACTION', label: '03. TƯƠNG TÁC', defaultTab: 'QA_MANAGER' },
+                { id: 'RESULTS', label: '04. KẾT QUẢ & SPSS', defaultTab: 'STATS' },
+                { id: 'STUDIO', label: '05. NGÂN HÀNG ĐỀ', defaultTab: 'QUESTIONS' },
               ].map(ws => {
                 const isSelected = getWorkspaceForTab(activeAdminTab) === ws.id;
                 return (

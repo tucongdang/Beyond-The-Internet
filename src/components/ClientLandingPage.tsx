@@ -132,7 +132,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
             </div>
             <div className="flex items-center justify-center gap-3">
               <div className="px-4 py-2.5 rounded bg-black/60 border border-amber-500/40 min-w-[80px]">
-                <div className="text-3xl sm:text-4xl font-mono font-black text-amber-300">
+                <div className="text-3xl sm:text-4xl font-mono tabular-nums font-black text-amber-300">
                   {String(breakCountdown.mins).padStart(2, '0')}
                 </div>
                 <div className="text-[9px] font-mono text-amber-400/70 uppercase">
@@ -141,7 +141,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
               </div>
               <span className="text-2xl font-mono font-bold text-amber-400/80 animate-pulse">:</span>
               <div className="px-4 py-2.5 rounded bg-black/60 border border-amber-500/40 min-w-[80px]">
-                <div className="text-3xl sm:text-4xl font-mono font-black text-amber-400 animate-pulse">
+                <div className="text-3xl sm:text-4xl font-mono tabular-nums font-black text-amber-400 animate-pulse">
                   {String(breakCountdown.secs).padStart(2, '0')}
                 </div>
                 <div className="text-[9px] font-mono text-amber-400/70 uppercase">
@@ -161,19 +161,19 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
             </div>
             <div className="grid grid-cols-4 gap-2 text-center">
               <div className="p-2 rounded bg-white/5 border border-white/10">
-                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.days).padStart(2, '0')}</div>
+                <div className="text-xl font-mono tabular-nums font-black text-amber-300">{String(countdown.days).padStart(2, '0')}</div>
                 <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Days' : 'Ngày'}</div>
               </div>
               <div className="p-2 rounded bg-white/5 border border-white/10">
-                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.hours).padStart(2, '0')}</div>
+                <div className="text-xl font-mono tabular-nums font-black text-amber-300">{String(countdown.hours).padStart(2, '0')}</div>
                 <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Hours' : 'Giờ'}</div>
               </div>
               <div className="p-2 rounded bg-white/5 border border-white/10">
-                <div className="text-xl font-mono font-black text-amber-300">{String(countdown.minutes).padStart(2, '0')}</div>
+                <div className="text-xl font-mono tabular-nums font-black text-amber-300">{String(countdown.minutes).padStart(2, '0')}</div>
                 <div className="text-[9px] font-mono text-slate-400 uppercase">{localLanguage !== 'vi' ? 'Mins' : 'Phút'}</div>
               </div>
               <div className="p-2 rounded bg-white/5 border border-amber-500/40">
-                <div className="text-xl font-mono font-black text-yellow-400 animate-pulse">{String(countdown.seconds).padStart(2, '0')}</div>
+                <div className="text-xl font-mono tabular-nums font-black text-yellow-400 animate-pulse">{String(countdown.seconds).padStart(2, '0')}</div>
                 <div className="text-[9px] font-mono text-amber-300 uppercase">{localLanguage !== 'vi' ? 'Secs' : 'Giây'}</div>
               </div>
             </div>
@@ -199,14 +199,14 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
           </div>
         )}
 
-        {/* Connection Status Pill */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 fluent-box-nested rounded-[2px] text-xs font-mono font-bold tracking-wider text-emerald-400 shadow-sm border border-emerald-500/30">
+        {/* Real-time Connection Indicator (Clean unboxed metadata) */}
+        <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold tracking-wide text-emerald-400 select-none">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
           </span>
           <span className="text-[11px] uppercase tracking-wider">
-            {localLanguage !== 'vi' ? 'CONNECTED & SYNCHRONIZED IN REAL-TIME' : 'ĐÃ KẾT NỐI VÀ ĐỒNG BỘ THỜI GIAN THỰC'}
+            {localLanguage !== 'vi' ? 'Connected & Synchronized in Real-time' : 'Đã kết nối và đồng bộ thời gian thực'}
           </span>
         </div>
       </div>

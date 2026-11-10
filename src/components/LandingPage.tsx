@@ -77,16 +77,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center my-auto py-4 sm:py-8">
         
         {/* Top Horizon Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 fluent-box-nested rounded-[2px] text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6 shadow-sm border border-[#F7CAC9]/20 animate-fadeIn">
-          <span className="relative flex h-2 w-2">
+        <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F7CAC9]"></span>
           </span>
-          <span className="text-[11px] uppercase tracking-wider">BTI 2026 • Real-time Interactive Arena</span>
+          <span className="text-[11px] uppercase tracking-wider text-[#F7CAC9] font-black">BTI 2026</span>
+          <span aria-hidden="true" className="text-white/30">·</span>
+          <span className="text-white/80 font-mono text-[11px] tracking-wider">Real-time Academic Interactive Arena</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#F5EFF9] mb-4 drop-shadow-2xl">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#F5EFF9] mb-4 drop-shadow-2xl font-mono">
           BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2026</span>
         </h1>
         
@@ -102,14 +104,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-12 bg-gradient-to-r from-amber-500/20 via-[#F7CAC9]/25 to-sky-500/20 blur-xl pointer-events-none" />
             
             <div className="relative z-10 flex flex-col items-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-400/30 mb-4 shadow-sm">
+              <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-wider uppercase text-amber-300 mb-4">
                 <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
                 <span>
                   {stageStatus === 'SCHEDULED' && !isTimeReached
-                    ? (localLanguage !== 'vi' ? 'COUNTDOWN TO EVENT OPENING' : 'ĐẾM NGƯỢC GIỜ G KHAI MẠC')
+                    ? (localLanguage !== 'vi' ? 'Countdown to Event Opening' : 'Đếm ngược giờ G khai mạc')
                     : stageStatus === 'CONCLUDED'
-                    ? (localLanguage !== 'vi' ? 'EVENT CONCLUDED' : 'SỰ KIỆN ĐÃ BẾ MẠC')
-                    : (localLanguage !== 'vi' ? 'EVENT IS LIVE NOW' : 'SỰ KIỆN ĐANG DIỄN RA TRỰC TIẾP')}
+                    ? (localLanguage !== 'vi' ? 'Event Concluded' : 'Sự kiện đã bế mạc')
+                    : (localLanguage !== 'vi' ? 'Event is Live Now' : 'Sự kiện đang diễn ra trực tiếp')}
                 </span>
               </div>
 
@@ -117,7 +119,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <>
                   <div className="grid grid-cols-4 gap-2.5 sm:gap-4 w-full max-w-md my-1">
                     <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
-                      <span className="text-2xl sm:text-4xl font-black font-mono text-amber-300 tracking-tight">
+                      <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.days).padStart(2, '0')}
                       </span>
                       <span className="text-[9px] sm:text-[11px] font-mono text-slate-400 font-bold uppercase mt-1">
@@ -126,7 +128,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
-                      <span className="text-2xl sm:text-4xl font-black font-mono text-amber-300 tracking-tight">
+                      <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.hours).padStart(2, '0')}
                       </span>
                       <span className="text-[9px] sm:text-[11px] font-mono text-slate-400 font-bold uppercase mt-1">
@@ -135,7 +137,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
-                      <span className="text-2xl sm:text-4xl font-black font-mono text-amber-300 tracking-tight">
+                      <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.minutes).padStart(2, '0')}
                       </span>
                       <span className="text-[9px] sm:text-[11px] font-mono text-slate-400 font-bold uppercase mt-1">
@@ -144,7 +146,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-amber-500/40 shadow-inner">
-                      <span className="text-2xl sm:text-4xl font-black font-mono text-yellow-400 tracking-tight animate-pulse">
+                      <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-yellow-400 tracking-tight animate-pulse">
                         {String(countdown.seconds).padStart(2, '0')}
                       </span>
                       <span className="text-[9px] sm:text-[11px] font-mono text-amber-300/80 font-bold uppercase mt-1">
@@ -272,11 +274,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         </div>
 
-        {/* Live Arena Status Pill */}
+        {/* Live Arena Status (Clean unboxed typography) */}
         {gameState && (
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-[2px] bg-white/5 border border-white/10 text-xs font-mono text-white/70">
+          <div className="flex items-center justify-center gap-2 text-xs font-mono text-white/70 select-none">
             <span className="text-[11px]">{localLanguage !== 'vi' ? 'Arena status:' : 'Trạng thái sàn đấu:'}</span>
-            <span className={`font-bold uppercase ${
+            <span className={`font-bold uppercase tracking-wider flex items-center gap-1.5 ${
               gameState.status === 'ACTIVE'
                 ? 'text-emerald-400'
                 : gameState.status === 'LOCKED'
@@ -285,13 +287,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 ? 'text-purple-300'
                 : 'text-white/50'
             }`}>
-              {gameState.status === 'ACTIVE'
-                ? (localLanguage !== 'vi' ? 'In Progress' : 'Đang Diễn Ra')
-                : gameState.status === 'LOCKED'
-                ? (localLanguage !== 'vi' ? 'Locked' : 'Đã Khóa')
-                : gameState.status === 'REVEAL'
-                ? (localLanguage !== 'vi' ? 'Result Revealed' : 'Công Bố Đáp Án')
-                : (localLanguage !== 'vi' ? 'Waiting to Start' : 'Chờ Khởi Động')}
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                gameState.status === 'ACTIVE'
+                  ? 'bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]'
+                  : gameState.status === 'LOCKED'
+                  ? 'bg-amber-400'
+                  : gameState.status === 'REVEAL'
+                  ? 'bg-purple-400 animate-pulse'
+                  : 'bg-white/40'
+              }`} />
+              <span>
+                {gameState.status === 'ACTIVE'
+                  ? (localLanguage !== 'vi' ? 'In Progress' : 'Đang Diễn Ra')
+                  : gameState.status === 'LOCKED'
+                  ? (localLanguage !== 'vi' ? 'Locked' : 'Đã Khóa')
+                  : gameState.status === 'REVEAL'
+                  ? (localLanguage !== 'vi' ? 'Result Revealed' : 'Công Bố Đáp Án')
+                  : (localLanguage !== 'vi' ? 'Waiting to Start' : 'Chờ Khởi Động')}
+              </span>
             </span>
           </div>
         )}

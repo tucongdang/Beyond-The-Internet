@@ -1832,8 +1832,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             ) : (
               <button
                 id="btn-audience-start-onboarding"
+                type="button"
+                aria-label={t("view_reg_now", localLanguage)}
                 onClick={onOpenRegister}
-                className="w-full bg-gradient-to-r from-[#F7CAC9] to-[#F7CAC9] hover:from-[#F7CAC9] text-[#0D0420] font-bold py-3.5 px-6 rounded-[2px] shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-sm transition hover-effect cursor-pointer"
+                className="w-full bg-gradient-to-r from-[#F7CAC9] to-[#F7CAC9] hover:from-[#F7CAC9] text-[#0D0420] font-bold py-3.5 px-6 rounded-[2px] shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-sm transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 {t("view_reg_now", localLanguage)} <ChevronRight className="w-4 h-4" />
               </button>
@@ -1842,11 +1844,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <button
               id="btn-audience-share-unregistered"
               type="button"
+              aria-label={t("view_share_qr", localLanguage)}
               onClick={() => {
                 soundFx.playClick();
                 setIsShareModalOpen(true);
               }}
-              className="w-full py-3 px-4 rounded-[2px] fluent-box hover-effect text-[#FCEEEC] border border-[#F7CAC9]/30 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              className="w-full py-3 px-4 rounded-[2px] fluent-box hover-effect text-[#FCEEEC] border border-[#F7CAC9]/30 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
             >
               <QrCode className="w-4 h-4 text-[#F7CAC9]" />
               <span>{t("view_share_qr", localLanguage)}</span>
@@ -1863,6 +1866,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-lg animate-in fade-in duration-200"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="zoom-modal-title"
           onClick={() => setIsQuestionZoomed(false)}
         >
           <div
@@ -1870,13 +1874,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             onClick={e => e.stopPropagation()}
           >
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
-              <h3 className="text-[#F7CAC9] font-mono font-bold text-sm tracking-widest uppercase flex items-center gap-2">
+              <h3 id="zoom-modal-title" className="text-[#F7CAC9] font-mono font-bold text-sm tracking-widest uppercase flex items-center gap-2">
                 <ZoomIn className="w-4 h-4" />
                 {t("view_easier_read", localLanguage)}
               </h3>
               <button
+                type="button"
+                aria-label={t("view_close", localLanguage)}
                 onClick={() => setIsQuestionZoomed(false)}
-                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-white/20 flex items-center justify-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <X className="w-4 h-4 text-white" />
               </button>
@@ -1888,8 +1894,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
             <div className="p-4 border-t border-white/10 bg-white/5 text-center">
               <button
+                type="button"
+                aria-label={t("view_close", localLanguage)}
                 onClick={() => setIsQuestionZoomed(false)}
-                className="px-6 py-2.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-medium text-sm transition"
+                className="px-6 py-2.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-medium text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 {t("view_close", localLanguage)}
               </button>
@@ -2000,12 +2008,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 {isWakeLockSupported !== false && onToggleWakeLock ? (
                   <button
                     type="button"
+                    aria-label={isWakeLockLocked ? t("view_wakelock_on", localLanguage) : t("view_wakelock_off", localLanguage)}
+                    aria-pressed={isWakeLockLocked}
                     onClick={() => {
                       soundFx.playClick();
                       vibrateTap();
                       onToggleWakeLock();
                     }}
-                    className={`px-2 py-0.5 rounded-[2px] text-[11px] font-bold font-mono transition flex items-center gap-1.5 hover-effect cursor-pointer ${
+                    className={`px-2 py-0.5 rounded-[2px] text-[11px] font-bold font-mono transition flex items-center gap-1.5 hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                       isWakeLockLocked
                         ? 'fluent-box text-amber-300 border-amber-500/40'
                         : 'fluent-box-nested text-slate-400 hover:text-white'
@@ -2031,11 +2041,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <button
               id="btn-audience-share-standby"
               type="button"
+              aria-label={t("standby_invite", localLanguage)}
               onClick={() => {
                 soundFx.playClick();
                 setIsShareModalOpen(true);
               }}
-              className="w-full mt-4 py-3 px-4 rounded-[2px] fluent-box hover-effect border border-[#F7CAC9]/40 text-[#FCEEEC] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              className="w-full mt-4 py-3 px-4 rounded-[2px] fluent-box hover-effect border border-[#F7CAC9]/40 text-[#FCEEEC] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
             >
               <QrCode className="w-4 h-4 text-[#F7CAC9]" />
               <span>{t("standby_invite", localLanguage)}</span>
@@ -2186,8 +2197,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     </div>
                     <button
                       type="button"
+                      aria-label={t("view_edit_ans", localLanguage)}
                       onClick={() => setIsEditingRisk(true)}
-                      className="px-4 py-1.5 fluent-box hover-effect text-white rounded-[2px] text-xs font-mono transition cursor-pointer"
+                      className="px-4 py-1.5 fluent-box hover-effect text-white rounded-[2px] text-xs font-mono transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       {t("view_edit_ans", localLanguage)}
                     </button>
@@ -2200,10 +2212,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </label>
                       <input
                         type="text"
+                        aria-label={t("view_risk_1", localLanguage)}
                         value={riskAnswerText}
                         onChange={(e) => setRiskAnswerText(e.target.value)}
                         placeholder={t("view_risk_ph", localLanguage)}
-                        className="w-full fluent-box-nested border border-white/15 focus:border-amber-500 rounded-[2px] px-3.5 py-2.5 text-sm text-white font-mono uppercase outline-none"
+                        className="w-full fluent-box-nested border border-white/15 focus:border-amber-500 rounded-[2px] px-3.5 py-2.5 text-sm text-white font-mono uppercase outline-none focus:ring-2 focus:ring-amber-400"
                       />
                     </div>
                     <div>
@@ -2212,17 +2225,19 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </label>
                       <input
                         type="text"
+                        aria-label={t("view_cnv_1", localLanguage)}
                         value={riskCnvText}
                         onChange={(e) => setRiskCnvText(e.target.value)}
                         placeholder={t("view_cnv_ph", localLanguage)}
-                        className="w-full fluent-box-nested border border-amber-500/60 focus:border-amber-400 rounded-[2px] px-3.5 py-2.5 text-sm text-amber-200 font-mono uppercase outline-none"
+                        className="w-full fluent-box-nested border border-amber-500/60 focus:border-amber-400 rounded-[2px] px-3.5 py-2.5 text-sm text-amber-200 font-mono uppercase outline-none focus:ring-2 focus:ring-amber-400"
                       />
                     </div>
                     <button
                       type="button"
+                      aria-label={t("view_submit_risk", localLanguage)}
                       onClick={handleRiskAnswerSubmit}
                       disabled={!riskAnswerText.trim() && !riskCnvText.trim()}
-                      className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer"
+                      className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       <Send className="w-4 h-4" /> {t("view_submit_risk", localLanguage)}
                     </button>
@@ -2250,8 +2265,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     </div>
                     <button
                       type="button"
+                      aria-label={t("view_edit_predict", localLanguage)}
                       onClick={() => setIsEditingRisk(true)}
-                      className="px-4 py-1.5 fluent-box hover-effect text-white rounded-[2px] text-xs font-mono transition cursor-pointer"
+                      className="px-4 py-1.5 fluent-box hover-effect text-white rounded-[2px] text-xs font-mono transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       {t("view_edit_predict", localLanguage)}
                     </button>
@@ -2264,17 +2280,19 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </label>
                       <input
                         type="text"
+                        aria-label={t("view_your_risk_predict", localLanguage)}
                         value={riskAnswerText}
                         onChange={(e) => setRiskAnswerText(e.target.value)}
                         placeholder={t("view_predict_risk_ph", localLanguage)}
-                        className="w-full fluent-box-nested border border-amber-500/50 focus:border-amber-400 rounded-[2px] px-3.5 py-3 text-sm text-white font-mono uppercase outline-none placeholder:text-slate-500"
+                        className="w-full fluent-box-nested border border-amber-500/50 focus:border-amber-400 rounded-[2px] px-3.5 py-3 text-sm text-white font-mono uppercase outline-none placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400"
                       />
                     </div>
                     <button
                       type="button"
+                      aria-label={t("view_send_risk_predict", localLanguage)}
                       onClick={handleRiskAnswerSubmit}
                       disabled={!riskAnswerText.trim()}
-                      className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer"
+                      className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
                       <Send className="w-4 h-4" /> {t("view_send_risk_predict", localLanguage)}
                     </button>
@@ -2448,11 +2466,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <div>
                 <button
                   type="button"
+                  aria-label={t("view_edit_predict", localLanguage)}
                   onClick={() => {
                     setVcnvPrediction(userResponse.choice);
                     setIsEditingVcnv(true);
                   }}
-                  className="text-xs text-[#F7CAC9] hover:text-[#FCEEEC] underline font-medium transition cursor-pointer"
+                  className="text-xs text-[#F7CAC9] hover:text-[#FCEEEC] underline font-medium transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] p-1"
                 >
                   {t("view_edit_predict", localLanguage)}
                 </button>
@@ -2467,6 +2486,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 </label>
                 <input
                   type="text"
+                  aria-label={t("view_enter_predict", localLanguage)}
                   value={vcnvPrediction}
                   onChange={(e) => setVcnvPrediction(e.target.value)}
                   placeholder={t("view_ph_predict_cnv", localLanguage)}
@@ -2474,24 +2494,26 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleVcnvSubmit();
                   }}
-                  className="w-full fluent-box-nested border border-white/15 focus:border-[#F7CAC9] rounded-[2px] px-4 py-3.5 text-sm sm:text-base text-white font-mono uppercase text-center transition outline-none shadow-inner placeholder:text-[#B6A6D8]/60"
+                  className="w-full fluent-box-nested border border-white/15 focus:border-[#F7CAC9] rounded-[2px] px-4 py-3.5 text-sm sm:text-base text-white font-mono uppercase text-center transition outline-none shadow-inner placeholder:text-[#B6A6D8]/60 focus:ring-2 focus:ring-[#F7CAC9]"
                 />
               </div>
               <div className="flex gap-2">
                 {isEditingVcnv && (
                   <button
                     type="button"
+                    aria-label={t("view_cancel", localLanguage)}
                     onClick={() => setIsEditingVcnv(false)}
-                    className="px-4 py-3.5 fluent-box-nested hover:bg-white/10 text-[#B6A6D8] font-semibold rounded-[2px] text-xs uppercase tracking-wider transition hover-effect cursor-pointer"
+                    className="px-4 py-3.5 fluent-box-nested hover:bg-white/10 text-[#B6A6D8] font-semibold rounded-[2px] text-xs uppercase tracking-wider transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     {t("view_cancel", localLanguage)}
                   </button>
                 )}
                 <button
                   type="button"
+                  aria-label={isEditingVcnv ? t("view_update_predict", localLanguage) : t("view_send_predict", localLanguage)}
                   onClick={handleVcnvSubmit}
                   disabled={!vcnvPrediction.trim()}
-                  className="flex-1 py-3.5 bg-gradient-horizon hover:from-[#F7CAC9] hover:to-[#E39A96] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer"
+                  className="flex-1 py-3.5 bg-gradient-horizon hover:from-[#F7CAC9] hover:to-[#E39A96] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-[2px] text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                   <Send className="w-4 h-4" />
                   {isEditingVcnv ? t("view_update_predict", localLanguage) : t("view_send_predict", localLanguage)}
@@ -2745,8 +2767,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 </p>
               </div>
               <button 
+                type="button"
                 onClick={() => setShowMiniTip(false)}
-                className="absolute top-2 right-2 p-1 text-slate-400 hover:text-white transition rounded-[2px] hover:bg-white/10"
+                aria-label={t("view_close", localLanguage)}
+                className="absolute top-2 right-2 p-1 text-slate-400 hover:text-white transition rounded-[2px] hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2782,7 +2806,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSeqToast(null)}
-                className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition shrink-0 hover-effect"
+                aria-label={t("view_close_toast", localLanguage)}
+                className="p-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition shrink-0 hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                 title={t("view_close_toast", localLanguage)}
               >
                 <X className="w-4 h-4" />
@@ -2819,7 +2844,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <button 
                 type="button"
                 onClick={() => setShowTabSwitchWarning(false)} 
-                className="p-1.5 text-rose-400 hover:text-white rounded hover:bg-rose-900/50 cursor-pointer shrink-0 transition"
+                aria-label="Đóng cảnh báo chuyển màn hình"
+                className="p-1.5 text-rose-400 hover:text-white rounded hover:bg-rose-900/50 cursor-pointer shrink-0 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                 title="Đóng cảnh báo"
               >
                 <X className="w-4 h-4" />
@@ -2834,7 +2860,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <div className="flex items-center gap-2 bg-slate-900/95 border border-amber-400/50 text-amber-200 px-4 py-2.5 rounded-[2px] shadow-2xl text-xs font-semibold backdrop-blur-md">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
               <span>{offlineNotice}</span>
-              <button onClick={() => setOfflineNotice(null)} className="ml-2 text-slate-400 hover:text-white cursor-pointer">
+              <button 
+                type="button"
+                onClick={() => setOfflineNotice(null)} 
+                aria-label="Đóng thông báo ngoại tuyến"
+                className="ml-2 text-slate-400 hover:text-white cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -2873,7 +2904,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <button
             type="button"
             onClick={() => setIsPostMatchModalOpen(true)}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border border-purple-400/30 flex items-center gap-1.5 transition hover-effect cursor-pointer"
+            aria-label="Xuất thẻ thành tích Infographic"
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border border-purple-400/30 flex items-center gap-1.5 transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             title="Xuất thẻ thành tích Infographic"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -2884,7 +2916,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <button
             type="button"
             onClick={handleToggleAutoSpeakAnswer}
-            className={`p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium border flex items-center gap-1.5 transition hover-effect cursor-pointer ${
+            aria-pressed={autoSpeakAnswer}
+            className={`p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium border flex items-center gap-1.5 transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
               autoSpeakAnswer
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30'
                 : 'bg-white/5 hover:bg-white/10 text-white/50 border-white/10'
@@ -2905,7 +2938,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               soundFx.playClick();
               setIsShareModalOpen(true);
             }}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-white/10 hover:bg-white/20 text-[#FCEEEC] border border-white/10 flex items-center gap-1.5 transition hover-effect"
+            aria-label={t("view_share_qr_title", localLanguage)}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-white/10 hover:bg-white/20 text-[#FCEEEC] border border-white/10 flex items-center gap-1.5 transition hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
             title={t("view_share_qr_title", localLanguage)}
           >
             <QrCode className="w-3.5 h-3.5 text-[#F7CAC9]" />
@@ -2938,8 +2972,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <div className="relative">
                           <button
                             type="button"
+                            aria-haspopup="true"
+                            aria-expanded={isLanguageMenuOpen}
+                            aria-label={localLanguage === 'vi' ? 'Chọn ngôn ngữ hiển thị' : `Đang hiển thị: ${localLanguage.toUpperCase()}`}
                             onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-[11px] font-bold border transition shadow-sm cursor-pointer ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-[11px] font-bold border transition shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
                               localLanguage !== 'vi'
                                 ? 'bg-sky-500/20 text-sky-200 border-sky-400/40 hover:bg-sky-500/30'
                                 : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/15'
@@ -2966,7 +3003,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                 className="fixed inset-0 z-40" 
                                 onClick={() => setIsLanguageMenuOpen(false)} 
                               />
-                              <div className="absolute right-0 top-full mt-1.5 w-60 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-72 overflow-y-auto">
+                              <div 
+                                role="menu"
+                                aria-label="Danh sách ngôn ngữ hiển thị"
+                                className="absolute right-0 top-full mt-1.5 w-60 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-72 overflow-y-auto"
+                              >
                                 <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-[#F7CAC9] border-b border-white/10 uppercase tracking-wider flex items-center justify-between sticky top-0 bg-[#190839] z-10">
                                   <span>Ngôn ngữ hiển thị</span>
                                   <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
@@ -2975,6 +3016,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                 {/* Tiếng Việt (Gốc) */}
                                 <button
                                   type="button"
+                                  role="menuitem"
+                                  aria-label="Chọn ngôn ngữ Tiếng Việt (VI)"
                                   onClick={() => {
                                     setLocalLanguage('vi');
                                     localStorage.setItem('bti_lang', 'vi');
@@ -2982,7 +3025,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                     window.dispatchEvent(new CustomEvent('languageChange', { detail: 'vi' }));
                                     setIsLanguageMenuOpen(false);
                                   }}
-                                  className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
+                                  className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer focus:outline-none focus-visible:bg-white/15 ${
                                     localLanguage === 'vi' ? 'bg-sky-500/25 text-white font-bold border-l-2 border-sky-400' : 'text-white/80'
                                   }`}
                                 >
@@ -2995,13 +3038,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                   )}
                                 </button>
 
-                                {/* Foreign Languages (English, Chinese, Japanese, Korean, French, Spanish, German, Thai, Lao, Khmer, Russian) */}
+                                {/* Foreign Languages */}
                                 {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => {
                                   const isSelected = localLanguage === lang.code;
                                   return (
                                     <button
                                       key={lang.code}
                                       type="button"
+                                      role="menuitem"
+                                      aria-label={`Chọn ngôn ngữ ${lang.nativeLabel} (${lang.code.toUpperCase()})`}
                                       onClick={() => {
                                         setLocalLanguage(lang.code);
                                         localStorage.setItem('bti_lang', lang.code);
@@ -3009,7 +3054,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                         window.dispatchEvent(new CustomEvent('languageChange', { detail: lang.code }));
                                         setIsLanguageMenuOpen(false);
                                       }}
-                                      className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer ${
+                                      className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer focus:outline-none focus-visible:bg-white/15 ${
                                         isSelected ? 'bg-sky-500/25 text-white font-bold border-l-2 border-sky-400' : 'text-white/80'
                                       }`}
                                     >
@@ -3025,16 +3070,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                   );
                                 })}
 
-                                {/* AI Re-translate Button: ONLY displayed when viewing in a foreign language */}
+                                {/* AI Re-translate Button */}
                                 {localLanguage !== 'vi' && (
                                   <div className="border-t border-white/10 mt-1 pt-1">
                                     <button
                                       type="button"
+                                      role="menuitem"
+                                      aria-label="Dịch lại câu hỏi bằng AI"
                                       onClick={() => {
                                         handleRequestTranslate();
                                         setIsLanguageMenuOpen(false);
                                       }}
-                                      className="w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer text-sky-300 font-bold bg-white/5"
+                                      className="w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-white/10 transition cursor-pointer text-sky-300 font-bold bg-white/5 focus:outline-none focus-visible:bg-white/15"
                                     >
                                       <span className="flex items-center gap-1.5">
                                         <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isTranslating ? 'animate-spin' : ''}`} />
@@ -3049,8 +3096,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </div>
                         {isLongQuestion && (
                           <button
+                            type="button"
                             onClick={() => setIsQuestionZoomed(true)}
-                            className="p-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition shadow-sm border border-white/10"
+                            aria-label={t("view_auto_zoom", localLanguage)}
+                            className="p-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition shadow-sm border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
                             title={t("view_auto_zoom", localLanguage)}
                           >
                             <ZoomIn className="w-4 h-4" />
@@ -3067,7 +3116,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <button
                           type="button"
                           onClick={handleToggleSpeakQuestion}
-                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer ${
+                          aria-label={isSpeakingQuestion ? t("view_tts_stop", localLanguage) : t("view_tts_start", localLanguage)}
+                          aria-pressed={isSpeakingQuestion}
+                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
                             isSpeakingQuestion
                               ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
                               : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
@@ -3085,7 +3136,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <button
                           type="button"
                           onClick={handleToggleAutoSpeakAnswer}
-                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono ${
+                          aria-label={autoSpeakAnswer ? 'Tắt AI tự đọc đáp án đúng' : 'Bật AI tự đọc đáp án đúng'}
+                          aria-pressed={autoSpeakAnswer}
+                          className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                             autoSpeakAnswer
                               ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
                               : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
@@ -3196,13 +3249,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       <button
                         type="button"
                         disabled={isDoubleDownActive || hasVotedThisQuestion}
+                        aria-label={isDoubleDownActive ? t("view_bet_btn_locked", localLanguage) : t("view_bet_btn_action", localLanguage)}
+                        aria-pressed={isDoubleDownActive}
                         onClick={() => {
                           if (isDoubleDownActive || hasVotedThisQuestion) return;
                           setIsDoubleDownActive(true);
                           soundFx.playAllInActivation();
                           vibrateLifeline();
                         }}
-                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border shrink-0 text-center flex items-center justify-center gap-1.5 ${
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && !isDoubleDownActive && !hasVotedThisQuestion) {
+                            e.preventDefault();
+                            setIsDoubleDownActive(true);
+                            soundFx.playAllInActivation();
+                            vibrateLifeline();
+                          }
+                        }}
+                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border shrink-0 text-center flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                           isDoubleDownActive
                             ? 'bg-amber-400 text-black border-amber-300 shadow-md cursor-not-allowed opacity-95'
                             : 'bg-gradient-to-r from-amber-500 to-amber-400 text-black border-amber-300 hover:from-amber-400 hover:to-amber-300 cursor-pointer shadow-lg active:scale-95'
@@ -3218,7 +3281,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
                   {/* Input Controls */}
                   {isTrueFalse4 ? (
-                    <div className="space-y-3 pt-1">
+                    <div className="space-y-3 pt-1" role="group" aria-label={t("view_choose_tf", localLanguage)}>
                       <div className="text-xs font-mono font-bold text-[#F7CAC9] uppercase tracking-wider flex items-center justify-between pb-1 border-b border-white/10">
                         <span>{t("view_choose_tf", localLanguage)}</span>
                       </div>
@@ -3241,10 +3304,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 pt-1">
+                            <div className="grid grid-cols-2 gap-2 pt-1" role="group" aria-label={`Lựa chọn đúng sai cho ý ${key}`}>
                               <button
                                 type="button"
+                                aria-label={`${key}: ${t("view_stmt_true", localLanguage).replace("{key}", key)}`}
+                                aria-pressed={currentChoice === 'Đ'}
                                 onClick={() => handleToggleTf(key, 'Đ')}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleToggleTf(key, 'Đ');
+                                  }
+                                }}
                                 className={`py-2 px-3 rounded-[2px] font-bold font-mono text-xs transition border flex items-center justify-center gap-1.5 hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                                   currentChoice === 'Đ'
                                     ? 'bg-emerald-500 text-[#0D0420] border-emerald-400 shadow-md shadow-emerald-500/30 font-black'
@@ -3256,7 +3327,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
                               <button
                                 type="button"
+                                aria-label={`${key}: ${t("view_stmt_false", localLanguage).replace("{key}", key)}`}
+                                aria-pressed={currentChoice === 'S'}
                                 onClick={() => handleToggleTf(key, 'S')}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleToggleTf(key, 'S');
+                                  }
+                                }}
                                 className={`py-2 px-3 rounded-[2px] font-bold font-mono text-xs transition border flex items-center justify-center gap-1.5 hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${
                                   currentChoice === 'S'
                                     ? 'bg-rose-500 text-white border-rose-400 shadow-md shadow-rose-500/30 font-black'
@@ -3271,8 +3350,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       })}
                       </div>
                       <button
+                        type="button"
                         onClick={handleSubmitTf}
                         disabled={Object.keys(tfChoices).length === 0 || hasVotedThisQuestion}
+                        aria-label={t("view_send_tf", localLanguage)}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && !hasVotedThisQuestion && Object.keys(tfChoices).length > 0) {
+                            e.preventDefault();
+                            handleSubmitTf();
+                          }
+                        }}
                         className={`w-full mt-4 py-3 sm:py-4 rounded-[2px] font-black text-sm sm:text-base transition-colors flex items-center justify-center gap-2 hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                           hasVotedThisQuestion
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed'
@@ -3303,28 +3390,40 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         </span>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2" role="list" aria-label="Danh sách mục cần sắp xếp thứ tự">
                         {seqItems.map((optKey, idx) => {
                           const itemText = activeOptions?.[optKey] || gameState.options?.[optKey] || '';
                           return (
                             <div
                               key={optKey}
+                              role="listitem"
+                              tabIndex={0}
+                              aria-label={`Vị trí ${idx + 1}: ${optKey} - ${itemText}. Nhấn Mũi tên Lên hoặc Xuống để đổi vị trí.`}
                               draggable
                               onDragStart={(e) => handleDragStart(e, idx)}
                               onDragOver={(e) => handleDragOver(e, idx)}
                               onDrop={(e) => handleDrop(e, idx)}
-                              className={`p-3 fluent-box-nested rounded-[2px] flex items-center justify-between gap-3 shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#F7CAC9] ${
+                              onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp' && idx > 0) {
+                                  e.preventDefault();
+                                  moveSeqItemUp(idx);
+                                } else if (e.key === 'ArrowDown' && idx < seqItems.length - 1) {
+                                  e.preventDefault();
+                                  moveSeqItemDown(idx);
+                                }
+                              }}
+                              className={`p-3 fluent-box-nested rounded-[2px] flex items-center justify-between gap-3 shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#F7CAC9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
                                 draggedIdx === idx ? 'border-amber-400 bg-white/15 opacity-60 scale-[0.98]' : 'border-white/10'
                               }`}
                             >
                               <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                <span className="text-white/40 hover:text-white cursor-grab shrink-0 p-0.5">
+                                <span className="text-white/40 hover:text-white cursor-grab shrink-0 p-0.5" aria-hidden="true">
                                 <GripVertical className="w-4 h-4" />
                               </span>
-                              <span className="w-7 h-7 rounded-[2px] bg-[#F7CAC9] text-[#0D0420] font-mono font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
+                              <span className="w-7 h-7 rounded-[2px] bg-[#F7CAC9] text-[#0D0420] font-mono font-black text-xs flex items-center justify-center shrink-0 shadow-sm" aria-hidden="true">
                                 {idx + 1}
                               </span>
-                              <span className="w-6 h-6 rounded-[2px] bg-white/10 text-[#FCEEEC] font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                              <span className="w-6 h-6 rounded-[2px] bg-white/10 text-[#FCEEEC] font-mono font-bold text-xs flex items-center justify-center shrink-0" aria-hidden="true">
                                 {optKey}
                               </span>
                               <p className={`text-xs sm:text-sm font-semibold text-white break-words ${isCjk(itemText, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-tight'}`}>
@@ -3336,8 +3435,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => moveSeqItemUp(idx)}
+                                onKeyDown={(e) => {
+                                  if ((e.key === 'Enter' || e.key === ' ') && idx > 0) {
+                                    e.preventDefault();
+                                    moveSeqItemUp(idx);
+                                  }
+                                }}
                                 disabled={idx === 0}
-                                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-[#F7CAC9] hover:text-[#0D0420] text-white disabled:opacity-20 flex items-center justify-center font-bold text-sm transition hover-effect"
+                                aria-label={`${t("view_move_up", localLanguage)}: ${optKey}`}
+                                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-[#F7CAC9] hover:text-[#0D0420] text-white disabled:opacity-20 flex items-center justify-center font-bold text-sm transition hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
                                 title={t("view_move_up", localLanguage)}
                               >
                                 ▲
@@ -3345,8 +3451,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => moveSeqItemDown(idx)}
+                                onKeyDown={(e) => {
+                                  if ((e.key === 'Enter' || e.key === ' ') && idx < seqItems.length - 1) {
+                                    e.preventDefault();
+                                    moveSeqItemDown(idx);
+                                  }
+                                }}
                                 disabled={idx === seqItems.length - 1}
-                                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-[#F7CAC9] hover:text-[#0D0420] text-white disabled:opacity-20 flex items-center justify-center font-bold text-sm transition hover-effect"
+                                aria-label={`${t("view_move_down", localLanguage)}: ${optKey}`}
+                                className="w-8 h-8 rounded-[2px] bg-white/10 hover:bg-[#F7CAC9] hover:text-[#0D0420] text-white disabled:opacity-20 flex items-center justify-center font-bold text-sm transition hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
                                 title={t("view_move_down", localLanguage)}
                               >
                                 ▼
@@ -3368,6 +3481,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       type="button"
                       disabled={hasVotedThisQuestion}
                       onClick={handleSequencingSubmit}
+                      aria-label={localLanguage !== 'vi' ? 'Confirm order' : `Xác nhận sắp xếp: ${seqItems.join('-')}`}
+                      onKeyDown={(e) => {
+                        if ((e.key === 'Enter' || e.key === ' ') && !hasVotedThisQuestion) {
+                          e.preventDefault();
+                          handleSequencingSubmit();
+                        }
+                      }}
                       className={`w-full py-3.5 sm:py-4 rounded-[2px] font-black text-sm sm:text-base transition-colors flex items-center justify-center gap-2 hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                         hasVotedThisQuestion
                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed'
@@ -3396,6 +3516,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       <div className="flex gap-2">
                         <input
                           type="text"
+                          aria-label={gameState.round_type === 'FILL_IN_BLANK' ? t("view_enter_blank", localLanguage) : t("view_enter_short", localLanguage)}
                           placeholder={gameState.round_type === 'FILL_IN_BLANK' ? t("view_ph_blank", localLanguage) : t("view_ph_short", localLanguage)}
                           value={shortAnswerText}
                           onChange={(e) => {
@@ -3412,6 +3533,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <button
                           type="submit"
                           disabled={hasVotedThisQuestion}
+                          aria-label={t("view_send", localLanguage)}
                           className={`font-bold px-6 rounded-[2px] flex items-center gap-2 transition hover-effect focus:outline-none ${
                             hasVotedThisQuestion
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed'
@@ -3435,9 +3557,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <div className="flex items-center flex-wrap gap-2 text-xs pt-0.5 animate-fadeIn">
                           <button
                             type="button"
+                            aria-label={`Dịch câu trả lời AI sang ${localLanguage !== 'vi' ? localLanguage : 'en'}`}
                             onClick={() => handleTranslateShortAnswer(localLanguage !== 'vi' ? localLanguage : 'en')}
                             disabled={isTranslatingShortAnswer}
-                            className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-200 flex items-center gap-1.5 transition cursor-pointer"
+                            className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-[2px] bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-200 flex items-center gap-1.5 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                             title="Dịch câu trả lời AI sang ngôn ngữ mục tiêu"
                           >
                             <Sparkles className="w-3 h-3 text-sky-300" />
@@ -3450,9 +3573,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           {localLanguage !== 'vi' && (
                             <button
                               type="button"
+                              aria-label="Dịch sang Tiếng Việt"
                               onClick={() => handleTranslateShortAnswer('vi')}
                               disabled={isTranslatingShortAnswer}
-                              className="text-[11px] font-mono font-semibold px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/15 border border-white/20 text-slate-200 flex items-center gap-1 transition cursor-pointer"
+                              className="text-[11px] font-mono font-semibold px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/15 border border-white/20 text-slate-200 flex items-center gap-1 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                               title="Dịch sang Tiếng Việt"
                             >
                               <span>🇻🇳 VI</span>
@@ -3463,8 +3587,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <span>{getLangFlag(shortAnswerTranslation.lang)} {t("view_translated_label", localLanguage)} <strong>{shortAnswerTranslation.text}</strong></span>
                               <button
                                 type="button"
+                                aria-label="Điền bản dịch vào ô trả lời"
                                 onClick={() => setShortAnswerText(shortAnswerTranslation.text)}
-                                className="ml-1 underline text-[10px] text-emerald-200 hover:text-white cursor-pointer"
+                                className="ml-1 underline text-[10px] text-emerald-200 hover:text-white cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-300"
                                 title="Điền từ này vào ô trả lời"
                               >
                                 ({t("view_use_translated", localLanguage)})
@@ -3477,12 +3602,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     
                     {/* Short Answer Confirm Modal */}
                     {isConfirmingShortAnswer && (
-                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true">
+                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true" aria-labelledby="short-answer-confirm-title">
                         <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[4px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
                           <div className="w-12 h-12 rounded-[2px] bg-amber-500/20 flex items-center justify-center mb-4">
                             <AlertCircle className="w-6 h-6 text-amber-400" />
                           </div>
-                          <h3 className="text-lg font-bold text-white mb-2">{t("view_confirm_send", localLanguage)}</h3>
+                          <h3 id="short-answer-confirm-title" className="text-lg font-bold text-white mb-2">{t("view_confirm_send", localLanguage)}</h3>
                           <p className="text-sm text-slate-300 mb-6">
                             {t("view_sending", localLanguage)} <strong className="text-[#F7CAC9] font-mono block mt-2 text-xl break-all">{shortAnswerText.toUpperCase()}</strong>
                             <br/>
@@ -3491,15 +3616,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           <div className="flex gap-3 w-full">
                             <button
                               type="button"
+                              aria-label={t("view_cancel", localLanguage)}
                               onClick={cancelShortAnswerSubmit}
-                              className="flex-1 py-2.5 rounded-[2px] border border-white/20 text-white font-bold hover:bg-white/10 transition"
+                              className="flex-1 py-2.5 rounded-[2px] border border-white/20 text-white font-bold hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                             >
                               {t("view_cancel", localLanguage)}
                             </button>
                             <button
                               type="button"
+                              aria-label={t("view_confirm_btn", localLanguage)}
                               onClick={confirmShortAnswerSubmit}
-                              className="flex-1 py-2.5 rounded-[2px] bg-[#F7CAC9] text-[#0D0420] font-bold hover:bg-white transition"
+                              className="flex-1 py-2.5 rounded-[2px] bg-[#F7CAC9] text-[#0D0420] font-bold hover:bg-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
                             >
                               {t("view_confirm_btn", localLanguage)}
                             </button>
@@ -3510,7 +3637,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   </>
                 ) : isTrueFalse ? (
                   /* Toggle cho Đúng/Sai */
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center">
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center" role="group" aria-label="Lựa chọn Đúng hoặc Sai">
                     {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
@@ -3522,9 +3649,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       return (
                         <button
                           key={key}
+                          type="button"
+                          aria-label={`${label} (${key})${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
+                          aria-pressed={isSelected}
                           onClick={() => !hasVotedThisQuestion && handleOptionSelect(key)}
+                          onKeyDown={(e) => {
+                            if ((e.key === 'Enter' || e.key === ' ') && !hasVotedThisQuestion) {
+                              e.preventDefault();
+                              handleOptionSelect(key);
+                            }
+                          }}
                           disabled={hasVotedThisQuestion}
-                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[4px] border-2 transition-all overflow-hidden shadow-lg ${
+                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[4px] border-2 transition-all overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                             isSelected 
                               ? isOptionA ? 'border-emerald-400 bg-emerald-500/20' : 'border-rose-400 bg-rose-500/20'
                               : 'border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/5'
@@ -3554,7 +3690,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   </div>
                 ) : isImagePoll ? (
                   /* Grid ảnh cho Poll hình ảnh */
-                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`} role="group" aria-label="Danh sách phương án bình chọn">
                     {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
@@ -3569,9 +3705,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       return (
                         <button
                           key={key}
+                          type="button"
+                          aria-label={`${key}: ${label}${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
+                          aria-pressed={isSelected}
                           onClick={() => !hasVotedThisQuestion && !isEliminated && handleOptionSelect(key)}
+                          onKeyDown={(e) => {
+                            if ((e.key === 'Enter' || e.key === ' ') && !hasVotedThisQuestion && !isEliminated) {
+                              e.preventDefault();
+                              handleOptionSelect(key);
+                            }
+                          }}
                           disabled={hasVotedThisQuestion || isEliminated}
-                          className={`relative text-left p-3 sm:p-4 rounded-[2px] border-2 transition-all flex flex-col gap-3 overflow-hidden ${
+                          className={`relative text-left p-3 sm:p-4 rounded-[2px] border-2 transition-all flex flex-col gap-3 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
                             isEliminated
                               ? 'border-rose-500/30 opacity-40 grayscale bg-rose-900/20'
                               : isSelected
@@ -3626,7 +3771,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   </div>
                 ) : (
                   /* Options Grid */
-                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`}>
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`} role="group" aria-label="Danh sách phương án trắc nghiệm">
                     {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
@@ -3648,8 +3793,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <button
                           key={key}
                           id={`btn-option-${key}`}
+                          type="button"
+                          aria-label={`${t("active_option", localLanguage)} ${key}: ${displayText}${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
+                          aria-pressed={isSelected}
                           disabled={isEliminated || timeLeft <= 0}
                           onClick={() => handleOptionSelect(key)}
+                          onKeyDown={(e) => {
+                            if ((e.key === 'Enter' || e.key === ' ') && !isEliminated && timeLeft > 0) {
+                              e.preventDefault();
+                              handleOptionSelect(key);
+                            }
+                          }}
                           className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[3px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer ${
                             isEliminated
                               ? 'opacity-30 fluent-box-nested line-through cursor-not-allowed border-white/5'
@@ -4092,7 +4246,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             <button
               type="button"
               onClick={handleToggleSpeakAnswer}
-              className={`px-3 py-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold ${
+              aria-label={
+                isSpeakingQuestion
+                  ? t("view_ai_stop_reading", localLanguage)
+                  : autoSpeakAnswer
+                  ? t("view_ai_auto_speak_on", localLanguage)
+                  : t("view_ai_auto_speak_off", localLanguage)
+              }
+              aria-pressed={isSpeakingQuestion || autoSpeakAnswer}
+              className={`px-3 py-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                 isSpeakingQuestion
                   ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 animate-pulse'
                   : autoSpeakAnswer
@@ -4136,7 +4298,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <button
                 type="button"
                 onClick={handleToggleSpeakQuestion}
-                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer ${
+                aria-label={isSpeakingQuestion ? 'Dừng đọc câu hỏi' : 'Đọc câu hỏi'}
+                aria-pressed={isSpeakingQuestion}
+                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
                   isSpeakingQuestion
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 animate-pulse'
                     : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border-white/10'
@@ -4153,7 +4317,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <button
                 type="button"
                 onClick={handleToggleAutoSpeakAnswer}
-                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono ${
+                aria-label={autoSpeakAnswer ? 'Tắt AI tự đọc đáp án đúng' : 'Bật AI tự đọc đáp án đúng'}
+                aria-pressed={autoSpeakAnswer}
+                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                   autoSpeakAnswer
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
                     : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
@@ -4286,7 +4452,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               type="button"
               onClick={handleRequestAiExplanation}
               disabled={isAiExplaining}
-              className="px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition shrink-0 cursor-pointer"
+              aria-label={aiExplanation ? 'Giải thích lại với AI' : 'Hỏi AI vì sao đáp án đúng'}
+              className="px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             >
               {isAiExplaining ? (
                 <>
@@ -4661,12 +4828,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <button
             id="btn-audience-leaderboard-floating"
             type="button"
+            aria-label="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
             onClick={() => {
               vibrateSelection();
               soundFx.playTing();
               handleOpenLeaderboard();
             }}
-            className="fluent-action-btn text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 hover:border-amber-500/50"
+            className="fluent-action-btn text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 hover:border-amber-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             title="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
           >
             <Trophy className="w-[14px] h-[14px] text-amber-400" />
@@ -4676,12 +4844,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <button
             id="btn-audience-shout-floating"
             type="button"
+            aria-label={t("view_nav_shout_mq", localLanguage)}
             onClick={() => {
               vibrateSelection();
               soundFx.playTing();
               setIsShoutModalOpen(true);
             }}
-            className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30"
+            className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
             title={t("view_nav_shout_mq", localLanguage)}
           >
             <Megaphone className="w-[14px] h-[14px] text-pink-400" />
@@ -4691,12 +4860,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <button
             id="btn-audience-cheer-floating"
             type="button"
+            aria-label={t("view_nav_cheer", localLanguage)}
             onClick={() => {
               vibrateSelection();
               soundFx.playTing();
               setIsCheerModalOpen(true);
             }}
-            className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30"
+            className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
             title={t("view_nav_cheer", localLanguage)}
           >
             <Heart className="w-[14px] h-[14px] fill-current animate-pulse text-rose-400" />
@@ -4706,12 +4876,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <button
             id="btn-audience-qa-floating"
             type="button"
+            aria-label={t("view_nav_qa", localLanguage)}
             onClick={() => {
               vibrateSelection();
               soundFx.playTing();
               setIsQAModalOpen(true);
             }}
-            className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30"
+            className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
             title={t("view_nav_qa", localLanguage)}
           >
             <MessageSquare className="w-[14px] h-[14px] text-sky-400" />
@@ -4721,12 +4892,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <button
             id="btn-audience-postmatch-floating"
             type="button"
+            aria-label="Xuất Thẻ Thành Tích Infographic"
             onClick={() => {
               vibrateSelection();
               soundFx.playTing();
               handleOpenPostMatchModal();
             }}
-            className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30"
+            className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
           >
             <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />

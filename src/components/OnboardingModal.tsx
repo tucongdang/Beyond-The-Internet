@@ -1672,13 +1672,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           </div>
 
-          {/* Desktop Status Bar Footer */}
-          <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/40">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-emerald-300/80">Realtime Arena Active</span>
+          {/* Desktop Security Notice Footer */}
+          <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/50">
+            <span className="flex items-center gap-1.5 text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>{localLanguage !== 'vi' ? 'Live Arena Connected' : 'Kết nối Đấu Trường'}</span>
             </span>
-            <span>BTI 2026 v2.0</span>
+            <span>{localLanguage !== 'vi' ? 'Protected by Decree 13' : 'Bảo vệ bởi Nghị định 13'}</span>
           </div>
         </div>
 
@@ -2447,8 +2447,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               ) : (
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md shadow-sky-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98 font-mono"
+                  disabled={loading || !regConsentAgreed}
+                  className={`w-full font-bold py-2 sm:py-2.5 px-3 rounded-[2px] uppercase text-xs tracking-wider transition shadow-md flex items-center justify-center gap-2 font-mono ${
+                    loading || !regConsentAgreed
+                      ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60 border border-white/5'
+                      : 'bg-sky-600 hover:bg-sky-500 active:scale-98 text-white shadow-sky-950/40 cursor-pointer'
+                  }`}
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
