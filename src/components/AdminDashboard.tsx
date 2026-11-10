@@ -180,7 +180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <span>{isLive ? 'ĐANG PHÁT SÓNG' : isScheduled ? 'CHỜ KHAI MẠC' : isConcluded ? 'ĐÃ KẾT THÚC' : 'TỰ DO (TEST)'}</span>
             </div>
             <p className="text-[11px] text-amber-300/80 font-mono mt-1 truncate">
-              {schedule?.title || 'Beyond The Internet 2026'}
+              {schedule?.title || 'Beyond The Internet 2027'}
             </p>
           </div>
         </div>
@@ -225,7 +225,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-0.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-sm text-white">
-                  {schedule?.title || 'Beyond The Internet 2026 • Live Gameshow'}
+                  {schedule?.title || 'Beyond The Internet 2027 • Live Gameshow'}
                 </span>
                 {schedule?.enabled && (
                   <span className={`px-2 py-0.2 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border ${

@@ -150,7 +150,7 @@ export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = (
         enabled: true,
         status: 'SCHEDULED',
         scheduled_start_time: Date.now() + 3600000,
-        title: 'Beyond The Internet 2026'
+        title: 'Beyond The Internet 2027'
       }),
       match_stage: preset.id,
       match_name: preset.name,
@@ -200,7 +200,7 @@ export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = (
         enabled: true,
         status: 'SCHEDULED',
         scheduled_start_time: Date.now() + 3600000,
-        title: 'Beyond The Internet 2026'
+        title: 'Beyond The Internet 2027'
       }),
       match_stage: detectedStage,
       match_name: trimmedName,

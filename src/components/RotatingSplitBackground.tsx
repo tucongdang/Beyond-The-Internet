@@ -13,8 +13,8 @@ interface RotatingSplitBackgroundProps {
 
 export const RotatingSplitBackground: React.FC<RotatingSplitBackgroundProps> = ({
   durationSeconds = 10,
-  darkColor = '#141413',
-  lightColor = '#D97757',
+  darkColor = '#190839',
+  lightColor = '#F7CAC9',
   opacity = 0.06,
   startAngle = 0,
   isFixed = true,

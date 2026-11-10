@@ -105,19 +105,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center my-auto py-4 sm:py-8">
         
         {/* Top Horizon Badge */}
-        <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-5">
+        <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-4">
           <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F7CAC9]"></span>
           </span>
-          <span className="text-[11px] uppercase tracking-wider text-[#F7CAC9] font-black">BTI 2026</span>
+          <span className="text-[11px] uppercase tracking-wider text-[#F7CAC9] font-black">BTI 2027</span>
           <span aria-hidden="true" className="text-white/30">·</span>
           <span className="text-white/80 font-mono text-[11px] tracking-wider">Real-time Academic Interactive Arena</span>
         </div>
 
+        {/* Official Brand Logo */}
+        <div className="relative mb-5 max-w-sm sm:max-w-md w-full px-4 flex items-center justify-center">
+          <img
+            src="/logo-landscape.png"
+            alt="Beyond The Internet 2027 Logo"
+            className="w-full max-h-24 sm:max-h-28 object-contain mx-auto drop-shadow-[0_8px_30px_rgba(247,202,201,0.22)] select-none pointer-events-none"
+            loading="eager"
+          />
+        </div>
+
         {/* Title */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#F5EFF9] mb-4 drop-shadow-2xl font-mono">
-          BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2026</span>
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#F5EFF9] mb-4 drop-shadow-2xl font-mono">
+          BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2027</span>
         </h1>
         
         <p className="text-sm sm:text-base md:text-lg text-[#B6A6D8] max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
@@ -382,7 +392,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
         </div>
         <p className="text-[10px] text-[#B6A6D8]/50 font-mono tracking-widest uppercase">
-          Beyond The Internet 2026 • Academic Gameshow Live System • Phiên bản v2.0-pdpd-2026
+          Beyond The Internet 2027 • Academic Gameshow Live System • Phiên bản v2.0-pdpd-2027
         </p>
       </div>
 

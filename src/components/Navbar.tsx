@@ -355,16 +355,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               vibrateTap();
               onViewChange('landing');
             }}
-            aria-label="Về trang chủ Beyond The Internet 2026"
-            className="flex items-center gap-2 cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
-            title="Trang chủ BTI 2026"
+            aria-label="Về trang chủ Beyond The Internet 2027"
+            className="flex items-center gap-2.5 cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
+            title="Trang chủ BTI 2027"
           >
-            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-sm sm:text-base text-white shadow-md shadow-blue-950/40 border border-[#F7CAC9]/40 group-hover:scale-105 group-hover:border-[#F7CAC9]/70 transition duration-200">
-              BTI
+            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-[2px] overflow-hidden border border-[#F7CAC9]/40 group-hover:border-[#F7CAC9]/80 shadow-md shadow-purple-950/40 bg-black flex items-center justify-center group-hover:scale-105 transition duration-200">
+              <img
+                src="/logo-square.png"
+                alt="BTI 2027"
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
             </div>
             <div className="hidden sm:block">
               <span className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight text-white flex items-center gap-1 whitespace-nowrap">
-                BEYOND THE INTERNET <span className="text-[#F7CAC9]">2026</span>
+                BEYOND THE INTERNET <span className="text-[#F7CAC9]">2027</span>
               </span>
               <p className="text-[8px] sm:text-[9px] text-white/50 uppercase tracking-wider font-mono leading-none mt-0.5 whitespace-nowrap">
                 {currentView === 'admin' ? 'Ban Kỹ Thuật • Điều Hành' : 'Đấu Trường Trực Tiếp'}

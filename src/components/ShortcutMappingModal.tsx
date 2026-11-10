@@ -267,7 +267,7 @@ export const ShortcutMappingModal: React.FC<ShortcutMappingModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 id="shortcut-modal-title" className="text-base sm:text-lg font-bold text-white uppercase tracking-wider">
-                  Trung Tâm Ánh Xạ Phím Tắt Sân Khấu BTI 2026
+                  Trung Tâm Ánh Xạ Phím Tắt Sân Khấu BTI 2027
                 </h3>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[2px] bg-purple-950 text-purple-300 border border-purple-500/40">
                   v2.0

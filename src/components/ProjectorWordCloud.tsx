@@ -411,7 +411,7 @@ export const ProjectorWordCloud: React.FC<ProjectorWordCloudProps> = ({
 
       {/* Footer Info */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-white/10 text-[10px] font-mono text-white/40">
-        <span>BEYOND THE INTERNET 2026 • REALTIME NLP KEYWORD AGGREGATOR</span>
+        <span>BEYOND THE INTERNET 2027 • REALTIME NLP KEYWORD AGGREGATOR</span>
         <span>NHẤN PHÍM [W] ĐỂ BẬT/TẮT ĐÁM MÂY TỪ KHÓA TRÊN MÀN CHIẾU</span>
       </div>
     </div>

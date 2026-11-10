@@ -50,17 +50,17 @@ interface ChartItem {
   hoverColor: string;
 }
 
-// Claude Dataviz Categorical Palette (skills/dataviz/references/palette.md — CVD-safe OKLab validated)
+// Vibrant Cosmic Twilight Palette
 const OPTION_COLORS: Record<string, { main: string; glow: string; text: string }> = {
-  A: { main: '#3987e5', glow: 'rgba(57, 135, 229, 0.35)', text: '#cde2fb' }, // Slot 1: Blue
-  B: { main: '#D97757', glow: 'rgba(217, 119, 87, 0.35)', text: '#EBCECE' }, // Slot 2: Claude Clay / Orange
-  C: { main: '#199e70', glow: 'rgba(25, 158, 112, 0.35)', text: '#BCD1CA' }, // Slot 3: Aqua
-  D: { main: '#c98500', glow: 'rgba(201, 133, 0, 0.35)', text: '#F0EEE6' },  // Slot 4: Yellow
-  E: { main: '#d55181', glow: 'rgba(213, 81, 129, 0.35)', text: '#EBCECE' }, // Slot 5: Magenta
-  F: { main: '#9085e9', glow: 'rgba(144, 133, 233, 0.35)', text: '#CBCADB' }, // Slot 7: Violet
+  A: { main: '#38bdf8', glow: 'rgba(56, 189, 248, 0.35)', text: '#bae6fd' }, // Sky
+  B: { main: '#F7CAC9', glow: 'rgba(247, 202, 201, 0.35)', text: '#FCEEEC' }, // Rose Quartz
+  C: { main: '#34d399', glow: 'rgba(52, 211, 153, 0.35)', text: '#d1fae5' }, // Mint / Emerald
+  D: { main: '#fbbf24', glow: 'rgba(251, 191, 36, 0.35)', text: '#fef3c7' }, // Amber / Gold
+  E: { main: '#a855f7', glow: 'rgba(168, 85, 247, 0.35)', text: '#f3e8ff' }, // Violet
+  F: { main: '#e879f9', glow: 'rgba(232, 121, 249, 0.35)', text: '#fae8ff' }, // Fuchsia
 };
 
-const DEFAULT_COLOR = { main: '#87867F', glow: 'rgba(135, 134, 127, 0.25)', text: '#FAF9F5' };
+const DEFAULT_COLOR = { main: '#B6A6D8', glow: 'rgba(182, 166, 216, 0.25)', text: '#F5EFF9' };
 
 export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps> = ({
   gameState,
@@ -114,12 +114,12 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
 
       if (isRevealed) {
         if (isCorrect) {
-          finalColor = '#0ca30c'; // Claude Dataviz Status Good
+          finalColor = '#10b981'; // Emerald Good
         } else {
-          finalColor = '#5E5D59'; // Warm Gray 600
+          finalColor = 'rgba(255, 255, 255, 0.3)'; // Muted white
         }
       } else if (isEliminated) {
-        finalColor = '#d03b3b'; // Claude Dataviz Status Critical
+        finalColor = '#ef4444'; // Red Critical
       }
 
       return {
@@ -131,7 +131,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
         isCorrect,
         isEliminated,
         color: finalColor,
-        hoverColor: isCorrect ? '#0ca30c' : '#D97757'
+        hoverColor: isCorrect ? '#10b981' : '#F7CAC9'
       };
     });
 
@@ -157,16 +157,16 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
     if (active && payload && payload.length) {
       const data: ChartItem = payload[0].payload;
       return (
-        <div className="bg-[#1A1918] border border-white/15 rounded-[2px] p-4 shadow-2xl max-w-xs text-[#FAF9F5] z-50">
+        <div className="bg-[#190839] border border-white/15 rounded-[2px] p-4 shadow-2xl max-w-xs text-[#F5EFF9] z-50">
           <div className="flex items-center justify-between gap-3 mb-2 border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
               <span
                 className="w-7 h-7 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shadow"
-                style={{ backgroundColor: data.color, color: '#FAF9F5' }}
+                style={{ backgroundColor: data.color, color: '#F5EFF9' }}
               >
                 {data.key}
               </span>
-              <span className="font-bold text-sm text-[#FAF9F5]">Phương án {data.key}</span>
+              <span className="font-bold text-sm text-[#F5EFF9]">Phương án {data.key}</span>
             </div>
             {data.isCorrect && (
               <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-black fluent-box-nested text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
@@ -180,18 +180,18 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             )}
           </div>
 
-          <p className="text-xs text-[#C2C0B6] mb-3 leading-relaxed font-medium">
+          <p className="text-xs text-white/70 mb-3 leading-relaxed font-medium">
             "{data.fullLabel}"
           </p>
 
           <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-white/10">
             <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
-              <div className="text-[10px] uppercase font-mono text-[#87867F]">Số phiếu</div>
-              <div className="text-base font-black font-mono tabular-nums text-[#3987e5]">{data.votes}</div>
+              <div className="text-[10px] uppercase font-mono text-white/50">Số phiếu</div>
+              <div className="text-base font-black font-mono tabular-nums text-sky-400">{data.votes}</div>
             </div>
             <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
-              <div className="text-[10px] uppercase font-mono text-[#87867F]">Tỷ lệ</div>
-              <div className="text-base font-black font-mono tabular-nums text-[#D97757]">{data.percent}%</div>
+              <div className="text-[10px] uppercase font-mono text-white/50">Tỷ lệ</div>
+              <div className="text-base font-black font-mono tabular-nums text-[#F7CAC9]">{data.percent}%</div>
             </div>
           </div>
         </div>
@@ -213,12 +213,12 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
       {/* Header Bar */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[2px] bg-[#262624] flex items-center justify-center text-[#D97757] border border-white/15">
+          <div className="w-10 h-10 rounded-[2px] bg-[#190839] flex items-center justify-center text-[#F7CAC9] border border-white/15">
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-bold text-[#FAF9F5] tracking-tight cds-title">
+              <h3 className="text-base sm:text-lg font-bold text-[#F5EFF9] tracking-tight">
                 Phân Bố Bình Chọn Khán Giả
               </h3>
               <span className="relative flex h-2 w-2">
@@ -226,15 +226,15 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 <span className="relative inline-flex rounded-[2px] h-2 w-2 bg-emerald-500"></span>
               </span>
             </div>
-            <p className="text-xs text-[#C2C0B6] font-mono">
-              Biểu đồ trực quan thời gian thực (Claude Dataviz CVD-Safe Palette)
+            <p className="text-xs text-white/60 font-mono">
+              Biểu đồ trực quan thời gian thực
             </p>
           </div>
         </div>
 
         {/* Live Stage Status Indicator */}
         <div className="flex items-center flex-wrap gap-2 font-mono text-xs">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[#262624] border border-white/12 text-[#D97757] font-bold">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[#190839] border border-white/12 text-[#F7CAC9] font-bold">
             <BarChart3 className="w-3.5 h-3.5" />
             <span>BIỂU ĐỒ ĐA CHIỀU (RECHARTS)</span>
           </div>
@@ -377,7 +377,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                         key={`cell-${entry.key}`}
                         fill={entry.color}
                         opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.94}
-                        stroke={entry.isCorrect ? '#0ca30c' : isHovered ? '#FAF9F5' : 'rgba(255,255,255,0.12)'}
+                        stroke={entry.isCorrect ? '#10b981' : isHovered ? '#F5EFF9' : 'rgba(255,255,255,0.12)'}
                         strokeWidth={entry.isCorrect ? 2 : isHovered ? 2 : 1}
                         style={{
                           transition: 'all 0.2s ease'
@@ -438,7 +438,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                         key={`cell-${entry.key}`}
                         fill={entry.color}
                         opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.94}
-                        stroke={entry.isCorrect ? '#0ca30c' : isHovered ? '#FAF9F5' : 'rgba(255,255,255,0.12)'}
+                        stroke={entry.isCorrect ? '#10b981' : isHovered ? '#F5EFF9' : 'rgba(255,255,255,0.12)'}
                         strokeWidth={entry.isCorrect ? 2 : isHovered ? 2 : 1}
                         style={{
                           transition: 'all 0.2s ease'

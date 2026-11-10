@@ -4027,7 +4027,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
                   <ListPlus className="w-5 h-5 text-blue-400" />
-                  Ngân Hàng Câu Hỏi BTI 2026 Studio
+                  Ngân Hàng Câu Hỏi BTI 2027 Studio
                 </h2>
                 <p className="text-xs text-white/50 mt-1">
                   Quản lý 45 câu Khởi động (Trả lời ngắn & Trắc nghiệm 4) • 4 câu Tăng tốc (Trắc nghiệm 6 loại trừ & Trả lời ngắn) • Về đích (Trắc nghiệm 4 & Đúng sai 4 theo hình)
@@ -4316,7 +4316,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <section className="space-y-4">
             <div className="flex items-center justify-between text-xs text-white/40 font-mono">
               <span>HIỂN THỊ {filteredQbQuestions.length} / {questionBank.length} CÂU HỎI</span>
-              <span>ĐỊNH DẠNG: BTI 2026 MULTI-ROUND</span>
+              <span>ĐỊNH DẠNG: BTI 2027 MULTI-ROUND</span>
             </div>
 
             {filteredQbQuestions.length === 0 ? (
@@ -7056,7 +7056,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <Edit3 className="w-4 h-4 text-blue-400" />
-                  Soạn Thảo / Chỉnh Sửa Câu Hỏi BTI 2026
+                  Soạn Thảo / Chỉnh Sửa Câu Hỏi BTI 2027
                 </h3>
                 <p className="text-[10px] uppercase text-white/40 font-mono">
                   Khởi Động • Tăng Tốc • Về Đích • Đúng/Sai 4 Ý • Loại Trừ 6 Ý

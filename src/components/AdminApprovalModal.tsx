@@ -185,7 +185,7 @@ export const AdminApprovalModal: React.FC<AdminApprovalModalProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-white/50 font-mono">
-                Quản trị nhân sự & cấp quyền vận hành hệ thống phần mềm BTI 2026
+                Quản trị nhân sự & cấp quyền vận hành hệ thống phần mềm BTI 2027
               </p>
             </div>
           </div>

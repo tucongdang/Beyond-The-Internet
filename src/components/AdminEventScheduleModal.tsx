@@ -51,7 +51,7 @@ export const TOURNAMENT_MATCH_PRESETS: TournamentPresetOption[] = [
     name: 'Trận Đấu Thử Nghiệm / Mock Match',
     subtitle: 'Khảo sát giao diện & Làm quen hệ thống',
     briefing: 'Chào mừng các bạn tham gia trận đấu thử nghiệm! Hãy thử tương tác, trả lời câu hỏi và kiểm tra độ mượt mà của hệ thống.',
-    concluding: 'Buổi tập dượt đã kết thúc thành công! Hẹn gặp lại các bạn tại các vòng thi chính thức của Beyond The Internet 2026!',
+    concluding: 'Buổi tập dượt đã kết thúc thành công! Hẹn gặp lại các bạn tại các vòng thi chính thức của Beyond The Internet 2027!',
     badgeBg: 'bg-amber-500/20 text-amber-300',
     borderColor: 'border-amber-500/40 hover:border-amber-400'
   },
@@ -98,8 +98,8 @@ export const TOURNAMENT_MATCH_PRESETS: TournamentPresetOption[] = [
     icon: '🏆',
     name: 'Đêm Chung Kết Tổng (Grand Finale)',
     subtitle: 'Đêm Vinh Quang & Ngôi Vị Quán Quân',
-    briefing: 'Chào mừng toàn thể quý vị đại biểu, thầy cô và khán giả đến với ĐÊM CHUNG KẾT TỔNG Beyond The Internet 2026! Cùng đón xem những màn tranh tài đỉnh cao!',
-    concluding: 'Beyond The Internet 2026 đã chính thức tìm ra Nhà Vô Địch! Trân trọng cảm ơn tất cả quý vị đại biểu, thầy cô và các bạn khán giả!',
+    briefing: 'Chào mừng toàn thể quý vị đại biểu, thầy cô và khán giả đến với ĐÊM CHUNG KẾT TỔNG Beyond The Internet 2027! Cùng đón xem những màn tranh tài đỉnh cao!',
+    concluding: 'Beyond The Internet 2027 đã chính thức tìm ra Nhà Vô Địch! Trân trọng cảm ơn tất cả quý vị đại biểu, thầy cô và các bạn khán giả!',
     badgeBg: 'bg-yellow-500/25 text-yellow-300',
     borderColor: 'border-yellow-400/60 hover:border-yellow-300'
   },
@@ -155,7 +155,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
   });
 
   const [autoStartOnTime, setAutoStartOnTime] = useState<boolean>(Boolean(currentSchedule?.auto_start_on_time));
-  const [title, setTitle] = useState<string>(currentSchedule?.title || 'Beyond The Internet 2026');
+  const [title, setTitle] = useState<string>(currentSchedule?.title || 'Beyond The Internet 2027');
   const [matchStage, setMatchStage] = useState<TournamentMatchStage>(currentSchedule?.match_stage || 'SEMI_1');
   const [matchName, setMatchName] = useState<string>(currentSchedule?.match_name || 'Trận Bán Kết 1 (Semi-Final 1)');
   const [matchSubtitle, setMatchSubtitle] = useState<string>(currentSchedule?.match_subtitle || 'Bảng A - Tranh vé vào Chung Kết');
@@ -164,7 +164,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
     currentSchedule?.briefing_note || 'Chào mừng các bạn khán giả! Vui lòng ổn định chỗ ngồi, kiểm tra kết nối mạng và sẵn sàng cho các vòng thi gay cấn.'
   );
   const [concludingMessage, setConcludingMessage] = useState<string>(
-    currentSchedule?.concluding_message || 'Cảm ơn toàn thể quý thầy cô, quý đại biểu và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2026!'
+    currentSchedule?.concluding_message || 'Cảm ơn toàn thể quý thầy cô, quý đại biểu và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2027!'
   );
 
   const [confirmAction, setConfirmAction] = useState<{
@@ -252,7 +252,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       status,
       scheduled_start_time: startTimestamp,
       auto_start_on_time: autoStartOnTime,
-      title: title.trim() || 'Beyond The Internet 2026',
+      title: title.trim() || 'Beyond The Internet 2027',
       match_stage: matchStage,
       match_name: matchName.trim() || 'Trận Đấu',
       match_subtitle: matchSubtitle.trim(),
@@ -289,7 +289,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       status: 'IN_PROGRESS',
       scheduled_start_time: startTimestamp,
       auto_start_on_time: autoStartOnTime,
-      title: title.trim() || 'Beyond The Internet 2026',
+      title: title.trim() || 'Beyond The Internet 2027',
       match_stage: matchStage,
       match_name: matchName.trim() || 'Trận Đấu',
       match_subtitle: matchSubtitle.trim(),
@@ -317,7 +317,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       ...(currentSchedule || {}),
       enabled: true,
       status: 'CONCLUDED',
-      title: title.trim() || 'Beyond The Internet 2026',
+      title: title.trim() || 'Beyond The Internet 2027',
       match_stage: matchStage,
       match_name: matchName.trim() || 'Trận Đấu',
       match_subtitle: matchSubtitle.trim(),
@@ -354,7 +354,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       status: 'SCHEDULED',
       scheduled_start_time: startTimestamp,
       auto_start_on_time: autoStartOnTime,
-      title: title.trim() || 'Beyond The Internet 2026',
+      title: title.trim() || 'Beyond The Internet 2027',
       match_stage: matchStage,
       match_name: matchName.trim() || 'Trận Đấu',
       match_subtitle: matchSubtitle.trim(),
@@ -715,7 +715,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ví dụ: Beyond The Internet 2026"
+                  placeholder="Ví dụ: Beyond The Internet 2027"
                   className="w-full bg-slate-950 border border-white/15 focus:border-sky-400 text-white text-xs px-3 py-2 rounded-[3px] outline-none"
                 />
               </div>

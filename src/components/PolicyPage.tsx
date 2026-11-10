@@ -389,7 +389,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       items: [
         {
           label: 'Đơn vị kiểm soát và xử lý',
-          text: 'Ban Tổ Chức Cuộc Thi Học Thuật Beyond The Internet 2026 phối hợp cùng Bộ phận Kỹ thuật & Công nghệ Hội trường.'
+          text: 'Ban Tổ Chức Cuộc Thi Học Thuật Beyond The Internet 2027 phối hợp cùng Bộ phận Kỹ thuật & Công nghệ Hội trường.'
         },
         {
           label: 'Phạm vi áp dụng',
@@ -485,7 +485,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
       items: [
         {
           label: 'Dữ liệu phục vụ giải đấu',
-          text: 'Được lưu trữ trong suốt thời gian diễn ra cuộc thi BTI 2026 và tối đa 60 ngày sau đêm Chung kết để hoàn tất công tác đối soát giải thưởng, sau đó tự động xóa hoặc ẩn danh hóa vĩnh viễn.'
+          text: 'Được lưu trữ trong suốt thời gian diễn ra cuộc thi BTI 2027 và tối đa 60 ngày sau đêm Chung kết để hoàn tất công tác đối soát giải thưởng, sau đó tự động xóa hoặc ẩn danh hóa vĩnh viễn.'
         },
         {
           label: 'Nhật ký an ninh mạng (System Logs)',
@@ -564,7 +564,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
         },
         {
           label: 'Phương thức tiếp nhận',
-          text: 'Qua biểu mẫu yêu cầu trực tuyến tại Mục 3 trang này hoặc gửi văn bản trực tiếp tới Bộ phận DPO (Email: bti2026.dpo@edu.vn).'
+          text: 'Qua biểu mẫu yêu cầu trực tuyến tại Mục 3 trang này hoặc gửi văn bản trực tiếp tới Bộ phận DPO (Email: bti2027.dpo@edu.vn).'
         }
       ],
       note: 'Biểu mẫu gửi yêu cầu trực tuyến có sẵn ngay tại Tab 3 (Quyền Chủ Thể & DPO).'
@@ -629,13 +629,13 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
 
           {/* Center Brand Title & Reading Time Badge */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[2px] bg-[#F7CAC9]/20 border border-[#F7CAC9]/40 text-[#F7CAC9] flex items-center justify-center font-black text-xs font-mono">
-              BTI
+            <div className="w-7 h-7 rounded-[2px] overflow-hidden bg-black border border-[#F7CAC9]/40 flex items-center justify-center">
+              <img src="/logo-square.png" alt="BTI 2027" className="w-full h-full object-cover" />
             </div>
             <div className="text-left hidden sm:block">
               <div className="flex items-center gap-2">
                 <h1 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  Beyond The Internet 2026
+                  Beyond The Internet 2027
                 </h1>
                 <span 
                   id="policy-reading-time-header-badge"
@@ -824,13 +824,13 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
               </h2>
               <p className="text-xs sm:text-sm text-[#F7CAC9]/90 max-w-2xl font-sans leading-relaxed">
                 {localLanguage !== 'vi'
-                  ? 'Official transparency statement of the Beyond The Internet 2026 Academic Competition regarding personal data protection, anti-cheat regulations, and ethical AI utilization.'
-                  : 'Văn bản công khai chính thức của Cuộc thi Học thuật Beyond The Internet 2026 về bảo vệ dữ liệu cá nhân, quy chế thi đấu liêm chính và nguyên tắc sử dụng Trí tuệ Nhân tạo có trách nhiệm.'}
+                  ? 'Official transparency statement of the Beyond The Internet 2027 Academic Competition regarding personal data protection, anti-cheat regulations, and ethical AI utilization.'
+                  : 'Văn bản công khai chính thức của Cuộc thi Học thuật Beyond The Internet 2027 về bảo vệ dữ liệu cá nhân, quy chế thi đấu liêm chính và nguyên tắc sử dụng Trí tuệ Nhân tạo có trách nhiệm.'}
               </p>
             </div>
 
             <div className="shrink-0 text-left sm:text-right font-mono text-xs text-white/60 space-y-1">
-              <div>Hiệu lực: <strong className="text-white">Mùa giải 2026</strong></div>
+              <div>Hiệu lực: <strong className="text-white">Mùa giải 2027</strong></div>
               <div className="text-[10px] text-emerald-400 font-semibold">Trạng thái: Đang áp dụng chính thức</div>
             </div>
           </div>
@@ -1030,7 +1030,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                 <strong className="block font-bold text-white mb-0.5 uppercase font-mono">
                   Minh bạch Trí tuệ Nhân tạo (Luật Trí tuệ nhân tạo số 134/2025/QH15 & Nghị định 142/2026/NĐ-CP)
                 </strong>
-                Căn cứ Điều 11 Luật Trí tuệ nhân tạo số 134/2025/QH15 (hiệu lực 01/03/2026) và Điều 18 Nghị định 142/2026/NĐ-CP (hiệu lực 01/05/2026), Beyond The Internet 2026 công bố rõ vai trò Bên triển khai hệ thống AI, gắn nhãn rõ ràng các tính năng tương tác với Trợ lý AI và giọng đọc AI tự động.
+                Căn cứ Điều 11 Luật Trí tuệ nhân tạo số 134/2025/QH15 (hiệu lực 01/03/2026) và Điều 18 Nghị định 142/2026/NĐ-CP (hiệu lực 01/05/2026), Beyond The Internet 2027 công bố rõ vai trò Bên triển khai hệ thống AI, gắn nhãn rõ ràng các tính năng tương tác với Trợ lý AI và giọng đọc AI tự động.
               </div>
             </div>
 
@@ -1148,12 +1148,12 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                 <div className="space-y-2 text-xs text-white/80 font-mono">
                   <div>
                     <span className="text-white/50 block text-[10px]">Bộ phận phụ trách bảo vệ dữ liệu (Điều 33 Luật 91/2025):</span>
-                    <strong className="text-sky-300">Bộ phận Kỹ Thuật & Pháp chế BTI 2026</strong>
+                    <strong className="text-sky-300">Bộ phận Kỹ Thuật & Pháp chế BTI 2027</strong>
                   </div>
                   <div>
                     <span className="text-white/50 block text-[10px]">Email tiếp nhận yêu cầu chủ thể dữ liệu:</span>
-                    <a href="mailto:dpo-bti2026@domain.edu.vn" className="text-sky-300 underline font-bold">
-                      dpo-bti2026@domain.edu.vn
+                    <a href="mailto:dpo-bti2027@domain.edu.vn" className="text-sky-300 underline font-bold">
+                      dpo-bti2027@domain.edu.vn
                     </a>
                   </div>
                   <div className="space-y-1 pt-1 border-t border-white/10">
@@ -1237,7 +1237,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
 
       {/* Footer */}
       <footer className="mt-auto border-t border-white/10 bg-[#090218] px-4 py-6 text-center text-xs font-mono text-white/50 space-y-2 print:border-none">
-        <p>BEYOND THE INTERNET 2026 • HỆ THỐNG ĐẤU TRƯỜNG TƯƠNG TÁC THỜI GIAN THỰC</p>
+        <p>BEYOND THE INTERNET 2027 • HỆ THỐNG ĐẤU TRƯỜNG TƯƠNG TÁC THỜI GIAN THỰC</p>
         <p className="text-[11px] text-white/40">
           Căn cứ Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP, Luật An ninh mạng 116/2025/QH15 & Luật Trí tuệ nhân tạo 134/2025/QH15.
         </p>

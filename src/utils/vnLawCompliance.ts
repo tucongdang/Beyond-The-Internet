@@ -182,7 +182,7 @@ export function checkContentCompliance(input: string, context: 'CHAT' | 'SHOUT' 
         isSafe: false,
         severity: 'BLOCKED',
         category: 'PROFANITY',
-        reasonVi: 'Tên hoặc nội dung chứa ngôn từ chưa phù hợp với quy chế văn hóa học đường Beyond The Internet 2026.',
+        reasonVi: 'Tên hoặc nội dung chứa ngôn từ chưa phù hợp với quy chế văn hóa học đường Beyond The Internet 2027.',
         sanitizedText: sanitized,
         flaggedTerms
       };
@@ -207,7 +207,7 @@ export function checkContentCompliance(input: string, context: 'CHAT' | 'SHOUT' 
           isSafe: false,
           severity: 'BLOCKED',
           category: 'CHEATING_CONTEST',
-          reasonVi: 'Vì tính công bằng của Đấu trường Beyond The Internet 2026, câu hỏi này vi phạm quy chế bảo mật đề thi.',
+          reasonVi: 'Vì tính công bằng của Đấu trường Beyond The Internet 2027, câu hỏi này vi phạm quy chế bảo mật đề thi.',
           sanitizedText: input,
           flaggedTerms
         };

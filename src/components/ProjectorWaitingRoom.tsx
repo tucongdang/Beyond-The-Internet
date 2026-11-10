@@ -176,7 +176,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
     }
   }, [scheduledTime]);
 
-  const eventTitle = schedule?.title || 'Beyond The Internet 2026';
+  const eventTitle = schedule?.title || 'Beyond The Internet 2027';
   const eventLocation = schedule?.location || 'Hội trường Trực tiếp & Nền tảng Đấu trường Trực tuyến';
   const briefingNote = schedule?.briefing_note || 'Chào mừng quý đại biểu, thầy cô và các bạn khán giả! Vui lòng quét mã QR trên màn hình để tham gia đấu trường tương tác.';
 
@@ -270,7 +270,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
 
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-bold tracking-widest uppercase bg-amber-500/15 text-amber-300 border border-amber-400/40 shadow-lg mb-4">
             <Award className="w-4 h-4 text-amber-300" />
-            <span>LỄ BẾ MẠC & TỔNG KẾT CHUNG CUỘC • BTI 2026</span>
+            <span>LỄ BẾ MẠC & TỔNG KẾT CHUNG CUỘC • BTI 2027</span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight drop-shadow-2xl mb-4">
@@ -306,6 +306,16 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
 
             {/* Title & Match Badge */}
             <div>
+              {/* Official Brand Logo for Stage */}
+              <div className="mb-3">
+                <img
+                  src="/logo-landscape.png"
+                  alt="Beyond The Internet 2027"
+                  className="max-h-16 sm:max-h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(247,202,201,0.25)] select-none pointer-events-none"
+                  loading="eager"
+                />
+              </div>
+
               {schedule?.match_name && (
                 <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-[3px] bg-gradient-to-r from-amber-500/20 via-purple-600/20 to-sky-500/20 text-amber-300 border border-amber-400/50 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider mb-2.5 shadow-lg">
                   <Trophy className="w-4 h-4 text-amber-400" />
@@ -324,7 +334,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   </>
                 ) : (
                   <>
-                    BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2026</span>
+                    BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2027</span>
                   </>
                 )}
               </h2>
@@ -520,7 +530,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
       {/* Footer / Broadcast Announcer */}
       <footer className="relative z-10 w-full mt-auto shrink-0">
         <div className="text-center text-[10px] sm:text-xs font-mono text-[#B6A6D8]/50 uppercase tracking-widest pt-2">
-          Beyond The Internet 2026 • Academic Interactive Real-time Arena
+          Beyond The Internet 2027 • Academic Interactive Real-time Arena
         </div>
       </footer>
 

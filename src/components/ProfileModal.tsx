@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { UserInfo, GameState, UserResponse } from '../types';
-import { computeAudienceScoreFromResponses } from '../services/audienceScoringService';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { computeAudienceScoreFromResponses, normalizeRoundKey, calculatePointsForRound } from '../services/audienceScoringService';
+import { getFirestore, doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { getApp, getApps } from 'firebase/app';
 import { removeUndefined } from '../firebase';
 import firebaseConfig from '../../firebase-applet-config.json';
+import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { soundFx, SoundPackTheme, SOUND_PACKS } from '../services/audioEffects';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
@@ -27,7 +28,51 @@ import {
   subscribeHapticPreference,
   HapticIntensity
 } from '../utils/hapticUtils';
-import { X, User, Globe, BarChart2, Edit3, Save, Activity, Camera, Smartphone, Vibrate, Check, Sliders, Sparkles, Contrast, Volume2, Volume1, VolumeX, Play, Square, Music, RotateCcw, Mic, MessageSquare, ShieldCheck, Trash2, FileText, Scale, Lock, ExternalLink } from 'lucide-react';
+import { 
+  X, 
+  User, 
+  Globe, 
+  BarChart2, 
+  Edit3, 
+  Save, 
+  Activity, 
+  Camera, 
+  Smartphone, 
+  Vibrate, 
+  Check, 
+  Sliders, 
+  Sparkles, 
+  Contrast, 
+  Volume2, 
+  Volume1, 
+  VolumeX, 
+  Play, 
+  Square, 
+  Music, 
+  RotateCcw, 
+  Mic, 
+  MessageSquare, 
+  ShieldCheck, 
+  Trash2, 
+  FileText, 
+  Scale, 
+  Lock, 
+  ExternalLink,
+  History,
+  Clock,
+  Calendar,
+  CheckCircle2,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  Zap,
+  Compass,
+  Gauge,
+  Flag,
+  Layers,
+  Award
+} from 'lucide-react';
 import { ambientNoiseService } from '../services/ambientNoiseService';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsOfServiceModal } from './TermsOfServiceModal';
@@ -40,7 +85,7 @@ interface ProfileModalProps {
   onUpdateUser: (user: UserInfo) => void;
   allResponses: Record<string, Record<string, UserResponse>>;
   gameState: GameState;
-  initialTab?: 'stats' | 'edit' | 'settings';
+  initialTab?: 'stats' | 'edit' | 'settings' | 'history';
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -58,7 +103,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
   );
   
-  const [tab, setTab] = useState<'stats' | 'edit' | 'settings'>(initialTab || (isWaitingRoom ? 'edit' : 'stats'));
+  const [tab, setTab] = useState<'stats' | 'edit' | 'settings' | 'history'>(initialTab || (isWaitingRoom ? 'edit' : 'stats'));
   
   // Edit state
   const [name, setName] = useState(user.name);
@@ -325,6 +370,237 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     return computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
   }, [allResponses, user, gameState]);
 
+  // --- FIRESTORE ROUND HISTORY STATES & LOADER ---
+  const [firestoreHistoryLoading, setFirestoreHistoryLoading] = useState<boolean>(false);
+  const [firestoreLastSync, setFirestoreLastSync] = useState<number | null>(null);
+  const [firestoreError, setFirestoreError] = useState<string | null>(null);
+  const [directFirestoreResponses, setDirectFirestoreResponses] = useState<Record<string, any>>({});
+  const [expandedRoundKey, setExpandedRoundKey] = useState<string | null>(null);
+  const [roundFilter, setRoundFilter] = useState<'ALL' | 'round1' | 'round2' | 'round3' | 'round4' | 'poll'>('ALL');
+
+  // Firebase skill diagnostic error logger
+  const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {
+    const errInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      authInfo: {
+        userId: user?.uid,
+        email: user?.email,
+        emailVerified: user?.emailVerified,
+        isAnonymous: false,
+        providerInfo: []
+      },
+      operationType,
+      path
+    };
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  };
+
+  const fetchFirestoreRoundHistory = async () => {
+    if (!user?.uid) return;
+    setFirestoreHistoryLoading(true);
+    setFirestoreError(null);
+    const pathForGetDocs = 'responses';
+    try {
+      const app = getApps()[0];
+      const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
+      const snap = await getDocs(collection(db, pathForGetDocs));
+      
+      const userResps: Record<string, any> = {};
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+        const isUserMatch = 
+          data.uid === user.uid ||
+          data.response?.uid === user.uid ||
+          data.response?.user_info?.uid === user.uid ||
+          docId.endsWith(`_${user.uid}`) ||
+          (user.mssv && data.response?.mssv && data.response.mssv.trim().toLowerCase() === user.mssv.trim().toLowerCase()) ||
+          (user.mssv && data.response?.user_info?.mssv && data.response.user_info.mssv.trim().toLowerCase() === user.mssv.trim().toLowerCase());
+
+        if (isUserMatch) {
+          const qId = data.questionId || docId.split(`_${user.uid}`)[0];
+          const respData = data.response || data;
+          if (qId && respData) {
+            userResps[qId] = {
+              ...respData,
+              question_id: qId,
+              timestamp: respData.timestamp || data.timestamp || Date.now()
+            };
+          }
+        }
+      });
+
+      setDirectFirestoreResponses(userResps);
+      setFirestoreLastSync(Date.now());
+    } catch (err) {
+      handleFirestoreError(err, 'get', pathForGetDocs);
+      setFirestoreError(localLanguage !== 'vi' ? 'Could not load history from Firestore' : 'Không thể kết nối lấy lịch sử từ Firestore');
+    } finally {
+      setFirestoreHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchFirestoreRoundHistory();
+    }
+  }, [isOpen, user.uid]);
+
+  const participatedRoundsList = useMemo(() => {
+    // 1. Merge direct Firestore responses with allResponses prop
+    const mergedUserResponses: Record<string, any> = { ...directFirestoreResponses };
+
+    if (allResponses) {
+      Object.entries(allResponses).forEach(([qId, qResponses]) => {
+        if (qResponses) {
+          const resp = qResponses[user.uid] ||
+            Object.values(qResponses).find(r => r.uid === user.uid || (user.mssv && r.mssv && r.mssv.trim().toLowerCase() === user.mssv.trim().toLowerCase()));
+          if (resp) {
+            mergedUserResponses[qId] = {
+              ...(mergedUserResponses[qId] || {}),
+              ...resp,
+              question_id: qId
+            };
+          }
+        }
+      });
+    }
+
+    const qMap = new Map(INITIAL_QUESTION_BANK.map(q => [q.id, q]));
+    const scoreHistoryMap = new Map<string, any>((scoreState?.history || []).map((h: any) => [h.questionId, h]));
+
+    // Structure raw responses into rich items
+    const rawItems: Array<{
+      questionId: string;
+      roundKey: 'round1' | 'round2' | 'round3' | 'round4' | 'poll';
+      roundName: string;
+      questionText?: string;
+      category?: string;
+      userChoice: string;
+      correctKey?: string;
+      isCorrect: boolean;
+      pointsEarned: number;
+      latencySec: number;
+      completedAt: number;
+      formattedTime: string;
+    }> = [];
+
+    Object.entries(mergedUserResponses).forEach(([qId, resp]) => {
+      const qBankItem = qMap.get(qId);
+      const scoreHist = scoreHistoryMap.get(qId);
+      
+      const roundKey = qBankItem ? normalizeRoundKey(qBankItem.round_type) : normalizeRoundKey(qId);
+      
+      let roundName = qBankItem?.round_name;
+      if (!roundName) {
+        if (roundKey === 'round1') roundName = localLanguage !== 'vi' ? 'Round 1: Warm-up (KD)' : 'Vòng 1: Khởi Động (KD)';
+        else if (roundKey === 'round2') roundName = localLanguage !== 'vi' ? 'Round 2: Obstacle Course (VCNV)' : 'Vòng 2: Vượt Chướng Ngại Vật (VCNV)';
+        else if (roundKey === 'round3') roundName = localLanguage !== 'vi' ? 'Round 3: Acceleration (TT)' : 'Vòng 3: Tăng Tốc (TT)';
+        else if (roundKey === 'round4') roundName = localLanguage !== 'vi' ? 'Round 4: Finish Line (VD)' : 'Vòng 4: Về Đích (VD)';
+        else roundName = localLanguage !== 'vi' ? 'Emergency Poll' : 'Tình Huống / Khảo Sát Khẩn Cấp';
+      }
+
+      const completedAt = resp.timestamp || Date.now();
+      const dateObj = new Date(completedAt);
+      const formattedTime = dateObj.toLocaleTimeString(localLanguage === 'vi' ? 'vi-VN' : 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) + ' • ' + dateObj.toLocaleDateString(localLanguage === 'vi' ? 'vi-VN' : 'en-US', {
+        day: '2-digit',
+        month: '2-digit'
+      });
+
+      let isCorrect = Boolean(resp.is_correct);
+      let pointsEarned = typeof resp.points === 'number' ? resp.points : 0;
+
+      if (scoreHist) {
+        isCorrect = Boolean(scoreHist.isCorrect);
+        pointsEarned = typeof scoreHist.pointsEarned === 'number' ? scoreHist.pointsEarned : 0;
+      } else if (qBankItem && resp.choice) {
+        const uChoice = (resp.choice || '').trim().toUpperCase();
+        const cKey = (qBankItem.correct_key || '').trim().toUpperCase();
+        if (uChoice === cKey || (qBankItem.round_type === 'SHORT_ANSWER' && uChoice.includes(cKey))) {
+          isCorrect = true;
+          if (roundKey === 'round1') pointsEarned = (resp.latency_sec && resp.latency_sec < 3) ? 15 : 10;
+          else if (roundKey === 'round3') pointsEarned = (resp.latency_sec && resp.latency_sec <= 5) ? 40 : (resp.latency_sec && resp.latency_sec <= 10) ? 30 : 20;
+          else if (roundKey === 'round4') pointsEarned = 40;
+          else pointsEarned = 10;
+        }
+      }
+
+      rawItems.push({
+        questionId: qId,
+        roundKey: roundKey as any,
+        roundName,
+        questionText: qBankItem?.question_text,
+        category: qBankItem?.category,
+        userChoice: resp.choice || '',
+        correctKey: qBankItem?.correct_key,
+        isCorrect,
+        pointsEarned,
+        latencySec: resp.latency_sec ? Number(resp.latency_sec.toFixed(2)) : 0,
+        completedAt,
+        formattedTime
+      });
+    });
+
+    // Group items by roundKey
+    const roundGroups: Record<string, {
+      roundKey: 'round1' | 'round2' | 'round3' | 'round4' | 'poll';
+      roundName: string;
+      roundBadge: string;
+      items: typeof rawItems;
+      totalPoints: number;
+      correctCount: number;
+      lastSubmissionAt: number;
+      formattedLastCompleted: string;
+      avgLatencySec: number;
+    }> = {};
+
+    const standardRounds = [
+      { key: 'round1', name: localLanguage !== 'vi' ? 'Round 1: Warm-up (KD)' : 'Vòng 1: Khởi Động (KD)', badge: 'KD' },
+      { key: 'round2', name: localLanguage !== 'vi' ? 'Round 2: Obstacle Course (VCNV)' : 'Vòng 2: Vượt Chướng Ngại Vật (VCNV)', badge: 'VCNV' },
+      { key: 'round3', name: localLanguage !== 'vi' ? 'Round 3: Acceleration (TT)' : 'Vòng 3: Tăng Tốc (TT)', badge: 'TT' },
+      { key: 'round4', name: localLanguage !== 'vi' ? 'Round 4: Finish Line (VD)' : 'Vòng 4: Về Đích (VD)', badge: 'VD' },
+      { key: 'poll', name: localLanguage !== 'vi' ? 'Emergency Polls & Voting' : 'Khảo Sát & Tình Huống Khẩn Cấp', badge: 'POLL' },
+    ];
+
+    standardRounds.forEach(r => {
+      roundGroups[r.key] = {
+        roundKey: r.key as any,
+        roundName: r.name,
+        roundBadge: r.badge,
+        items: [],
+        totalPoints: 0,
+        correctCount: 0,
+        lastSubmissionAt: 0,
+        formattedLastCompleted: '',
+        avgLatencySec: 0
+      };
+    });
+
+    rawItems.forEach(item => {
+      const g = roundGroups[item.roundKey] || roundGroups['round1'];
+      g.items.push(item);
+      g.totalPoints += item.pointsEarned;
+      if (item.isCorrect) g.correctCount += 1;
+      if (item.completedAt > g.lastSubmissionAt) {
+        g.lastSubmissionAt = item.completedAt;
+        g.formattedLastCompleted = item.formattedTime;
+      }
+    });
+
+    return Object.values(roundGroups)
+      .filter(g => g.items.length > 0)
+      .map(g => {
+        g.items.sort((a, b) => a.completedAt - b.completedAt);
+        const totalLatency = g.items.reduce((sum, it) => sum + it.latencySec, 0);
+        g.avgLatencySec = g.items.length > 0 ? Number((totalLatency / g.items.length).toFixed(2)) : 0;
+        return g;
+      });
+  }, [directFirestoreResponses, allResponses, scoreState, user.uid, user.mssv, localLanguage]);
+
   if (!isOpen) return null;
 
   const handleSave = async (e: React.FormEvent) => {
@@ -540,21 +816,47 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex px-4 pt-2.5 gap-2 shrink-0 border-b border-white/15 bg-black/20 backdrop-blur-lg relative z-10">
+        <div className="flex px-4 pt-2.5 gap-2 shrink-0 border-b border-white/15 bg-black/20 backdrop-blur-lg relative z-10 overflow-x-auto custom-scrollbar">
           {!isWaitingRoom && (
             <button 
+              type="button"
+              id="tab-profile-stats-btn"
               onClick={() => {
                 soundFx.playClick();
                 vibrateTap();
                 setTab('stats');
               }}
-              className={`px-4 py-2.5 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md ${
+              className={`px-4 py-2.5 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md shrink-0 ${
                 tab === 'stats' 
                   ? 'bg-white/15 text-white border-b-2 border-[#F7CAC9] shadow-[0_4px_16px_rgba(247,202,201,0.25)]' 
                   : 'text-white/50 hover:bg-white/10 hover:text-white'
               }`}
             >
               <Activity className="w-4 h-4 text-[#F7CAC9]" /> {t("prof_stats", localLanguage)}
+            </button>
+          )}
+          {!isWaitingRoom && (
+            <button 
+              type="button"
+              id="tab-profile-history-btn"
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                setTab('history');
+              }}
+              className={`px-4 py-2.5 rounded-t-[2px] text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md shrink-0 ${
+                tab === 'history' 
+                  ? 'bg-white/15 text-white border-b-2 border-[#F7CAC9] shadow-[0_4px_16px_rgba(247,202,201,0.25)]' 
+                  : 'text-white/50 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <History className="w-4 h-4 text-emerald-400" />
+              <span>{localLanguage !== 'vi' ? 'History' : 'Lịch Sử'}</span>
+              {participatedRoundsList.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/25 text-emerald-300 font-mono font-bold border border-emerald-400/30">
+                  {participatedRoundsList.length}
+                </span>
+              )}
             </button>
           )}
           <button 
@@ -626,6 +928,297 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <span className="text-base sm:text-lg font-bold text-[#F7CAC9] font-mono block">+{scoreState.scoreBreakdown.round4}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Lịch Sử Tham Gia Vòng Thi (Stored in Firestore) */}
+          {!isWaitingRoom && tab === 'history' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Summary Header Card */}
+              <div className="p-4 sm:p-5 rounded-[2px] bg-gradient-to-r from-purple-950/60 via-[#1e0a3c]/80 to-[#120526]/90 border border-[#F7CAC9]/30 shadow-xl relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>{localLanguage !== 'vi' ? 'Firestore Synced' : 'Đồng bộ Firestore'}</span>
+                      </span>
+                      {firestoreLastSync && (
+                        <span className="text-[10px] font-mono text-white/50">
+                          {new Date(firestoreLastSync).toLocaleTimeString(localLanguage === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white font-mono uppercase tracking-wide flex items-center gap-2">
+                      <History className="w-5 h-5 text-[#F7CAC9]" />
+                      <span>{localLanguage !== 'vi' ? 'Competition Round History' : 'Lịch Sử Tham Gia Vòng Thi'}</span>
+                    </h3>
+                    <p className="text-xs text-[#B6A6D8] mt-0.5">
+                      {localLanguage !== 'vi'
+                        ? 'List of rounds participated in, scores achieved, and completion timestamps stored in Firestore.'
+                        : 'Danh sách các vòng thi đã tham gia, điểm số đạt được và thời gian hoàn thành lưu trữ trên Firestore.'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      vibrateTap();
+                      fetchFirestoreRoundHistory();
+                    }}
+                    disabled={firestoreHistoryLoading}
+                    className="self-start sm:self-auto px-3 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 active:scale-95 text-white font-mono text-xs font-bold transition border border-white/15 cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    title={localLanguage !== 'vi' ? 'Reload responses from Firestore' : 'Tải lại kết quả từ máy chủ Firestore'}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${firestoreHistoryLoading ? 'animate-spin text-sky-300' : 'text-[#F7CAC9]'}`} />
+                    <span>{localLanguage !== 'vi' ? 'Refresh' : 'Làm Mới'}</span>
+                  </button>
+                </div>
+
+                {/* Aggregate Stats Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-3 border-t border-white/10">
+                  <div className="p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-center">
+                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Rounds' : 'Vòng Thi'}</div>
+                    <div className="text-xl font-black text-[#F7CAC9] font-mono">{participatedRoundsList.length}</div>
+                  </div>
+                  <div className="p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-center">
+                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Answered' : 'Câu Đã Nộp'}</div>
+                    <div className="text-xl font-black text-sky-300 font-mono">
+                      {participatedRoundsList.reduce((acc, r) => acc + r.items.length, 0)}
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-center">
+                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Total Points' : 'Tổng Điểm Vòng'}</div>
+                    <div className="text-xl font-black text-emerald-400 font-mono">
+                      +{participatedRoundsList.reduce((acc, r) => acc + r.totalPoints, 0)}
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-center">
+                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Avg Latency' : 'Độ Trễ TB'}</div>
+                    <div className="text-xl font-black text-purple-300 font-mono">
+                      {participatedRoundsList.length > 0
+                        ? `${(participatedRoundsList.reduce((acc, r) => acc + r.avgLatencySec, 0) / participatedRoundsList.length).toFixed(1)}s`
+                        : '0s'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Firestore Error Notice */}
+              {firestoreError && (
+                <div className="p-3 rounded-[2px] bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs font-mono flex items-center justify-between gap-2">
+                  <span>{firestoreError}</span>
+                  <button
+                    type="button"
+                    onClick={() => fetchFirestoreRoundHistory()}
+                    className="px-2 py-0.5 bg-rose-500/30 hover:bg-rose-500/50 text-white rounded-[2px] cursor-pointer"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
+
+              {/* Filter Pills */}
+              {participatedRoundsList.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-xs font-mono">
+                  <span className="text-white/40 text-[11px] mr-1 shrink-0">{localLanguage !== 'vi' ? 'Filter:' : 'Lọc:'}</span>
+                  {(['ALL', 'round1', 'round2', 'round3', 'round4', 'poll'] as const).map((rKey) => {
+                    const count = rKey === 'ALL'
+                      ? participatedRoundsList.length
+                      : (participatedRoundsList.find(r => r.roundKey === rKey)?.items.length || 0);
+                    if (rKey !== 'ALL' && count === 0) return null;
+                    return (
+                      <button
+                        key={rKey}
+                        type="button"
+                        onClick={() => {
+                          soundFx.playClick();
+                          vibrateTap();
+                          setRoundFilter(rKey);
+                        }}
+                        className={`px-2.5 py-1 rounded-[2px] transition cursor-pointer shrink-0 font-bold ${
+                          roundFilter === rKey
+                            ? 'bg-[#F7CAC9] text-[#190839] shadow'
+                            : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10'
+                        }`}
+                      >
+                        {rKey === 'ALL' ? (localLanguage !== 'vi' ? 'All Rounds' : 'Tất Cả') :
+                         rKey === 'round1' ? 'Vòng 1: Khởi Động' :
+                         rKey === 'round2' ? 'Vòng 2: VCNV' :
+                         rKey === 'round3' ? 'Vòng 3: Tăng Tốc' :
+                         rKey === 'round4' ? 'Vòng 4: Về Đích' : 'Khảo Sát Khẩn Cấp'}
+                        <span className="ml-1 opacity-70">({count})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Loading Indicator */}
+              {firestoreHistoryLoading && participatedRoundsList.length === 0 && (
+                <div className="p-8 text-center bg-white/5 border border-white/10 rounded-[2px] font-mono text-xs text-white/70 space-y-2">
+                  <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                  <p>{localLanguage !== 'vi' ? 'Fetching round history from Firestore...' : 'Đang tải lịch sử các vòng thi từ Firestore...'}</p>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!firestoreHistoryLoading && participatedRoundsList.length === 0 && (
+                <div className="p-8 text-center bg-white/5 border border-white/10 rounded-[2px] space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto text-white/40">
+                    <History className="w-6 h-6" />
+                  </div>
+                  <div className="max-w-md mx-auto">
+                    <h4 className="text-sm font-bold text-white mb-1 font-mono">
+                      {localLanguage !== 'vi' ? 'No Round Submissions Yet' : 'Chưa Có Dữ Liệu Vòng Thi Nào'}
+                    </h4>
+                    <p className="text-xs text-white/60 leading-relaxed">
+                      {localLanguage !== 'vi'
+                        ? 'You have not submitted any answers yet. Responses submitted during live question rounds will automatically appear here with exact scores and timestamps recorded in Firestore.'
+                        : 'Bạn chưa nộp câu trả lời nào trong các vòng thi. Khi tham gia trả lời câu hỏi trực tiếp, kết quả chấm điểm và mốc thời gian hoàn thành từ Firestore sẽ tự động hiển thị tại đây.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* List of Participated Rounds */}
+              <div className="space-y-3">
+                {participatedRoundsList
+                  .filter(r => roundFilter === 'ALL' || r.roundKey === roundFilter)
+                  .map(round => {
+                    const isExpanded = expandedRoundKey === round.roundKey;
+                    return (
+                      <div
+                        key={round.roundKey}
+                        className="rounded-[2px] bg-white/5 border border-white/10 hover:border-white/20 transition-all overflow-hidden"
+                      >
+                        {/* Round Summary Header (Click to expand) */}
+                        <div
+                          onClick={() => {
+                            soundFx.playClick();
+                            vibrateTap();
+                            setExpandedRoundKey(isExpanded ? null : round.roundKey);
+                          }}
+                          className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-white/[0.03] transition select-none"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-[2px] bg-gradient-to-br from-purple-500/20 to-sky-500/20 border border-purple-400/30 flex items-center justify-center font-mono font-black text-xs text-[#F7CAC9] shrink-0">
+                              {round.roundBadge}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold text-white font-mono">
+                                  {round.roundName}
+                                </h4>
+                                <span className="px-1.5 py-0.2 rounded-[2px] text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                  +{round.totalPoints}đ
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-white/60 mt-0.5">
+                                <span>{localLanguage !== 'vi' ? `${round.correctCount}/${round.items.length} correct` : `${round.correctCount}/${round.items.length} câu đúng`}</span>
+                                <span className="text-white/20">•</span>
+                                <span className="flex items-center gap-1 text-sky-300">
+                                  <Clock className="w-3 h-3 text-sky-400" />
+                                  <span>{localLanguage !== 'vi' ? 'Last completed:' : 'Hoàn thành:'} {round.formattedLastCompleted}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 self-end sm:self-auto">
+                            <div className="text-right font-mono hidden sm:block">
+                              <div className="text-xs font-bold text-[#F7CAC9]">
+                                +{round.totalPoints} {localLanguage !== 'vi' ? 'pts' : 'điểm'}
+                              </div>
+                              <div className="text-[10px] text-white/50">
+                                {localLanguage !== 'vi' ? 'Avg Latency:' : 'Độ trễ TB:'} {round.avgLatencySec}s
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="p-1 rounded bg-white/5 text-white/60 hover:text-white"
+                              aria-label="Toggle details"
+                            >
+                              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Questions Detail List */}
+                        {isExpanded && (
+                          <div className="border-t border-white/10 p-3 sm:p-4 bg-black/25 space-y-2.5">
+                            <div className="text-[11px] font-mono uppercase tracking-wider text-white/50 font-bold mb-2">
+                              {localLanguage !== 'vi' ? 'Round Questions Detail' : 'Chi Tiết Từng Câu Hỏi Trong Vòng:'}
+                            </div>
+                            {round.items.map((it, idx) => (
+                              <div
+                                key={it.questionId || idx}
+                                className="p-3 rounded-[2px] bg-white/[0.04] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs font-mono"
+                              >
+                                <div className="space-y-1 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-200 border border-purple-400/30 font-bold text-[10px]">
+                                      {it.questionId}
+                                    </span>
+                                    {it.isCorrect ? (
+                                      <span className="text-emerald-400 font-bold flex items-center gap-1 text-[11px]">
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>{localLanguage !== 'vi' ? 'Correct' : 'Chính Xác'}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-rose-400 font-bold flex items-center gap-1 text-[11px]">
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        <span>{localLanguage !== 'vi' ? 'Incorrect' : 'Chưa Đúng'}</span>
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-white/40">
+                                      {it.formattedTime}
+                                    </span>
+                                  </div>
+                                  {it.questionText && (
+                                    <p className="text-xs text-white/80 font-sans line-clamp-2">
+                                      {it.questionText}
+                                    </p>
+                                  )}
+                                  <div className="flex flex-wrap items-center gap-2 text-[11px] pt-0.5">
+                                    <span className="text-white/60">
+                                      {localLanguage !== 'vi' ? 'Your choice:' : 'Lựa chọn của bạn:'} <strong className="text-amber-300 font-bold">{it.userChoice || '—'}</strong>
+                                    </span>
+                                    {it.correctKey && (
+                                      <>
+                                        <span className="text-white/20">•</span>
+                                        <span className="text-white/60">
+                                          {localLanguage !== 'vi' ? 'Correct:' : 'Đáp án chuẩn:'} <strong className="text-emerald-300 font-bold">{it.correctKey}</strong>
+                                        </span>
+                                      </>
+                                    )}
+                                    {it.latencySec > 0 && (
+                                      <>
+                                        <span className="text-white/20">•</span>
+                                        <span className="text-sky-300/80">
+                                          {localLanguage !== 'vi' ? 'Speed:' : 'Phản hồi:'} {it.latencySec}s
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="text-left sm:text-right shrink-0">
+                                  <span className={`px-2 py-0.5 rounded-[2px] font-bold text-xs ${
+                                    it.pointsEarned > 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-white/5 text-white/40 border border-white/10'
+                                  }`}>
+                                    {it.pointsEarned > 0 ? `+${it.pointsEarned}đ` : '0đ'}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}

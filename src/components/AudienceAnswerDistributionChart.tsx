@@ -32,15 +32,15 @@ interface AudienceAnswerDistributionChartProps {
   className?: string;
 }
 
-// Claude Dataviz Categorical Palette (skills/dataviz/references/palette.md — CVD-safe OKLab validated)
+// Vibrant Cosmic Twilight Palette
 const OPTION_COLORS: Record<string, { fill: string; stroke: string; bg: string; text: string }> = {
-  A: { fill: '#3987e5', stroke: '#2a78d6', bg: 'bg-[#3987e5]/15', text: 'text-[#6A9BCC]' },     // Slot 1: Blue
-  B: { fill: '#D97757', stroke: '#d95926', bg: 'bg-[#D97757]/15', text: 'text-[#D97757]' },     // Slot 2: Claude Clay / Orange
-  C: { fill: '#199e70', stroke: '#1baf7a', bg: 'bg-[#199e70]/15', text: 'text-[#BCD1CA]' },     // Slot 3: Aqua
-  D: { fill: '#c98500', stroke: '#fab219', bg: 'bg-[#c98500]/15', text: 'text-[#fab219]' },     // Slot 4: Yellow
-  E: { fill: '#d55181', stroke: '#C46686', bg: 'bg-[#d55181]/15', text: 'text-[#EBCECE]' },     // Slot 5: Magenta
-  F: { fill: '#9085e9', stroke: '#6250d6', bg: 'bg-[#9085e9]/15', text: 'text-[#CBCADB]' },     // Slot 7: Violet
-  DEFAULT: { fill: '#87867F', stroke: '#5E5D59', bg: 'bg-white/10', text: 'text-[#C2C0B6]' }
+  A: { fill: '#38bdf8', stroke: '#0284c7', bg: 'bg-sky-500/15', text: 'text-sky-300' },
+  B: { fill: '#F7CAC9', stroke: '#e39a96', bg: 'bg-[#F7CAC9]/15', text: 'text-[#F7CAC9]' },
+  C: { fill: '#34d399', stroke: '#059669', bg: 'bg-emerald-500/15', text: 'text-emerald-300' },
+  D: { fill: '#fbbf24', stroke: '#d97706', bg: 'bg-amber-500/15', text: 'text-amber-300' },
+  E: { fill: '#a855f7', stroke: '#7e22ce', bg: 'bg-purple-500/15', text: 'text-purple-300' },
+  F: { fill: '#e879f9', stroke: '#c026d3', bg: 'bg-fuchsia-500/15', text: 'text-fuchsia-300' },
+  DEFAULT: { fill: '#B6A6D8', stroke: '#7c3aed', bg: 'bg-white/10', text: 'text-white/70' }
 };
 
 // Active Shape for Interactive Hover / Focus

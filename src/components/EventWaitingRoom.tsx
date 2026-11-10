@@ -115,7 +115,7 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
     setTimeout(() => setTestedAudio(false), 3500);
   };
 
-  const eventTitle = schedule?.title || 'Beyond The Internet 2026';
+  const eventTitle = schedule?.title || 'Beyond The Internet 2027';
   const eventLocation = schedule?.location || 'Hội trường Trực tiếp & Nền tảng Tương tác Trực tuyến';
   const briefingNote = schedule?.briefing_note || 'Chào mừng các bạn khán giả! Vui lòng ổn định vị trí, kiểm tra kết nối mạng và sẵn sàng cho các vòng thi đấu trực tiếp.';
 
@@ -135,6 +135,16 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
           <div className="relative z-10 flex flex-col items-center text-center">
+            {/* Brand Logo in Audience Waiting Room */}
+            <div className="mb-3">
+              <img
+                src="/logo-landscape.png"
+                alt="Beyond The Internet 2027"
+                className="max-h-12 sm:max-h-16 w-auto object-contain drop-shadow-[0_4px_20px_rgba(247,202,201,0.22)] select-none pointer-events-none"
+                loading="eager"
+              />
+            </div>
+
             {/* Stage Status Pill & Match Badge */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-400/40 shadow-sm">

@@ -201,7 +201,7 @@ function notifyExportNotice(message: string) {
 /**
  * Download CSV with UTF-8 BOM for flawless Excel & SPSS Vietnamese text rendering
  */
-export function exportToCSV(rows: SPSSRow[], filename = 'BTI2026_Audience_Responses.csv') {
+export function exportToCSV(rows: SPSSRow[], filename = 'BTI2027_Audience_Responses.csv') {
   if (!rows || rows.length === 0) {
     notifyExportNotice('Chưa có dữ liệu phản hồi nào để xuất!');
     return;
@@ -256,7 +256,7 @@ export function exportToCSV(rows: SPSSRow[], filename = 'BTI2026_Audience_Respon
  */
 export function exportLeaderboardToCSV(
   summaries: UserScoreSummary[],
-  filename = 'BTI2026_BangXepHang_TongHop.csv'
+  filename = 'BTI2027_BangXepHang_TongHop.csv'
 ) {
   if (!summaries || summaries.length === 0) {
     notifyExportNotice('Chưa có dữ liệu bảng xếp hạng để xuất!');
@@ -319,7 +319,7 @@ export function exportLeaderboardToCSV(
 /**
  * Export Research-Grade Audit Action Log to CSV
  */
-export function exportAuditLogsToCSV(logs: ActivityLogItem[], filename = 'BTI2026_Research_Audit_Log.csv') {
+export function exportAuditLogsToCSV(logs: ActivityLogItem[], filename = 'BTI2027_Research_Audit_Log.csv') {
   if (!logs || logs.length === 0) {
     notifyExportNotice('Không có dữ liệu nhật ký hoạt động để xuất!');
     return;
@@ -383,7 +383,7 @@ export function exportAuditLogsToCSV(logs: ActivityLogItem[], filename = 'BTI202
 /**
  * Export Item Psychometrics Analysis to CSV
  */
-export function exportItemAnalysisToCSV(items: ResearchItemAnalysis[], filename = 'BTI2026_Item_Psychometrics.csv') {
+export function exportItemAnalysisToCSV(items: ResearchItemAnalysis[], filename = 'BTI2027_Item_Psychometrics.csv') {
   if (!items || items.length === 0) {
     notifyExportNotice('Chưa có dữ liệu phân tích câu hỏi!');
     return;
@@ -437,7 +437,7 @@ export function exportItemAnalysisToCSV(items: ResearchItemAnalysis[], filename 
 /**
  * Download complete JSON dump for database replication & Python / R analysis
  */
-export function exportToJSON(data: unknown, filename = 'BTI2026_Full_Database_Dump.json') {
+export function exportToJSON(data: unknown, filename = 'BTI2027_Full_Database_Dump.json') {
   const jsonString = JSON.stringify(data, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -454,7 +454,7 @@ export function exportToJSON(data: unknown, filename = 'BTI2026_Full_Database_Du
 /**
  * Download JSON Lines (JSONL) for Big Data & Pandas / HuggingFace datasets
  */
-export function exportToJSONLines(records: unknown[], filename = 'BTI2026_Research_Data.jsonl') {
+export function exportToJSONLines(records: unknown[], filename = 'BTI2027_Research_Data.jsonl') {
   if (!records || records.length === 0) {
     notifyExportNotice('Không có bản ghi nào để xuất JSONL!');
     return;
@@ -472,7 +472,7 @@ export function exportToJSONLines(records: unknown[], filename = 'BTI2026_Resear
   URL.revokeObjectURL(url);
 }
 
-export function exportShoutsToCSV(shouts: any[], filename = 'BTI2026_Audience_Shouts.csv') {
+export function exportShoutsToCSV(shouts: any[], filename = 'BTI2027_Audience_Shouts.csv') {
   if (!shouts || shouts.length === 0) {
     notifyExportNotice('Không có dữ liệu tiếng hô để xuất!');
     return;
@@ -506,7 +506,7 @@ export function exportShoutsToCSV(shouts: any[], filename = 'BTI2026_Audience_Sh
   URL.revokeObjectURL(url);
 }
 
-export function exportQAToCSV(questions: any[], filename = 'BTI2026_Audience_QA.csv') {
+export function exportQAToCSV(questions: any[], filename = 'BTI2027_Audience_QA.csv') {
   if (!questions || questions.length === 0) {
     notifyExportNotice('Không có dữ liệu câu hỏi để xuất!');
     return;

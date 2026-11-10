@@ -57,7 +57,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               <CheckCircle2 className="w-4 h-4 shrink-0 text-[#92A8D1]" />
               Căn cứ Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP & Luật An ninh mạng 116/2025/QH15
             </div>
-            Beyond The Internet 2026 tôn trọng quyền riêng tư và bảo vệ an toàn thông tin của thí sinh, khán giả. Chúng tôi chỉ thu thập dữ liệu tối thiểu cần thiết phục vụ tổ chức, chấm điểm và trao giải khi có sự đồng ý rõ ràng của bạn.
+            Beyond The Internet 2027 tôn trọng quyền riêng tư và bảo vệ an toàn thông tin của thí sinh, khán giả. Chúng tôi chỉ thu thập dữ liệu tối thiểu cần thiết phục vụ tổ chức, chấm điểm và trao giải khi có sự đồng ý rõ ràng của bạn.
           </div>
 
           {/* Section 1 */}
@@ -67,7 +67,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               Bên Kiểm Soát & Xử Lý Dữ Liệu Cá Nhân
             </h3>
             <p className="text-xs text-white/80 pl-7">
-              Đơn vị chủ quản: <strong>Ban Tổ chức Cuộc thi Học thuật Beyond The Internet 2026</strong>.<br />
+              Đơn vị chủ quản: <strong>Ban Tổ chức Cuộc thi Học thuật Beyond The Internet 2027</strong>.<br />
               Phạm vi áp dụng: Nền tảng web-app tương tác trực tiếp (Live Gameshow Interaction) dành cho khán giả và thí sinh tham dự.
             </p>
           </div>
@@ -180,7 +180,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
             </button>
           ) : (
             <span className="text-[11px] text-white/50">
-              Mọi thắc mắc vui lòng liên hệ Ban Thư ký BTI 2026.
+              Mọi thắc mắc vui lòng liên hệ Ban Thư ký BTI 2027.
             </span>
           )}
 

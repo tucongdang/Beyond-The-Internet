@@ -333,7 +333,7 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
       {/* Bottom status bar */}
       <div className="relative z-10 text-center pb-2">
         <p className="text-[11px] font-mono uppercase tracking-widest text-white/80">
-          Beyond The Internet 2026 • Synchronized Crowd Experience
+          Beyond The Internet 2027 • Synchronized Crowd Experience
         </p>
       </div>
     </div>,

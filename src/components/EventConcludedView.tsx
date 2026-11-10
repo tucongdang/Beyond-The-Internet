@@ -36,8 +36,8 @@ export const EventConcludedView: React.FC<EventConcludedViewProps> = ({
   onOpenSurvey
 }) => {
   const schedule = gameState.event_schedule;
-  const concludingMessage = schedule?.concluding_message || 'Cảm ơn toàn thể quý thầy cô, quý đại biểu và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2026!';
-  const eventTitle = schedule?.title || 'Beyond The Internet 2026';
+  const concludingMessage = schedule?.concluding_message || 'Cảm ơn toàn thể quý thầy cô, quý đại biểu và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2027!';
+  const eventTitle = schedule?.title || 'Beyond The Internet 2027';
 
   const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
 
@@ -49,6 +49,16 @@ export const EventConcludedView: React.FC<EventConcludedViewProps> = ({
         <div className="fluent-box rounded-[4px] p-6 sm:p-8 relative overflow-hidden border border-amber-500/40 shadow-2xl bg-gradient-to-br from-[#1c1206]/95 via-[#1a0f2e]/95 to-slate-950/95 text-center">
           <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
+
+          {/* Official Brand Logo */}
+          <div className="mb-4">
+            <img
+              src="/logo-landscape.png"
+              alt="Beyond The Internet 2027"
+              className="max-h-12 sm:max-h-14 w-auto object-contain mx-auto drop-shadow-md select-none pointer-events-none"
+              loading="eager"
+            />
+          </div>
 
           {/* Golden Trophy Icon */}
           <div className="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
@@ -162,7 +172,7 @@ export const EventConcludedView: React.FC<EventConcludedViewProps> = ({
 
         {/* Footnote */}
         <div className="text-center text-xs text-slate-500 font-mono">
-          <span>Ban Tổ Chức Beyond The Internet 2026 chân thành cảm ơn quý khán giả. Hẹn gặp lại tại mùa giải tiếp theo!</span>
+          <span>Ban Tổ Chức Beyond The Internet 2027 chân thành cảm ơn quý khán giả. Hẹn gặp lại tại mùa giải tiếp theo!</span>
         </div>
 
       </div>

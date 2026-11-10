@@ -193,7 +193,7 @@ export default function App() {
   }, [audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg, generateQrCode]);
 
   const handleRetryQr = useCallback(() => {
-    const targetUrl = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app');
+    const targetUrl = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2027.app');
     generateQrCode(targetUrl);
   }, [audienceJoinUrl, generateQrCode]);
 
@@ -218,8 +218,8 @@ export default function App() {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: localLanguage !== 'vi' ? 'BTI 2026 - Live Interactive Arena' : 'BTI 2026 - Đấu Trường Trực Tiếp',
-          text: localLanguage !== 'vi' ? 'Join the real-time interactive BTI 2026 arena now!' : 'Tham gia trực tiếp đấu trường tương tác BTI 2026 ngay bây giờ!',
+          title: localLanguage !== 'vi' ? 'BTI 2027 - Live Interactive Arena' : 'BTI 2027 - Đấu Trường Trực Tiếp',
+          text: localLanguage !== 'vi' ? 'Join the real-time interactive BTI 2027 arena now!' : 'Tham gia trực tiếp đấu trường tương tác BTI 2027 ngay bây giờ!',
           url: urlToShare
         });
       } catch (err: any) {
@@ -885,16 +885,19 @@ export default function App() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] max-w-md w-[calc(100%-2rem)] fluent-toast px-4 py-3 text-xs sm:text-sm font-medium text-[#F5EFF9] flex items-center justify-between gap-3 animate-fluent-toast-enter"
+          tabIndex={0}
+          aria-label={localLanguage !== 'vi' ? `System notification: ${systemNotice}` : `Thông báo hệ thống: ${systemNotice}`}
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] max-w-md w-[calc(100%-2rem)] fluent-toast px-4 py-3 text-xs sm:text-sm font-medium text-[#F5EFF9] flex items-center justify-between gap-3 animate-fluent-toast-enter outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
         >
           <span>{systemNotice}</span>
           <button
             type="button"
             onClick={() => setSystemNotice(null)}
-            aria-label="Đóng thông báo"
-            className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-[#F7CAC9] text-xs font-mono font-bold shrink-0 cursor-pointer"
+            aria-label={localLanguage !== 'vi' ? 'Dismiss system notification' : 'Đóng thông báo hệ thống'}
+            tabIndex={0}
+            className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-[#F7CAC9] text-xs font-mono font-bold shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
           >
-            Đóng
+            {localLanguage !== 'vi' ? 'Dismiss' : 'Đóng'}
           </button>
         </div>
       )}
@@ -961,16 +964,24 @@ export default function App() {
 
         
       {batteryToast.show && (
-        <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 right-4 z-50 bg-amber-950/95 text-amber-100 px-4 py-3 rounded-[3px] shadow-2xl border border-amber-500/60 flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-sm">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 animate-pulse" />
+        <div
+          role="alert"
+          aria-live="assertive"
+          tabIndex={0}
+          aria-label={localLanguage !== 'vi' ? `Battery warning: ${batteryToast.message}` : `Cảnh báo mức pin: ${batteryToast.message}`}
+          className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 right-4 z-50 bg-amber-950/95 text-amber-100 px-4 py-3 rounded-[3px] shadow-2xl border border-amber-500/60 flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-sm outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+        >
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 animate-pulse" aria-hidden="true" />
           <span className="text-xs sm:text-sm font-medium leading-snug flex-1">{batteryToast.message}</span>
           <button
             type="button"
             onClick={handleDismissBatteryToast}
-            className="p-1 text-amber-300 hover:text-white rounded-[2px] hover:bg-amber-500/20 transition cursor-pointer shrink-0"
+            className="p-1 text-amber-300 hover:text-white rounded-[2px] hover:bg-amber-500/20 transition cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             title={localLanguage !== 'vi' ? 'Dismiss' : 'Đóng thông báo'}
+            aria-label={localLanguage !== 'vi' ? 'Dismiss battery alert' : 'Đóng cảnh báo pin'}
+            tabIndex={0}
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -1130,6 +1141,11 @@ export default function App() {
       {((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) && currentView !== 'admin' && currentView !== 'projector' && typeof document !== 'undefined' && !!document.body && createPortal(
         <div 
           id="app-global-qr-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="app-global-qr-modal-title"
+          aria-describedby="app-global-qr-modal-desc"
+          tabIndex={-1}
           className="fluent-dialog-overlay z-[999999] animate-fadeIn flex items-center justify-center p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -1139,18 +1155,19 @@ export default function App() {
         >
           <div 
             id="app-global-qr-modal-content"
-            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar"
+            tabIndex={-1}
+            className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-[#16062f] border border-[#F7CAC9]/30 rounded-[4px] p-4 sm:p-6 text-center text-[#e5e5e5] shadow-2xl shadow-purple-950/90 relative select-none my-auto custom-scrollbar focus:outline-none"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[2px] bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[2px] bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center" aria-hidden="true">
                   <QrIcon className="w-4 h-4" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  <h3 id="app-global-qr-modal-title" className="text-sm font-bold text-white uppercase tracking-wider">
                     {localLanguage !== 'vi' ? 'Join QR Code' : 'Mã QR Tham Gia'}
                   </h3>
-                  <p className="text-[11px] text-white/50">
+                  <p id="app-global-qr-modal-desc" className="text-[11px] text-white/50">
                     {localLanguage !== 'vi' ? 'Scan code or share room link' : 'Quét mã hoặc chia sẻ link phòng thi'}
                   </p>
                 </div>
@@ -1159,31 +1176,44 @@ export default function App() {
                 type="button"
                 id="btn-close-app-qr-modal"
                 onClick={handleCloseAudienceQrModal}
-                className="p-1.5 text-slate-400 hover:text-white rounded-[2px] hover:bg-white/10 transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white rounded-[2px] hover:bg-white/10 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
                 title={localLanguage !== 'vi' ? 'Close' : 'Đóng'}
+                aria-label={localLanguage !== 'vi' ? 'Close audience QR code dialog' : 'Đóng hộp thoại mã QR tham gia'}
+                tabIndex={0}
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 
             {/* QR Code Container with Spring Entrance Animation and Smooth Optical Cross-Fade */}
-            <div className="my-2.5 inline-block shrink-0 animate-qr-entrance">
+            <div 
+              className="my-2.5 inline-block shrink-0 animate-qr-entrance"
+              tabIndex={0}
+              role="region"
+              aria-label={localLanguage !== 'vi' ? 'Audience QR Code for entering arena' : 'Mã QR quét để tham gia đấu trường Beyond The Internet 2027'}
+            >
               <div className={`p-3 rounded-[2px] shadow-2xl border-2 border-sky-400/40 relative overflow-hidden flex items-center justify-center min-w-[208px] min-h-[208px] ${
                 gameState.qr_transparent_bg
                   ? 'bg-[linear-gradient(45deg,#242424_25%,transparent_25%),linear-gradient(-45deg,#242424_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#242424_75%)] bg-[size:16px_16px] bg-[#141414] ring-1 ring-emerald-400/30'
                   : 'bg-white'
               }`}>
                 {qrError ? (
-                  <div className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[2px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900">
-                    <AlertTriangle className="w-8 h-8 text-rose-500 shrink-0" />
+                  <div 
+                    role="alert" 
+                    tabIndex={0}
+                    className="w-48 h-48 sm:w-52 sm:h-52 bg-rose-50/90 border border-rose-200 rounded-[2px] p-4 flex flex-col items-center justify-center text-center gap-2.5 text-rose-900"
+                  >
+                    <AlertTriangle className="w-8 h-8 text-rose-500 shrink-0" aria-hidden="true" />
                     <p className="text-xs font-semibold leading-snug">{qrError}</p>
                     <button
                       type="button"
                       id="btn-retry-qr-generation"
                       onClick={handleRetryQr}
-                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[2px] shadow flex items-center gap-1.5 transition cursor-pointer"
+                      aria-label={localLanguage !== 'vi' ? 'Retry generating QR code' : 'Thử tạo lại mã QR tham gia'}
+                      tabIndex={0}
+                      className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[2px] shadow flex items-center gap-1.5 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>{localLanguage !== 'vi' ? 'Retry' : 'Thử lại (Retry)'}</span>
                     </button>
                   </div>
@@ -1193,7 +1223,7 @@ export default function App() {
                     alt={localLanguage !== 'vi' ? 'Audience QR Code' : 'QR Code Khán Giả'}
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
-                      <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[2px] flex items-center justify-center text-xs text-slate-500 font-mono">
+                      <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[2px] flex items-center justify-center text-xs text-slate-500 font-mono" role="status" aria-live="polite">
                         {localLanguage !== 'vi' ? 'Generating QR...' : 'Đang tạo QR...'}
                       </div>
                     }
@@ -1206,31 +1236,44 @@ export default function App() {
             {gameState.qr_custom_caption && (
               <div 
                 id="landing-qr-custom-caption"
+                tabIndex={0}
+                role="note"
+                aria-label={localLanguage !== 'vi' ? `QR Caption: ${gameState.qr_custom_caption}` : `Ghi chú mã QR: ${gameState.qr_custom_caption}`}
                 className="mb-2.5 px-3 py-1 rounded-[2px] bg-sky-950/80 border border-sky-400/50 text-sky-200 font-mono font-bold text-xs tracking-wide text-center animate-fadeIn shadow-md inline-flex items-center gap-1.5 max-w-xs break-words"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" aria-hidden="true" />
                 <span className="truncate">{gameState.qr_custom_caption}</span>
               </div>
             )}
 
             {/* Realtime Firebase Connection, Estimated Scans, & Active QR Palette Status Badges */}
-            <div className="flex items-center justify-center flex-wrap gap-2 mb-2.5">
+            <div 
+              className="flex items-center justify-center flex-wrap gap-2 mb-2.5"
+              role="region"
+              aria-label={localLanguage !== 'vi' ? 'QR telemetry and database connection info' : 'Thông tin trạng thái kết nối và số lượt quét QR'}
+            >
               <div 
                 id="badge-landing-qr-scans"
+                tabIndex={0}
+                role="status"
+                aria-label={localLanguage !== 'vi' ? `Estimated scans: ${Number(gameState.qr_scan_count) || 0}` : `Ước tính số lượt quét: ${Number(gameState.qr_scan_count) || 0}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
                 title={localLanguage !== 'vi' ? 'Total audience scans joining arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
               >
-                <ScanLine className="w-3 h-3 text-sky-400" />
+                <ScanLine className="w-3 h-3 text-sky-400" aria-hidden="true" />
                 <span>{localLanguage !== 'vi' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
               </div>
 
               {isFirebaseConnected ? (
                 <div 
                   id="badge-firebase-online"
+                  tabIndex={0}
+                  role="status"
+                  aria-label={localLanguage !== 'vi' ? 'Firebase realtime database: Online' : 'Cơ sở dữ liệu Firebase: Trực tuyến'}
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
                   title={localLanguage !== 'vi' ? 'Realtime database is operating stably' : 'Hệ thống cơ sở dữ liệu thời gian thực đang hoạt động ổn định'}
                 >
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-2 w-2" aria-hidden="true">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                   </span>
@@ -1239,21 +1282,28 @@ export default function App() {
               ) : (
                 <div 
                   id="badge-firebase-offline"
+                  tabIndex={0}
+                  role="status"
+                  aria-label={localLanguage !== 'vi' ? 'Firebase realtime database: Offline, reconnecting' : 'Cơ sở dữ liệu Firebase: Ngoại tuyến, đang kết nối lại'}
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
                   title={localLanguage !== 'vi' ? 'Reconnecting to Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
                 >
-                  <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
+                  <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse" aria-hidden="true"></span>
                   <span>Firebase: {localLanguage !== 'vi' ? 'Offline' : 'Ngoại Tuyến'}</span>
                 </div>
               )}
 
               <div 
                 id="badge-qr-palette"
+                tabIndex={0}
+                role="note"
+                aria-label={localLanguage !== 'vi' ? `QR palette theme: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).name}` : `Bảng màu mã QR: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).labelVi}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
                 title={localLanguage !== 'vi' ? 'QR Code color palette is synced in real-time from Admin' : 'Bảng màu QR Code đang được đồng bộ thời gian thực từ Admin'}
               >
                 <span 
                   className="w-2 h-2 rounded-full shrink-0" 
+                  aria-hidden="true"
                   style={{ backgroundColor: (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).dotColor }} 
                 />
                 <span>
@@ -1265,9 +1315,14 @@ export default function App() {
             </div>
 
             {/* Direct URL text display */}
-            <div className="mb-3.5 fluent-box-nested border border-white/10 rounded-[2px] px-3 py-1.5 text-left flex items-center justify-between gap-2">
+            <div 
+              tabIndex={0}
+              role="region"
+              aria-label={localLanguage !== 'vi' ? `Direct join URL: ${audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2027.app')}` : `Đường dẫn liên kết tham gia trực tiếp: ${audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2027.app')}`}
+              className="mb-3.5 fluent-box-nested border border-white/10 rounded-[2px] px-3 py-1.5 text-left flex items-center justify-between gap-2 outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+            >
               <span className="text-[11px] font-mono text-sky-300 truncate select-all">
-                {audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2026.app')}
+                {audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2027.app')}
               </span>
             </div>
 
@@ -1277,7 +1332,9 @@ export default function App() {
                 type="button"
                 id="btn-qr-copy-link"
                 onClick={handleCopyQrLink}
-                className={`py-2.5 px-3 rounded-[2px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md ${
+                tabIndex={0}
+                aria-label={isCopiedQrUrl ? (localLanguage !== 'vi' ? 'Join link copied to clipboard successfully' : 'Đã sao chép liên kết tham gia vào bộ nhớ tạm thành công') : (localLanguage !== 'vi' ? 'Copy join link to clipboard' : 'Sao chép liên kết tham gia vào bộ nhớ tạm')}
+                className={`py-2.5 px-3 rounded-[2px] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
                   isCopiedQrUrl
                     ? 'bg-emerald-500 text-black shadow-emerald-500/30'
                     : 'bg-[#F7CAC9] hover:bg-[#FCEEEC] text-[#190839]'
@@ -1286,12 +1343,12 @@ export default function App() {
               >
                 {isCopiedQrUrl ? (
                   <>
-                    <Check className="w-4 h-4 text-black shrink-0" />
+                    <Check className="w-4 h-4 text-black shrink-0" aria-hidden="true" />
                     <span className="truncate">{localLanguage !== 'vi' ? 'Copied!' : 'Đã sao chép!'}</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4 shrink-0" />
+                    <Copy className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span className="truncate">Copy Link</span>
                   </>
                 )}
@@ -1301,10 +1358,12 @@ export default function App() {
                 type="button"
                 id="btn-qr-share-link"
                 onClick={handleShareQrLink}
-                className="py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer"
+                tabIndex={0}
+                aria-label={localLanguage !== 'vi' ? 'Share join link via system dialog' : 'Chia sẻ liên kết tham gia qua ứng dụng hệ thống'}
+                className="py-2.5 px-3 rounded-[2px] bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 transition active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                 title={localLanguage !== 'vi' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
               >
-                <Share2 className="w-4 h-4 text-white shrink-0" />
+                <Share2 className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
                 <span className="truncate">Share</span>
               </button>
             </div>
@@ -1313,7 +1372,9 @@ export default function App() {
               type="button"
               id="btn-dismiss-app-qr-modal"
               onClick={handleCloseAudienceQrModal}
-              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[2px] transition border border-white/10 cursor-pointer"
+              tabIndex={0}
+              aria-label={localLanguage !== 'vi' ? 'Close audience QR code dialog' : 'Đóng hộp thoại mã QR tham gia'}
+              className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-[2px] transition border border-white/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
             >
               {localLanguage !== 'vi' ? 'Close' : 'Đóng'}
             </button>

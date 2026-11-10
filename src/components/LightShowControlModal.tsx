@@ -63,7 +63,7 @@ export const LightShowControlModal: React.FC<LightShowControlModalProps> = ({
 
   const presetMessages = [
     'GIƠ CAO ĐIỆN THOẠI HƯỚNG VỀ SÂN KHẤU!',
-    'CHÀO ĐÓN NHÀ VÔ ĐỊCH BEYOND THE INTERNET 2026!',
+    'CHÀO ĐÓN NHÀ VÔ ĐỊCH BEYOND THE INTERNET 2027!',
     'ĐẾM NGƯỢC THỜI KHẮC ĐỈNH CAO!',
     'HỘI TRƯỜNG CÙNG HÒA NHỊP VỚI SÂN KHẤU!'
   ];

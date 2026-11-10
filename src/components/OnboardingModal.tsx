@@ -308,7 +308,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         setSuccessMsg(
           localLanguage !== 'vi'
             ? 'Email verification successful! Entering arena...'
-            : 'Xác thực tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2026...'
+            : 'Xác thực tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2027...'
         );
 
         setTimeout(() => {
@@ -1567,7 +1567,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </h1>
             <p className="text-[10px] sm:text-[11px] text-white/60 font-sans truncate mt-0.5">
               {localLanguage !== 'vi'
-                ? 'BTI 2026 Interactive Arena • Dual-Auth Security • Anonymized 12-Digit UID'
+                ? 'BTI 2027 Interactive Arena • Dual-Auth Security • Anonymized 12-Digit UID'
                 : 'Đồng bộ thời gian thực • Định danh 12 số bảo mật • Bảng vàng vinh danh'}
             </p>
           </div>
@@ -3097,7 +3097,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{localLanguage !== 'vi' ? 'Return to Home Page' : 'Thoát về Trang Chủ BTI 2026'}</span>
+                <span>{localLanguage !== 'vi' ? 'Return to Home Page' : 'Thoát về Trang Chủ BTI 2027'}</span>
               </button>
             </div>
           )}

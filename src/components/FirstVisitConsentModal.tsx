@@ -73,13 +73,13 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
       className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
     >
       <div 
-        className="w-full max-w-4xl max-h-[92vh] sm:max-h-[88vh] bg-[#1A1918] border border-[#FAF9F5]/16 rounded-[2px] shadow-2xl text-[#FAF9F5] flex flex-col overflow-hidden relative animate-scaleUp"
+        className="w-full max-w-4xl max-h-[92vh] sm:max-h-[88vh] bg-[#190839] border border-white/16 rounded-[2px] shadow-2xl text-[#F5EFF9] flex flex-col overflow-hidden relative animate-scaleUp"
       >
         {/* Close Button Top-Right */}
         <button
           type="button"
           onClick={handleDismissWithoutAccept}
-          className="absolute top-3 right-3 w-8 h-8 rounded-[2px] bg-[#262624] hover:bg-[#30302E] border border-[#FAF9F5]/15 text-[#C2C0B6] hover:text-[#FAF9F5] flex items-center justify-center transition cursor-pointer z-20 shadow-md"
+          className="absolute top-3 right-3 w-8 h-8 rounded-[2px] bg-[#241148] hover:bg-[#2A1454] border border-white/15 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer z-20 shadow-md"
           title={localLanguage !== 'vi' ? 'Close' : 'Đóng'}
           aria-label="Đóng"
         >
@@ -90,7 +90,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
         <div className="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-0 overflow-hidden">
           
           {/* Left Sidebar Tabs (3 items matching design) */}
-          <div className="md:col-span-4 lg:col-span-3.5 p-3 sm:p-4 pr-12 md:pr-4 border-b md:border-b-0 md:border-r border-[#FAF9F5]/10 flex flex-row md:flex-col gap-1.5 shrink-0 bg-[#141413] overflow-x-auto md:overflow-visible">
+          <div className="md:col-span-4 lg:col-span-3.5 p-3 sm:p-4 pr-12 md:pr-4 border-b md:border-b-0 md:border-r border-white/10 flex flex-row md:flex-col gap-1.5 shrink-0 bg-[#0D0420] overflow-x-auto md:overflow-visible">
             
             {/* Tab 1: Điều khoản sử dụng */}
             <button
@@ -102,11 +102,11 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
               }}
               className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[2px] text-xs sm:text-sm font-medium transition cursor-pointer whitespace-nowrap md:whitespace-normal text-left shrink-0 md:shrink w-auto md:w-full ${
                 activeTab === 'TERMS'
-                  ? 'bg-[#FAF9F5] text-[#141413] font-bold shadow-md'
-                  : 'text-[#C2C0B6] hover:text-[#FAF9F5] hover:bg-white/5'
+                  ? 'bg-[#F7CAC9] text-[#190839] font-bold shadow-md'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              <FileText className={`w-4 h-4 shrink-0 ${activeTab === 'TERMS' ? 'text-slate-900' : 'text-slate-400'}`} />
+              <FileText className={`w-4 h-4 shrink-0 ${activeTab === 'TERMS' ? 'text-[#190839]' : 'text-slate-400'}`} />
               <span>{localLanguage !== 'vi' ? 'Terms of Service' : 'Điều khoản sử dụng'}</span>
             </button>
 
@@ -161,9 +161,9 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
               <div className="space-y-4 animate-fadeIn">
                 <p className="text-white/90 leading-relaxed">
                   {localLanguage !== 'vi' ? (
-                    <>Before participating in the <strong>BTI 2026</strong> arena, please review and explicitly confirm your consent to the rights and obligations under this Regulation. When updating terms or data processing purposes, the Organizers will publish a notice and request renewed consent in accordance with Vietnamese law.</>
+                    <>Before participating in the <strong>BTI 2027</strong> arena, please review and explicitly confirm your consent to the rights and obligations under this Regulation. When updating terms or data processing purposes, the Organizers will publish a notice and request renewed consent in accordance with Vietnamese law.</>
                   ) : (
-                    <>Trước khi đăng ký và tham gia đấu trường <strong>BTI 2026</strong>, Khách Hàng / Thí Sinh vui lòng đọc kỹ và chủ động tích chọn xác nhận đồng ý với các quyền, nghĩa vụ quy định tại Quy chế này. Khi có sự thay đổi về mục đích xử lý dữ liệu hoặc nội dung điều khoản, Ban Tổ Chức sẽ thông báo công khai phiên bản mới và xin lại sự đồng ý theo quy định pháp luật.</>
+                    <>Trước khi đăng ký và tham gia đấu trường <strong>BTI 2027</strong>, Khách Hàng / Thí Sinh vui lòng đọc kỹ và chủ động tích chọn xác nhận đồng ý với các quyền, nghĩa vụ quy định tại Quy chế này. Khi có sự thay đổi về mục đích xử lý dữ liệu hoặc nội dung điều khoản, Ban Tổ Chức sẽ thông báo công khai phiên bản mới và xin lại sự đồng ý theo quy định pháp luật.</>
                   )}
                 </p>
 
@@ -176,8 +176,8 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       <span className="text-white/40 shrink-0 font-bold">—</span>
                       <span>
                         {localLanguage !== 'vi'
-                          ? 'To participate in the BTI 2026 arena, participants must register an account using a compatible device and provide accurate verification details (Full Name, Student ID, Email). Participants are responsible for ensuring all provided information is truthful and complete.'
-                          : 'Để sử dụng ứng dụng BTI 2026, Khách Hàng phải đăng ký tài khoản khách hàng thông qua thiết bị hoặc nền tảng có thể truy cập vào BTI 2026 và cung cấp cho BTI 2026 các thông tin cần thiết để xác nhận tài khoản. Khách Hàng có trách nhiệm cập nhật và đảm bảo tính đầy đủ, chính xác của các thông tin đã cung cấp cho BTI 2026.'}
+                          ? 'To participate in the BTI 2027 arena, participants must register an account using a compatible device and provide accurate verification details (Full Name, Student ID, Email). Participants are responsible for ensuring all provided information is truthful and complete.'
+                          : 'Để sử dụng ứng dụng BTI 2027, Khách Hàng phải đăng ký tài khoản khách hàng thông qua thiết bị hoặc nền tảng có thể truy cập vào BTI 2027 và cung cấp cho BTI 2027 các thông tin cần thiết để xác nhận tài khoản. Khách Hàng có trách nhiệm cập nhật và đảm bảo tính đầy đủ, chính xác của các thông tin đã cung cấp cho BTI 2027.'}
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -185,7 +185,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       <span>
                         {localLanguage !== 'vi'
                           ? 'Participants must be individuals aged 18 years or older with full civil act capacity according to Vietnamese law. Minors may only participate with consent and supervision from parents or legal guardians. By registering, you confirm meeting these legal criteria.'
-                          : 'Để đăng ký và sử dụng tài khoản, Khách Hàng phải là cá nhân từ đủ 18 tuổi trở lên và có đầy đủ năng lực hành vi dân sự theo quy định của pháp luật Việt Nam. Trẻ em và người chưa thành niên chỉ được phép sử dụng ứng dụng BTI 2026 khi có sự đồng ý và giám sát trực tiếp từ cha mẹ hoặc người giám hộ hợp pháp. Bằng việc đăng ký và sử dụng dịch vụ, Khách Hàng xác nhận đã đủ điều kiện về độ tuổi và năng lực hành vi dân sự như quy định nêu trên.'}
+                          : 'Để đăng ký và sử dụng tài khoản, Khách Hàng phải là cá nhân từ đủ 18 tuổi trở lên và có đầy đủ năng lực hành vi dân sự theo quy định của pháp luật Việt Nam. Trẻ em và người chưa thành niên chỉ được phép sử dụng ứng dụng BTI 2027 khi có sự đồng ý và giám sát trực tiếp từ cha mẹ hoặc người giám hộ hợp pháp. Bằng việc đăng ký và sử dụng dịch vụ, Khách Hàng xác nhận đã đủ điều kiện về độ tuổi và năng lực hành vi dân sự như quy định nêu trên.'}
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -193,7 +193,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       <span>
                         {localLanguage !== 'vi'
                           ? 'The organizers reserve the right to request proof of identity (Student Card, National ID) when reconciling match outcomes and granting awards.'
-                          : 'BTI 2026 có quyền yêu cầu Khách Hàng cung cấp giấy tờ, bằng chứng chứng minh về độ tuổi và các thông tin xác nhận tài khoản (như thẻ sinh viên, giấy tờ tùy thân) phục vụ đối soát giải thưởng.'}
+                          : 'BTI 2027 có quyền yêu cầu Khách Hàng cung cấp giấy tờ, bằng chứng chứng minh về độ tuổi và các thông tin xác nhận tài khoản (như thẻ sinh viên, giấy tờ tùy thân) phục vụ đối soát giải thưởng.'}
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -201,7 +201,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       <span>
                         {localLanguage !== 'vi'
                           ? 'Participants are responsible for safeguarding their login credentials and devices. The organizers hold no liability for credential compromises resulting from participant device negligence.'
-                          : 'Khách Hàng có trách nhiệm bảo mật tài khoản đã đăng ký thông qua việc bảo mật mật khẩu và các thông tin liên quan đến tài khoản của Khách Hàng. Đồng thời, Khách Hàng cần bảo quản cẩn thận các thiết bị đã dùng để truy cập ứng dụng BTI 2026 nhằm bảo mật tài khoản. BTI 2026 không chịu trách nhiệm trong trường hợp thông tin bị lộ do phía người dùng sơ suất.'}
+                          : 'Khách Hàng có trách nhiệm bảo mật tài khoản đã đăng ký thông qua việc bảo mật mật khẩu và các thông tin liên quan đến tài khoản của Khách Hàng. Đồng thời, Khách Hàng cần bảo quản cẩn thận các thiết bị đã dùng để truy cập ứng dụng BTI 2027 nhằm bảo mật tài khoản. BTI 2027 không chịu trách nhiệm trong trường hợp thông tin bị lộ do phía người dùng sơ suất.'}
                       </span>
                     </li>
                   </ul>
@@ -225,7 +225,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       <span>
                         {localLanguage !== 'vi'
                           ? 'The organizers retain the right to suspend or disqualify accounts exhibiting fraudulent behavior.'
-                          : 'Ban Tổ Chức BTI 2026 có quyền tạm ngừng hoặc hủy bỏ tư cách tham gia, từ chối trao giải thưởng nếu phát hiện hành vi gian lận hoặc vi phạm nghiêm trọng quy chế thi đấu.'}
+                          : 'Ban Tổ Chức BTI 2027 có quyền tạm ngừng hoặc hủy bỏ tư cách tham gia, từ chối trao giải thưởng nếu phát hiện hành vi gian lận hoặc vi phạm nghiêm trọng quy chế thi đấu.'}
                       </span>
                     </li>
                   </ul>
@@ -238,9 +238,9 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
               <div className="space-y-4 animate-fadeIn">
                 <p className="text-white/90 leading-relaxed">
                   {localLanguage !== 'vi' ? (
-                    <>This Privacy Policy explains how <strong>BTI 2026</strong> collects, encrypts, and handles your data in accordance with the <strong>Personal Data Protection Law No. 91/2025/QH15</strong> and <strong>Decree No. 356/2025/ND-CP</strong> (replacing Decree 13/2023/ND-CP from 01/01/2026).</>
+                    <>This Privacy Policy explains how <strong>BTI 2027</strong> collects, encrypts, and handles your data in accordance with the <strong>Personal Data Protection Law No. 91/2025/QH15</strong> and <strong>Decree No. 356/2025/ND-CP</strong> (replacing Decree 13/2023/ND-CP from 01/01/2026).</>
                   ) : (
-                    <>Chính sách bảo mật này mô tả cách thức <strong>BTI 2026</strong> thu thập, mã hóa, lưu trữ và bảo vệ thông tin cá nhân của bạn theo quy định tại <strong>Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15</strong> và <strong>Nghị định số 356/2025/NĐ-CP</strong> (có hiệu lực từ 01/01/2026, thay thế Nghị định 13/2023/NĐ-CP).</>
+                    <>Chính sách bảo mật này mô tả cách thức <strong>BTI 2027</strong> thu thập, mã hóa, lưu trữ và bảo vệ thông tin cá nhân của bạn theo quy định tại <strong>Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15</strong> và <strong>Nghị định số 356/2025/NĐ-CP</strong> (có hiệu lực từ 01/01/2026, thay thế Nghị định 13/2023/NĐ-CP).</>
                   )}
                 </p>
 
@@ -390,18 +390,23 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
         {/* Bottom Bar: Logo, Disclaimer, Active Consent Checkbox & Primary Action Button */}
         {/* (Faithfully following Image 1 layout & Image 2 Active Consent rules) */}
         {/* ========================================================================= */}
-        <div className="border-t border-[#FAF9F5]/10 bg-[#141413] p-3.5 sm:p-4.5 px-4 sm:px-6 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 shrink-0">
+        <div className="border-t border-white/10 bg-[#0D0420] p-3.5 sm:p-4.5 px-4 sm:px-6 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 shrink-0">
           
           {/* Left: Branding & Disclaimer text */}
           <div className="flex items-center gap-3 min-w-0">
-            {/* BTI Logo Badge */}
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[2px] bg-[#1F1E1D] flex items-center justify-center font-black text-xs sm:text-sm text-[#FAF9F5] shrink-0 shadow-sm border border-[#D97757]/50 select-none">
-              BTI
+            {/* Official BTI Logo Badge */}
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[2px] overflow-hidden bg-black flex items-center justify-center shrink-0 shadow-sm border border-[#F7CAC9]/50 select-none">
+              <img
+                src="/logo-square.png"
+                alt="BTI 2027"
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
             </div>
 
-            <div className="hidden sm:block w-[1px] h-7 bg-[#FAF9F5]/15 shrink-0" />
+            <div className="hidden sm:block w-[1px] h-7 bg-white/15 shrink-0" />
 
-            <div className="text-[11px] sm:text-xs text-[#C2C0B6] leading-snug">
+            <div className="text-[11px] sm:text-xs text-white/70 leading-snug">
               <span>
                 {localLanguage !== 'vi' 
                   ? 'Please review and check the box to confirm your consent to our ' 
@@ -413,7 +418,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                   vibrateSelection();
                   setActiveTab('TERMS');
                 }}
-                className={`font-bold underline cursor-pointer transition ${activeTab === 'TERMS' ? 'text-[#FAF9F5]' : 'text-[#C2C0B6] hover:text-[#FAF9F5]'}`}
+                className={`font-bold underline cursor-pointer transition ${activeTab === 'TERMS' ? 'text-[#F7CAC9]' : 'text-white/70 hover:text-white'}`}
               >
                 {localLanguage !== 'vi' ? 'Terms of Service' : 'Điều khoản sử dụng'}
               </button>
@@ -424,7 +429,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                   vibrateSelection();
                   setActiveTab('PRIVACY');
                 }}
-                className={`font-bold underline cursor-pointer transition ${activeTab === 'PRIVACY' ? 'text-[#FAF9F5]' : 'text-[#C2C0B6] hover:text-[#FAF9F5]'}`}
+                className={`font-bold underline cursor-pointer transition ${activeTab === 'PRIVACY' ? 'text-[#F7CAC9]' : 'text-white/70 hover:text-white'}`}
               >
                 {localLanguage !== 'vi' ? 'Privacy Policy' : 'Chính sách bảo mật'}
               </button>
@@ -435,11 +440,11 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                   vibrateSelection();
                   setActiveTab('DATA');
                 }}
-                className={`font-bold underline cursor-pointer transition ${activeTab === 'DATA' ? 'text-[#FAF9F5]' : 'text-[#C2C0B6] hover:text-[#FAF9F5]'}`}
+                className={`font-bold underline cursor-pointer transition ${activeTab === 'DATA' ? 'text-[#F7CAC9]' : 'text-white/70 hover:text-white'}`}
               >
                 {localLanguage !== 'vi' ? 'Data Policy' : 'Chính sách dữ liệu'}
               </button>
-              <span> {localLanguage !== 'vi' ? 'of BTI 2026.' : 'của chúng tôi.'}</span>
+              <span> {localLanguage !== 'vi' ? 'of BTI 2027.' : 'của BTI 2027.'}</span>
             </div>
           </div>
 
@@ -447,7 +452,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3.5 w-full lg:w-auto shrink-0">
             
             {/* Checkbox (Unchecked by default - Active Consent with >=44px touch target) */}
-            <label className="min-h-[44px] px-3 py-2 rounded-[2px] bg-[#1F1E1D] hover:bg-[#262624] border border-[#FAF9F5]/16 flex items-center gap-2.5 cursor-pointer select-none group transition">
+            <label className="min-h-[44px] px-3 py-2 rounded-[2px] bg-[#190839] hover:bg-[#241148] border border-white/16 flex items-center gap-2.5 cursor-pointer select-none group transition">
               <input
                 type="checkbox"
                 id="checkbox-first-visit-consent"
@@ -456,9 +461,9 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                   vibrateTap();
                   setIsAgreed(e.target.checked);
                 }}
-                className="w-4 h-4 rounded-[2px] bg-[#141413] border-[#FAF9F5]/30 text-[#D97757] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#D97757] shrink-0 group-hover:border-[#D97757]"
+                className="w-4 h-4 rounded-[2px] bg-[#0D0420] border-white/30 text-[#F7CAC9] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#F7CAC9] shrink-0 group-hover:border-[#F7CAC9]"
               />
-              <span className="text-xs font-medium text-[#FAF9F5] leading-tight">
+              <span className="text-xs font-medium text-[#F5EFF9] leading-tight">
                 {localLanguage !== 'vi' ? 'I have read and agree' : 'Tôi đã đọc và đồng ý'}
               </span>
             </label>
@@ -471,8 +476,8 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
               onClick={handleAcceptAll}
               className={`min-h-[44px] px-5 sm:px-6 py-2.5 rounded-[2px] font-bold text-xs sm:text-sm tracking-wide transition-all select-none flex items-center justify-center gap-2 shrink-0 ${
                 isAgreed
-                  ? 'bg-[#D97757] hover:bg-[#E28566] active:scale-98 text-[#FAF9F5] shadow-md cursor-pointer'
-                  : 'bg-[#262624] text-[#87867F] cursor-not-allowed opacity-60 border border-[#FAF9F5]/10'
+                  ? 'bg-[#F7CAC9] hover:bg-[#FCEEEC] active:scale-98 text-[#190839] shadow-md cursor-pointer'
+                  : 'bg-white/10 text-white/40 cursor-not-allowed opacity-60 border border-white/10'
               }`}
             >
               <Check className="w-4 h-4 shrink-0" />

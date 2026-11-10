@@ -32,7 +32,7 @@ export const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
                 Điều Khoản Sử Dụng & Liêm Chính Học Thuật
               </h2>
               <p className="text-xs text-[#F7CAC9]/80 font-mono">
-                Quy chế Đấu trường Beyond The Internet 2026
+                Quy chế Đấu trường Beyond The Internet 2027
               </p>
             </div>
           </div>
@@ -53,7 +53,7 @@ export const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
               <Award className="w-4 h-4 shrink-0" />
               Nguyên tắc Vàng: Công Bằng - Trung Thực - Tôn Trọng
             </div>
-            Beyond The Internet 2026 là sân chơi học thuật đề cao năng lực tư duy thực tế và tốc độ phản xạ. Người tham gia xác nhận đồng ý tuân thủ các điều lệ dưới đây khi đăng ký tài khoản dự thi.
+            Beyond The Internet 2027 là sân chơi học thuật đề cao năng lực tư duy thực tế và tốc độ phản xạ. Người tham gia xác nhận đồng ý tuân thủ các điều lệ dưới đây khi đăng ký tài khoản dự thi.
           </div>
 
           {/* Section 1 */}
@@ -96,7 +96,7 @@ export const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
                 Căn cứ Điều 11 Luật Trí tuệ nhân tạo số 134/2025/QH15 và Điều 18 Nghị định 142/2026/NĐ-CP, Ban Tổ Chức thông báo rõ: khung chat hỗ trợ và giọng đọc tự động sử dụng mô hình AI tạo sinh, chỉ mang tính chất hỗ trợ giải đáp thể lệ và tham khảo.
               </p>
               <p>
-                Trong trường hợp có tranh chấp hoặc mâu thuẫn về kết quả thi đấu, <strong>quyết định của Hội đồng Ban Giám khảo BTI 2026 là quyết định chung cuộc</strong>.
+                Trong trường hợp có tranh chấp hoặc mâu thuẫn về kết quả thi đấu, <strong>quyết định của Hội đồng Ban Giám khảo BTI 2027 là quyết định chung cuộc</strong>.
               </p>
             </div>
           </div>
@@ -108,7 +108,7 @@ export const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
               Quyền Sở Hữu Trí Tuệ & Bản Quyền Đề Thi
             </h3>
             <p className="text-xs text-white/80 pl-7">
-              Toàn bộ ngân hàng đề thi, tài liệu minh họa, video và âm thanh của Beyond The Internet 2026 thuộc quyền sở hữu độc quyền của Ban Tổ chức. Mọi hành vi ghi hình nhằm mục đích thương mại hoặc phát tán đề thi khi chưa có sự chấp thuận đều bị nghiêm cấm theo Luật Sở hữu trí tuệ Việt Nam.
+              Toàn bộ ngân hàng đề thi, tài liệu minh họa, video và âm thanh của Beyond The Internet 2027 thuộc quyền sở hữu độc quyền của Ban Tổ chức. Mọi hành vi ghi hình nhằm mục đích thương mại hoặc phát tán đề thi khi chưa có sự chấp thuận đều bị nghiêm cấm theo Luật Sở hữu trí tuệ Việt Nam.
             </p>
           </div>
 

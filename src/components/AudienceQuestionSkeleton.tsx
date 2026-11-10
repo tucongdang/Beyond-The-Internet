@@ -42,8 +42,8 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
         {/* Header Skeleton Row */}
         <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5 sm:pb-3 mb-4">
           <div className="flex items-center gap-2 min-w-0">
-            <RefreshCw className="w-3.5 h-3.5 text-[#D97757] animate-spin shrink-0" />
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97757] truncate">
+            <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin shrink-0" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9] truncate">
               {isEn ? 'Syncing new question...' : 'Đang đồng bộ câu hỏi mới...'}
             </span>
             <div className="hidden sm:block h-3.5 w-20 fluent-skeleton-bar" />
@@ -66,7 +66,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
         {/* Footer Sync Indicator */}
         <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#B6A6D8]/80">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-[2px] bg-[#D97757] animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F7CAC9] animate-pulse" />
             {roundName || (isEn ? 'REALTIME SYNC' : 'ĐỒNG BỘ TRỰC TIẾP')}
           </span>
           <div className="h-3 w-24 fluent-skeleton-bar" />
@@ -208,7 +208,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
               )}
               <div className="flex items-start gap-3.5 w-full">
                 <div className="flex flex-col items-center gap-1 shrink-0">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 fluent-skeleton-bar flex items-center justify-center font-mono font-black text-xs text-[#D97757]/40">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 fluent-skeleton-bar flex items-center justify-center font-mono font-black text-xs text-[#F7CAC9]/40">
                     {keyLabel}
                   </div>
                   <div className="w-6 h-3.5 fluent-skeleton-bar hidden sm:block" />
@@ -235,8 +235,8 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
       >
         <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div className="flex items-center gap-2">
-            <RefreshCw className="w-3.5 h-3.5 text-[#D97757] animate-spin" />
-            <span className="text-xs font-mono font-bold uppercase text-[#D97757]">
+            <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin" />
+            <span className="text-xs font-mono font-bold uppercase text-[#F7CAC9]">
               {isEn ? 'Syncing VCNV clue data...' : 'Đang đồng bộ dữ liệu câu hỏi VCNV...'}
             </span>
           </div>
@@ -262,8 +262,8 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
     >
       <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <RefreshCw className="w-3.5 h-3.5 text-[#D97757] animate-spin shrink-0" />
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97757]">
+          <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin shrink-0" />
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9]">
             {isEn
               ? 'Waiting for new question data from syncService...'
               : 'Đang đợi dữ liệu câu hỏi mới từ syncService...'}
@@ -285,7 +285,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
             key={key}
             className="p-2.5 fluent-skeleton-card rounded-[2px] flex items-center gap-2.5"
           >
-            <div className="w-7 h-7 fluent-skeleton-bar shrink-0 flex items-center justify-center font-mono font-black text-[10px] text-[#D97757]/40">
+            <div className="w-7 h-7 fluent-skeleton-bar shrink-0 flex items-center justify-center font-mono font-black text-[10px] text-[#F7CAC9]/40">
               {key}
             </div>
             <div className="flex-1 space-y-1.5">

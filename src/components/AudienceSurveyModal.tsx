@@ -212,7 +212,7 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
 
   const isForeign = activeLang !== 'vi' && !showOriginal;
 
-  const title = (isForeign && translatedSurvey?.title) || effectiveConfig.title || 'Khảo Sát Khán Giả BTI 2026';
+  const title = (isForeign && translatedSurvey?.title) || effectiveConfig.title || 'Khảo Sát Khán Giả BTI 2027';
   const description = (isForeign && translatedSurvey?.description) || effectiveConfig.description || 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!';
   const giftNote = (isForeign && translatedSurvey?.gift_note) || effectiveConfig.gift_note || 'Hoàn tất khảo sát để nhận phần quà lưu niệm tại bàn Lễ tân.';
   const sampleRate = effectiveConfig.sample_rate ?? 10;
@@ -494,8 +494,8 @@ export const AudienceSurveyModal: React.FC<AudienceSurveyModalProps> = ({
                   </h4>
                   <p className="text-xs text-slate-300">
                     {isForeign
-                      ? 'Thank you for representing the audience voice at Beyond The Internet 2026.'
-                      : 'Cảm ơn bạn đã đóng góp ý kiến đại diện cho khán giả Beyond The Internet 2026.'}
+                      ? 'Thank you for representing the audience voice at Beyond The Internet 2027.'
+                      : 'Cảm ơn bạn đã đóng góp ý kiến đại diện cho khán giả Beyond The Internet 2027.'}
                   </p>
                 </div>
 

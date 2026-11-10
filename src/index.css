@@ -131,63 +131,33 @@
 }
 
 @theme {
-  --font-sans: 'Anthropic Sans', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: 'Anthropic Serif', 'Source Serif 4', 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
-  --font-mono: 'Anthropic Mono', 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
+  --font-mono: 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-korean: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-  --color-primary-bg: #1A1918;
-  --color-primary-highlight: #D97757;
-  --color-tim-vu-tru: #141413;
-  --color-tim-be-mat: #1F1E1D;
-  --color-tim-chang-vang: #30302E;
-  --color-hong-suong: #F5F4ED;
-  --color-hong-hoang-hon: #D97757;
-  --color-hong-man: #E3DACC;
-  --color-lam-suong: #E3DACC;
-  --color-trang-nga: #FAF9F5;
-  --color-xam-lam: #C2C0B6;
+  --color-primary-bg: #0D0420;
+  --color-primary-highlight: #F7CAC9;
+  --color-tim-vu-tru: #0D0420;
+  --color-tim-be-mat: #190839;
+  --color-tim-chang-vang: #241148;
+  --color-hong-suong: #F7CAC9;
+  --color-hong-hoang-hon: #E39A96;
+  --color-hong-man: #FCEEEC;
+  --color-lam-suong: #92A8D1;
+  --color-trang-nga: #F5EFF9;
+  --color-xam-lam: #B6A6D8;
 }
 
 :root {
   color-scheme: dark;
-  --cds-bg-page: #141413;
-  --cds-surface-1: #1A1918;
-  --cds-surface-2: #1F1E1D;
-  --cds-surface-3: #262624;
-  --cds-text-primary: #FAF9F5;
-  --cds-text-secondary: #C2C0B6;
-  --cds-text-muted: #87867F;
-  --cds-accent-clay: #D97757;
-  --cds-accent-oat: #E3DACC;
-  --cds-accent-blue: #3987E5;
-  --cds-border: rgba(250, 249, 245, 0.12);
-  --cds-border-strong: rgba(250, 249, 245, 0.24);
-  --cds-font-sans: 'Anthropic Sans', 'SVN-Gilroy', 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --cds-font-serif: 'Anthropic Serif', 'Source Serif 4', 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
-  --cds-font-mono: 'Anthropic Mono', 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', ui-monospace, 'SF Mono', Monaco, 'Courier New', monospace;
 }
 
-/* Claude Editorial Typography Helpers (brand-typography.md) */
-.cds-display {
-  font-family: var(--cds-font-serif);
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1.2;
-}
-
-.cds-title {
-  font-family: var(--cds-font-serif);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.3;
-}
-
-/* Custom gradient utilities — Claude Clay (#D97757) -> Oat (#E3DACC) -> Ivory (#FAF9F5) */
+/* Custom gradient utilities — Serenity (#92A8D1) -> Rose Quartz (#F7CAC9) -> Sunset Pink (#E39A96) */
 .bg-gradient-horizon {
-  background: linear-gradient(90deg, #D97757 0%, #E3DACC 55%, #FAF9F5 100%);
+  background: linear-gradient(90deg, #92A8D1 0%, #F7CAC9 50%, #E39A96 100%);
 }
 .text-gradient-horizon {
-  background: linear-gradient(90deg, #D97757 0%, #E3DACC 55%, #FAF9F5 100%);
+  background: linear-gradient(90deg, #92A8D1 0%, #F7CAC9 50%, #E39A96 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -339,10 +309,10 @@ button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Universal Focus Visible Accessibility Rings — Claude Clay (#D97757) */
+/* Universal Focus Visible Accessibility Rings — Rose Quartz (#F7CAC9) */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.75), 0 0 10px rgba(217, 119, 87, 0.25);
+  box-shadow: 0 0 0 2px rgba(247, 202, 201, 0.8), 0 0 10px rgba(247, 202, 201, 0.3);
 }
 
 /* Safe Area Insets Helpers */
@@ -511,7 +481,7 @@ body:has([aria-modal="true"]) {
   width: 150vmax;
   height: 150vmax;
   margin: -75vmax 0 0 -75vmax;
-  background: linear-gradient(to bottom, var(--split-dark, #141413) 50%, var(--split-light, #D97757) 50%);
+  background: linear-gradient(to bottom, var(--split-dark, #190839) 50%, var(--split-light, #F7CAC9) 50%);
   transform-origin: 50% 50%;
   animation: split-spin 10s linear infinite;
   will-change: transform;
@@ -881,19 +851,19 @@ body.battery-saver-active,
 
 @layer components {
 
-/* Claude Design System Surfaces (Anthropic Warm Grayscale, Ivory #FAF9F5, Clay #D97757, Oat #E3DACC) */
+/* Fluent 2 Acrylic Design Surfaces & Cosmic Twilight Palette */
 /* ============================================================ */
 
 .fluent-acrylic-surface {
-  background-color: rgba(26, 25, 24, 0.92) !important;
+  background-color: rgba(25, 8, 57, 0.90) !important;
   backdrop-filter: blur(24px) saturate(140%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
   position: relative;
   isolation: isolate;
   box-shadow: 
-    inset 0 1px 0 rgba(250, 249, 245, 0.08), 
-    inset 0 0 0 1px rgba(250, 249, 245, 0.08),
-    0 16px 40px rgba(0, 0, 0, 0.55) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.12), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 16px 40px rgba(13, 4, 32, 0.70) !important;
 }
 
 .fluent-acrylic-surface::before {
@@ -907,28 +877,28 @@ body.battery-saver-active,
   z-index: -1;
 }
 
-/* Warm Slate Card Utility */
+/* Cosmic Card Utility */
 .fluent-card-acrylic,
 .fluent-glass-panel,
 .glass-panel,
 .glass-card {
-  background: rgba(31, 30, 29, 0.92) !important;
+  background: rgba(25, 8, 57, 0.85) !important;
   backdrop-filter: blur(20px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-  border: 1px solid rgba(250, 249, 245, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: 
-    inset 0 1px 0 0 rgba(250, 249, 245, 0.08),
-    0 12px 32px -8px rgba(0, 0, 0, 0.55) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.10),
+    0 12px 32px -8px rgba(13, 4, 32, 0.65) !important;
   position: relative;
 }
 
 .fluent-card-acrylic:hover,
 .fluent-glass-panel:hover,
 .glass-card:hover {
-  border-color: rgba(250, 249, 245, 0.24) !important;
+  border-color: rgba(247, 202, 201, 0.35) !important;
   box-shadow: 
-    inset 0 1px 0 0 rgba(250, 249, 245, 0.12),
-    0 16px 40px -8px rgba(0, 0, 0, 0.65) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 16px 40px -8px rgba(13, 4, 32, 0.75) !important;
 }
 
 /* Scoped Button Animation */
@@ -946,7 +916,7 @@ body.battery-saver-active,
   box-shadow: none !important;
 }
 
-/* Warm Grayscale Scrollbars */
+/* Cosmic Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -956,11 +926,11 @@ body.battery-saver-active,
 }
 ::-webkit-scrollbar-thumb {
   background-clip: padding-box;
-  background-color: rgba(227, 218, 204, 0.22);
-  border-radius: 2px;
+  background-color: rgba(247, 202, 201, 0.25);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(217, 119, 87, 0.5);
+  background-color: rgba(247, 202, 201, 0.5);
 }
 ::-webkit-scrollbar-button {
   display: none;
@@ -985,63 +955,63 @@ body.battery-saver-active,
   background-size: 160px 160px;
 }
 
-/* Claude Design Box & Card System (Warm Slate #1F1E1D, Hairline Neutral Border, 2px Radius) */
+/* Fluent 2 Box & Card System */
 .fluent-box,
 .fluent-card {
-  background: rgba(31, 30, 29, 0.92) !important;
+  background: rgba(25, 8, 57, 0.85) !important;
   backdrop-filter: blur(20px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-  border: 1px solid rgba(250, 249, 245, 0.12) !important;
-  border-radius: 2px;
-  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 4px;
+  box-shadow: 0 6px 24px -4px rgba(13, 4, 32, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-box:hover,
 .fluent-card:hover {
-  border-color: rgba(250, 249, 245, 0.22) !important;
-  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(250, 249, 245, 0.10) !important;
+  border-color: rgba(247, 202, 201, 0.30) !important;
+  box-shadow: 0 10px 28px -4px rgba(13, 4, 32, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
 }
 
 .fluent-box-header {
-  border-bottom: 1px solid rgba(250, 249, 245, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .fluent-box-nested {
-  background: rgba(20, 20, 19, 0.78) !important;
+  background: rgba(13, 4, 32, 0.75) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(250, 249, 245, 0.10) !important;
-  border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Claude Design Question Card System (Warm Slate #1F1E1D -> #1A1918, 2px Radius, No Top Color Strip) */
+/* Cosmic Twilight Question Card System */
 .fluent-question-box {
-  background: linear-gradient(180deg, rgba(38, 38, 36, 0.94) 0%, rgba(26, 25, 24, 0.96) 100%) !important;
+  background: linear-gradient(180deg, rgba(36, 17, 72, 0.94) 0%, rgba(25, 8, 57, 0.96) 100%) !important;
   backdrop-filter: blur(24px) saturate(140%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
-  border: 1px solid rgba(250, 249, 245, 0.16) !important;
-  border-radius: 2px;
-  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.58), inset 0 1px 0 0 rgba(250, 249, 245, 0.10) !important;
+  border: 1px solid rgba(247, 202, 201, 0.25) !important;
+  border-radius: 4px;
+  box-shadow: 0 12px 36px -6px rgba(13, 4, 32, 0.70), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
   position: relative;
   overflow: hidden;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-question-box:hover {
-  border-color: rgba(227, 218, 204, 0.28);
-  box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.62), inset 0 1px 0 0 rgba(250, 249, 245, 0.14);
+  border-color: rgba(247, 202, 201, 0.45);
+  box-shadow: 0 16px 40px -6px rgba(13, 4, 32, 0.80), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
 }
 
-/* Claude Design Option Button / Card (2px Radius, Warm Slate & Clay #D97757 Selection) */
+/* Fluent Option Button / Card */
 .fluent-option-btn {
-  background: rgba(26, 25, 24, 0.90) !important;
+  background: rgba(25, 8, 57, 0.82) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(250, 249, 245, 0.14) !important;
-  border-radius: 2px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 3px;
+  box-shadow: 0 2px 10px rgba(13, 4, 32, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.18s ease;
   transform-origin: center center;
   position: relative;
@@ -1051,59 +1021,59 @@ body.battery-saver-active,
 }
 
 .fluent-option-btn:hover:not(:disabled) {
-  background: rgba(38, 38, 36, 0.96) !important;
-  border-color: rgba(227, 218, 204, 0.36) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
+  background: rgba(36, 17, 72, 0.92) !important;
+  border-color: rgba(247, 202, 201, 0.40) !important;
+  box-shadow: 0 6px 18px rgba(13, 4, 32, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
   transform: translateY(-1px);
 }
 
 .fluent-option-btn:active:not(:disabled) {
   transform: scale(0.985);
   transition: transform 0.08s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 4px rgba(13, 4, 32, 0.50);
 }
 
 .fluent-option-btn.selected {
-  background: rgba(217, 119, 87, 0.18) !important;
-  border: 1.5px solid #D97757 !important;
-  box-shadow: 0 0 20px rgba(217, 119, 87, 0.22), inset 0 1px 0 rgba(250, 249, 245, 0.18) !important;
+  background: rgba(247, 202, 201, 0.18) !important;
+  border: 1.5px solid #F7CAC9 !important;
+  box-shadow: 0 0 20px rgba(247, 202, 201, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
   transform: scale(1.004);
 }
 
 .fluent-option-badge {
-  background: rgba(20, 20, 19, 0.92);
-  border: 1px solid rgba(250, 249, 245, 0.16);
-  border-radius: 2px;
-  font-family: var(--cds-font-mono);
+  background: rgba(13, 4, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
   transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* CVD-Safe Dataviz Categorical Badges per Option Key (skills/dataviz/references/palette.md) */
+/* Vibrant Option Key Badges */
 .fluent-badge-key-A {
-  border-color: rgba(57, 135, 229, 0.55);
-  color: #3987e5;
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #38bdf8;
 }
 .fluent-badge-key-B {
-  border-color: rgba(217, 119, 87, 0.55);
-  color: #D97757;
+  border-color: rgba(247, 202, 201, 0.65);
+  color: #F7CAC9;
 }
 .fluent-badge-key-C {
-  border-color: rgba(25, 158, 112, 0.55);
-  color: #199e70;
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #34d399;
 }
 .fluent-badge-key-D {
-  border-color: rgba(201, 133, 0, 0.55);
-  color: #fab219;
+  border-color: rgba(251, 191, 36, 0.55);
+  color: #fbbf24;
 }
 .fluent-badge-key-E {
-  border-color: rgba(213, 81, 129, 0.55);
-  color: #d55181;
+  border-color: rgba(168, 85, 247, 0.55);
+  color: #a855f7;
 }
 .fluent-badge-key-F {
-  border-color: rgba(144, 133, 233, 0.55);
-  color: #9085e9;
+  border-color: rgba(232, 121, 249, 0.55);
+  color: #e879f9;
 }
 
 /* Button Interaction System */
@@ -1118,8 +1088,8 @@ body.battery-saver-active,
 .hover-effect:hover,
 .fluent-btn:hover {
   filter: brightness(1.08);
-  border-color: rgba(250, 249, 245, 0.28) !important;
-  box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
+  border-color: rgba(247, 202, 201, 0.35) !important;
+  box-shadow: 0 4px 12px -1px rgba(13, 4, 32, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
   transform: translateY(-1px);
 }
 
@@ -1127,7 +1097,7 @@ body.battery-saver-active,
 .fluent-btn:active {
   filter: brightness(0.95);
   transform: translateY(1px) scale(0.98);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45) !important;
+  box-shadow: 0 1px 3px rgba(13, 4, 32, 0.50) !important;
 }
 
 .hover-effect:disabled,
@@ -1138,7 +1108,7 @@ body.battery-saver-active,
   cursor: not-allowed;
 }
 
-/* TabList & Tab Claude Design Theme */
+/* TabList & Tab System */
 .fluent-tablist {
   display: flex !important;
   flex-direction: row !important;
@@ -1157,14 +1127,14 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab {
-  font-family: var(--cds-font-sans) !important;
+  font-family: var(--font-sans) !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.01em !important;
-  border-radius: 2px !important;
+  border-radius: 3px !important;
   padding: 0.5rem 0.875rem !important;
   min-height: 40px !important;
-  color: #C2C0B6 !important;
+  color: #B6A6D8 !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   transition: color 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
@@ -1176,9 +1146,9 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab:hover {
-  color: #FAF9F5 !important;
-  background: rgba(227, 218, 204, 0.08) !important;
-  border-color: rgba(250, 249, 245, 0.12) !important;
+  color: #F5EFF9 !important;
+  background: rgba(247, 202, 201, 0.08) !important;
+  border-color: rgba(247, 202, 201, 0.20) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -1188,10 +1158,10 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab[aria-selected="true"] {
-  color: #FAF9F5 !important;
-  background: rgba(217, 119, 87, 0.18) !important;
-  border-color: rgba(217, 119, 87, 0.55) !important;
-  box-shadow: 0 2px 10px -1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
+  color: #190839 !important;
+  background: #F7CAC9 !important;
+  border-color: #F7CAC9 !important;
+  box-shadow: 0 2px 10px -1px rgba(247, 202, 201, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
   font-weight: 700 !important;
 }
 
@@ -1202,7 +1172,7 @@ body.battery-saver-active,
   left: 15% !important;
   right: 15% !important;
   height: 2px !important;
-  background: #D97757 !important;
+  background: #190839 !important;
   border-radius: 2px !important;
 }
 
@@ -1229,10 +1199,10 @@ body.battery-saver-active,
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  border-radius: 2px;
+  border-radius: 3px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: var(--cds-font-sans);
+  font-family: var(--font-sans);
   letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
@@ -1272,12 +1242,12 @@ body.battery-saver-active,
   gap: 0.25rem;
   padding: 0.25rem;
   max-width: 100%;
-  background: rgba(38, 38, 36, 0.75);
+  background: rgba(25, 8, 57, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(250, 249, 245, 0.10);
-  border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .fluent-action-btn {
@@ -1287,10 +1257,10 @@ body.battery-saver-active,
   gap: 0.375rem;
   padding: 0.45rem 0.75rem;
   min-height: 36px;
-  border-radius: 2px;
+  border-radius: 3px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: var(--cds-font-sans);
+  font-family: var(--font-sans);
   letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
@@ -1316,13 +1286,13 @@ body.battery-saver-active,
   filter: none;
 }
 
-/* Claude Design Navbar & Telemetry System */
+/* Navbar System */
 .fluent-navbar {
-  background: rgba(20, 20, 19, 0.92) !important;
+  background: rgba(13, 4, 32, 0.92) !important;
   backdrop-filter: blur(24px) saturate(140%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
-  border-bottom: 1px solid rgba(250, 249, 245, 0.12) !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 20px -2px rgba(13, 4, 32, 0.60) !important;
 }
 
 .fluent-nav-btn {
@@ -1333,23 +1303,23 @@ body.battery-saver-active,
   height: 36px;
   min-width: 36px;
   padding: 0 0.625rem;
-  border-radius: 2px;
+  border-radius: 3px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: var(--cds-font-sans);
-  color: #FAF9F5;
-  background: rgba(38, 38, 36, 0.85) !important;
-  border: 1px solid rgba(250, 249, 245, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
+  font-family: var(--font-sans);
+  color: #F5EFF9;
+  background: rgba(25, 8, 57, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   user-select: none;
 }
 
 .fluent-nav-btn:hover {
-  background: rgba(48, 48, 46, 0.95) !important;
-  border-color: rgba(227, 218, 204, 0.3) !important;
-  color: #FAF9F5;
+  background: rgba(36, 17, 72, 0.95) !important;
+  border-color: rgba(247, 202, 201, 0.30) !important;
+  color: #F5EFF9;
   transform: translateY(-1px);
 }
 
@@ -1358,16 +1328,17 @@ body.battery-saver-active,
 }
 
 .fluent-nav-btn-accent {
-  background: #D97757 !important;
-  border-color: rgba(250, 249, 245, 0.25) !important;
-  color: #FAF9F5;
-  box-shadow: 0 2px 10px rgba(217, 119, 87, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  background: #F7CAC9 !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #190839 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(247, 202, 201, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
 }
 
 .fluent-nav-btn-accent:hover {
-  background: #E28566 !important;
-  border-color: rgba(250, 249, 245, 0.4) !important;
-  color: #FAF9F5;
+  background: #FCEEEC !important;
+  border-color: rgba(255, 255, 255, 0.50) !important;
+  color: #190839 !important;
 }
 
 .fluent-telemetry-chip {
@@ -1376,21 +1347,21 @@ body.battery-saver-active,
   gap: 0.5rem;
   height: 36px;
   padding: 0 0.625rem;
-  border-radius: 2px;
-  background: rgba(31, 30, 29, 0.85) !important;
-  border: 1px solid rgba(250, 249, 245, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.05) !important;
+  border-radius: 3px;
+  background: rgba(25, 8, 57, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-telemetry-chip:hover {
-  background: rgba(38, 38, 36, 0.95) !important;
-  border-color: rgba(227, 218, 204, 0.25) !important;
+  background: rgba(36, 17, 72, 0.95) !important;
+  border-color: rgba(247, 202, 201, 0.25) !important;
 }
 
-/* Claude Design Modal & Dialog System - 2px Warm Slate Surface */
+/* Modal & Dialog System */
 .fluent-dialog-overlay {
-  background: rgba(12, 12, 11, 0.78) !important;
+  background: rgba(13, 4, 32, 0.82) !important;
   backdrop-filter: blur(20px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
   position: fixed;
@@ -1407,10 +1378,10 @@ body.battery-saver-active,
 }
 
 .fluent-dialog {
-  background: #1A1918 !important;
-  border: 1px solid rgba(250, 249, 245, 0.18) !important;
-  border-radius: 2px !important;
-  box-shadow: 0 28px 60px -12px rgba(0, 0, 0, 0.82), inset 0 1px 0 rgba(250, 249, 245, 0.10) !important;
+  background: #190839 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 28px 60px -12px rgba(13, 4, 32, 0.90), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
   position: relative;
   overflow: hidden;
   max-height: min(90vh, calc(100dvh - max(2rem, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))));
@@ -1420,11 +1391,11 @@ body.battery-saver-active,
 
 .fluent-dialog-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(250, 249, 245, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1F1E1D;
+  background: #241148;
   flex-shrink: 0;
 }
 
@@ -1438,25 +1409,25 @@ body.battery-saver-active,
 
 .fluent-dialog-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(250, 249, 245, 0.10);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  background: #141413;
+  background: #0D0420;
   flex-shrink: 0;
 }
 
-/* Claude Design Form Input Controls */
+/* Form Input Controls */
 .fluent-input,
 .fluent-textarea,
 .fluent-select {
-  background: #141413 !important;
-  border: 1px solid rgba(250, 249, 245, 0.16) !important;
-  border-bottom: 1.5px solid rgba(227, 218, 204, 0.35) !important;
-  border-radius: 2px;
-  color: #FAF9F5;
-  font-family: var(--cds-font-sans);
+  background: #0D0420 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-bottom: 1.5px solid rgba(247, 202, 201, 0.35) !important;
+  border-radius: 3px;
+  color: #F5EFF9;
+  font-family: var(--font-sans);
   font-size: 0.875rem;
   padding: 0.55rem 0.75rem;
   outline: none;
@@ -1467,74 +1438,74 @@ body.battery-saver-active,
 .fluent-input:hover,
 .fluent-textarea:hover,
 .fluent-select:hover {
-  background: #1A1918 !important;
-  border-color: rgba(250, 249, 245, 0.24) !important;
-  border-bottom-color: rgba(217, 119, 87, 0.65) !important;
+  background: #190839 !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  border-bottom-color: rgba(247, 202, 201, 0.65) !important;
 }
 
 .fluent-input:focus,
 .fluent-textarea:focus,
 .fluent-select:focus {
-  background: #1F1E1D !important;
-  border-color: rgba(217, 119, 87, 0.65) !important;
-  border-bottom-color: #D97757 !important;
-  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  background: #241148 !important;
+  border-color: rgba(247, 202, 201, 0.65) !important;
+  border-bottom-color: #F7CAC9 !important;
+  box-shadow: 0 0 0 2px rgba(247, 202, 201, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.30) !important;
 }
 
 .fluent-input::placeholder,
 .fluent-textarea::placeholder {
-  color: #87867F;
+  color: rgba(245, 239, 249, 0.40);
 }
 
-/* Claude Design Badge / Tag */
+/* Badge / Tag */
 .fluent-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
-  border-radius: 2px;
-  font-family: var(--cds-font-mono);
+  border-radius: 3px;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  background: rgba(227, 218, 204, 0.08);
-  border: 1px solid rgba(250, 249, 245, 0.12);
-  color: #FAF9F5;
+  background: rgba(25, 8, 57, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F5EFF9;
 }
 
 .fluent-badge-accent {
-  background: rgba(217, 119, 87, 0.15);
-  border-color: rgba(217, 119, 87, 0.40);
-  color: #D97757;
+  background: rgba(247, 202, 201, 0.20);
+  border-color: rgba(247, 202, 201, 0.45);
+  color: #F7CAC9;
 }
 
 .fluent-badge-success {
-  background: rgba(12, 163, 12, 0.15);
-  border-color: rgba(12, 163, 12, 0.40);
+  background: rgba(16, 185, 129, 0.20);
+  border-color: rgba(16, 185, 129, 0.45);
   color: #34d399;
 }
 
 .fluent-badge-danger {
-  background: rgba(208, 59, 59, 0.15);
-  border-color: rgba(208, 59, 59, 0.40);
-  color: #fb7185;
+  background: rgba(239, 68, 68, 0.20);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #f87171;
 }
 
 .fluent-badge-warning {
-  background: rgba(250, 178, 25, 0.15);
-  border-color: rgba(250, 178, 25, 0.40);
-  color: #fab219;
+  background: rgba(245, 158, 11, 0.20);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
 }
 
-/* Claude Toast (No left-border accent bar per craft.md anti-slop rules) */
+/* Toast */
 .fluent-toast {
-  background: rgba(26, 25, 24, 0.96);
+  background: rgba(25, 8, 57, 0.96);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(250, 249, 245, 0.16);
-  border-radius: 2px;
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(250, 249, 245, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  box-shadow: 0 12px 32px -4px rgba(13, 4, 32, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   position: relative;
   overflow: hidden;
 }
@@ -1639,7 +1610,7 @@ body.battery-saver-active,
   animation-delay: 0.4s;
 }
 
-/* Claude Design Question Card Loading Skeleton System (2px Radius, Warm Oat & Clay Shimmer) */
+/* Question Card Loading Skeleton System */
 @keyframes fluentSkeletonSweep {
   0% {
     background-position: 200% 0;
@@ -1650,80 +1621,27 @@ body.battery-saver-active,
 }
 
 .fluent-skeleton-bar {
-  border-radius: 2px;
+  border-radius: 3px;
   background: linear-gradient(
     90deg,
-    rgba(250, 249, 245, 0.05) 0%,
-    rgba(217, 119, 87, 0.18) 50%,
-    rgba(250, 249, 245, 0.05) 100%
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(247, 202, 201, 0.20) 50%,
+    rgba(255, 255, 255, 0.05) 100%
   );
   background-size: 200% 100%;
   animation: fluentSkeletonSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .fluent-skeleton-card {
-  background: rgba(31, 30, 29, 0.88) !important;
+  background: rgba(25, 8, 57, 0.88) !important;
   backdrop-filter: blur(20px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-  border: 1px solid rgba(250, 249, 245, 0.14) !important;
-  border-radius: 2px;
-  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(250, 249, 245, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 4px;
+  box-shadow: 0 8px 28px -4px rgba(13, 4, 32, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   position: relative;
   overflow: hidden;
 }
 
-/* ============================================================
-   Claude Design Token Compatibility Layer (brand-colors.md)
-   Maps legacy cosmic purple hex utilities across secondary
-   modals and sub-views onto the Anthropic Warm Grayscale,
-   Clay (#D97757), Oat (#E3DACC), and Ivory (#FAF9F5).
-   ============================================================ */
-[class*="bg-[#0D0420]"],
-[class*="bg-[#0c051f]"],
-[class*="bg-[#090317]"],
-[class*="bg-[#080214]"],
-[class*="bg-[#120529]"] {
-  background-color: #141413 !important;
 }
 
-[class*="bg-[#190839]"],
-[class*="bg-[#180735]"],
-[class*="bg-[#15072c]"],
-[class*="bg-[#1a0b33]"],
-[class*="bg-[#180a34]"] {
-  background-color: #1A1918 !important;
-}
-
-[class*="bg-[#241148]"],
-[class*="bg-[#2A1454]"] {
-  background-color: #1F1E1D !important;
-}
-
-[class*="border-[#3E1D74]"] {
-  border-color: rgba(250, 249, 245, 0.14) !important;
-}
-
-[class*="text-[#F7CAC9]"],
-[class*="text-[#E39A96]"] {
-  color: #D97757 !important;
-}
-
-[class*="bg-[#F7CAC9]"] {
-  background-color: #D97757 !important;
-  color: #FAF9F5 !important;
-}
-
-[class*="border-[#F7CAC9]"] {
-  border-color: rgba(217, 119, 87, 0.45) !important;
-}
-
-[class*="text-[#B6A6D8]"] {
-  color: #C2C0B6 !important;
-}
-
-[class*="text-[#F5EFF9]"],
-[class*="text-[#FCEEEC]"] {
-  color: #FAF9F5 !important;
-}
-
-}

@@ -109,8 +109,8 @@ export const QUICK_ACTIONS: QuickActionItem[] = [
     accentColor: 'text-amber-300',
     badgeBg: 'bg-amber-400/10 hover:bg-amber-400/20',
     borderColor: 'border-amber-400/30 hover:border-amber-400/60',
-    userPromptText: '📜 Cho mình xem tóm tắt Thể lệ & Luật thi 4 Vòng đấu Beyond The Internet 2026?',
-    predefinedResponse: `📋 **LUẬT THI ĐẤU CHÍNH THỨC - BEYOND THE INTERNET 2026**
+    userPromptText: '📜 Cho mình xem tóm tắt Thể lệ & Luật thi 4 Vòng đấu Beyond The Internet 2027?',
+    predefinedResponse: `📋 **LUẬT THI ĐẤU CHÍNH THỨC - BEYOND THE INTERNET 2027**
 
 Cuộc thi gồm **4 vòng đấu đỉnh cao** dành cho cả thí sinh sàn đấu và khán giả tương tác:
 
@@ -172,8 +172,8 @@ Nếu bạn gặp sự cố khi đang tương tác trên thiết bị cá nhân:
     accentColor: 'text-[#F7CAC9]',
     badgeBg: 'bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20',
     borderColor: 'border-[#F7CAC9]/30 hover:border-[#F7CAC9]/60',
-    userPromptText: '🏆 Cơ cấu giải thưởng và quà tặng cho thí sinh & khán giả BTI 2026 gồm những gì?',
-    predefinedResponse: `🏆 **CƠ CẤU GIẢI THƯỞNG & QUÀ TẶNG BTI 2026**
+    userPromptText: '🏆 Cơ cấu giải thưởng và quà tặng cho thí sinh & khán giả BTI 2027 gồm những gì?',
+    predefinedResponse: `🏆 **CƠ CẤU GIẢI THƯỞNG & QUÀ TẶNG BTI 2027**
 
 Cuộc thi tôn vinh cả thí sinh sàn đấu và khán giả nhiệt huyết:
 
@@ -184,7 +184,7 @@ Cuộc thi tôn vinh cả thí sinh sàn đấu và khán giả nhiệt huyết:
 • 🎖️ **Giải Khuyến Khích**: 500.000 VNĐ + Quà lưu niệm giải đấu.
 
 📱 **DÀNH CHO KHÁN GIẢ TƯƠNG TÁC (AUDIENCE VIEW):**
-• 🌟 **Top 1 Khán Giả Tinh Anh**: Combo Tai nghe Bluetooth cao cấp + Áo thun BTI 2026 Limited.
+• 🌟 **Top 1 Khán Giả Tinh Anh**: Combo Tai nghe Bluetooth cao cấp + Áo thun BTI 2027 Limited.
 • 🥈 **Top 2 - Top 5 Khán Giả Nhanh Tay**: Pin sạc dự phòng 20.000mAh + Bình giữ nhiệt BTI cao cấp.
 • 🎁 **Tất cả khán giả tham gia**: Giấy chứng nhận điện tử (E-Certificate) và cơ hội quay số may mắn trúng thưởng cuối chương trình!`
   },
@@ -214,7 +214,7 @@ Hệ thống tính điểm tự động và cập nhật tức thì:
     accentColor: 'text-purple-300',
     badgeBg: 'bg-purple-400/10 hover:bg-purple-400/20',
     borderColor: 'border-purple-400/30 hover:border-purple-400/60',
-    userPromptText: '🛡️ Chính sách chống gian lận và bảo mật đề thi BTI 2026 quy định những gì?',
+    userPromptText: '🛡️ Chính sách chống gian lận và bảo mật đề thi BTI 2027 quy định những gì?',
     predefinedResponse: `🛡️ **CHÍNH SÁCH BẢO MẬT & CHỐNG GIAN LẬN ĐỀ THI**
 
 Để đảm bảo tính công bằng và tinh thần thể thao trí tuệ cao nhất:
@@ -372,7 +372,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
   const initialGreeting: ChatMessage = {
     id: 'welcome_greeting',
     role: 'assistant',
-    content: `Xin chào ${user?.name || 'bạn'}! 👋 Mình là **Trợ Lý Khán Giả BTI 2026**.\n\nMình có thể hỗ trợ bạn:\n- 📖 Thể lệ & cách tính điểm 4 vòng thi đấu\n- 🧩 Quy tắc Vượt Chướng Ngại Vật & Ô Mạo Hiểm\n- 📶 Hướng dẫn khắc phục sự cố kết nối mạng\n- 🎁 Cơ cấu giải thưởng & quà tặng lưu niệm\n\n🛡️ *Lưu ý công bằng: Để bảo vệ tính bảo mật và minh bạch của cuộc thi, mình tuyệt đối không giải đề hoặc tiết lộ đáp án câu hỏi thi đấu nhé!*`,
+    content: `Xin chào ${user?.name || 'bạn'}! 👋 Mình là **Trợ Lý Khán Giả BTI 2027**.\n\nMình có thể hỗ trợ bạn:\n- 📖 Thể lệ & cách tính điểm 4 vòng thi đấu\n- 🧩 Quy tắc Vượt Chướng Ngại Vật & Ô Mạo Hiểm\n- 📶 Hướng dẫn khắc phục sự cố kết nối mạng\n- 🎁 Cơ cấu giải thưởng & quà tặng lưu niệm\n\n🛡️ *Lưu ý công bằng: Để bảo vệ tính bảo mật và minh bạch của cuộc thi, mình tuyệt đối không giải đề hoặc tiết lộ đáp án câu hỏi thi đấu nhé!*`,
     timestamp: Date.now()
   };
 
@@ -560,7 +560,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
         id: `compliance_block_${Date.now()}`,
         role: 'system',
         systemType: 'security_alert',
-        title: 'CẢNH BÁO AN TOÀN MẠNG & QUY CHẾ BTI 2026',
+        title: 'CẢNH BÁO AN TOÀN MẠNG & QUY CHẾ BTI 2027',
         content: `🛡️ ${compliance.reasonVi || 'Tin nhắn của bạn không phù hợp với chuẩn mực an toàn mạng hoặc quy chế thi đấu. Vui lòng điều chỉnh lại.'}`,
         timestamp: Date.now() + 10
       };
@@ -599,7 +599,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
           role: 'system',
           systemType: 'security_alert',
           title: 'CẢNH BÁO AN NINH & BẢO MẬT ĐỀ THI',
-          content: '🛡️ Câu hỏi thi đấu đang diễn ra trên sàn đấu. Theo quy chế giải đấu Beyond The Internet 2026, Trợ lý AI tuyệt đối không giải đề, gợi ý hay tiết lộ đáp án cho khán giả.\n\nHãy quan sát thật kỹ màn chiếu và đưa ra lựa chọn theo kiến thức của bạn nhé! Chúc bạn ghi trọn điểm!',
+          content: '🛡️ Câu hỏi thi đấu đang diễn ra trên sàn đấu. Theo quy chế giải đấu Beyond The Internet 2027, Trợ lý AI tuyệt đối không giải đề, gợi ý hay tiết lộ đáp án cho khán giả.\n\nHãy quan sát thật kỹ màn chiếu và đưa ra lựa chọn theo kiến thức của bạn nhé! Chúc bạn ghi trọn điểm!',
           timestamp: Date.now()
         };
         setMessages(prev => [...prev, securityAlertMsg]);
@@ -769,7 +769,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       id="assistant-chat-modal"
       role="dialog"
       aria-modal="true"
-      aria-label="Trợ lý Khán giả BTI 2026"
+      aria-label="Trợ lý Khán giả BTI 2027"
       className={`fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 w-[94vw] sm:w-[410px] bg-gradient-to-b from-[#18082f]/98 via-[#0f041e]/98 to-[#1a082c]/98 backdrop-blur-2xl border border-[#F7CAC9]/30 rounded-[4px] shadow-2xl shadow-purple-950/90 flex flex-col overflow-hidden transition-all duration-200 animate-fadeIn ${
         isMinimized ? 'h-14' : 'h-[540px] max-h-[82vh]'
       }`}

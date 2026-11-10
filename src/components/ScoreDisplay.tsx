@@ -33,7 +33,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R1',
     description: t("view_score_start_desc", lang),
     icon: Zap,
-    colorClass: 'bg-[#1F1E1D] text-[#FAF9F5] border-[#D97757]/40'
+    colorClass: 'bg-[#190839] text-[#F5EFF9] border-[#F7CAC9]/40'
   },
   {
     key: 'round2' as const,
@@ -41,7 +41,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R2',
     description: t("view_score_obs_desc", lang),
     icon: Shield,
-    colorClass: 'bg-[#1F1E1D] text-[#E3DACC] border-[#FAF9F5]/15'
+    colorClass: 'bg-[#190839] text-[#92A8D1] border-white/15'
   },
   {
     key: 'round3' as const,
@@ -49,7 +49,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R3',
     description: t("view_score_accel_desc", lang),
     icon: Flame,
-    colorClass: 'bg-[#1F1E1D] text-emerald-300 border-emerald-500/30'
+    colorClass: 'bg-[#190839] text-emerald-300 border-emerald-500/30'
   },
   {
     key: 'round4' as const,
@@ -57,7 +57,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R4',
     description: t("view_score_finish_desc", lang),
     icon: Target,
-    colorClass: 'bg-[#1F1E1D] text-[#3987E5] border-[#3987E5]/35'
+    colorClass: 'bg-[#190839] text-sky-300 border-sky-500/35'
   }
 ];
 
@@ -171,7 +171,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
 
 
   return (
-    <div id="bti-score-display" className={`fluent-box bg-[#1A1918]/95 backdrop-blur-xl border-b border-[#FAF9F5]/12 text-[#FAF9F5] sticky top-0 z-30 shadow-xl overflow-visible scrollbar-none ${className}`}>
+    <div id="bti-score-display" className={`fluent-box bg-[#190839]/95 backdrop-blur-xl border-b border-white/12 text-[#F5EFF9] sticky top-0 z-30 shadow-xl overflow-visible scrollbar-none ${className}`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 sm:py-2">
         <div className="flex items-center justify-between gap-2 select-none">
           <button
@@ -183,26 +183,26 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
             }}
             aria-expanded={isExpanded}
             aria-label={isExpanded ? 'Thu gọn chi tiết điểm số' : 'Mở rộng chi tiết điểm số'}
-            className="relative group flex items-center gap-2.5 sm:gap-3 text-left cursor-pointer active:opacity-80 rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97757]"
+            className="relative group flex items-center gap-2.5 sm:gap-3 text-left cursor-pointer active:opacity-80 rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[2px] bg-[#1F1E1D] border border-[#D97757]/45 text-[#D97757] flex items-center justify-center font-bold shadow-sm shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[2px] bg-[#190839] border border-[#F7CAC9]/45 text-[#F7CAC9] flex items-center justify-center font-bold shadow-sm shrink-0">
               <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-[#C2C0B6] font-bold block leading-tight">{t("view_score_total", localLanguage)}</span>
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-white/60 font-bold block leading-tight">{t("view_score_total", localLanguage)}</span>
               <div className="flex items-baseline gap-1.5 relative">
-                <span className="text-lg sm:text-2xl font-black font-mono tabular-nums text-[#FAF9F5] tracking-tight leading-none relative">
+                <span className="text-lg sm:text-2xl font-black font-mono tabular-nums text-[#F5EFF9] tracking-tight leading-none relative">
                   {displayScore.toLocaleString('vi-VN')}
                   {popups.map(p => (
                     <span 
                       key={p.id} 
-                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono tabular-nums text-[#D97757] animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
+                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono tabular-nums text-[#F7CAC9] animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
                     >
                       +{p.diff}
                     </span>
                   ))}
                 </span>
-                <span className="text-[10px] font-mono font-bold text-[#D97757] uppercase">{t("score_score", localLanguage)}</span>
+                <span className="text-[10px] font-mono font-bold text-[#F7CAC9] uppercase">{t("score_score", localLanguage)}</span>
               </div>
             </div>
 
@@ -369,9 +369,9 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                       vibrateTap();
                       onOpenLogModal();
                     }}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#D97757]/15 hover:bg-[#D97757]/25 text-[#D97757] border-[#D97757]/40 shadow-sm transition active:scale-[0.98] cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/25 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition active:scale-[0.98] cursor-pointer"
                   >
-                    <History className="w-3.5 h-3.5 text-[#D97757]" />
+                    <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
                     <span>Lịch Sử Đấu (Logs)</span>
                   </button>
                 )}
@@ -385,9 +385,9 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                       vibrateTap();
                       onOpenPostMatchModal();
                     }}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#262624] hover:bg-[#30302E] text-[#FAF9F5] border-[#FAF9F5]/16 shadow-sm transition active:scale-[0.98] cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#241148] hover:bg-[#2A1454] text-[#F5EFF9] border-white/16 shadow-sm transition active:scale-[0.98] cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#E3DACC]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#F7CAC9]" />
                     <span>Thẻ Thành Tích</span>
                   </button>
                 )}
