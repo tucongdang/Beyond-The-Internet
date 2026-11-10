@@ -94,6 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     if (isBatterySaver) {
       return {
+        pct,
         color: 'green',
         badgeClass: 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/60 shadow-[0_0_8px_rgba(52,211,153,0.2)]',
         dotClass: 'bg-emerald-400 shadow-[0_0_6px_#34d399]',
@@ -104,6 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     if (isCharging) {
       return {
+        pct,
         color: 'green',
         badgeClass: 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60',
         dotClass: 'bg-emerald-400 animate-pulse',
@@ -114,6 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     if (pct !== null && pct <= 15) {
       return {
+        pct,
         color: 'red',
         badgeClass: 'bg-rose-950/70 border-rose-500/60 text-rose-300 hover:bg-rose-900/70 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.3)]',
         dotClass: 'bg-rose-500 animate-ping',
@@ -124,6 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     if (pct !== null && pct <= 30) {
       return {
+        pct,
         color: 'orange',
         badgeClass: 'bg-amber-950/60 border-amber-500/50 text-amber-300 hover:bg-amber-900/60',
         dotClass: 'bg-amber-400',
@@ -133,6 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
 
     return {
+      pct,
       color: 'green',
       badgeClass: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/40',
       dotClass: 'bg-emerald-400',
@@ -344,26 +349,28 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         {/* Left: Branding & Status Badge */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
-          <div
+          <button
+            type="button"
             onClick={() => {
               vibrateTap();
               onViewChange('landing');
             }}
-            className="flex items-center gap-2 cursor-pointer group shrink-0"
+            aria-label="Về trang chủ Beyond The Internet 2026"
+            className="flex items-center gap-2 cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
             title="Trang chủ BTI 2026"
           >
-            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-sm sm:text-base text-white shadow-md shadow-blue-950/40 border border-blue-400/40 group-hover:scale-105 group-hover:border-blue-300/60 transition duration-200">
+            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 shrink-0 fluent-acrylic-surface rounded-[2px] flex items-center justify-center font-black text-sm sm:text-base text-white shadow-md shadow-blue-950/40 border border-[#F7CAC9]/40 group-hover:scale-105 group-hover:border-[#F7CAC9]/70 transition duration-200">
               BTI
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight text-white flex items-center gap-1 whitespace-nowrap">
-                BEYOND THE INTERNET <span className="text-sky-300">2026</span>
-              </h1>
-              <p className="text-[8px] sm:text-[9px] text-white/40 uppercase tracking-wider font-mono leading-none mt-0.5 whitespace-nowrap">
+              <span className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight text-white flex items-center gap-1 whitespace-nowrap">
+                BEYOND THE INTERNET <span className="text-[#F7CAC9]">2026</span>
+              </span>
+              <p className="text-[8px] sm:text-[9px] text-white/50 uppercase tracking-wider font-mono leading-none mt-0.5 whitespace-nowrap">
                 {currentView === 'admin' ? 'Ban Kỹ Thuật • Điều Hành' : 'Đấu Trường Trực Tiếp'}
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Status Badge - Hidden during Login */}
           {!isLoginScreen && (
@@ -381,6 +388,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="hidden sm:inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
               {/* Sync Status Button */}
               <button
+                type="button"
+                aria-label="Cấu hình đồng bộ Firebase"
                 onClick={() => {
                   vibrateTap();
                   onOpenFirebaseConfig();
@@ -389,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 data-tooltip-title="Đồng Bộ Dữ Liệu"
                 data-tooltip-placement="bottom"
                 data-tooltip-variant={isFirebaseConnected ? 'success' : 'warning'}
-                className={`has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] text-xs transition cursor-pointer flex items-center justify-center gap-1 ${
+                className={`has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[2px] text-xs transition cursor-pointer flex items-center justify-center gap-1 ${
                   isFirebaseConnected
                     ? 'text-emerald-300 hover:bg-emerald-950/50'
                     : 'text-amber-300 hover:bg-amber-950/50'
@@ -406,6 +415,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* QR Code Button */}
               {onOpenQrCode && (
                 <button
+                  type="button"
+                  aria-label="Mã QR Khán Giả"
                   onClick={() => {
                     vibrateTap();
                     onOpenQrCode();
@@ -414,7 +425,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-tooltip-title="Mã QR Khán Giả"
                   data-tooltip-hotkey="Q"
                   data-tooltip-placement="bottom"
-                  className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] text-sky-300 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
+                  className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[2px] text-sky-300 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
                 >
                   <QrCode className="w-3.5 h-3.5" />
                 </button>
@@ -422,15 +433,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Open Projector Button */}
               <button
+                type="button"
+                aria-label="Chuyển sang Màn Chiếu LED"
                 onClick={() => {
                   vibrateTap();
-                  window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
+                  onViewChange('projector');
                 }}
-                data-tooltip="Mở màn hình trình chiếu LED trong tab mới"
+                data-tooltip="Chuyển sang giao diện Màn Chiếu LED sân khấu"
                 data-tooltip-title="Màn Chiếu LED"
                 data-tooltip-placement="bottom"
                 data-tooltip-variant="accent"
-                className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[1px] bg-sky-600 hover:bg-sky-500 text-white transition cursor-pointer flex items-center justify-center"
+                className="has-tooltip min-w-[44px] min-h-[44px] p-2 sm:p-1.5 rounded-[2px] bg-sky-600 hover:bg-sky-500 text-white transition cursor-pointer flex items-center justify-center"
               >
                 <Eye className="w-3.5 h-3.5" />
               </button>
@@ -470,12 +483,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <span className="w-[1px] h-3 bg-white/15" />
 
-              {/* Battery Status Indicator */}
-              <BatteryIndicator compact forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
-
-              <span className="w-[1px] h-3 bg-white/15" />
-
-              {/* Energy Mode Badge (Green / Orange / Red) */}
+              {/* Unified Battery & Energy Mode Badge (Green / Orange / Red) */}
               <button
                 type="button"
                 id="btn-navbar-energy-mode"
@@ -484,16 +492,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   soundFx.playClick();
                   setIsBatterySaverModalOpen(true);
                 }}
-                data-tooltip={`${energyBadge.fullText} ${effectiveLanguage === 'en' ? '(Click for battery saver settings)' : '(Bấm để mở cài đặt tiết kiệm pin)'}`}
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Energy Mode' : 'Chế Độ Năng Lượng'}
+                data-tooltip={`${energyBadge.pct !== null ? `${effectiveLanguage === 'en' ? 'Battery' : 'Pin'}: ${energyBadge.pct}% • ` : ''}${energyBadge.fullText} ${effectiveLanguage === 'en' ? '(Click for battery saver settings)' : '(Bấm để mở cài đặt tiết kiệm pin)'}`}
+                data-tooltip-title={effectiveLanguage === 'en' ? 'Battery & Energy Mode' : 'Pin & Chế Độ Năng Lượng'}
                 data-tooltip-placement="bottom"
                 data-tooltip-variant={energyBadge.color === 'red' ? 'danger' : energyBadge.color === 'orange' ? 'warning' : 'success'}
-                className={`has-tooltip min-h-[44px] px-2 py-0.5 rounded-[2px] border text-[10px] font-mono font-bold flex items-center gap-1.5 transition cursor-pointer select-none ${energyBadge.badgeClass}`}
+                className={`has-tooltip min-h-[44px] px-2.5 py-0.5 rounded-[2px] border text-[10px] font-mono font-bold flex items-center gap-1.5 transition cursor-pointer select-none ${energyBadge.badgeClass}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${energyBadge.dotClass}`} />
                 <Zap className="w-3 h-3 text-current fill-current shrink-0" />
-                <span className="hidden xl:inline uppercase tracking-wider">{effectiveLanguage === 'en' ? 'Energy:' : 'Nguồn:'}</span>
-                <span>{energyBadge.label}</span>
+                {energyBadge.pct !== null && (
+                  <span className="tabular-nums font-extrabold">{energyBadge.pct}%</span>
+                )}
+                <span className="hidden lg:inline opacity-50">•</span>
+                <span className="hidden lg:inline">{energyBadge.label}</span>
               </button>
 
               <span className="w-[1px] h-3 bg-white/15" />
@@ -532,81 +543,73 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Mute Toggle */}
-            <div className="flex items-center gap-1.5">
-              <button
-                id="btn-toggle-sound"
-                type="button"
-                onClick={() => {
-                  vibrateSelection();
-                  onToggleSound();
-                }}
-                aria-label={soundEnabled ? 'Tắt âm thanh hệ thống' : 'Bật âm thanh hệ thống'}
-                data-tooltip={
-                  soundEnabled
-                    ? (effectiveLanguage === 'en' ? 'Sound FX: ACTIVE (Click or press M to Mute)' : 'Âm thanh hệ thống: BẬT (Bấm hoặc nhấn M để Tắt)')
-                    : (effectiveLanguage === 'en' ? 'Sound FX: MUTED (Click or press M to Unmute)' : 'Âm thanh hệ thống: TẮT (Bấm hoặc nhấn M để Bật)')
-                }
-                data-tooltip-title={effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}
-                data-tooltip-hotkey="M"
-                data-tooltip-placement="bottom"
-                className={`has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[3px] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border select-none ${
-                  soundEnabled
-                    ? 'bg-[#F7CAC9]/15 border-[#F7CAC9]/40 text-[#F7CAC9] hover:bg-[#F7CAC9]/25 hover:border-[#F7CAC9]/60 shadow-[0_0_12px_rgba(247,202,201,0.2)]'
-                    : 'bg-rose-950/30 border-rose-500/40 text-rose-300/80 hover:bg-rose-950/50 hover:text-rose-200 shadow-inner'
-                }`}
-              >
-                <div className="relative flex items-center justify-center">
-                  {soundEnabled ? (
-                    <Volume2 className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
-                  ) : (
-                    <VolumeX className="w-4 h-4 text-rose-400" />
-                  )}
-                  <span
-                    className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border border-slate-950 ${
-                      soundEnabled
-                        ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-                        : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
-                    }`}
-                  />
-                </div>
-                <span className="hidden lg:inline text-[10px] font-mono font-bold tracking-wider uppercase">
-                  {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
-                </span>
-              </button>
-            </div>
-
-            {/* Sound EQ Slider Settings (Hidden in Admin View) */}
-            {currentView !== 'admin' && (
-              <button
-                id="btn-open-audio-settings"
-                type="button"
-                onClick={() => {
-                  vibrateSelection();
-                  soundFx.playClick();
-                  setIsAudioSettingsOpen(true);
-                }}
-                data-tooltip="Tùy chỉnh âm lượng Giọng đọc AI & Hiệu ứng"
-                data-tooltip-title="Cài Đặt Âm Lượng"
-                data-tooltip-placement="bottom"
-                className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-white/50 hover:text-white hover:bg-white/10 transition cursor-pointer flex items-center justify-center"
-              >
-                <Sliders className="w-3 h-3 text-sky-300/80 hover:text-sky-300" />
-              </button>
-            )}
+            {/* Unified Audio Status & Settings Button */}
+            <button
+              id="btn-toggle-sound"
+              type="button"
+              onClick={() => {
+                vibrateSelection();
+                soundFx.playClick();
+                setIsAudioSettingsOpen(true);
+              }}
+              aria-label={
+                soundEnabled
+                  ? 'Âm thanh: BẬT — Mở cài đặt âm lượng & giọng đọc'
+                  : 'Âm thanh: TẮT — Mở cài đặt âm lượng & giọng đọc'
+              }
+              data-tooltip={
+                soundEnabled
+                  ? (effectiveLanguage === 'en'
+                      ? 'Audio: ON • Click to adjust Volume & Voice Settings (Press M to quick mute)'
+                      : 'Âm thanh: BẬT • Bấm để chỉnh Âm lượng & Giọng đọc (Nhấn phím M để Tắt nhanh)')
+                  : (effectiveLanguage === 'en'
+                      ? 'Audio: MUTED • Click to adjust Volume & Voice Settings (Press M to quick unmute)'
+                      : 'Âm thanh: TẮT • Bấm để chỉnh Âm lượng & Giọng đọc (Nhấn phím M để Bật nhanh)')
+              }
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Audio & Voice Settings' : 'Âm Thanh & Cài Đặt Âm Lượng'}
+              data-tooltip-hotkey="M"
+              data-tooltip-placement="bottom"
+              className={`has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[2px] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border select-none ${
+                soundEnabled
+                  ? 'bg-[#F7CAC9]/15 border-[#F7CAC9]/40 text-[#F7CAC9] hover:bg-[#F7CAC9]/25 hover:border-[#F7CAC9]/60 shadow-[0_0_12px_rgba(247,202,201,0.2)]'
+                  : 'bg-rose-950/30 border-rose-500/40 text-rose-300/80 hover:bg-rose-950/50 hover:text-rose-200 shadow-inner'
+              }`}
+            >
+              <div className="relative flex items-center justify-center">
+                {soundEnabled ? (
+                  <Volume2 className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-rose-400" />
+                )}
+                <span
+                  className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border border-slate-950 ${
+                    soundEnabled
+                      ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                      : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
+                  }`}
+                />
+              </div>
+              <span className="hidden lg:inline text-[10px] font-mono font-bold tracking-wider uppercase">
+                {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+              </span>
+              <span className="hidden sm:inline opacity-35 text-[10px]">•</span>
+              <Sliders className="w-3.5 h-3.5 text-sky-300/90 shrink-0" />
+            </button>
 
             {/* Policy & Legal Portal Link */}
             <button
               id="btn-navbar-policy"
+              type="button"
+              aria-label="Chính sách bảo mật và pháp lý"
               onClick={() => {
                 vibrateTap();
                 soundFx.playClick();
                 onViewChange('policy');
               }}
-              data-tooltip={effectiveLanguage === 'en' ? 'Privacy Policy & Legal Framework (Decree 13/2023)' : 'Chính Sách Bảo Mật & Pháp Lý (Nghị định 13/2023)'}
+              data-tooltip={effectiveLanguage === 'en' ? 'Privacy Policy & Legal Framework (Law 91/2025 & Decree 356/2025)' : 'Chính Sách Bảo Mật & Pháp Lý (Luật 91/2025 & NĐ 356/2025)'}
               data-tooltip-title={effectiveLanguage === 'en' ? 'Legal & Policy' : 'Chính Sách & Pháp Lý'}
               data-tooltip-placement="bottom"
-              className={`has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] transition cursor-pointer flex items-center justify-center ${
+              className={`has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer flex items-center justify-center ${
                 currentView === 'policy'
                   ? 'bg-[#F7CAC9] text-[#190839]'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -618,12 +621,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Fullscreen Toggle */}
             <button
               id="btn-toggle-fullscreen"
+              type="button"
+              aria-label={isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình'}
               onClick={handleToggleFullscreen}
               data-tooltip={isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình (F11)'}
               data-tooltip-title="Toàn Màn Hình"
               data-tooltip-hotkey="F11"
               data-tooltip-placement="bottom"
-              className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] transition cursor-pointer items-center justify-center ${
+              className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer items-center justify-center ${
                 isFullscreen
                   ? 'bg-sky-600 text-white'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -655,6 +660,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {onAdminLogout && (
                   <button
+                    type="button"
+                    aria-label="Đăng xuất Admin"
                     onClick={() => {
                       vibrateTap();
                       soundFx.playClick();
@@ -664,7 +671,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     data-tooltip-title="Đăng Xuất"
                     data-tooltip-placement="bottom"
                     data-tooltip-variant="danger"
-                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
+                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
@@ -674,6 +681,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-[2px] p-0.5">
                 <button
                   id="btn-user-profile"
+                  type="button"
+                  aria-label="Hồ sơ khán giả"
                   onClick={() => {
                     vibrateTap();
                     soundFx.playClick();
@@ -682,7 +691,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-tooltip="Xem thông tin cá nhân"
                   data-tooltip-title="Hồ Sơ Khán Giả"
                   data-tooltip-placement="bottom"
-                  className="has-tooltip min-h-[44px] flex items-center gap-1.5 px-2 py-1 text-xs transition cursor-pointer hover:bg-white/10 rounded-[1px]"
+                  className="has-tooltip min-h-[44px] flex items-center gap-1.5 px-2 py-1 text-xs transition cursor-pointer hover:bg-white/10 rounded-[2px]"
                 >
                   <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px] border border-blue-400/40">
                     {user.name.slice(0, 1).toUpperCase()}
@@ -694,6 +703,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {onLogout && (
                   <button
+                    type="button"
+                    aria-label="Đăng xuất tài khoản"
                     onClick={() => {
                       vibrateTap();
                       soundFx.playClick();
@@ -703,7 +714,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     data-tooltip-title="Đăng Xuất"
                     data-tooltip-placement="bottom"
                     data-tooltip-variant="danger"
-                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[1px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
+                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
@@ -741,7 +752,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Drawer Sheet */}
           <div 
-            className="relative z-10 mx-auto w-full max-w-lg mt-[calc(3.5rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto bg-[#0D0420]/95 backdrop-blur-2xl border border-white/15 rounded-b-[4px] p-4 space-y-3 shadow-2xl animate-slideUpFade"
+            className="relative z-10 mx-auto w-full max-w-lg mt-[calc(3.5rem+env(safe-area-inset-top,0px))] max-h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto bg-[#0D0420]/95 backdrop-blur-2xl border border-white/15 rounded-b-[2px] p-4 space-y-3 shadow-2xl animate-slideUpFade"
           >
             {/* Header row */}
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
@@ -769,11 +780,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* In Login Screen: Clean minimal options */}
             {isLoginScreen ? (
               <div className="space-y-2 pt-1">
-                {/* Sound Status Toggle */}
+                {/* Unified Audio Status & Settings (Mobile Login Drawer) */}
                 <button
                   onClick={() => {
                     vibrateSelection();
-                    onToggleSound();
+                    soundFx.playClick();
+                    setIsAudioSettingsOpen(true);
+                    setIsMobileMenuOpen(false);
                   }}
                   className={`w-full px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
                     soundEnabled
@@ -787,17 +800,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ) : (
                       <VolumeX className="w-4 h-4 text-rose-400" />
                     )}
-                    <span>{effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}</span>
+                    <span>{effectiveLanguage === 'en' ? 'Audio & Voice Settings' : 'Âm Thanh & Cài Đặt Âm Lượng'}</span>
                   </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
-                      soundEnabled
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                        : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
-                    }`}
-                  >
-                    {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
+                        soundEnabled
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
+                      }`}
+                    >
+                      {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+                    </span>
+                    <Sliders className="w-3.5 h-3.5 text-sky-300" />
+                  </div>
                 </button>
 
                 {/* Language switch (Hidden in Admin View) */}
@@ -817,25 +833,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span className="px-2 py-0.5 rounded-[2px] bg-sky-500/30 text-sky-200 font-bold border border-sky-400/30">
                       {localLanguage.toUpperCase()}
                     </span>
-                  </button>
-                )}
-
-                {/* Audio settings (Hidden in Admin View) */}
-                {currentView !== 'admin' && (
-                  <button
-                    onClick={() => {
-                      vibrateTap();
-                      soundFx.playClick();
-                      setIsAudioSettingsOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Sliders className="w-4 h-4 text-sky-300" />
-                      <span>{effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng & Giọng Đọc'}</span>
-                    </div>
-                    <span className="text-[10px] text-white/50 font-bold">Sliders</span>
                   </button>
                 )}
 
@@ -866,9 +863,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-[#F7CAC9]" />
-                    <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (NĐ 13)'}</span>
+                    <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (Luật 91)'}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-sky-300">v1.0</span>
+                  <span className="text-[10px] font-bold text-sky-300">v2.0</span>
                 </button>
 
                 {/* Return Home */}
@@ -968,28 +965,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </button>
                   </div>
 
-                  <BatteryIndicator showDetails className="w-full" forceLanguage={currentView === 'admin' ? 'vi' : undefined} />
-
-                  {/* Energy Mode Mobile Badge Row */}
-                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                    <div className="flex items-center gap-1.5">
-                      <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
-                      <span className="text-white/80">{effectiveLanguage === 'en' ? 'Energy Mode:' : 'Chế Độ Năng Lượng:'}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        vibrateTap();
-                        soundFx.playClick();
-                        setIsBatterySaverModalOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`px-2.5 py-1 rounded-[2px] border text-[10px] font-bold flex items-center gap-1.5 transition cursor-pointer select-none ${energyBadge.badgeClass}`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${energyBadge.dotClass}`} />
-                      <span>{energyBadge.label}</span>
-                    </button>
-                  </div>
+                  <BatteryIndicator
+                    showDetails
+                    className="w-full"
+                    forceLanguage={currentView === 'admin' ? 'vi' : undefined}
+                    onOpenBatterySaverModal={() => {
+                      setIsBatterySaverModalOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  />
                 </div>
 
                 {/* Admin Quick Options */}
@@ -1024,9 +1008,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     )}
 
                     <button
+                      type="button"
                       onClick={() => {
                         vibrateTap();
-                        window.open(window.location.origin + window.location.pathname + '?view=projector', '_blank');
+                        onViewChange('projector');
                         setIsMobileMenuOpen(false);
                       }}
                       className="px-3 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-[2px] flex items-center gap-2 text-xs font-bold"
@@ -1041,7 +1026,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     onClick={() => {
                       vibrateSelection();
-                      onToggleSound();
+                      soundFx.playClick();
+                      setIsAudioSettingsOpen(true);
+                      setIsMobileMenuOpen(false);
                     }}
                     className={`px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
                       soundEnabled
@@ -1055,17 +1042,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                       ) : (
                         <VolumeX className="w-4 h-4 text-rose-400" />
                       )}
-                      <span>{effectiveLanguage === 'en' ? 'Audio Effects' : 'Âm Thanh Hệ Thống'}</span>
+                      <span>{effectiveLanguage === 'en' ? 'Audio & Voice Settings' : 'Âm Thanh & Cài Đặt Âm Lượng'}</span>
                     </div>
-                    <span
-                      className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
-                        soundEnabled
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                          : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
-                      }`}
-                    >
-                      {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border tracking-wider uppercase ${
+                          soundEnabled
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                            : 'bg-rose-500/20 text-rose-300 border-rose-400/30'
+                        }`}
+                      >
+                        {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
+                      </span>
+                      <Sliders className="w-3.5 h-3.5 text-sky-300" />
+                    </div>
                   </button>
 
                   {currentView !== 'admin' && (
@@ -1085,24 +1075,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </button>
                   )}
 
-                  {currentView !== 'admin' && (
-                    <button
-                      onClick={() => {
-                        vibrateTap();
-                        soundFx.playClick();
-                        setIsAudioSettingsOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-3 py-2.5 bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 rounded-[2px] flex items-center justify-between text-xs font-mono"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Sliders className="w-4 h-4 text-sky-300" />
-                        <span>{effectiveLanguage === 'en' ? 'Audio Settings' : 'Cài Đặt Âm Lượng'}</span>
-                      </div>
-                      <span className="text-[10px] text-sky-200">Sliders</span>
-                    </button>
-                  )}
-
                   {/* Policy Page Link */}
                   <button
                     onClick={() => {
@@ -1115,9 +1087,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-[#F7CAC9]" />
-                      <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (NĐ 13)'}</span>
+                      <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (Luật 91)'}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-sky-300">v1.0</span>
+                    <span className="text-[10px] font-bold text-sky-300">v2.0</span>
                   </button>
                 </div>
               </div>
@@ -1128,12 +1100,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
 
       {/* Audio Settings Modal */}
-      {currentView !== 'admin' && (
-        <AudioSettingsModal
-          isOpen={isAudioSettingsOpen}
-          onClose={() => setIsAudioSettingsOpen(false)}
-        />
-      )}
+      <AudioSettingsModal
+        isOpen={isAudioSettingsOpen}
+        onClose={() => setIsAudioSettingsOpen(false)}
+      />
 
       {/* Battery Saver & Energy Mode Settings Modal */}
       <BatterySaverModal

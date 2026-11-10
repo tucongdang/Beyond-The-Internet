@@ -192,12 +192,18 @@ export function generateItemAnalysis(
   return result;
 }
 
+function notifyExportNotice(message: string) {
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('bti_system_notice', { detail: { message } }));
+  }
+}
+
 /**
  * Download CSV with UTF-8 BOM for flawless Excel & SPSS Vietnamese text rendering
  */
 export function exportToCSV(rows: SPSSRow[], filename = 'BTI2026_Audience_Responses.csv') {
   if (!rows || rows.length === 0) {
-    alert('Chưa có dữ liệu phản hồi nào để xuất!');
+    notifyExportNotice('Chưa có dữ liệu phản hồi nào để xuất!');
     return;
   }
 
@@ -253,7 +259,7 @@ export function exportLeaderboardToCSV(
   filename = 'BTI2026_BangXepHang_TongHop.csv'
 ) {
   if (!summaries || summaries.length === 0) {
-    alert('Chưa có dữ liệu bảng xếp hạng để xuất!');
+    notifyExportNotice('Chưa có dữ liệu bảng xếp hạng để xuất!');
     return;
   }
 
@@ -315,7 +321,7 @@ export function exportLeaderboardToCSV(
  */
 export function exportAuditLogsToCSV(logs: ActivityLogItem[], filename = 'BTI2026_Research_Audit_Log.csv') {
   if (!logs || logs.length === 0) {
-    alert('Không có dữ liệu nhật ký hoạt động để xuất!');
+    notifyExportNotice('Không có dữ liệu nhật ký hoạt động để xuất!');
     return;
   }
 
@@ -379,7 +385,7 @@ export function exportAuditLogsToCSV(logs: ActivityLogItem[], filename = 'BTI202
  */
 export function exportItemAnalysisToCSV(items: ResearchItemAnalysis[], filename = 'BTI2026_Item_Psychometrics.csv') {
   if (!items || items.length === 0) {
-    alert('Chưa có dữ liệu phân tích câu hỏi!');
+    notifyExportNotice('Chưa có dữ liệu phân tích câu hỏi!');
     return;
   }
 
@@ -450,7 +456,7 @@ export function exportToJSON(data: unknown, filename = 'BTI2026_Full_Database_Du
  */
 export function exportToJSONLines(records: unknown[], filename = 'BTI2026_Research_Data.jsonl') {
   if (!records || records.length === 0) {
-    alert('Không có bản ghi nào để xuất JSONL!');
+    notifyExportNotice('Không có bản ghi nào để xuất JSONL!');
     return;
   }
   const jsonlContent = records.map(r => JSON.stringify(r)).join('\n');
@@ -468,7 +474,7 @@ export function exportToJSONLines(records: unknown[], filename = 'BTI2026_Resear
 
 export function exportShoutsToCSV(shouts: any[], filename = 'BTI2026_Audience_Shouts.csv') {
   if (!shouts || shouts.length === 0) {
-    alert('Không có dữ liệu tiếng hô để xuất!');
+    notifyExportNotice('Không có dữ liệu tiếng hô để xuất!');
     return;
   }
   const headers = ['Timestamp', 'SenderName', 'MSSV', 'Status', 'Emoji', 'Text', 'Likes', 'IsPinned'];
@@ -502,7 +508,7 @@ export function exportShoutsToCSV(shouts: any[], filename = 'BTI2026_Audience_Sh
 
 export function exportQAToCSV(questions: any[], filename = 'BTI2026_Audience_QA.csv') {
   if (!questions || questions.length === 0) {
-    alert('Không có dữ liệu câu hỏi để xuất!');
+    notifyExportNotice('Không có dữ liệu câu hỏi để xuất!');
     return;
   }
   const headers = ['Timestamp', 'SenderName', 'MSSV', 'Category', 'Status', 'Text', 'Upvotes'];

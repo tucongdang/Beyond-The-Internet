@@ -798,8 +798,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
     if (!regConsentAgreed) {
       newErrors.consent = localLanguage !== 'vi' 
-        ? 'You must agree to the Privacy Policy and Contest Terms (Decree 13/2023/ND-CP).' 
-        : 'Bạn cần đồng ý với Chính sách Bảo vệ Dữ liệu Cá nhân & Điều lệ Cuộc thi (Nghị định 13/2023/NĐ-CP).';
+        ? 'You must agree to the Privacy Policy and Contest Terms (Law 91/2025 & Decree 356/2025).' 
+        : 'Bạn cần đồng ý với Chính sách Bảo vệ Dữ liệu Cá nhân & Điều lệ Cuộc thi (Luật 91/2025 & NĐ 356/2025).';
     }
     if (!regAgeConfirmed) {
       newErrors.age = localLanguage !== 'vi'
@@ -2337,8 +2337,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </label>
               </div>
 
-              {/* PDPD Consent Checkbox & Legal Transparency Card (Nghị định 13/2023/NĐ-CP & Điều lệ BTI 2026) */}
-              <div className={`p-3 sm:p-3.5 rounded-[4px] border transition-all text-left ${
+              {/* PDPD Consent Checkbox & Legal Transparency Card (Luật 91/2025/QH15, NĐ 356/2025/NĐ-CP & Điều lệ BTI 2026) */}
+              <div className={`p-3 sm:p-3.5 rounded-[2px] border transition-all text-left ${
                 errors.consent || errors.age
                   ? 'bg-rose-950/40 border-rose-500 shadow-md shadow-rose-950/50'
                   : 'bg-gradient-to-b from-[#1E0B38]/90 to-[#120524]/90 border-sky-400/30'
@@ -2349,7 +2349,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     <span className="uppercase tracking-wider">Đồng Thuận Dữ Liệu & Quy Chế</span>
                   </div>
                   <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-200">
-                    NĐ 13/2023/NĐ-CP
+                    Luật 91/2025 & NĐ 356/2025
                   </span>
                 </div>
 
@@ -2425,7 +2425,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                   {/* Direct link to standalone policy page */}
                   <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-white/50 pl-6 border-t border-white/5">
-                    <span>Phiên bản pháp lý: v1.0-pdpd-2026</span>
+                    <span>Phiên bản pháp lý: v{PDPD_CONSENT_VERSION} (Luật 91/2025 &amp; NĐ 356/2025)</span>
                     <a
                       href="/policy"
                       target="_blank"

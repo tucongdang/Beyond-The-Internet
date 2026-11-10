@@ -940,13 +940,13 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
                 </span>
               </div>
 
-              {/* AI Transparency & Regulatory Disclaimer (Nghị định 13/2023 & Minh bạch AI) */}
+              {/* AI Transparency & Regulatory Disclaimer (Luật TTNT 134/2025 & Luật BVDLCN 91/2025) */}
               <div className="bg-[#100320] border-b border-white/5 px-3 py-1 flex items-center justify-between text-[9px] font-mono text-white/50 shrink-0">
                 <span className="flex items-center gap-1 text-purple-300">
                   <Shield className="w-2.5 h-2.5 text-purple-400" />
-                  <span>Trợ lý AI tự động (Gemini 3.8 Flash)</span>
+                  <span>Trợ lý AI tự động (Gemini Flash • Điều 11 Luật 134/2025)</span>
                 </span>
-                <span className="text-white/40">Mang tính tham khảo • Tuân thủ NĐ 13/2023</span>
+                <span className="text-white/40">Mang tính tham khảo • Luật 91/2025</span>
               </div>
 
               {/* Active Question Warning Alert Banner */}

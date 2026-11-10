@@ -78,6 +78,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
       window.speechSynthesis.onvoiceschanged = updateVoices;
     }
 
+    const unsubEnabled = soundFx.subscribeEnabled((enabled) => setSfxEnabled(enabled));
     const unsubSfx = soundFx.subscribeVolume((vol) => setSfxVolume(vol));
     const unsubTts = aiExplanationService.subscribeTtsVolume((vol) => setTtsVolume(vol));
     const unsubPitch = aiExplanationService.subscribeTtsPitch((pitch) => setTtsPitch(pitch));
@@ -89,6 +90,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
     const unsubNoise = ambientNoiseService.subscribeNoiseLevel((data) => setNoiseLevel(data));
 
     return () => {
+      unsubEnabled();
       unsubSfx();
       unsubTts();
       unsubPitch();

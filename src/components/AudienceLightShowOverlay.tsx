@@ -111,12 +111,9 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
             vibrateTap();
             setIsMinimized(false);
           }}
-          className="relative rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-[180%] border border-purple-400/50 hover:border-purple-300 text-white p-2 sm:p-2.5 px-3 sm:px-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.8),0_0_20px_rgba(168,85,247,0.35)] flex items-center gap-2.5 transition-all duration-200 group cursor-pointer overflow-hidden"
+          className="relative rounded-[2px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-[180%] border border-purple-400/50 hover:border-purple-300 text-white p-2 sm:p-2.5 px-3 sm:px-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.8),0_0_20px_rgba(168,85,247,0.35)] flex items-center gap-2.5 transition-all duration-200 group cursor-pointer overflow-hidden"
           title="Chạm để mở lại toàn màn hình Biển Ánh Sáng"
         >
-          {/* Fluent Top Accent Line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 via-pink-400 to-amber-400" />
-          
           <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[2px] bg-purple-500/25 border border-purple-400/40 flex items-center justify-center text-amber-300 shrink-0 group-hover:scale-105 transition-transform shadow-inner">
             <Sparkles className="w-3.5 h-3.5 animate-spin text-amber-300" />
           </div>

@@ -147,6 +147,9 @@ class RealtimeSyncService {
   private adminAlertListeners = new Set<(msg: string) => void>();
   private scanEventsListeners: Set<(events: QrScanEvent[], hourlyData: HourlyScanDataPoint[], metrics: QrScanTrendMetrics) => void> = new Set();
   private auditLogListeners: Set<(logs: any[]) => void> = new Set();
+  private questionSyncListeners: Set<(isSyncing: boolean) => void> = new Set();
+  private isSyncingQuestion: boolean = false;
+  private questionSyncTimeout: any = null;
 
   private cachedGameState: GameState = DEFAULT_GAME_STATE;
   private cachedResponses: Record<string, Record<string, UserResponse>> = {};
@@ -216,6 +219,13 @@ class RealtimeSyncService {
         this.broadcastChannel.onmessage = (event) => {
           const { type, payload } = event.data || {};
           if (type === 'GAME_STATE_UPDATE') {
+            if (
+              payload &&
+              (payload.question_id !== this.cachedGameState.question_id ||
+                (payload.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE'))
+            ) {
+              this.triggerQuestionSyncPulse(380);
+            }
             this.cachedGameState = payload;
             this.notifyStateListeners();
             this.notifyResponseListeners();
@@ -650,6 +660,12 @@ class RealtimeSyncService {
           if (stateSnap.exists()) {
             this.setFirebaseConnected(true);
             const data = stateSnap.data() as GameState;
+            if (
+              data.question_id !== this.cachedGameState.question_id ||
+              (data.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE')
+            ) {
+              this.triggerQuestionSyncPulse(380);
+            }
             this.cachedGameState = { ...DEFAULT_GAME_STATE, ...data };
             this.saveLocalState();
             this.notifyStateListeners();
@@ -696,6 +712,12 @@ class RealtimeSyncService {
         this.setFirebaseConnected(true);
         if (snapshot.exists()) {
           const data = snapshot.data() as GameState;
+          if (
+            data.question_id !== this.cachedGameState.question_id ||
+            (data.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE')
+          ) {
+            this.triggerQuestionSyncPulse(380);
+          }
           this.cachedGameState = { ...DEFAULT_GAME_STATE, ...data };
           this.saveLocalState();
           this.notifyStateListeners();
@@ -822,6 +844,39 @@ class RealtimeSyncService {
     return () => {
       this.stateListeners.delete(callback);
     };
+  }
+
+  public subscribeToQuestionSync(callback: (isSyncing: boolean) => void): () => void {
+    this.questionSyncListeners.add(callback);
+    callback(this.isSyncingQuestion);
+    return () => {
+      this.questionSyncListeners.delete(callback);
+    };
+  }
+
+  public getIsSyncingQuestion(): boolean {
+    return this.isSyncingQuestion;
+  }
+
+  public triggerQuestionSyncPulse(durationMs: number = 380): void {
+    this.isSyncingQuestion = true;
+    this.questionSyncListeners.forEach(listener => {
+      try {
+        listener(true);
+      } catch (e) {}
+    });
+    if (this.questionSyncTimeout) {
+      clearTimeout(this.questionSyncTimeout);
+    }
+    this.questionSyncTimeout = setTimeout(() => {
+      this.isSyncingQuestion = false;
+      this.questionSyncTimeout = null;
+      this.questionSyncListeners.forEach(listener => {
+        try {
+          listener(false);
+        } catch (e) {}
+      });
+    }, durationMs);
   }
 
   public subscribeToResponses(callback: ResponseListener): () => void {
@@ -1213,12 +1268,15 @@ class RealtimeSyncService {
     }
 
     if (newState.question_id !== undefined && newState.question_id !== prev.question_id) {
+      this.triggerQuestionSyncPulse(380);
       this.addLocalAuditLog(
         'ADMIN_QUESTION_LOAD',
         '❓ Nạp Câu Hỏi Mới Vào Sân Sân',
         `Đã tải câu hỏi [${newState.question_id}] (${newState.round_name || prev.round_name || 'Vòng thi'})`,
         { field: 'question_id', value: newState.question_id }
       );
+    } else if (newState.status === 'ACTIVE' && prev.status !== 'ACTIVE') {
+      this.triggerQuestionSyncPulse(340);
     }
 
     this.cachedGameState = updated;

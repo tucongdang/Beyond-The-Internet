@@ -32,14 +32,15 @@ interface AudienceAnswerDistributionChartProps {
   className?: string;
 }
 
+// Claude Dataviz Categorical Palette (skills/dataviz/references/palette.md — CVD-safe OKLab validated)
 const OPTION_COLORS: Record<string, { fill: string; stroke: string; bg: string; text: string }> = {
-  A: { fill: '#38bdf8', stroke: '#0284c7', bg: 'bg-sky-500/15', text: 'text-sky-300' },     // Sky Blue
-  B: { fill: '#34d399', stroke: '#059669', bg: 'bg-emerald-500/15', text: 'text-emerald-300' }, // Emerald
-  C: { fill: '#fbbf24', stroke: '#d97706', bg: 'bg-amber-500/15', text: 'text-amber-300' },     // Amber
-  D: { fill: '#f43f5e', stroke: '#e11d48', bg: 'bg-rose-500/15', text: 'text-rose-300' },       // Rose
-  E: { fill: '#a78bfa', stroke: '#7c3aed', bg: 'bg-purple-500/15', text: 'text-purple-300' },   // Purple
-  F: { fill: '#fb923c', stroke: '#ea580c', bg: 'bg-orange-500/15', text: 'text-orange-300' },   // Orange
-  DEFAULT: { fill: '#94a3b8', stroke: '#64748b', bg: 'bg-slate-500/15', text: 'text-slate-300' }
+  A: { fill: '#3987e5', stroke: '#2a78d6', bg: 'bg-[#3987e5]/15', text: 'text-[#6A9BCC]' },     // Slot 1: Blue
+  B: { fill: '#D97757', stroke: '#d95926', bg: 'bg-[#D97757]/15', text: 'text-[#D97757]' },     // Slot 2: Claude Clay / Orange
+  C: { fill: '#199e70', stroke: '#1baf7a', bg: 'bg-[#199e70]/15', text: 'text-[#BCD1CA]' },     // Slot 3: Aqua
+  D: { fill: '#c98500', stroke: '#fab219', bg: 'bg-[#c98500]/15', text: 'text-[#fab219]' },     // Slot 4: Yellow
+  E: { fill: '#d55181', stroke: '#C46686', bg: 'bg-[#d55181]/15', text: 'text-[#EBCECE]' },     // Slot 5: Magenta
+  F: { fill: '#9085e9', stroke: '#6250d6', bg: 'bg-[#9085e9]/15', text: 'text-[#CBCADB]' },     // Slot 7: Violet
+  DEFAULT: { fill: '#87867F', stroke: '#5E5D59', bg: 'bg-white/10', text: 'text-[#C2C0B6]' }
 };
 
 // Active Shape for Interactive Hover / Focus

@@ -790,7 +790,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
           <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
-        <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+        <div className="fixed inset-0 z-0 fluent-noise-overlay opacity-20 mix-blend-overlay pointer-events-none" />
         <div
           id="projector-view-stage"
           style={{
@@ -992,7 +992,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
         <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
-      <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+      <div className="fixed inset-0 z-0 fluent-noise-overlay opacity-20 mix-blend-overlay pointer-events-none" />
       <div 
         id="projector-view-stage"
         style={{

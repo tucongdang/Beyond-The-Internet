@@ -173,11 +173,6 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
           isProjector ? 'py-3 px-3 sm:px-6 lg:px-8' : 'py-2 px-2.5 sm:px-6'
         } relative overflow-hidden flex items-center gap-2 sm:gap-4`}
       >
-        {/* Subtle glowing beacon background line */}
-        {!isHighContrast && (
-          <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${themeConfig.accentGradient} pointer-events-none z-10 opacity-90 shadow-[0_0_8px_rgba(255,255,255,0.4)]`} />
-        )}
-
         {/* Left Badge: Live Announcer Indicator */}
         <div className="flex-shrink-0 flex items-center gap-2 z-10">
           <div

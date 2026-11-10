@@ -460,6 +460,25 @@ export default function App() {
     setCurrentView('landing');
   };
 
+  const [systemNotice, setSystemNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleNotice = (e: Event) => {
+      const detail = (e as CustomEvent<{ message?: string }>).detail;
+      if (detail?.message) {
+        setSystemNotice(detail.message);
+      }
+    };
+    window.addEventListener('bti_system_notice', handleNotice);
+    return () => window.removeEventListener('bti_system_notice', handleNotice);
+  }, []);
+
+  useEffect(() => {
+    if (!systemNotice) return;
+    const t = setTimeout(() => setSystemNotice(null), 5000);
+    return () => clearTimeout(t);
+  }, [systemNotice]);
+
   // Automatic 30-minute inactivity logout timer for Admin session
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -481,7 +500,7 @@ export default function App() {
       setIsAuthenticated(false);
       setAdminUser(null);
       setCurrentView('landing');
-      alert('Phiên làm việc Quản trị (Admin) đã tự động đăng xuất sau 30 phút không hoạt động để bảo mật.');
+      setSystemNotice('Phiên làm việc Quản trị (Admin) đã tự động đăng xuất sau 30 phút không hoạt động để bảo mật.');
     };
 
     const resetTimer = () => {
@@ -683,7 +702,7 @@ export default function App() {
   useEffect(() => {
     if (gameState.force_route_ts && gameState.force_route_ts > lastRouteTs) {
       setLastRouteTs(gameState.force_route_ts);
-      if (currentView !== 'admin' && currentView !== 'projector' && gameState.force_route) {
+      if (currentView !== 'admin' && currentView !== 'projector' && currentView !== 'policy' && gameState.force_route) {
         if (currentView === 'landing' && gameState.force_route === 'audience') {
           // Do not force users from the welcome page into the audience view
           return;
@@ -753,6 +772,14 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [user]);
+
+  // Keep soundEnabled synced with global soundFx state (e.g. when toggled inside AudioSettingsModal)
+  useEffect(() => {
+    const unsubscribe = soundFx.subscribeEnabled((enabled) => {
+      setSoundEnabled(enabled);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Sound toggle handler
   const handleToggleSound = () => {
@@ -857,8 +884,27 @@ export default function App() {
             <div className="absolute top-1/4 -left-1/4 w-[50vw] h-[50vw] bg-[#F7CAC9]/10 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-1/4 -right-1/4 w-[50vw] h-[50vw] bg-[#3E1D74]/30 backdrop-blur-md rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
-          <div className="fixed inset-0 z-[-1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+          <div className="fixed inset-0 z-[-1] fluent-noise-overlay opacity-20 mix-blend-overlay pointer-events-none" />
         </>
+      )}
+
+      {/* Non-blocking System Notice Banner */}
+      {systemNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] max-w-md w-[calc(100%-2rem)] fluent-toast px-4 py-3 text-xs sm:text-sm font-medium text-[#F5EFF9] flex items-center justify-between gap-3 animate-fluent-toast-enter"
+        >
+          <span>{systemNotice}</span>
+          <button
+            type="button"
+            onClick={() => setSystemNotice(null)}
+            aria-label="Đóng thông báo"
+            className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-[#F7CAC9] text-xs font-mono font-bold shrink-0 cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
       )}
 
       {/* Audience Notification Toast (Hidden on Admin & Projector views) */}
@@ -915,7 +961,7 @@ export default function App() {
       />
       )}
       {/* Main View Area */}
-      <main className="flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto">
+      <main className={`flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto ${currentView === 'policy' ? 'bg-[#0D0420]' : ''}`}>
 
         {currentView === 'client_landing' && (
           <ClientLandingPage gameState={gameState} />
@@ -1331,7 +1377,7 @@ export default function App() {
         currentView={currentView}
       />
 
-      {/* First-visit Privacy & PDPD Consent Notice (Decree 13/2023/ND-CP) */}
+      {/* First-visit Privacy & PDPD Consent Notice (Law 91/2025/QH15 & Decree 356/2025/ND-CP) */}
       {currentView !== 'policy' && (
         <FirstVisitConsentModal onOpenFullPolicy={() => handleNavigateToPolicy()} />
       )}

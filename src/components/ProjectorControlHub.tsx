@@ -190,19 +190,6 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
 
         {/* Quick Projector Stealth Dim & Unified Auto-Fit Indicator */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick 1-Click Sync Button when in non-default mode */}
-          {activeMode !== 'DEFAULT' && (
-            <button
-              type="button"
-              onClick={() => handleSetProjectorMode('DEFAULT')}
-              className="px-2.5 py-1 rounded-[2px] bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-[10px] font-bold shadow-md shadow-amber-950/50 flex items-center gap-1.5 cursor-pointer animate-pulse"
-              title="Đưa màn chiếu về hiển thị câu hỏi & tiến trình trận đấu"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Theo Tiến Trình Sàn Đấu</span>
-            </button>
-          )}
-
           {/* Force Sync button */}
           <button
             type="button"
@@ -264,7 +251,7 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
 
       {/* Mode Override Warning Banner if not DEFAULT */}
       {activeMode !== 'DEFAULT' && (
-        <div className="p-2.5 rounded-[3px] bg-amber-950/40 border border-amber-400/50 text-amber-200 font-mono text-xs flex flex-wrap items-center justify-between gap-2 shadow-inner">
+        <div className="p-2.5 rounded-[2px] bg-amber-950/40 border border-amber-400/50 text-amber-200 font-mono text-xs flex flex-wrap items-center justify-between gap-2 shadow-inner">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             <span>

@@ -106,7 +106,11 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
     document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+    const unsubSound = soundFx.subscribeEnabled((enabled) => setSoundEnabled(enabled));
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      unsubSound();
+    };
   }, []);
 
   // Global hotkeys to open floating tab with 'H' or close with 'Escape'
@@ -292,7 +296,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
           <div
             id="audience-floating-tab-panel"
-            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[85vw] sm:w-[360px] lg:w-[400px] max-w-full z-[46] rounded-l-[4px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
+            className="hidden sm:flex fixed right-0 top-14 bottom-0 w-[85vw] sm:w-[360px] lg:w-[400px] max-w-full z-[46] rounded-l-[2px] fluent-box border-y border-l border-white/10 shadow-2xl flex-col overflow-hidden animate-slideInRight"
           >
             {/* Header: Tabs selector and Close button */}
             <div className="p-3.5 pb-2.5 border-b border-white/10 fluent-box-nested flex flex-col gap-2">
@@ -651,26 +655,7 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">{localLanguage !== 'vi' ? "F Key" : "Phím F"}</span>
                   </button>
 
-                  {/* Sound FX Toggle */}
-                  <button
-                    type="button"
-                    onClick={handleToggleSound}
-                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
-                      soundEnabled
-                        ? 'bg-white/10 border-purple-500/40 text-purple-200'
-                        : 'fluent-box-nested text-white/50 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {soundEnabled ? <Volume2 className="w-4 h-4 text-purple-400" /> : <VolumeX className="w-4 h-4 text-white/40" />}
-                      <span>{t("sidebar_sound_fx", localLanguage)}</span>
-                    </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
-                      {soundEnabled ? (localLanguage !== 'vi' ? 'ON (M)' : 'BẬT (M)') : (localLanguage !== 'vi' ? 'OFF (M)' : 'TẮT (M)')}
-                    </span>
-                  </button>
-
-                  {/* Audio & AI Voice Volume Sliders Modal Trigger */}
+                  {/* Unified Audio Status & Volume Sliders Modal Trigger */}
                   <button
                     type="button"
                     onClick={() => {
@@ -678,15 +663,26 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                       vibrateTap();
                       setIsAudioSettingsOpen(true);
                     }}
-                    className="w-full p-3 rounded-[2px] border border-sky-500/30 bg-sky-950/20 hover:bg-sky-900/30 text-sky-200 text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect"
+                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                      soundEnabled
+                        ? 'bg-sky-950/20 hover:bg-sky-900/30 border-sky-500/30 text-sky-200'
+                        : 'bg-rose-950/25 hover:bg-rose-900/30 border-rose-500/30 text-rose-200'
+                    }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Sliders className="w-4 h-4 text-sky-400" />
-                      <span>{localLanguage !== 'vi' ? 'Audio & Voice Volumes' : 'Cài Đặt Âm Lượng'}</span>
+                      {soundEnabled ? <Volume2 className="w-4 h-4 text-sky-400" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
+                      <span>{localLanguage !== 'vi' ? 'Audio & Voice Settings' : 'Âm Thanh & Cài Đặt Âm Lượng'}</span>
                     </div>
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-[2px] bg-sky-900/40 border border-sky-400/30 text-sky-300">
-                      Sliders
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`font-mono text-[10px] px-2 py-0.5 rounded-[2px] border ${
+                        soundEnabled
+                          ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300'
+                          : 'bg-rose-500/20 border-rose-400/30 text-rose-300'
+                      }`}>
+                        {soundEnabled ? (localLanguage !== 'vi' ? 'ON (M)' : 'BẬT (M)') : (localLanguage !== 'vi' ? 'OFF (M)' : 'TẮT (M)')}
+                      </span>
+                      <Sliders className="w-3.5 h-3.5 text-sky-300" />
+                    </div>
                   </button>
 
                   {/* Wake Lock Screen */}
@@ -714,19 +710,23 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                     </button>
                   )}
 
-                  {/* High Contrast Mode & Battery Saver */}
-                  {onToggleHighContrast && (
+                  {/* Unified High Contrast Mode & Battery Saver Compound Control */}
+                  <div className="flex items-stretch rounded-[2px] overflow-hidden border border-white/15">
                     <button
                       type="button"
                       onClick={() => {
                         soundFx.playClick();
                         vibrateTap();
-                        onToggleHighContrast();
+                        if (onToggleHighContrast) {
+                          onToggleHighContrast();
+                        } else {
+                          setIsBatterySaverModalOpen(true);
+                        }
                       }}
-                      className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
+                      className={`flex-1 p-3 text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
                         isHighContrast || isBatterySaver
-                          ? 'bg-amber-400 text-black border-amber-300 font-bold'
-                          : 'fluent-box-nested text-white/50 hover:text-white'
+                          ? 'bg-amber-400 text-black font-bold'
+                          : 'fluent-box-nested text-white/80 hover:text-white'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -734,34 +734,31 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
                         <Zap className={`w-3.5 h-3.5 ${isHighContrast || isBatterySaver ? 'text-black fill-current' : 'text-emerald-400 fill-current'}`} />
                         <span>{localLanguage !== 'vi' ? 'OLED Black & Battery Saver' : 'Nền Đen OLED & Tiết Kiệm Pin'}</span>
                       </div>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
+                      <span className={`font-mono text-[11px] px-2 py-0.5 rounded-[2px] ${
+                        isHighContrast || isBatterySaver ? 'bg-black/15 text-black' : 'bg-white/10'
+                      }`}>
                         {isHighContrast || isBatterySaver ? (localLanguage !== 'vi' ? 'Active' : 'Đang Bật') : (localLanguage !== 'vi' ? "T Key" : "Phím T")}
                       </span>
                     </button>
-                  )}
-
-                  {/* Battery Saver */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundFx.playClick();
-                      vibrateTap();
-                      setIsBatterySaverModalOpen(true);
-                    }}
-                    className={`w-full p-3 rounded-[2px] border text-xs font-semibold flex items-center justify-between transition cursor-pointer hover-effect ${
-                      isBatterySaver
-                        ? 'bg-emerald-500 text-black border-emerald-400 font-bold'
-                        : 'fluent-box-nested text-emerald-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Zap className="w-4 h-4 fill-current" />
-                      <span>{t("sidebar_battery_saver_set", localLanguage)}</span>
-                    </div>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-[2px] bg-white/10">
-                      {isBatterySaver ? (localLanguage !== 'vi' ? 'Active' : 'Đang Bật') : (localLanguage !== 'vi' ? 'Details' : 'Chi Tiết')}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        vibrateTap();
+                        setIsBatterySaverModalOpen(true);
+                      }}
+                      className={`px-3 text-xs font-mono font-bold border-l flex items-center gap-1 transition cursor-pointer ${
+                        isHighContrast || isBatterySaver
+                          ? 'bg-amber-300 hover:bg-amber-200 text-black border-black/20'
+                          : 'fluent-box-nested hover:bg-white/15 text-emerald-300 border-white/15'
+                      }`}
+                      title={t("sidebar_battery_saver_set", localLanguage)}
+                      aria-label={t("sidebar_battery_saver_set", localLanguage)}
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span className="text-[10px]">{localLanguage !== 'vi' ? 'Config' : 'Chi Tiết'}</span>
+                    </button>
+                  </div>
 
                   {/* Share QR */}
                   <button

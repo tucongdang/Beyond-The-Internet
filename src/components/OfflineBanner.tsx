@@ -111,13 +111,10 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
       role="alert"
       aria-live="assertive"
       style={{ position: 'fixed' }}
-      className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[420px] max-w-[calc(100vw-2rem)] z-[99999] rounded-[4px] bg-[#1c0816]/95 backdrop-blur-[32px] saturate-[180%] text-white p-4 shadow-[0_24px_64px_rgba(0,0,0,0.9),0_0_36px_rgba(244,63,94,0.35)] border border-rose-500/50 ring-1 ring-rose-500/30 flex flex-col gap-3 transition-all duration-300 ${
+      className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[420px] max-w-[calc(100vw-2rem)] z-[99999] rounded-[2px] bg-[#1c0816]/95 backdrop-blur-[32px] saturate-[180%] text-white p-4 shadow-[0_24px_64px_rgba(0,0,0,0.9),0_0_36px_rgba(244,63,94,0.35)] border border-rose-500/50 ring-1 ring-rose-500/30 flex flex-col gap-3 transition-all duration-300 ${
         isDismissing ? 'animate-fluent-toast-exit' : 'animate-fluent-toast-enter'
       } overflow-hidden select-none pointer-events-auto`}
     >
-      {/* Fluent UI 2 Top Highlight Accent Line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 pointer-events-none z-10" />
-
       {/* Top Section */}
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-[2px] fluent-box-nested border border-rose-400/40 flex items-center justify-center shrink-0 shadow-inner">

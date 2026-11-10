@@ -255,14 +255,11 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md bg-[#020B19]/95 border border-[#38BDF8]/40 rounded-[4px] shadow-2xl overflow-hidden font-sans text-white text-left relative animate-scaleUp">
-            {/* Top Fluent Accent Bar */}
-            <div className="h-1 bg-gradient-to-r from-[#0078D4] via-[#0284C7] to-[#107C41]" />
-
+          <div className="w-full max-w-md bg-[#020B19]/95 border border-[#38BDF8]/40 rounded-[2px] shadow-2xl overflow-hidden font-sans text-white text-left relative animate-scaleUp">
             {/* Modal Body */}
             <div className="p-5 sm:p-6 space-y-4">
               <div className="flex items-start gap-3.5">
-                <div className="w-11 h-11 rounded-[3px] bg-[#002855]/80 border border-[#0078D4]/50 flex items-center justify-center text-[#38BDF8] shrink-0 shadow-lg shadow-sky-950/50">
+                <div className="w-11 h-11 rounded-[2px] bg-[#002855]/80 border border-[#0078D4]/50 flex items-center justify-center text-[#38BDF8] shrink-0 shadow-lg shadow-sky-950/50">
                   <ShieldAlert className="w-5.5 h-5.5 text-[#38BDF8]" />
                 </div>
                 <div>

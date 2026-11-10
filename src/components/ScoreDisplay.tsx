@@ -33,7 +33,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R1',
     description: t("view_score_start_desc", lang),
     icon: Zap,
-    colorClass: 'from-[#E39A96]/20 to-[#F7CAC9]/20 text-[#FCEEEC] border-[#F7CAC9]/30'
+    colorClass: 'bg-[#1F1E1D] text-[#FAF9F5] border-[#D97757]/40'
   },
   {
     key: 'round2' as const,
@@ -41,7 +41,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R2',
     description: t("view_score_obs_desc", lang),
     icon: Shield,
-    colorClass: 'from-amber-500/20 to-orange-500/20 text-amber-300 border-amber-500/30'
+    colorClass: 'bg-[#1F1E1D] text-[#E3DACC] border-[#FAF9F5]/15'
   },
   {
     key: 'round3' as const,
@@ -49,7 +49,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R3',
     description: t("view_score_accel_desc", lang),
     icon: Flame,
-    colorClass: 'from-emerald-500/20 to-teal-500/20 text-emerald-300 border-emerald-500/30'
+    colorClass: 'bg-[#1F1E1D] text-emerald-300 border-emerald-500/30'
   },
   {
     key: 'round4' as const,
@@ -57,7 +57,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
     shortName: 'R4',
     description: t("view_score_finish_desc", lang),
     icon: Target,
-    colorClass: 'from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/30'
+    colorClass: 'bg-[#1F1E1D] text-[#3987E5] border-[#3987E5]/35'
   }
 ];
 
@@ -171,35 +171,38 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
 
 
   return (
-    <div id="bti-score-display" className={`fluent-box bg-[#180735]/95 backdrop-blur-xl border-b border-white/10 text-white sticky top-0 z-30 shadow-xl overflow-visible scrollbar-none ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
-        <div 
-          className="flex items-center justify-between cursor-pointer select-none active:opacity-80"
-          onClick={() => {
-            soundFx.playClick();
-            vibrateTap();
-            setIsExpanded(!isExpanded);
-          }}
-        >
-          <div className="relative group flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[2px] fluent-acrylic-surface border border-amber-500/40 text-amber-300 flex items-center justify-center font-bold shadow-lg">
-              <Trophy className="w-5 h-5" />
+    <div id="bti-score-display" className={`fluent-box bg-[#1A1918]/95 backdrop-blur-xl border-b border-[#FAF9F5]/12 text-[#FAF9F5] sticky top-0 z-30 shadow-xl overflow-visible scrollbar-none ${className}`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-1.5 sm:py-2">
+        <div className="flex items-center justify-between gap-2 select-none">
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playClick();
+              vibrateTap();
+              setIsExpanded(!isExpanded);
+            }}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Thu gọn chi tiết điểm số' : 'Mở rộng chi tiết điểm số'}
+            className="relative group flex items-center gap-2.5 sm:gap-3 text-left cursor-pointer active:opacity-80 rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97757]"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[2px] bg-[#1F1E1D] border border-[#D97757]/45 text-[#D97757] flex items-center justify-center font-bold shadow-sm shrink-0">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold block">{t("view_score_total", localLanguage)}</span>
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-[#C2C0B6] font-bold block leading-tight">{t("view_score_total", localLanguage)}</span>
               <div className="flex items-baseline gap-1.5 relative">
-                <span className="text-xl sm:text-2xl font-black font-mono tabular-nums text-white tracking-tight leading-none relative">
+                <span className="text-lg sm:text-2xl font-black font-mono tabular-nums text-[#FAF9F5] tracking-tight leading-none relative">
                   {displayScore.toLocaleString('vi-VN')}
                   {popups.map(p => (
                     <span 
                       key={p.id} 
-                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono tabular-nums text-yellow-200 animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
+                      className="absolute left-full ml-2 bottom-full text-base sm:text-xl font-black font-mono tabular-nums text-[#D97757] animate-float-fade pointer-events-none drop-shadow-lg z-50 whitespace-nowrap"
                     >
                       +{p.diff}
                     </span>
                   ))}
                 </span>
-                <span className="text-[10px] font-mono font-bold text-amber-300 uppercase">{t("score_score", localLanguage)}</span>
+                <span className="text-[10px] font-mono font-bold text-[#D97757] uppercase">{t("score_score", localLanguage)}</span>
               </div>
             </div>
 
@@ -215,26 +218,26 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                         <Icon className="w-3 h-3 opacity-70" />
                         <span>{round.shortName}</span>
                       </div>
-                      <span className="text-white font-bold">+{stats.scoreBreakdown[round.key] || 0}</span>
+                      <span className="text-white font-bold tabular-nums">+{stats.scoreBreakdown[round.key] || 0}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
-          </div>
+          </button>
 
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {isWakeLockSupported !== false && onToggleWakeLock && (
               <button
                 type="button"
                 id="btn-audience-wake-lock-toggle"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   soundFx.playClick();
                   vibrateTap();
                   onToggleWakeLock();
                 }}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
+                aria-label={isWakeLockLocked ? t("view_score_wake_on", localLanguage) : t("view_score_wake_off", localLanguage)}
+                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect cursor-pointer ${
                   isWakeLockLocked
                     ? 'fluent-box-nested text-amber-300 border-amber-500/50 shadow-inner'
                     : 'fluent-box-nested hover:bg-white/15 text-slate-400 hover:text-white border-white/10'
@@ -258,8 +261,8 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 <button
                   type="button"
                   id="btn-audience-high-contrast-toggle"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  aria-label="Chế độ tương phản cao / tiết kiệm pin"
+                  onClick={() => {
                     soundFx.playClick();
                     vibrateTap();
                     if (onToggleHighContrast) {
@@ -268,7 +271,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                       setBatterySaverMode(!getBatterySaverMode());
                     }
                   }}
-                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 text-xs font-mono font-bold transition hover-effect ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 text-xs font-mono font-bold transition hover-effect cursor-pointer ${
                     isHighContrast || isBatterySaver
                       ? 'bg-amber-400 text-black font-extrabold shadow-sm'
                       : 'fluent-box-nested hover:bg-white/15 text-white/80 hover:text-white'
@@ -291,13 +294,13 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
                 <button
                   type="button"
                   id="btn-audience-battery-settings"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  aria-label="Cài đặt chi tiết tiết kiệm pin"
+                  onClick={() => {
                     soundFx.playClick();
                     vibrateTap();
                     setIsBatteryModalOpen(true);
                   }}
-                  className={`px-1.5 py-1.5 text-xs transition border-l ${
+                  className={`px-2 py-1.5 text-xs transition border-l cursor-pointer ${
                     isHighContrast || isBatterySaver
                       ? 'bg-amber-400 hover:bg-amber-300 text-black border-black/20'
                       : 'fluent-box-nested hover:bg-white/20 text-white/60 hover:text-white border-white/15'
@@ -309,66 +312,10 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               </div>
             )}
 
-            {onOpenLogModal && (
-              <button
-                type="button"
-                id="btn-audience-open-log-modal"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  soundFx.playClick();
-                  vibrateTap();
-                  onOpenLogModal();
-                }}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition hover-effect"
-                title={t("view_score_log_title", localLanguage)}
-              >
-                <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                <span className="hidden min-[380px]:inline text-[11px]">Logs</span>
-              </button>
-            )}
-
-            {onOpenPostMatchModal && (
-              <button
-                type="button"
-                id="btn-audience-open-postmatch-modal"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  soundFx.playClick();
-                  vibrateTap();
-                  onOpenPostMatchModal();
-                }}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition hover-effect cursor-pointer"
-                title="Xuất thẻ thành tích Infographic (Post-Match Card)"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span className="hidden min-[380px]:inline text-[11px]">Thẻ</span>
-              </button>
-            )}
-
-            {/* Desktop Fullscreen Button */}
-            <button
-              type="button"
-              id="btn-audience-fullscreen-toggle"
-              onClick={handleToggleFullscreen}
-              className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect ${
-                isFullscreen
-                  ? 'fluent-box-nested text-indigo-200 border-indigo-400'
-                  : 'fluent-box-nested hover:bg-white/15 text-slate-300 hover:text-white border-white/10'
-              }`}
-              title={isFullscreen ? (t("view_score_full_exit", localLanguage)) : (t("view_score_full_enter", localLanguage))}
-            >
-              {isFullscreen ? (
-                <Minimize className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
-              ) : (
-                <Maximize className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
-              )}
-              <span className="text-[11px]">{isFullscreen ? (t("view_score_full_exit_short", localLanguage)) : (t("view_score_full_enter_short", localLanguage))}</span>
-            </button>
-
             {/* Battle Royale Survival Status (Clean unboxed metadata) */}
             {survivalStats.totalContestants > 0 && (
               <div 
-                className="hidden xl:flex items-center gap-1.5 px-2 py-1 text-purple-200 text-xs font-mono font-bold"
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1 text-purple-200 text-xs font-mono font-bold"
                 title={`Đấu trường sinh tử: ${survivalStats.survivorsCount}/${survivalStats.totalContestants} bất bại (${survivalStats.survivalRate}%)`}
               >
                 <Shield className={`w-3.5 h-3.5 ${survivalStats.isUserAlive ? 'text-emerald-400' : 'text-slate-400'}`} />
@@ -378,13 +325,23 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               </div>
             )}
 
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-purple-200 text-xs font-mono font-bold">
+            <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-purple-200 text-xs font-mono font-bold">
               <Star className="w-3.5 h-3.5 text-purple-400 fill-purple-400/50" />
               <span>{t("score_rank", localLanguage).toUpperCase()} <strong className="text-white tabular-nums font-mono">#{stats.rank}</strong></span>
             </div>
-            <div className="px-2 py-1.5 rounded-[2px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playClick();
+                vibrateTap();
+                setIsExpanded(!isExpanded);
+              }}
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Thu gọn bảng điểm' : 'Mở rộng bảng điểm'}
+              className="p-2 rounded-[2px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect cursor-pointer"
+            >
               {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-            </div>
+            </button>
           </div>
         </div>
 
@@ -399,36 +356,38 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               </div>
             </div>
 
-            {/* Mobile / Tablet Quick Action Buttons when expanded */}
+            {/* Unified Quick Action Buttons when expanded */}
             {(onOpenLogModal || onOpenPostMatchModal) && (
-              <div className="lg:hidden grid grid-cols-2 gap-2 mb-3">
+              <div className="grid grid-cols-2 gap-2 mb-3">
                 {onOpenLogModal && (
                   <button
                     type="button"
+                    id="btn-audience-open-log-modal"
                     onClick={(e) => {
                       e.stopPropagation();
                       soundFx.playClick();
                       vibrateTap();
                       onOpenLogModal();
                     }}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#F7CAC9]/15 hover:bg-[#F7CAC9]/30 text-[#F7CAC9] border-[#F7CAC9]/40 shadow-sm transition active:scale-[0.98]"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#D97757]/15 hover:bg-[#D97757]/25 text-[#D97757] border-[#D97757]/40 shadow-sm transition active:scale-[0.98] cursor-pointer"
                   >
-                    <History className="w-3.5 h-3.5 text-[#F7CAC9]" />
+                    <History className="w-3.5 h-3.5 text-[#D97757]" />
                     <span>Lịch Sử Đấu (Logs)</span>
                   </button>
                 )}
                 {onOpenPostMatchModal && (
                   <button
                     type="button"
+                    id="btn-audience-open-postmatch-modal"
                     onClick={(e) => {
                       e.stopPropagation();
                       soundFx.playClick();
                       vibrateTap();
                       onOpenPostMatchModal();
                     }}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border-purple-400/40 shadow-sm transition active:scale-[0.98]"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-[2px] border text-xs font-mono font-bold bg-[#262624] hover:bg-[#30302E] text-[#FAF9F5] border-[#FAF9F5]/16 shadow-sm transition active:scale-[0.98] cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#E3DACC]" />
                     <span>Thẻ Thành Tích</span>
                   </button>
                 )}

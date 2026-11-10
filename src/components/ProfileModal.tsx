@@ -810,7 +810,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   }`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'PDPD Legal' : 'Pháp Lý NĐ 13'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'PDPD Legal' : 'Pháp Lý BVDLCN'}</span>
                 </button>
               </div>
 
@@ -1445,7 +1445,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                     <div className="space-y-1">
                       <div className="text-xs font-bold text-white flex items-center gap-2">
-                        <span>{localLanguage !== 'vi' ? 'PDPD Decree 13/2023/ND-CP Compliance Active' : 'Tuân Thủ Nghị Định 13/2023/NĐ-CP (PDPD)'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Personal Data Protection Law 91/2025 & Decree 356/2025' : 'Bảo Vệ Dữ Liệu Cá Nhân (Luật 91/2025 & NĐ 356/2025)'}</span>
                         <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-[2px]">
                           {PDPD_CONSENT_VERSION}
                         </span>
@@ -1525,12 +1525,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </a>
                   </div>
 
-                  {/* Right to Erasure / Data Deletion Box (Article 16 Decree 13/2023) */}
+                  {/* Right to Erasure / Data Deletion Box (Article 4 Law 91/2025 & Article 5 Decree 356/2025) */}
                   <div className="p-3.5 rounded-[2px] fluent-box-nested border border-rose-500/30 bg-rose-950/20 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-rose-300 font-bold text-xs font-mono">
                         <Trash2 className="w-4 h-4 text-rose-400" />
-                        <span>{localLanguage !== 'vi' ? 'Right to Erasure (Article 16 PDPD)' : 'Quyền Xóa & Ẩn Danh Dữ Liệu (Điều 16 NĐ 13)'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Right to Erasure (Law 91/2025 & Decree 356/2025)' : 'Quyền Xóa & Ẩn Danh Dữ Liệu (Luật 91/2025 & NĐ 356)'}</span>
                       </div>
                       <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-[2px]">
                         Right to be forgotten
@@ -1539,8 +1539,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                     <p className="text-[11px] text-rose-200/80 leading-relaxed font-sans">
                       {localLanguage !== 'vi'
-                        ? 'Under Decree 13/2023/ND-CP, you have the right to request erasure and anonymization of your personal data (Full Name, Student ID, Email) from the active live leaderboard.'
-                        : 'Theo quy định tại Điều 16 Nghị định 13/2023/NĐ-CP, bạn có quyền yêu cầu xóa hoặc ẩn danh hóa toàn bộ thông tin cá nhân (Họ tên thật, MSSV, Email) trên bảng xếp hạng.'}
+                        ? 'Under Law 91/2025/QH15 and Decree 356/2025/ND-CP, you have the right to request erasure and anonymization of your personal data (Full Name, Student ID, Email) from the active live leaderboard.'
+                        : 'Theo quy định tại khoản 1 Điều 4 Luật 91/2025/QH15 và Điều 5 Nghị định 356/2025/NĐ-CP, bạn có quyền yêu cầu xóa hoặc ẩn danh hóa toàn bộ thông tin cá nhân (Họ tên thật, MSSV, Email) trên bảng xếp hạng.'}
                     </p>
 
                     {erasureSuccess ? (
@@ -1548,8 +1548,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         <Check className="w-4 h-4 shrink-0" />
                         <span>
                           {localLanguage !== 'vi'
-                            ? 'Your personal data has been anonymized and marked for erasure in accordance with PDPD.'
-                            : 'Dữ liệu cá nhân của bạn đã được ẩn danh hóa và ghi nhận xóa theo chuẩn NĐ 13/2023.'}
+                            ? 'Your personal data has been anonymized and marked for erasure in accordance with Law 91/2025.'
+                            : 'Dữ liệu cá nhân của bạn đã được ẩn danh hóa và ghi nhận xóa theo chuẩn Luật 91/2025 & NĐ 356/2025.'}
                         </span>
                       </div>
                     ) : showErasureConfirm ? (

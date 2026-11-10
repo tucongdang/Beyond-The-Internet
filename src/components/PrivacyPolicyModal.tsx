@@ -22,12 +22,12 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
       aria-modal="true"
       aria-labelledby="privacy-policy-title"
     >
-      <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-[#140628] border border-[#F7CAC9]/30 rounded-lg shadow-2xl overflow-hidden text-[#F5EFF9]">
+      <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-[#140628] border border-[#F7CAC9]/30 rounded-[2px] shadow-2xl overflow-hidden text-[#F5EFF9]">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#F7CAC9]/20 bg-[#1D0A3A]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-[#F7CAC9]/10 border border-[#F7CAC9]/30 text-[#F7CAC9]">
+            <div className="p-2 rounded-[2px] bg-[#F7CAC9]/10 border border-[#F7CAC9]/30 text-[#F7CAC9]">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -35,13 +35,13 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
                 Chính Sách Bảo Vệ Dữ Liệu Cá Nhân
               </h2>
               <p className="text-xs text-[#F7CAC9]/80 font-mono">
-                Tuân thủ {PDPD_LAW_REFERENCE} • Phiên bản {PDPD_CONSENT_VERSION}
+                Căn cứ {PDPD_LAW_REFERENCE} • Phiên bản {PDPD_CONSENT_VERSION}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-[2px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             aria-label="Đóng"
           >
             <X className="w-5 h-5" />
@@ -52,12 +52,12 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 text-sm leading-relaxed text-white/90 font-sans">
           
           {/* Important Notice Box */}
-          <div className="p-3.5 rounded bg-[#92A8D1]/10 border border-[#92A8D1]/30 text-[#92A8D1] text-xs leading-5">
+          <div className="p-3.5 rounded-[2px] bg-[#92A8D1]/10 border border-[#92A8D1]/30 text-[#92A8D1] text-xs leading-5">
             <div className="font-semibold flex items-center gap-1.5 mb-1">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-[#92A8D1]" />
-              Cam kết tuân thủ Nghị định 13/2023/NĐ-CP & Luật An ninh mạng 2018
+              Căn cứ Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP & Luật An ninh mạng 116/2025/QH15
             </div>
-            Beyond The Internet 2026 cam kết tôn trọng tuyệt đối quyền riêng tư và bảo vệ an toàn thông tin của mọi thí sinh và khán giả. Chúng tôi chỉ thu thập các thông tin tối thiểu cần thiết phục vụ cho việc tổ chức, chấm điểm và trao giải.
+            Beyond The Internet 2026 tôn trọng quyền riêng tư và bảo vệ an toàn thông tin của thí sinh, khán giả. Chúng tôi chỉ thu thập dữ liệu tối thiểu cần thiết phục vụ tổ chức, chấm điểm và trao giải khi có sự đồng ý rõ ràng của bạn.
           </div>
 
           {/* Section 1 */}
@@ -128,28 +128,27 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
           {/* Section 6 */}
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-[#F7CAC9] flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">6</span>
-              Quyền Của Chủ Thể Dữ Liệu (Điều 9 NĐ 13/2023)
+              <span className="w-5 h-5 rounded-[2px] bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">6</span>
+              Quyền Của Chủ Thể Dữ Liệu (Điều 4 Luật 91/2025/QH15 & Điều 5 NĐ 356/2025/NĐ-CP)
             </h3>
             <p className="text-xs text-white/80 pl-7">
-              Theo quy định pháp luật Việt Nam, bạn có các quyền hợp pháp sau:
+              Theo quy định tại Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, bạn có các quyền:
             </p>
             <ul className="list-disc list-inside text-xs text-white/80 pl-7 space-y-1">
-              <li><strong>Quyền được biết</strong>: Được cung cấp đầy đủ thông tin về quy trình xử lý dữ liệu.</li>
-              <li><strong>Quyền đồng ý & rút lại đồng ý</strong>: Có thể quyết định tham gia hoặc ngừng sử dụng dịch vụ bất kỳ lúc nào.</li>
-              <li><strong>Quyền truy cập & chỉnh sửa</strong>: Xem và điều chỉnh thông tin hồ sơ trong mục Tài khoản.</li>
-              <li><strong>Quyền xóa dữ liệu (Right to be Forgotten)</strong>: Bạn có quyền yêu cầu xóa toàn bộ thông tin cá nhân khỏi hệ thống.</li>
+              <li><strong>Quyền được biết & đồng ý</strong>: Được thông báo rõ mục đích trước khi xử lý dữ liệu; rút lại sự đồng ý bất kỳ lúc nào (Điều 10 Luật 91/2025).</li>
+              <li><strong>Quyền xem, chỉnh sửa & yêu cầu cung cấp dữ liệu</strong>: Thực hiện trực tiếp tại mục Hồ sơ hoặc yêu cầu phản hồi trong 10–15 ngày (khoản 3 Điều 5 NĐ 356/2025).</li>
+              <li><strong>Quyền xóa dữ liệu & hạn chế xử lý</strong>: Xóa/ẩn danh trực tiếp trong ứng dụng hoặc yêu cầu xử lý trong 20–30 ngày (khoản 4 Điều 5 NĐ 356/2025).</li>
             </ul>
           </div>
 
           {/* Section 7 */}
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-[#F7CAC9] flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">7</span>
-              Bảo Vệ Người Dưới 16 Tuổi (Điều 20 NĐ 13/2023 & Luật Trẻ em 2016)
+              <span className="w-5 h-5 rounded-[2px] bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">7</span>
+              Bảo Vệ Dữ Liệu Trẻ Em (Điều 24 Luật 91/2025/QH15 & Luật Trẻ em 2016)
             </h3>
             <p className="text-xs text-white/80 pl-7">
-              Người tham gia từ đủ 16 tuổi trở lên được tự mình đưa ra sự đồng ý. Đối với học sinh dưới 16 tuổi tham gia thi đấu học thuật, việc đăng ký phải có sự đồng thuận từ cha mẹ, người giám hộ hoặc nhà trường đại diện.
+              Đối với người tham gia là trẻ em (dưới 16 tuổi), việc đăng ký và xử lý dữ liệu cần có sự đồng ý của cha mẹ hoặc người đại diện theo pháp luật (kèm sự đồng ý của trẻ từ đủ 7 tuổi trở lên theo khoản 2 Điều 24 Luật 91/2025/QH15).
             </p>
           </div>
 

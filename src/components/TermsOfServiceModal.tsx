@@ -48,55 +48,55 @@ export const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
         {/* Scrollable Terms Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 text-sm leading-relaxed text-white/90 font-sans">
           
-          <div className="p-3.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-5">
+          <div className="p-3.5 rounded-[2px] bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-5">
             <div className="font-semibold flex items-center gap-1.5 mb-1 text-amber-300">
               <Award className="w-4 h-4 shrink-0" />
               Nguyên tắc Vàng: Công Bằng - Trung Thực - Tôn Trọng
             </div>
-            Beyond The Internet 2026 là sân chơi học thuật đỉnh cao đề cao năng lực tư duy thực tế và tốc độ phản xạ. Bằng việc tham gia, bạn cam kết tuân thủ đầy đủ các điều lệ dưới đây.
+            Beyond The Internet 2026 là sân chơi học thuật đề cao năng lực tư duy thực tế và tốc độ phản xạ. Người tham gia xác nhận đồng ý tuân thủ các điều lệ dưới đây khi đăng ký tài khoản dự thi.
           </div>
 
           {/* Section 1 */}
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-[#F7CAC9] flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">1</span>
+              <span className="w-5 h-5 rounded-[2px] bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">1</span>
               Quy Chế Liêm Chính Học Thuật & Phòng Chống Gian Lận
             </h3>
             <ul className="list-disc list-inside text-xs text-white/80 pl-7 space-y-1">
               <li>Mỗi thí sinh/khán giả chỉ sử dụng <strong>duy nhất 01 thiết bị</strong> trong suốt quá trình diễn ra trận đấu.</li>
               <li>Nghiêm cấm hành vi sử dụng công cụ tự động (bot, script, auto-click) để can thiệp gửi câu trả lời hoặc thu thập đề thi trái phép.</li>
-              <li>Hệ thống được trang bị cơ chế tự động ghi nhận Fingerprint và phát hiện các dấu hiệu vi phạm tính toàn vẹn phiên thi đấu.</li>
+              <li>Hệ thống ghi nhận trạng thái phiên thi đấu nhằm phát hiện các dấu hiệu vi phạm tính toàn vẹn của trận đấu.</li>
             </ul>
           </div>
 
           {/* Section 2 */}
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-[#F7CAC9] flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">2</span>
-              Chuẩn Mực Ứng Xử Môi Trường Mạng (Netiquette)
+              <span className="w-5 h-5 rounded-[2px] bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">2</span>
+              Chuẩn Mực Ứng Xử Môi Trường Mạng (Luật An ninh mạng 116/2025/QH15)
             </h3>
             <ul className="list-disc list-inside text-xs text-white/80 pl-7 space-y-1">
               <li>Tên hiển thị, nội dung gửi lời cổ vũ (Audience Shout) và câu hỏi giao lưu phải mang tính xây dựng, tôn trọng người khác.</li>
-              <li>Nghiêm cấm các từ ngữ xúc phạm danh dự, phân biệt chủng tộc, chia rẽ hoặc vi phạm Luật An ninh mạng 2018. Mọi vi phạm sẽ bị bộ lọc tự động xử lý và tước quyền tương tác.</li>
+              <li>Nghiêm cấm các từ ngữ xúc phạm danh dự, phân biệt chủng tộc, chia rẽ hoặc vi phạm Điều 7 Luật An ninh mạng số 116/2025/QH15 và Nghị định 333/2026/NĐ-CP. Mọi vi phạm sẽ bị bộ lọc tự động chặn và gỡ bỏ.</li>
             </ul>
           </div>
 
           {/* Section 3 */}
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-[#F7CAC9] flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">3</span>
-              Tuyên Bố Minh Bạch AI (AI Transparency Disclaimer)
+              <span className="w-5 h-5 rounded-[2px] bg-[#F7CAC9]/20 flex items-center justify-center text-xs text-[#F7CAC9]">3</span>
+              Tuyên Bố Minh Bạch AI (Luật Trí tuệ nhân tạo 134/2025/QH15 & NĐ 142/2026/NĐ-CP)
             </h3>
-            <div className="p-3 rounded bg-purple-500/10 border border-purple-500/20 text-xs text-purple-200 pl-7 space-y-1">
+            <div className="p-3 rounded-[2px] bg-purple-500/10 border border-purple-500/20 text-xs text-purple-200 pl-7 space-y-1">
               <p className="flex items-center gap-1.5 font-semibold text-purple-300">
                 <Bot className="w-4 h-4 text-purple-400" />
-                Hệ thống Trợ lý Khán giả AI (Gemini Flash Model)
+                Hệ thống Trợ lý Khán giả AI & Giọng đọc TTS (Google Gemini Flash)
               </p>
               <p>
-                Trợ lý thông minh được tích hợp nhằm hỗ trợ giải đáp thắc mắc về thể lệ trận đấu, hướng dẫn kết nối kỹ thuật và thể thức tính điểm. Các câu trả lời được sinh ra tự động bởi mô hình trí tuệ nhân tạo chỉ mang tính chất hỗ trợ và tham khảo.
+                Căn cứ Điều 11 Luật Trí tuệ nhân tạo số 134/2025/QH15 và Điều 18 Nghị định 142/2026/NĐ-CP, Ban Tổ Chức thông báo rõ: khung chat hỗ trợ và giọng đọc tự động sử dụng mô hình AI tạo sinh, chỉ mang tính chất hỗ trợ giải đáp thể lệ và tham khảo.
               </p>
               <p>
-                Trong trường hợp có tranh chấp hoặc mâu thuẫn về kết quả thi đấu, <strong>quyết định của Hội đồng Ban Giám khảo BTI 2026 là quyết định chung cuộc và có giá trị cao nhất</strong>.
+                Trong trường hợp có tranh chấp hoặc mâu thuẫn về kết quả thi đấu, <strong>quyết định của Hội đồng Ban Giám khảo BTI 2026 là quyết định chung cuộc</strong>.
               </p>
             </div>
           </div>

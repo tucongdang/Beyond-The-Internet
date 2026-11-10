@@ -6,7 +6,15 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 
-dotenv.config();
+dotenv.config({ quiet: true } as any);
+
+process.on('uncaughtException', (err) => {
+  console.error('[Server] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Server] Unhandled Rejection:', reason);
+});
 
 // Allowed language codes for translation endpoints (H-1 prompt injection prevention)
 const ALLOWED_LANGS = new Set(['vi', 'en', 'zh', 'ja', 'ko', 'fr', 'es', 'de', 'th', 'lo', 'km', 'ru']);
@@ -61,27 +69,27 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Vietnamese Legal & Security Policy Compliance Status (Nghị định 13/2023, Luật An ninh mạng 2018)
+  // Vietnamese Legal & Security Policy Compliance Status (Luật BVDLCN 91/2025/QH15, NĐ 356/2025/NĐ-CP, Luật ANM 116/2025/QH15, Luật TTNT 134/2025/QH15)
   app.get("/api/compliance/status", (_req, res) => {
     res.json({
       status: "COMPLIANT",
-      framework: "Vietnamese Digital Compliance Framework (referenced from vn-law-check)",
+      framework: "Vietnamese Digital Compliance Framework 2025-2026 (vn-law-check)",
       regulations: [
         {
-          code: "DECREE_13_2023_PDPD",
-          name: "Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân",
-          version: "1.0-pdpd-2026",
+          code: "LAW_91_2025_PDPD_DECREE_356_2025",
+          name: "Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 & Nghị định 356/2025/NĐ-CP",
+          version: "2.0-pdpd-2026",
           features: [
-            "Explicit Opt-in Consent Form",
-            "Age Confirmation (16+ / Guardian)",
-            "Transparent Privacy Policy with 8 mandatory articles",
-            "Right to Erasure / Data Anonymization (Right to be Forgotten)",
-            "Data minimization and password hashing with unique salt"
+            "Explicit Opt-in Consent Form (Article 9 Law 91/2025/QH15 & Article 6 Decree 356/2025/ND-CP)",
+            "Children & Minor Data Protection (Article 24 Law 91/2025/QH15)",
+            "Transparent Privacy Policy with 8 statutory articles & cross-border transfer disclosure (Article 20)",
+            "Data Subject Rights & Statutory Response Timelines (Article 4 Law 91/2025 & Article 5 Decree 356/2025)",
+            "72-hour Data Breach Notification Protocol (Article 23 Law 91/2025 & Article 28 Decree 356/2025)"
           ]
         },
         {
-          code: "CYBER_SECURITY_LAW_2018",
-          name: "Luật An ninh mạng 2018 & Nghị định 53/2022/NĐ-CP",
+          code: "CYBER_SECURITY_LAW_116_2025",
+          name: "Luật An ninh mạng số 116/2025/QH15 & Nghị định 333/2026/NĐ-CP",
           features: [
             "Real-time Automated Content Moderation (Anti-evasion normalizer)",
             "Hate speech, profanity, and sensitive content filtering for Chat, Shouts, and Q&A",
@@ -90,11 +98,11 @@ async function startServer() {
           ]
         },
         {
-          code: "AI_TRANSPARENCY_STANDARD",
-          name: "Minh bạch Trí tuệ Nhân tạo & Luật Giao dịch điện tử 2023",
+          code: "AI_LAW_134_2025_DECREE_142_2026",
+          name: "Luật Trí tuệ nhân tạo số 134/2025/QH15 & Nghị định 142/2026/NĐ-CP",
           features: [
-            "Clear AI Assistant identification badge",
-            "Advisory disclaimer for AI generated messages",
+            "Explicit AI System & AI Voice/Chat Labeling (Article 11 Law 134/2025/QH15 & Article 18 Decree 142/2026/ND-CP)",
+            "Advisory disclaimer & low-risk boundary for AI generated messages (Article 9 Law 134/2025/QH15)",
             "Exam anti-cheat protection during active question rounds"
           ]
         }
@@ -106,10 +114,9 @@ async function startServer() {
   // Security Headers Middleware (M-1)
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=*, geolocation=()');
     next();
   });
 
@@ -2774,13 +2781,26 @@ Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể 
 
   const isProduction = process.env.NODE_ENV === "production";
 
+  let viteInstance: any = null;
   if (!isProduction) {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    const vitePromise = import("vite").then(({ createServer: createViteServer }) =>
+      createViteServer({
+        server: { middlewareMode: true, hmr: false, ws: false, watch: null },
+        appType: "spa",
+      }).then((v) => {
+        viteInstance = v;
+        return v;
+      })
+    );
+
+    app.use(async (req, res, next) => {
+      try {
+        const vite = viteInstance || (await vitePromise);
+        vite.middlewares(req, res, next);
+      } catch (err) {
+        next(err);
+      }
     });
-    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath, {
@@ -2813,22 +2833,21 @@ Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể 
     console.log(`Server running on http://localhost:${PORT}`);
   });
 
-  // Graceful shutdown handling for container environments (Cloud Run)
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received. Closing server gracefully...');
-    server.close(() => {
-      console.log('Server closed successfully.');
+  const gracefulShutdown = () => {
+    try {
+      server.closeAllConnections?.();
+      viteInstance?.close?.();
+      server.close(() => {
+        process.exit(0);
+      });
+    } catch {
       process.exit(0);
-    });
-  });
+    }
+    setTimeout(() => process.exit(0), 100).unref();
+  };
 
-  process.on('SIGINT', () => {
-    console.log('SIGINT signal received. Closing server gracefully...');
-    server.close(() => {
-      console.log('Server closed successfully.');
-      process.exit(0);
-    });
-  });
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
 }
 
 startServer().catch((err) => {

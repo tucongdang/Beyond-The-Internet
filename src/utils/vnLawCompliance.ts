@@ -1,10 +1,10 @@
 /**
  * VN LAW COMPLIANCE & CYBERSECURITY MODERATION UTILITIES
  * Based on Vietnamese Legal Framework standards (referenced from mhfed/vn-law-check):
- * - Nghị định 13/2023/NĐ-CP (Bảo vệ dữ liệu cá nhân - PDPD)
- * - Luật An ninh mạng 2018 & Nghị định 53/2022/NĐ-CP (Môi trường mạng an toàn, lành mạnh)
- * - Luật Trẻ em 2016 (Bảo vệ trẻ em trên môi trường mạng)
- * - Minh bạch AI & Tiêu chuẩn giao dịch điện tử 2023
+ * - Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 & Nghị định 356/2025/NĐ-CP (hiệu lực 01/01/2026, thay thế NĐ 13/2023/NĐ-CP)
+ * - Luật An ninh mạng số 116/2025/QH15 & Nghị định 333/2026/NĐ-CP (kế thừa, hợp nhất Luật ANM 2018 & Luật ATTTM 2015)
+ * - Luật Trí tuệ nhân tạo số 134/2025/QH15 (Điều 11) & Nghị định 142/2026/NĐ-CP (Điều 18 - Minh bạch & gắn nhãn AI)
+ * - Luật Trẻ em 2016 & Điều 24 Luật 91/2025/QH15 (Bảo vệ dữ liệu trẻ em trên môi trường mạng)
  */
 
 export interface ComplianceCheckResult {
@@ -139,7 +139,7 @@ export function checkContentCompliance(input: string, context: 'CHAT' | 'SHOUT' 
 
   const flaggedTerms: string[] = [];
 
-  // 1. Kiểm tra an ninh mạng & kích động thù địch (Luật An ninh mạng 2018)
+  // 1. Kiểm tra an ninh mạng & kích động thù địch (Điều 7 Luật An ninh mạng 116/2025/QH15)
   for (const kw of CYBER_SECURITY_HATE_KEYWORDS) {
     const kwNorm = normalizeAntiEvasionText(kw);
     const kwCondensed = kwNorm.replace(/[^a-z0-9]/g, '');
@@ -149,14 +149,14 @@ export function checkContentCompliance(input: string, context: 'CHAT' | 'SHOUT' 
         isSafe: false,
         severity: 'BLOCKED',
         category: 'HATE_SPEECH_CYBER_SECURITY',
-        reasonVi: 'Nội dung vi phạm quy định Luật An ninh mạng 2018 (ngôn từ gây mất an toàn hoặc kích động). Vui lòng điều chỉnh lại.',
-        sanitizedText: '[Nội dung đã bị chặn do vi phạm quy chuẩn an toàn mạng]',
+        reasonVi: 'Nội dung chứa từ ngữ thuộc danh mục cấm theo Điều 7 Luật An ninh mạng số 116/2025/QH15. Vui lòng điều chỉnh lại.',
+        sanitizedText: '[Nội dung đã bị chặn theo quy chuẩn an toàn không gian mạng]',
         flaggedTerms
       };
     }
   }
 
-  // 2. Kiểm tra từ ngữ thô tục / thiếu chuẩn mực văn hóa (Nghị định 53/2022/NĐ-CP & Văn hóa học đường)
+  // 2. Kiểm tra từ ngữ thô tục / thiếu chuẩn mực văn hóa (Nghị định 333/2026/NĐ-CP & Văn hóa học đường)
   let sanitized = input;
   let hasProfanity = false;
 
@@ -247,7 +247,9 @@ export function validateUsernameCompliance(name: string): { isValid: boolean; me
 }
 
 /**
- * Tiêu chuẩn văn bản chính sách bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (PDPD)
+ * Tiêu chuẩn văn bản chính sách bảo vệ dữ liệu cá nhân theo Luật BVDLCN 91/2025/QH15 & Nghị định 356/2025/NĐ-CP
+ * (Thay thế Nghị định 13/2023/NĐ-CP hết hiệu lực từ 01/01/2026)
  */
-export const PDPD_CONSENT_VERSION = '1.0-pdpd-2026';
-export const PDPD_LAW_REFERENCE = 'Nghị định 13/2023/NĐ-CP & Luật An ninh mạng 2018';
+export const PDPD_CONSENT_VERSION = '2.0-pdpd-2026';
+export const PDPD_LAW_REFERENCE = 'Luật BVDLCN 91/2025/QH15, NĐ 356/2025/NĐ-CP & Luật ANM 116/2025/QH15';
+

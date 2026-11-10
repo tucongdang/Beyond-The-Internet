@@ -31,6 +31,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '1') {
+        e.preventDefault();
+        vibrateTap();
+        soundFx.playClick();
+        onEnterAudience();
+      } else if (e.key === '2') {
+        e.preventDefault();
+        vibrateTap();
+        soundFx.playClick();
+        onEnterProjector();
+      } else if (e.key === '3') {
+        e.preventDefault();
+        vibrateTap();
+        soundFx.playClick();
+        onEnterAdmin();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onEnterAudience, onEnterProjector, onEnterAdmin]);
+
   const schedule = gameState?.event_schedule;
   const scheduledTime = schedule?.scheduled_start_time || 0;
   const stageStatus = schedule?.status || (scheduledTime && scheduledTime > currentTime ? 'SCHEDULED' : 'IN_PROGRESS');
@@ -77,7 +105,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center my-auto py-4 sm:py-8">
         
         {/* Top Horizon Badge */}
-        <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-6">
+        <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-widest text-[#F7CAC9] mb-5">
           <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F7CAC9]"></span>
@@ -100,9 +128,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Countdown Timer Widget */}
         {isScheduleActive && (
-          <div className="w-full max-w-2xl mx-auto mb-10 p-5 sm:p-6 rounded-[6px] fluent-box border border-amber-500/30 shadow-2xl bg-gradient-to-b from-[#180b2b]/95 via-[#120624]/90 to-slate-950/95 backdrop-blur-xl relative overflow-hidden animate-fadeIn">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-12 bg-gradient-to-r from-amber-500/20 via-[#F7CAC9]/25 to-sky-500/20 blur-xl pointer-events-none" />
-            
+          <div className="w-full max-w-2xl mx-auto mb-10 p-5 sm:p-6 rounded-[2px] fluent-box border border-amber-500/30 shadow-2xl bg-gradient-to-b from-[#180b2b]/95 via-[#120624]/90 to-slate-950/95 backdrop-blur-xl relative overflow-hidden animate-fadeIn">
             <div className="relative z-10 flex flex-col items-center">
               <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold tracking-wider uppercase text-amber-300 mb-4">
                 <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
@@ -118,7 +144,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {stageStatus === 'SCHEDULED' && !isTimeReached ? (
                 <>
                   <div className="grid grid-cols-4 gap-2.5 sm:gap-4 w-full max-w-md my-1">
-                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
+                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
                       <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.days).padStart(2, '0')}
                       </span>
@@ -127,7 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
+                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
                       <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.hours).padStart(2, '0')}
                       </span>
@@ -136,7 +162,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-white/10 shadow-inner">
+                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
                       <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-amber-300 tracking-tight">
                         {String(countdown.minutes).padStart(2, '0')}
                       </span>
@@ -145,7 +171,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[4px] bg-slate-950/80 border border-amber-500/40 shadow-inner">
+                    <div className="flex flex-col items-center p-2.5 sm:p-3.5 rounded-[2px] bg-slate-950/80 border border-amber-500/40 shadow-inner">
                       <span className="text-2xl sm:text-4xl font-black font-mono tabular-nums text-yellow-400 tracking-tight animate-pulse">
                         {String(countdown.seconds).padStart(2, '0')}
                       </span>
@@ -186,9 +212,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         )}
 
         {/* 3 Action Portal Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 w-full max-w-4xl mx-auto mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 w-full max-w-4xl mx-auto mb-8 items-stretch">
           
-          {/* Audience Card */}
+          {/* Primary Focal Anchor: Audience Card (2px Radius, No Top Strip) */}
           <button 
             type="button"
             id="portal-btn-audience"
@@ -197,20 +223,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterAudience(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[4px] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/60 hover:shadow-xl hover:shadow-[#F7CAC9]/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[2px] border-[#F7CAC9]/45 bg-gradient-to-b from-[#2A1052]/80 to-[#160834]/90 shadow-[0_14px_40px_-4px_rgba(247,202,201,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/85 hover:shadow-[0_20px_48px_-4px_rgba(247,202,201,0.28)] active:scale-98 cursor-pointer overflow-hidden"
           >
-            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-[#F7CAC9]/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/25">
+            <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/10 border border-white/15 text-[10px] font-mono text-white/60">
+              [1]
+            </span>
+            <div className="w-13 h-13 sm:w-14 sm:h-14 bg-[#F7CAC9]/20 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/40">
               <Users className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
+            <h2 className="text-base sm:text-lg font-extrabold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
               {localLanguage !== 'vi' ? 'Audience' : 'Khán Giả'}
             </h2>
-            <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
+            <p className="text-xs text-[#E2D9F3]/90 mb-5 leading-relaxed">
               {localLanguage !== 'vi'
                 ? 'Join live voting, answer contest questions, and accumulate competitive points.'
                 : 'Tham gia bình chọn trực tiếp, trả lời câu hỏi và tích lũy điểm số thi đấu.'}
             </p>
-            <div className="mt-auto inline-flex items-center gap-1.5 text-[#F7CAC9] font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
+            <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-[#F7CAC9] text-[#190839] font-extrabold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shadow-md group-hover:bg-white transition-colors">
               <span>{localLanguage !== 'vi' ? 'Enter Arena' : 'Vào Sàn Đấu'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -225,8 +254,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterProjector(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[4px] transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-98 cursor-pointer"
           >
+            <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-[10px] font-mono text-white/45">
+              [2]
+            </span>
             <div className="w-13 h-13 sm:w-14 sm:h-14 bg-sky-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-sky-300 font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-sky-400/25">
               <Tv className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
@@ -238,7 +270,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 ? 'Fullscreen visual display optimized for the main stage LED screens.'
                 : 'Giao diện hiển thị trực quan toàn màn hình dành cho màn LED sân khấu chính.'}
             </p>
-            <div className="mt-auto inline-flex items-center gap-1.5 text-sky-300 font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
+            <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-200 font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 group-hover:bg-sky-500/25 group-hover:text-white transition-colors">
               <span>{localLanguage !== 'vi' ? 'Open Projector' : 'Mở Màn Chiếu'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -253,8 +285,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               soundFx.playClick(); 
               onEnterAdmin(); 
             }}
-            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[4px] transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-98 cursor-pointer"
+            className="group relative flex flex-col items-center text-center p-6 sm:p-7 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-98 cursor-pointer"
           >
+            <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-[10px] font-mono text-white/45">
+              [3]
+            </span>
             <div className="w-13 h-13 sm:w-14 sm:h-14 bg-purple-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#B6A6D8] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-purple-400/25">
               <Shield className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
@@ -266,7 +301,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 ? 'Coordinate questions, control timers, lock responses, and export data.'
                 : 'Điều phối câu hỏi, kiểm soát timer, khóa bình chọn và trích xuất dữ liệu.'}
             </p>
-            <div className="mt-auto inline-flex items-center gap-1.5 text-[#B6A6D8] font-bold text-xs uppercase tracking-wider group-hover:text-white transition-colors">
+            <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-purple-500/15 border border-purple-400/30 text-[#E2D9F3] font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 group-hover:bg-purple-500/25 group-hover:text-white transition-colors">
               <span>{localLanguage !== 'vi' ? 'Control Panel' : 'Bảng Điều Khiển'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -327,7 +362,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             }}
             className="hover:text-white underline decoration-dotted transition cursor-pointer flex items-center gap-1"
           >
-            <span>{localLanguage !== 'vi' ? 'Privacy Policy & Data Protection (Decree 13/2023)' : 'Chính Sách Bảo Vệ Dữ Liệu Cá Nhân (NĐ 13/2023/NĐ-CP)'}</span>
+            <span>{localLanguage !== 'vi' ? 'Privacy Policy & Data Protection (Law 91/2025 & Decree 356/2025)' : 'Chính Sách Bảo Vệ Dữ Liệu Cá Nhân (Luật 91/2025 & NĐ 356/2025)'}</span>
           </button>
           <span>•</span>
           <button
@@ -347,7 +382,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
         </div>
         <p className="text-[10px] text-[#B6A6D8]/50 font-mono tracking-widest uppercase">
-          Beyond The Internet 2026 • Academic Gameshow Live System • Phiên bản {localLanguage !== 'vi' ? 'v1.0-pdpd-2026' : 'v1.0-pdpd-2026'}
+          Beyond The Internet 2026 • Academic Gameshow Live System • Phiên bản v2.0-pdpd-2026
         </p>
       </div>
 

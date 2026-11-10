@@ -50,17 +50,17 @@ interface ChartItem {
   hoverColor: string;
 }
 
-// Horizon Cybernetic Palette
+// Claude Dataviz Categorical Palette (skills/dataviz/references/palette.md — CVD-safe OKLab validated)
 const OPTION_COLORS: Record<string, { main: string; glow: string; text: string }> = {
-  A: { main: '#38BDF8', glow: 'rgba(56, 189, 248, 0.4)', text: '#bae6fd' }, // Sky
-  B: { main: '#F472B6', glow: 'rgba(244, 114, 182, 0.4)', text: '#fbcfe8' }, // Pink
-  C: { main: '#FBBF24', glow: 'rgba(251, 191, 36, 0.4)', text: '#fef3c7' }, // Amber
-  D: { main: '#A78BFA', glow: 'rgba(167, 139, 250, 0.4)', text: '#ede9fe' }, // Violet
-  E: { main: '#34D399', glow: 'rgba(52, 211, 153, 0.4)', text: '#d1fae5' }, // Emerald
-  F: { main: '#FB923C', glow: 'rgba(251, 146, 60, 0.4)', text: '#ffedd5' }, // Orange
+  A: { main: '#3987e5', glow: 'rgba(57, 135, 229, 0.35)', text: '#cde2fb' }, // Slot 1: Blue
+  B: { main: '#D97757', glow: 'rgba(217, 119, 87, 0.35)', text: '#EBCECE' }, // Slot 2: Claude Clay / Orange
+  C: { main: '#199e70', glow: 'rgba(25, 158, 112, 0.35)', text: '#BCD1CA' }, // Slot 3: Aqua
+  D: { main: '#c98500', glow: 'rgba(201, 133, 0, 0.35)', text: '#F0EEE6' },  // Slot 4: Yellow
+  E: { main: '#d55181', glow: 'rgba(213, 81, 129, 0.35)', text: '#EBCECE' }, // Slot 5: Magenta
+  F: { main: '#9085e9', glow: 'rgba(144, 133, 233, 0.35)', text: '#CBCADB' }, // Slot 7: Violet
 };
 
-const DEFAULT_COLOR = { main: '#94A3B8', glow: 'rgba(148, 163, 184, 0.3)', text: '#f1f5f9' };
+const DEFAULT_COLOR = { main: '#87867F', glow: 'rgba(135, 134, 127, 0.25)', text: '#FAF9F5' };
 
 export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps> = ({
   gameState,
@@ -114,12 +114,12 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
 
       if (isRevealed) {
         if (isCorrect) {
-          finalColor = '#10B981'; // Emerald 500
+          finalColor = '#0ca30c'; // Claude Dataviz Status Good
         } else {
-          finalColor = '#64748B'; // Slate 500
+          finalColor = '#5E5D59'; // Warm Gray 600
         }
       } else if (isEliminated) {
-        finalColor = '#EF4444'; // Rose 500
+        finalColor = '#d03b3b'; // Claude Dataviz Status Critical
       }
 
       return {
@@ -131,7 +131,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
         isCorrect,
         isEliminated,
         color: finalColor,
-        hoverColor: isCorrect ? '#34D399' : '#F43F5E'
+        hoverColor: isCorrect ? '#0ca30c' : '#D97757'
       };
     });
 
@@ -157,16 +157,16 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
     if (active && payload && payload.length) {
       const data: ChartItem = payload[0].payload;
       return (
-        <div className="bg-[#190839]/95 border border-purple-500/40 rounded-[2px] p-4 shadow-2xl backdrop-blur-xl max-w-xs text-white z-50">
+        <div className="bg-[#1A1918] border border-white/15 rounded-[2px] p-4 shadow-2xl max-w-xs text-[#FAF9F5] z-50">
           <div className="flex items-center justify-between gap-3 mb-2 border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
               <span
                 className="w-7 h-7 rounded-[2px] font-mono font-black text-xs flex items-center justify-center shadow"
-                style={{ backgroundColor: data.color, color: data.isCorrect ? '#000' : '#fff' }}
+                style={{ backgroundColor: data.color, color: '#FAF9F5' }}
               >
                 {data.key}
               </span>
-              <span className="font-bold text-sm text-white">Phương án {data.key}</span>
+              <span className="font-bold text-sm text-[#FAF9F5]">Phương án {data.key}</span>
             </div>
             {data.isCorrect && (
               <span className="px-2 py-0.5 rounded-[2px] text-[10px] font-black fluent-box-nested text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
@@ -180,18 +180,18 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
             )}
           </div>
 
-          <p className="text-xs text-white/80 mb-3 leading-relaxed font-medium">
+          <p className="text-xs text-[#C2C0B6] mb-3 leading-relaxed font-medium">
             "{data.fullLabel}"
           </p>
 
           <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-white/10">
             <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
-              <div className="text-[10px] uppercase font-mono text-white/50">Số phiếu</div>
-              <div className="text-base font-black font-mono text-cyan-300">{data.votes}</div>
+              <div className="text-[10px] uppercase font-mono text-[#87867F]">Số phiếu</div>
+              <div className="text-base font-black font-mono tabular-nums text-[#3987e5]">{data.votes}</div>
             </div>
             <div className="fluent-box-nested rounded-[2px] p-2 border border-white/5">
-              <div className="text-[10px] uppercase font-mono text-white/50">Tỷ lệ</div>
-              <div className="text-base font-black font-mono text-pink-300">{data.percent}%</div>
+              <div className="text-[10px] uppercase font-mono text-[#87867F]">Tỷ lệ</div>
+              <div className="text-base font-black font-mono tabular-nums text-[#D97757]">{data.percent}%</div>
             </div>
           </div>
         </div>
@@ -206,23 +206,19 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
       transition={{ duration: 0.3 }}
-      className={`relative w-full rounded-[2px] fluent-box border border-purple-500/30 p-5 sm:p-6 lg:p-7 shadow-2xl backdrop-blur-xl overflow-hidden ${
+      className={`relative w-full rounded-[2px] fluent-box border border-white/12 p-5 sm:p-6 lg:p-7 shadow-2xl overflow-hidden ${
         compact ? 'p-4' : ''
       }`}
     >
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 right-0 w-96 h-96 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 fluent-box-nested rounded-[2px] blur-3xl pointer-events-none" />
-
       {/* Header Bar */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[2px] fluent-acrylic-surface flex items-center justify-center text-white shadow-lg shadow-pink-500/30 border border-white/20">
+          <div className="w-10 h-10 rounded-[2px] bg-[#262624] flex items-center justify-center text-[#D97757] border border-white/15">
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
+              <h3 className="text-base sm:text-lg font-bold text-[#FAF9F5] tracking-tight cds-title">
                 Phân Bố Bình Chọn Khán Giả
               </h3>
               <span className="relative flex h-2 w-2">
@@ -230,15 +226,15 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 <span className="relative inline-flex rounded-[2px] h-2 w-2 bg-emerald-500"></span>
               </span>
             </div>
-            <p className="text-xs text-[#EBC7D6] font-mono">
-              Biểu đồ trực quan thời gian thực (Recharts Live Distribution)
+            <p className="text-xs text-[#C2C0B6] font-mono">
+              Biểu đồ trực quan thời gian thực (Claude Dataviz CVD-Safe Palette)
             </p>
           </div>
         </div>
 
         {/* Live Stage Status Indicator */}
         <div className="flex items-center flex-wrap gap-2 font-mono text-xs">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-white/5 border border-white/10 text-[#F7CAC9] font-bold">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[#262624] border border-white/12 text-[#D97757] font-bold">
             <BarChart3 className="w-3.5 h-3.5" />
             <span>BIỂU ĐỒ ĐA CHIỀU (RECHARTS)</span>
           </div>
@@ -329,29 +325,29 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 }}
                 onMouseLeave={() => setHoveredKey(null)}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2c2c2a" vertical={false} />
                 <XAxis
                   dataKey="key"
-                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: "'SVN-Gilroy', monospace", fontWeight: 'bold' }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
-                  tickLine={{ stroke: 'rgba(255,255,255,0.2)' }}
+                  tick={{ fill: '#f0efec', fontSize: 18, fontFamily: "var(--cds-font-mono)", fontWeight: 'bold' }}
+                  axisLine={{ stroke: '#383835' }}
+                  tickLine={{ stroke: '#383835' }}
                 />
                 <YAxis
                   domain={[0, metric === 'percent' ? 100 : 'auto']}
-                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: "'SVN-Gilroy', monospace" }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                  tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                  tick={{ fill: '#898781', fontSize: 16, fontFamily: "var(--cds-font-mono)" }}
+                  axisLine={{ stroke: '#383835' }}
+                  tickLine={{ stroke: '#383835' }}
                   unit={metric === 'percent' ? '%' : ''}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 {metric === 'percent' && (
                   <ReferenceLine
                     y={50}
-                    stroke="rgba(255, 255, 255, 0.25)"
+                    stroke="#898781"
                     strokeDasharray="4 4"
                     label={{
                       value: 'Mốc 50%',
-                      fill: 'rgba(255,255,255,0.4)',
+                      fill: '#c3c2b7',
                       fontSize: 14,
                       position: 'top'
                     }}
@@ -359,7 +355,7 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 )}
                 <Bar
                   dataKey={metric === 'percent' ? 'percent' : 'votes'}
-                  radius={[12, 12, 0, 0]}
+                  radius={[2, 2, 0, 0]}
                   animationDuration={600}
                 >
                   <LabelList
@@ -367,10 +363,10 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                     position="top"
                     formatter={(val: any) => (metric === 'percent' ? `${val}%` : `${val}`)}
                     style={{
-                      fill: '#FFFFFF',
+                      fill: '#f0efec',
                       fontSize: 18,
                       fontWeight: 800,
-                      fontFamily: "'SVN-Gilroy', monospace",
+                      fontFamily: "var(--cds-font-mono)",
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
                     }}
                   />
@@ -380,16 +376,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                       <Cell
                         key={`cell-${entry.key}`}
                         fill={entry.color}
-                        opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.92}
-                        stroke={entry.isCorrect ? '#34D399' : isHovered ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
-                        strokeWidth={entry.isCorrect ? 3 : isHovered ? 2 : 1}
+                        opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.94}
+                        stroke={entry.isCorrect ? '#0ca30c' : isHovered ? '#FAF9F5' : 'rgba(255,255,255,0.12)'}
+                        strokeWidth={entry.isCorrect ? 2 : isHovered ? 2 : 1}
                         style={{
-                          filter: entry.isCorrect
-                            ? 'drop-shadow(0 0 12px rgba(16,185,129,0.7))'
-                            : isHovered
-                            ? 'drop-shadow(0 0 8px rgba(244,114,182,0.6))'
-                            : 'none',
-                          transition: 'all 0.3s ease'
+                          transition: 'all 0.2s ease'
                         }}
                       />
                     );
@@ -408,24 +399,24 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                 }}
                 onMouseLeave={() => setHoveredKey(null)}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2c2c2a" horizontal={false} />
                 <XAxis
                   type="number"
                   domain={[0, metric === 'percent' ? 100 : 'auto']}
-                  tick={{ fill: '#B6A6D8', fontSize: 16, fontFamily: "'SVN-Gilroy', monospace" }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                  tick={{ fill: '#898781', fontSize: 16, fontFamily: "var(--cds-font-mono)" }}
+                  axisLine={{ stroke: '#383835' }}
                   unit={metric === 'percent' ? '%' : ''}
                 />
                 <YAxis
                   type="category"
                   dataKey="key"
-                  tick={{ fill: '#F5EFF9', fontSize: 18, fontFamily: "'SVN-Gilroy', monospace", fontWeight: 'bold' }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
+                  tick={{ fill: '#f0efec', fontSize: 18, fontFamily: "var(--cds-font-mono)", fontWeight: 'bold' }}
+                  axisLine={{ stroke: '#383835' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
                   dataKey={metric === 'percent' ? 'percent' : 'votes'}
-                  radius={[0, 12, 12, 0]}
+                  radius={[0, 2, 2, 0]}
                   animationDuration={600}
                 >
                   <LabelList
@@ -433,10 +424,10 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                     position="right"
                     formatter={(val: any) => (metric === 'percent' ? `${val}%` : `${val} phiếu`)}
                     style={{
-                      fill: '#FFFFFF',
+                      fill: '#f0efec',
                       fontSize: 18,
                       fontWeight: 800,
-                      fontFamily: "'SVN-Gilroy', monospace",
+                      fontFamily: "var(--cds-font-mono)",
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
                     }}
                   />
@@ -446,16 +437,11 @@ export const ProjectorResponseBarChart: React.FC<ProjectorResponseBarChartProps>
                       <Cell
                         key={`cell-${entry.key}`}
                         fill={entry.color}
-                        opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.92}
-                        stroke={entry.isCorrect ? '#34D399' : isHovered ? '#FFFFFF' : 'rgba(255,255,255,0.3)'}
-                        strokeWidth={entry.isCorrect ? 3 : isHovered ? 2 : 1}
+                        opacity={hoveredKey ? (isHovered ? 1 : 0.45) : 0.94}
+                        stroke={entry.isCorrect ? '#0ca30c' : isHovered ? '#FAF9F5' : 'rgba(255,255,255,0.12)'}
+                        strokeWidth={entry.isCorrect ? 2 : isHovered ? 2 : 1}
                         style={{
-                          filter: entry.isCorrect
-                            ? 'drop-shadow(0 0 12px rgba(16,185,129,0.7))'
-                            : isHovered
-                            ? 'drop-shadow(0 0 8px rgba(244,114,182,0.6))'
-                            : 'none',
-                          transition: 'all 0.3s ease'
+                          transition: 'all 0.2s ease'
                         }}
                       />
                     );

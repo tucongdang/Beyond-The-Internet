@@ -309,7 +309,11 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     vibrateCopy();
     soundFx.playClick();
     if (allRankedUsers.length === 0) {
-      alert(localLanguage !== 'vi' ? 'No leaderboard data to export!' : 'Chưa có dữ liệu bảng xếp hạng để xuất CSV!');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('bti_system_notice', {
+          detail: { message: localLanguage !== 'vi' ? 'No leaderboard data to export!' : 'Chưa có dữ liệu bảng xếp hạng để xuất CSV!' }
+        }));
+      }
       return;
     }
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -319,7 +323,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto text-[#e5e5e5] animate-fadeIn select-none flex-1 min-h-[500px] md:min-h-0 flex flex-col justify-between h-full fluent-box rounded-[4px] shadow-2xl overflow-hidden border border-white/10">
+    <div className="w-full max-w-[98vw] xl:max-w-[97vw] mx-auto text-[#e5e5e5] animate-fadeIn select-none flex-1 min-h-[500px] md:min-h-0 flex flex-col justify-between h-full fluent-box rounded-[2px] shadow-2xl overflow-hidden border border-white/10">
       {/* Integrated Leaderboard Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 border-b border-white/10 bg-white/[0.02] shrink-0">
         <div className="flex items-center gap-3">
@@ -542,14 +546,11 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           {top5Scorers.length === 1 && rank1 ? (
             /* Single Champion Grand Spotlight View (Responsive Scaled for PC/Projector) */
             <div className="w-full max-w-5xl xl:max-w-6xl mx-auto my-auto py-1">
-              <div className="fluent-box border-2 border-amber-400/80 rounded-[6px] p-5 sm:p-6 lg:p-8 relative overflow-hidden shadow-[0_0_40px_rgba(251,191,36,0.18)] ring-2 ring-amber-400/30 flex flex-col justify-between min-h-0 hover:scale-[1.003] transition-all group bg-gradient-to-br from-[#200e38]/95 via-[#130726]/95 to-[#0B0218]">
+              <div className="fluent-box border-2 border-amber-400/80 rounded-[2px] p-5 sm:p-6 lg:p-8 relative overflow-hidden shadow-[0_0_40px_rgba(251,191,36,0.18)] ring-2 ring-amber-400/30 flex flex-col justify-between min-h-0 hover:scale-[1.003] transition-all group bg-gradient-to-br from-[#200e38]/95 via-[#130726]/95 to-[#0B0218]">
                 {/* Grand Ambient Glowing Crown Background */}
                 <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
                   <Crown className="w-48 h-48 lg:w-72 lg:h-72 text-amber-300 animate-pulse" />
                 </div>
-
-                {/* Shimmer Light Bar */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-400" />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center my-auto w-full relative z-10">
                   {/* Left Column: Contestant Identity & Champion Badges (col-span-7) */}
@@ -650,11 +651,10 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             /* 2-Contestant Balanced Spotlight */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 max-w-5xl xl:max-w-6xl mx-auto items-stretch my-auto pt-1 w-full">
               {/* Rank 1 - Champion */}
-              <div className="order-1 fluent-box border-2 border-amber-400/80 rounded-[6px] p-4 sm:p-5 lg:p-6 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] hover:scale-[1.005] transition-all group bg-gradient-to-br from-[#200e38]/95 to-[#0B0218]">
+              <div className="order-1 fluent-box border-2 border-amber-400/80 rounded-[2px] p-4 sm:p-5 lg:p-6 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] hover:scale-[1.005] transition-all group bg-gradient-to-br from-[#200e38]/95 to-[#0B0218]">
                 <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
                   <Crown className="w-28 h-28 text-amber-300 animate-pulse" />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-400" />
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <div className="flex items-center gap-2.5">
@@ -826,13 +826,10 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
               {/* Rank 1 - Gold Champion (Center Highest Pedestal) */}
               {rank1 ? (
-                <div className="order-1 md:order-2 fluent-box border-2 border-amber-400/80 rounded-[6px] p-5 sm:p-6 lg:p-7 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[300px] sm:min-h-[340px] lg:min-h-[380px] transform md:-translate-y-2 hover:scale-[1.005] transition-all group bg-gradient-to-br from-[#200e38]/95 to-[#0B0218]">
+                <div className="order-1 md:order-2 fluent-box border-2 border-amber-400/80 rounded-[2px] p-5 sm:p-6 lg:p-7 relative overflow-hidden shadow-2xl ring-2 ring-amber-400/30 flex flex-col justify-between min-h-[300px] sm:min-h-[340px] lg:min-h-[380px] transform md:-translate-y-2 hover:scale-[1.005] transition-all group bg-gradient-to-br from-[#200e38]/95 to-[#0B0218]">
                   <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
                     <Crown className="w-28 h-28 text-amber-300 animate-pulse" />
                   </div>
-
-                  {/* Shimmer Light Bar */}
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-400" />
 
                   <div>
                     <div className="flex items-center justify-between mb-3">

@@ -131,28 +131,63 @@
 }
 
 @theme {
-  --font-sans: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'Anthropic Sans', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Anthropic Serif', 'Source Serif 4', 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
+  --font-mono: 'Anthropic Mono', 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-korean: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-  --color-primary-bg: #190839;
-  --color-primary-highlight: #F7CAC9;
-  --color-tim-vu-tru: #0D0420;
-  --color-tim-be-mat: #241148;
-  --color-tim-chang-vang: #3E1D74;
-  --color-hong-suong: #FCEEEC;
-  --color-hong-hoang-hon: #E39A96;
-  --color-hong-man: #EBC7D6;
-  --color-lam-suong: #E2DBEC;
-  --color-trang-nga: #F5EFF9;
-  --color-xam-lam: #B6A6D8;
+  --color-primary-bg: #1A1918;
+  --color-primary-highlight: #D97757;
+  --color-tim-vu-tru: #141413;
+  --color-tim-be-mat: #1F1E1D;
+  --color-tim-chang-vang: #30302E;
+  --color-hong-suong: #F5F4ED;
+  --color-hong-hoang-hon: #D97757;
+  --color-hong-man: #E3DACC;
+  --color-lam-suong: #E3DACC;
+  --color-trang-nga: #FAF9F5;
+  --color-xam-lam: #C2C0B6;
 }
 
-/* Custom gradient utilities */
+:root {
+  color-scheme: dark;
+  --cds-bg-page: #141413;
+  --cds-surface-1: #1A1918;
+  --cds-surface-2: #1F1E1D;
+  --cds-surface-3: #262624;
+  --cds-text-primary: #FAF9F5;
+  --cds-text-secondary: #C2C0B6;
+  --cds-text-muted: #87867F;
+  --cds-accent-clay: #D97757;
+  --cds-accent-oat: #E3DACC;
+  --cds-accent-blue: #3987E5;
+  --cds-border: rgba(250, 249, 245, 0.12);
+  --cds-border-strong: rgba(250, 249, 245, 0.24);
+  --cds-font-sans: 'Anthropic Sans', 'SVN-Gilroy', 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --cds-font-serif: 'Anthropic Serif', 'Source Serif 4', 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
+  --cds-font-mono: 'Anthropic Mono', 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', ui-monospace, 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+/* Claude Editorial Typography Helpers (brand-typography.md) */
+.cds-display {
+  font-family: var(--cds-font-serif);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.cds-title {
+  font-family: var(--cds-font-serif);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+/* Custom gradient utilities — Claude Clay (#D97757) -> Oat (#E3DACC) -> Ivory (#FAF9F5) */
 .bg-gradient-horizon {
-  background: linear-gradient(90deg, #F7CAC9 0%, #EBC7D6 50%, #E2DBEC 100%);
+  background: linear-gradient(90deg, #D97757 0%, #E3DACC 55%, #FAF9F5 100%);
 }
 .text-gradient-horizon {
-  background: linear-gradient(90deg, #F7CAC9 0%, #EBC7D6 50%, #E2DBEC 100%);
+  background: linear-gradient(90deg, #D97757 0%, #E3DACC 55%, #FAF9F5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -168,16 +203,16 @@ html, body, #root {
 
 * {
   scrollbar-width: thin !important;
-  scrollbar-color: rgba(247, 202, 201, 0.3) transparent !important;
+  scrollbar-color: rgba(217, 119, 87, 0.35) transparent !important;
 }
 
 html {
-  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--cds-font-sans);
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
 }
 
-/* Custom sleek scrollbar for WebKit browsers (removes wide gray native Windows bars & arrows) */
+/* Custom sleek scrollbar for WebKit browsers */
 *::-webkit-scrollbar,
 ::-webkit-scrollbar {
   width: 5px;
@@ -189,12 +224,12 @@ html {
 }
 *::-webkit-scrollbar-thumb,
 ::-webkit-scrollbar-thumb {
-  background: rgba(247, 202, 201, 0.25);
-  border-radius: 3px;
+  background: rgba(227, 218, 204, 0.22);
+  border-radius: 2px;
 }
 *::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(247, 202, 201, 0.45);
+  background: rgba(217, 119, 87, 0.5);
 }
 *::-webkit-scrollbar-button,
 ::-webkit-scrollbar-button {
@@ -204,8 +239,8 @@ html {
 }
 
 body, input, button, select, textarea {
-  font-family: 'SVN-Gilroy', 'Lexend', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', ui-sans-serif, system-ui, sans-serif;
-  font-weight: 500;
+  font-family: var(--cds-font-sans);
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -304,10 +339,10 @@ button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Universal Focus Visible Accessibility Rings */
+/* Universal Focus Visible Accessibility Rings — Claude Clay (#D97757) */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(247, 202, 201, 0.65), 0 0 12px rgba(247, 202, 201, 0.3);
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.75), 0 0 10px rgba(217, 119, 87, 0.25);
 }
 
 /* Safe Area Insets Helpers */
@@ -347,13 +382,17 @@ body:has([aria-modal="true"]) {
 
 /* Fluid Stage & Auditorium Typography (Scale smoothly from 720p to 4K LED) */
 .stage-fluid-title {
+  font-family: var(--cds-font-serif);
   font-size: clamp(1.25rem, 2.4vw, 3.25rem);
   line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .stage-fluid-title-long {
+  font-family: var(--cds-font-serif);
   font-size: clamp(1.05rem, 1.75vw, 2.25rem);
   line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .stage-fluid-option {
@@ -362,6 +401,8 @@ body:has([aria-modal="true"]) {
 }
 
 .stage-fluid-timer {
+  font-family: var(--cds-font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: clamp(1.75rem, 3.5vw, 4.5rem);
   line-height: 1;
 }
@@ -470,7 +511,7 @@ body:has([aria-modal="true"]) {
   width: 150vmax;
   height: 150vmax;
   margin: -75vmax 0 0 -75vmax;
-  background: linear-gradient(to bottom, var(--split-dark, #190839) 50%, var(--split-light, #F7CAC9) 50%);
+  background: linear-gradient(to bottom, var(--split-dark, #141413) 50%, var(--split-light, #D97757) 50%);
   transform-origin: 50% 50%;
   animation: split-spin 10s linear infinite;
   will-change: transform;
@@ -840,20 +881,19 @@ body.battery-saver-active,
 
 @layer components {
 
-/* BTI Custom Fluent UI Styles */
+/* Claude Design System Surfaces (Anthropic Warm Grayscale, Ivory #FAF9F5, Clay #D97757, Oat #E3DACC) */
 /* ============================================================ */
 
-/* Scoped Mica & Acrylic surfaces - High-tier Fluent UI 2 Glassmorphism */
 .fluent-acrylic-surface {
-  background-color: rgba(20, 8, 42, 0.55) !important;
-  backdrop-filter: blur(52px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(52px) saturate(220%) !important;
+  background-color: rgba(26, 25, 24, 0.92) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
   position: relative;
   isolation: isolate;
   box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.22), 
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 20px 50px rgba(0, 0, 0, 0.6) !important;
+    inset 0 1px 0 rgba(250, 249, 245, 0.08), 
+    inset 0 0 0 1px rgba(250, 249, 245, 0.08),
+    0 16px 40px rgba(0, 0, 0, 0.55) !important;
 }
 
 .fluent-acrylic-surface::before {
@@ -862,55 +902,51 @@ body.battery-saver-active,
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
   z-index: -1;
 }
 
-/* Glass Card Acrylic Utility */
+/* Warm Slate Card Utility */
 .fluent-card-acrylic,
 .fluent-glass-panel,
 .glass-panel,
 .glass-card {
-  background: rgba(22, 9, 44, 0.58) !important;
-  backdrop-filter: blur(40px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(210%) !important;
-  border: 1px solid rgba(247, 202, 201, 0.22) !important;
+  background: rgba(31, 30, 29, 0.92) !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
+  border: 1px solid rgba(250, 249, 245, 0.12) !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 20px 50px -10px rgba(0, 0, 0, 0.65),
-    0 0 30px rgba(247, 202, 201, 0.06) !important;
+    inset 0 1px 0 0 rgba(250, 249, 245, 0.08),
+    0 12px 32px -8px rgba(0, 0, 0, 0.55) !important;
   position: relative;
 }
 
 .fluent-card-acrylic:hover,
 .fluent-glass-panel:hover,
 .glass-card:hover {
-  border-color: rgba(247, 202, 201, 0.42) !important;
+  border-color: rgba(250, 249, 245, 0.24) !important;
   box-shadow: 
-    inset 0 1px 2px 0 rgba(255, 255, 255, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-    0 24px 60px -8px rgba(0, 0, 0, 0.75),
-    0 0 40px rgba(247, 202, 201, 0.12) !important;
+    inset 0 1px 0 0 rgba(250, 249, 245, 0.12),
+    0 16px 40px -8px rgba(0, 0, 0, 0.65) !important;
 }
 
-/* Scoped Button Animation (Use .bti-btn explicitly if needed) */
+/* Scoped Button Animation */
 .bti-btn {
-  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .bti-btn:active:not(:disabled) {
-  transform: scale(0.96) translateY(1px);
+  transform: scale(0.97) translateY(1px);
 }
 
-/* Make the root mica layer (the background itself) thicker */
+/* Root ambient backdrop */
 .mica-bg-layer {
-  backdrop-filter: blur(120px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(120px) saturate(180%) !important;
+  backdrop-filter: blur(80px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(80px) saturate(130%) !important;
   box-shadow: none !important;
 }
 
-/* Windows 11 Fluent Scrollbars */
+/* Warm Grayscale Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -920,11 +956,11 @@ body.battery-saver-active,
 }
 ::-webkit-scrollbar-thumb {
   background-clip: padding-box;
-  background-color: rgba(247, 202, 201, 0.25);
-  border-radius: 3px;
+  background-color: rgba(227, 218, 204, 0.22);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(247, 202, 201, 0.45);
+  background-color: rgba(217, 119, 87, 0.5);
 }
 ::-webkit-scrollbar-button {
   display: none;
@@ -932,7 +968,7 @@ body.battery-saver-active,
   height: 0;
 }
 
-/* Fluent UI v9 Integration Fixes: Transparent Root Provider & Font preservation */
+/* FluentProvider Font & Background preservation */
 .fui-FluentProvider,
 [class*="fui-FluentProvider"],
 [class*="fui-FluentProvider"] > div {
@@ -942,76 +978,71 @@ body.battery-saver-active,
   font-family: inherit !important;
 }
 
-/* Fluent 2 Acrylic & Mica Box System (Sharp, Square & Subtle Elevation) */
+/* Inline SVG Fractal Noise Overlay */
+.fluent-noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.22'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 160px 160px;
+}
+
+/* Claude Design Box & Card System (Warm Slate #1F1E1D, Hairline Neutral Border, 2px Radius) */
 .fluent-box,
 .fluent-card {
-  background: rgba(22, 9, 46, 0.55) !important;
-  backdrop-filter: blur(32px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 4px;
-  box-shadow: 0 8px 28px -2px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.18) !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(31, 30, 29, 0.92) !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
+  border: 1px solid rgba(250, 249, 245, 0.12) !important;
+  border-radius: 2px;
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-box:hover,
 .fluent-card:hover {
-  border-color: rgba(247, 202, 201, 0.35) !important;
-  box-shadow: 0 14px 36px -2px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.28) !important;
+  border-color: rgba(250, 249, 245, 0.22) !important;
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(250, 249, 245, 0.10) !important;
 }
 
 .fluent-box-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 1px solid rgba(250, 249, 245, 0.10);
 }
 
 .fluent-box-nested {
-  background: rgba(12, 4, 30, 0.55) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 3px;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+  background: rgba(20, 20, 19, 0.78) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(250, 249, 245, 0.10) !important;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.04) !important;
 }
 
-/* Fluent 2 Question Card & Container System */
+/* Claude Design Question Card System (Warm Slate #1F1E1D -> #1A1918, 2px Radius, No Top Color Strip) */
 .fluent-question-box {
-  background: linear-gradient(135deg, rgba(38, 16, 76, 0.58) 0%, rgba(18, 7, 40, 0.72) 100%) !important;
-  backdrop-filter: blur(36px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
-  border: 1px solid rgba(247, 202, 201, 0.25) !important;
-  border-radius: 4px;
-  box-shadow: 0 16px 44px -6px rgba(0, 0, 0, 0.6), inset 0 1px 2px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 0 rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(180deg, rgba(38, 38, 36, 0.94) 0%, rgba(26, 25, 24, 0.96) 100%) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid rgba(250, 249, 245, 0.16) !important;
+  border-radius: 2px;
+  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.58), inset 0 1px 0 0 rgba(250, 249, 245, 0.10) !important;
   position: relative;
   overflow: hidden;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fluent-question-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #F7CAC9, #E39A96, #B6A6D8);
-  pointer-events: none;
-  z-index: 10;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-question-box:hover {
-  border-color: rgba(247, 202, 201, 0.45);
-  box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.62), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.3);
+  border-color: rgba(227, 218, 204, 0.28);
+  box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.62), inset 0 1px 0 0 rgba(250, 249, 245, 0.14);
 }
 
-/* Fluent Option Button / Card (Ergonomic, High-Contrast & Snappy <=160ms Touch Feedback) */
+/* Claude Design Option Button / Card (2px Radius, Warm Slate & Clay #D97757 Selection) */
 .fluent-option-btn {
-  background: rgba(22, 8, 48, 0.58) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 3px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
-  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
+  background: rgba(26, 25, 24, 0.90) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(250, 249, 245, 0.14) !important;
+  border-radius: 2px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.18s ease;
   transform-origin: center center;
   position: relative;
   overflow: hidden;
@@ -1020,61 +1051,62 @@ body.battery-saver-active,
 }
 
 .fluent-option-btn:hover:not(:disabled) {
-  background: rgba(42, 16, 84, 0.72) !important;
-  border-color: rgba(247, 202, 201, 0.55) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.28) !important;
+  background: rgba(38, 38, 36, 0.96) !important;
+  border-color: rgba(227, 218, 204, 0.36) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
   transform: translateY(-1px);
 }
 
 .fluent-option-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.985);
   transition: transform 0.08s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .fluent-option-btn.selected {
-  background: rgba(168, 85, 247, 0.26) !important;
-  border: 1.5px solid rgba(247, 202, 201, 0.85) !important;
-  box-shadow: 0 0 28px rgba(247, 202, 201, 0.28), inset 0 1px 1.5px rgba(255, 255, 255, 0.32) !important;
-  transform: scale(1.008);
+  background: rgba(217, 119, 87, 0.18) !important;
+  border: 1.5px solid #D97757 !important;
+  box-shadow: 0 0 20px rgba(217, 119, 87, 0.22), inset 0 1px 0 rgba(250, 249, 245, 0.18) !important;
+  transform: scale(1.004);
 }
 
 .fluent-option-badge {
-  background: rgba(10, 3, 25, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(20, 20, 19, 0.92);
+  border: 1px solid rgba(250, 249, 245, 0.16);
   border-radius: 2px;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-monospace, monospace;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  font-family: var(--cds-font-mono);
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.08);
   transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Distinct color-coded badge accents per option key */
+/* CVD-Safe Dataviz Categorical Badges per Option Key (skills/dataviz/references/palette.md) */
 .fluent-badge-key-A {
-  border-color: rgba(16, 185, 129, 0.45);
-  color: #34d399;
+  border-color: rgba(57, 135, 229, 0.55);
+  color: #3987e5;
 }
 .fluent-badge-key-B {
-  border-color: rgba(14, 165, 233, 0.45);
-  color: #38bdf8;
+  border-color: rgba(217, 119, 87, 0.55);
+  color: #D97757;
 }
 .fluent-badge-key-C {
-  border-color: rgba(245, 158, 11, 0.45);
-  color: #fbbf24;
+  border-color: rgba(25, 158, 112, 0.55);
+  color: #199e70;
 }
 .fluent-badge-key-D {
-  border-color: rgba(168, 85, 247, 0.45);
-  color: #c084fc;
+  border-color: rgba(201, 133, 0, 0.55);
+  color: #fab219;
 }
 .fluent-badge-key-E {
-  border-color: rgba(236, 72, 153, 0.45);
-  color: #f472b6;
+  border-color: rgba(213, 81, 129, 0.55);
+  color: #d55181;
 }
 .fluent-badge-key-F {
-  border-color: rgba(6, 182, 212, 0.45);
-  color: #22d3ee;
+  border-color: rgba(144, 133, 233, 0.55);
+  color: #9085e9;
 }
 
-/* Fluent UI 2 Button Interaction System (Tactile Elevation & Touch Feedback) */
+/* Button Interaction System */
 .hover-effect,
 .fluent-btn {
   position: relative;
@@ -1085,17 +1117,17 @@ body.battery-saver-active,
 
 .hover-effect:hover,
 .fluent-btn:hover {
-  filter: brightness(1.12);
-  border-color: rgba(255, 255, 255, 0.32) !important;
-  box-shadow: 0 6px 16px -1px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+  filter: brightness(1.08);
+  border-color: rgba(250, 249, 245, 0.28) !important;
+  box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
   transform: translateY(-1px);
 }
 
 .hover-effect:active,
 .fluent-btn:active {
-  filter: brightness(0.92);
+  filter: brightness(0.95);
   transform: translateY(1px) scale(0.98);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45) !important;
 }
 
 .hover-effect:disabled,
@@ -1106,7 +1138,7 @@ body.battery-saver-active,
   cursor: not-allowed;
 }
 
-/* Fluent UI v9 TabList & Tab Modern Theme Customization */
+/* TabList & Tab Claude Design Theme */
 .fluent-tablist {
   display: flex !important;
   flex-direction: row !important;
@@ -1125,17 +1157,17 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab {
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: var(--cds-font-sans) !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
-  letter-spacing: 0.025em !important;
+  letter-spacing: 0.01em !important;
   border-radius: 2px !important;
   padding: 0.5rem 0.875rem !important;
   min-height: 40px !important;
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #C2C0B6 !important;
   background: transparent !important;
   border: 1px solid transparent !important;
-  transition: color 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  transition: color 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   cursor: pointer !important;
@@ -1144,24 +1176,23 @@ body.battery-saver-active,
 }
 
 .fluent-tablist .fui-Tab:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  transform: translateY(-1px) scale(1.01) !important;
+  color: #FAF9F5 !important;
+  background: rgba(227, 218, 204, 0.08) !important;
+  border-color: rgba(250, 249, 245, 0.12) !important;
+  transform: translateY(-1px) !important;
 }
 
 .fluent-tablist .fui-Tab:active {
   transform: scale(0.97) !important;
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .fluent-tablist .fui-Tab[aria-selected="true"] {
-  color: #ffffff !important;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(79, 70, 229, 0.85), rgba(147, 51, 234, 0.85)) !important;
-  border-color: rgba(96, 165, 250, 0.6) !important;
-  box-shadow: 0 4px 14px -1px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  color: #FAF9F5 !important;
+  background: rgba(217, 119, 87, 0.18) !important;
+  border-color: rgba(217, 119, 87, 0.55) !important;
+  box-shadow: 0 2px 10px -1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(250, 249, 245, 0.12) !important;
   font-weight: 700 !important;
-  transform: scale(1.02) !important;
 }
 
 .fluent-tablist .fui-Tab[aria-selected="true"]::after {
@@ -1171,29 +1202,28 @@ body.battery-saver-active,
   left: 15% !important;
   right: 15% !important;
   height: 2px !important;
-  background: #60a5fa !important;
+  background: #D97757 !important;
   border-radius: 2px !important;
-  box-shadow: 0 0 8px #60a5fa !important;
 }
 
-/* Fluent UI 2 Tab Panel Motion & Transitions (Windows 11 Page Entrance Timing: 380ms) */
+/* Tab Panel Motion & Transitions */
 .fluent-tab-panel {
-  animation: fluentTabEnter 0.38s cubic-bezier(0.13, 0.77, 0.32, 0.99) forwards;
+  animation: fluentTabEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
 @keyframes fluentTabEnter {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.995);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* Fluent UI 2 Unified Sub-tab and Filter Buttons */
+/* Unified Sub-tab and Filter Buttons */
 .fluent-subtab-btn {
   display: inline-flex;
   align-items: center;
@@ -1202,33 +1232,32 @@ body.battery-saver-active,
   border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: 0.015em;
+  font-family: var(--cds-font-sans);
+  letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
   border: 1px solid transparent;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: center center;
 }
 
 .fluent-subtab-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .fluent-subtab-btn:active:not(:disabled) {
   transform: scale(0.97);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-subtab-btn.active,
 .fluent-subtab-btn[aria-selected="true"] {
-  transform: scale(1.02);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-/* Fluent UI Header Action Bar & Command Groups */
+/* Header Action Bar & Command Groups */
 .fluent-action-bar {
   display: flex;
   flex-wrap: wrap;
@@ -1243,12 +1272,12 @@ body.battery-saver-active,
   gap: 0.25rem;
   padding: 0.25rem;
   max-width: 100%;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(38, 38, 36, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(250, 249, 245, 0.10);
   border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.05);
 }
 
 .fluent-action-btn {
@@ -1257,12 +1286,12 @@ body.battery-saver-active,
   justify-content: center;
   gap: 0.375rem;
   padding: 0.45rem 0.75rem;
-  min-height: 34px;
+  min-height: 36px;
   border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: 0.015em;
+  font-family: var(--cds-font-sans);
+  letter-spacing: 0.01em;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -1273,7 +1302,7 @@ body.battery-saver-active,
 
 .fluent-action-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .fluent-action-btn:active {
@@ -1287,13 +1316,13 @@ body.battery-saver-active,
   filter: none;
 }
 
-/* Fluent UI Navbar & Telemetry System */
+/* Claude Design Navbar & Telemetry System */
 .fluent-navbar {
-  background: rgba(18, 6, 38, 0.72) !important;
-  backdrop-filter: blur(36px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
-  border-bottom: 1px solid rgba(247, 202, 201, 0.18) !important;
-  box-shadow: 0 6px 28px -2px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+  background: rgba(20, 20, 19, 0.92) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  border-bottom: 1px solid rgba(250, 249, 245, 0.12) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55) !important;
 }
 
 .fluent-nav-btn {
@@ -1307,22 +1336,20 @@ body.battery-saver-active,
   border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  font-family: var(--cds-font-sans);
+  color: #FAF9F5;
+  background: rgba(38, 38, 36, 0.85) !important;
+  border: 1px solid rgba(250, 249, 245, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.06) !important;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   user-select: none;
 }
 
 .fluent-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(247, 202, 201, 0.35) !important;
-  color: #ffffff;
+  background: rgba(48, 48, 46, 0.95) !important;
+  border-color: rgba(227, 218, 204, 0.3) !important;
+  color: #FAF9F5;
   transform: translateY(-1px);
 }
 
@@ -1331,16 +1358,16 @@ body.battery-saver-active,
 }
 
 .fluent-nav-btn-accent {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(79, 70, 229, 0.85)) !important;
-  border-color: rgba(96, 165, 250, 0.5) !important;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+  background: #D97757 !important;
+  border-color: rgba(250, 249, 245, 0.25) !important;
+  color: #FAF9F5;
+  box-shadow: 0 2px 10px rgba(217, 119, 87, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 .fluent-nav-btn-accent:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(99, 102, 241, 0.95)) !important;
-  border-color: rgba(147, 197, 253, 0.7) !important;
-  color: #ffffff;
+  background: #E28566 !important;
+  border-color: rgba(250, 249, 245, 0.4) !important;
+  color: #FAF9F5;
 }
 
 .fluent-telemetry-chip {
@@ -1350,24 +1377,22 @@ body.battery-saver-active,
   height: 36px;
   padding: 0 0.625rem;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  background: rgba(31, 30, 29, 0.85) !important;
+  border: 1px solid rgba(250, 249, 245, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(250, 249, 245, 0.05) !important;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fluent-telemetry-chip:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(247, 202, 201, 0.25) !important;
+  background: rgba(38, 38, 36, 0.95) !important;
+  border-color: rgba(227, 218, 204, 0.25) !important;
 }
 
-/* Fluent 2 Modal & Dialog System - Square Glassmorphism */
+/* Claude Design Modal & Dialog System - 2px Warm Slate Surface */
 .fluent-dialog-overlay {
-  background: rgba(6, 2, 16, 0.75) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  background: rgba(12, 12, 11, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -1382,12 +1407,10 @@ body.battery-saver-active,
 }
 
 .fluent-dialog {
-  background: rgba(18, 7, 36, 0.82) !important;
-  backdrop-filter: blur(48px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(48px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  border-radius: 3px !important;
-  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+  background: #1A1918 !important;
+  border: 1px solid rgba(250, 249, 245, 0.18) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 28px 60px -12px rgba(0, 0, 0, 0.82), inset 0 1px 0 rgba(250, 249, 245, 0.10) !important;
   position: relative;
   overflow: hidden;
   max-height: min(90vh, calc(100dvh - max(2rem, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))));
@@ -1397,12 +1420,11 @@ body.battery-saver-active,
 
 .fluent-dialog-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(250, 249, 245, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
+  background: #1F1E1D;
   flex-shrink: 0;
 }
 
@@ -1416,142 +1438,112 @@ body.battery-saver-active,
 
 .fluent-dialog-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(250, 249, 245, 0.10);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
+  background: #141413;
   flex-shrink: 0;
 }
 
-/* Fluent 2 Form Input Controls */
+/* Claude Design Form Input Controls */
 .fluent-input,
 .fluent-textarea,
 .fluent-select {
-  background: rgba(10, 3, 24, 0.52) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-bottom: 2px solid rgba(247, 202, 201, 0.35) !important;
-  border-radius: 3px;
-  color: #ffffff;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  background: #141413 !important;
+  border: 1px solid rgba(250, 249, 245, 0.16) !important;
+  border-bottom: 1.5px solid rgba(227, 218, 204, 0.35) !important;
+  border-radius: 2px;
+  color: #FAF9F5;
+  font-family: var(--cds-font-sans);
   font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.75rem;
   outline: none;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35) !important;
 }
 
 .fluent-input:hover,
 .fluent-textarea:hover,
 .fluent-select:hover {
-  background: rgba(15, 5, 35, 0.65) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  border-bottom-color: rgba(247, 202, 201, 0.6) !important;
+  background: #1A1918 !important;
+  border-color: rgba(250, 249, 245, 0.24) !important;
+  border-bottom-color: rgba(217, 119, 87, 0.65) !important;
 }
 
 .fluent-input:focus,
 .fluent-textarea:focus,
 .fluent-select:focus {
-  background: rgba(20, 8, 45, 0.78) !important;
-  border-color: rgba(247, 202, 201, 0.5) !important;
-  border-bottom-color: #F7CAC9 !important;
-  box-shadow: 0 0 16px rgba(247, 202, 201, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  background: #1F1E1D !important;
+  border-color: rgba(217, 119, 87, 0.65) !important;
+  border-bottom-color: #D97757 !important;
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 .fluent-input::placeholder,
 .fluent-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: #87867F;
 }
 
-/* Fluent Badge / Chip */
+/* Claude Design Badge / Tag */
 .fluent-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
   border-radius: 2px;
-  font-family: 'SVN-Gilroy', 'Lexend', ui-monospace, monospace;
+  font-family: var(--cds-font-mono);
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.85);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.03em;
+  background: rgba(227, 218, 204, 0.08);
+  border: 1px solid rgba(250, 249, 245, 0.12);
+  color: #FAF9F5;
 }
 
 .fluent-badge-accent {
-  background: rgba(247, 202, 201, 0.15);
-  border-color: rgba(247, 202, 201, 0.35);
-  color: #F7CAC9;
+  background: rgba(217, 119, 87, 0.15);
+  border-color: rgba(217, 119, 87, 0.40);
+  color: #D97757;
 }
 
 .fluent-badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(12, 163, 12, 0.15);
+  border-color: rgba(12, 163, 12, 0.40);
   color: #34d399;
 }
 
 .fluent-badge-danger {
-  background: rgba(244, 63, 94, 0.15);
-  border-color: rgba(244, 63, 94, 0.35);
+  background: rgba(208, 59, 59, 0.15);
+  border-color: rgba(208, 59, 59, 0.40);
   color: #fb7185;
 }
 
 .fluent-badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.35);
-  color: #fbbf24;
+  background: rgba(250, 178, 25, 0.15);
+  border-color: rgba(250, 178, 25, 0.40);
+  color: #fab219;
 }
 
-/* Fluent Card / Panel */
-.fluent-card {
-  background: rgba(25, 8, 57, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fluent-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-/* Fluent Toast */
+/* Claude Toast (No left-border accent bar per craft.md anti-slop rules) */
 .fluent-toast {
-  background: rgba(20, 8, 42, 0.92);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: rgba(26, 25, 24, 0.96);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(250, 249, 245, 0.16);
+  border-radius: 2px;
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(250, 249, 245, 0.08);
   position: relative;
   overflow: hidden;
 }
 
-.fluent-toast::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #F7CAC9;
-}
-
-/* Fluent UI v2 Toast Animations */
+/* Toast Animations */
 @keyframes fluentToastEnter {
   0% {
     opacity: 0;
-    transform: translateY(-16px) scale(0.95);
+    transform: translateY(-12px) scale(0.97);
   }
   100% {
     opacity: 1;
@@ -1566,17 +1558,17 @@ body.battery-saver-active,
   }
   100% {
     opacity: 0;
-    transform: translateY(-10px) scale(0.92);
+    transform: translateY(-8px) scale(0.95);
   }
 }
 
 .animate-fluent-toast-enter {
-  animation: fluentToastEnter 0.35s cubic-bezier(0.13, 0.77, 0.32, 0.99) forwards;
+  animation: fluentToastEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
 .animate-fluent-toast-exit {
-  animation: fluentToastExit 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fluentToastExit 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
@@ -1647,5 +1639,91 @@ body.battery-saver-active,
   animation-delay: 0.4s;
 }
 
+/* Claude Design Question Card Loading Skeleton System (2px Radius, Warm Oat & Clay Shimmer) */
+@keyframes fluentSkeletonSweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
+.fluent-skeleton-bar {
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(250, 249, 245, 0.05) 0%,
+    rgba(217, 119, 87, 0.18) 50%,
+    rgba(250, 249, 245, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: fluentSkeletonSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.fluent-skeleton-card {
+  background: rgba(31, 30, 29, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
+  border: 1px solid rgba(250, 249, 245, 0.14) !important;
+  border-radius: 2px;
+  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(250, 249, 245, 0.08) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Claude Design Token Compatibility Layer (brand-colors.md)
+   Maps legacy cosmic purple hex utilities across secondary
+   modals and sub-views onto the Anthropic Warm Grayscale,
+   Clay (#D97757), Oat (#E3DACC), and Ivory (#FAF9F5).
+   ============================================================ */
+[class*="bg-[#0D0420]"],
+[class*="bg-[#0c051f]"],
+[class*="bg-[#090317]"],
+[class*="bg-[#080214]"],
+[class*="bg-[#120529]"] {
+  background-color: #141413 !important;
+}
+
+[class*="bg-[#190839]"],
+[class*="bg-[#180735]"],
+[class*="bg-[#15072c]"],
+[class*="bg-[#1a0b33]"],
+[class*="bg-[#180a34]"] {
+  background-color: #1A1918 !important;
+}
+
+[class*="bg-[#241148]"],
+[class*="bg-[#2A1454]"] {
+  background-color: #1F1E1D !important;
+}
+
+[class*="border-[#3E1D74]"] {
+  border-color: rgba(250, 249, 245, 0.14) !important;
+}
+
+[class*="text-[#F7CAC9]"],
+[class*="text-[#E39A96]"] {
+  color: #D97757 !important;
+}
+
+[class*="bg-[#F7CAC9]"] {
+  background-color: #D97757 !important;
+  color: #FAF9F5 !important;
+}
+
+[class*="border-[#F7CAC9]"] {
+  border-color: rgba(217, 119, 87, 0.45) !important;
+}
+
+[class*="text-[#B6A6D8]"] {
+  color: #C2C0B6 !important;
+}
+
+[class*="text-[#F5EFF9]"],
+[class*="text-[#FCEEEC]"] {
+  color: #FAF9F5 !important;
+}
+
+}

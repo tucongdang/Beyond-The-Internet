@@ -197,7 +197,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       {/* Show strictly ONLY 1 notification toast at a time with Fluent UI v2 motion */}
       <div
         key={activeToast.id}
-        className={`w-full p-3.5 sm:p-4 rounded-[4px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
+        className={`w-full p-3.5 sm:p-4 rounded-[2px] flex flex-col gap-2.5 pointer-events-auto border transition-all relative overflow-hidden shadow-2xl ${
           isExiting ? 'animate-fluent-toast-exit' : 'animate-fluent-toast-enter'
         } ${
           isUrgent
@@ -207,17 +207,6 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
             : 'bg-[#120824]/95 backdrop-blur-[32px] saturate-[180%] border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_24px_rgba(6,182,212,0.15)] text-white'
         }`}
       >
-        {/* Fluent UI v2 Specular Top Accent Line */}
-        <div
-          className={`absolute top-0 left-0 right-0 h-[2px] pointer-events-none z-10 ${
-            isUrgent
-              ? 'bg-gradient-to-r from-rose-500 via-[#F7CAC9] to-amber-400 shadow-[0_0_10px_#f43f5e]'
-              : isLuckyDraw
-              ? 'bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 shadow-[0_0_10px_#fbbf24]'
-              : 'bg-gradient-to-r from-cyan-400 via-white/50 to-indigo-400 shadow-[0_0_10px_#06b6d4]'
-          }`}
-        />
-
         <div className="flex items-start gap-3 w-full">
           {/* Icon Card */}
           <div

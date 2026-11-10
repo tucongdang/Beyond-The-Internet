@@ -104,6 +104,8 @@ import { AudienceSurveyModal } from './AudienceSurveyModal';
 import { ClientLandingPage } from './ClientLandingPage';
 import { EventWaitingRoom } from './EventWaitingRoom';
 import { EventConcludedView } from './EventConcludedView';
+import { AudienceQuestionSkeleton } from './AudienceQuestionSkeleton';
+import { shouldShowQuestionSkeleton } from '../utils/questionSkeletonUtils';
 
 interface AudienceViewProps {
   gameState: GameState;
@@ -1038,6 +1040,48 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const prevEliminatedCountRef = useRef<number>(gameState.eliminated_options?.length || 0);
   const lastTickTimeRef = useRef<number>(0);
 
+  // SyncService question loading skeleton state
+  const [isSyncingFromService, setIsSyncingFromService] = useState<boolean>(() =>
+    syncService.getIsSyncingQuestion()
+  );
+  const [isTransitioningQuestion, setIsTransitioningQuestion] = useState<boolean>(false);
+  const [waitTimerTick, setWaitTimerTick] = useState<number>(0);
+
+  useEffect(() => {
+    const unsub = syncService.subscribeToQuestionSync((syncing) => {
+      setIsSyncingFromService(syncing);
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const limit = Number(gameState?.next_question_wait_limit) || 0;
+    const start = Number(gameState?.next_question_wait_start) || 0;
+    if (limit <= 0 || start <= 0) return;
+    const interval = setInterval(() => {
+      setWaitTimerTick(Date.now());
+    }, 250);
+    return () => clearInterval(interval);
+  }, [gameState?.next_question_wait_limit, gameState?.next_question_wait_start]);
+
+  const showQuestionSkeleton = useMemo(() => {
+    return shouldShowQuestionSkeleton({
+      gameState,
+      isSyncingFromService:
+        isSyncingFromService || (localLanguage !== 'vi' && isTranslating && !localTranslation),
+      isTransitioningQuestion,
+      nowMs: syncService.getSynchronizedNow()
+    });
+  }, [
+    gameState,
+    isSyncingFromService,
+    localLanguage,
+    isTranslating,
+    localTranslation,
+    isTransitioningQuestion,
+    waitTimerTick
+  ]);
+
   // Initialize or restore user choice for current question
   useEffect(() => {
     if (user?.uid && responses[user.uid]) {
@@ -1048,6 +1092,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         setIsDoubleDownActive(true);
       }
     } else if (prevQuestionIdRef.current !== gameState.question_id) {
+      // Trigger brief skeleton transition while new question data settles from syncService
+      setIsTransitioningQuestion(true);
+      const skeletonTimer = setTimeout(() => {
+        setIsTransitioningQuestion(false);
+      }, 360);
+
       // Distinct long-pulse haptic feedback upon receiving a new question
       vibrateNewQuestion();
       setSelectedChoice('');
@@ -1065,6 +1115,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       tabSwitchCountRef.current = 0;
       setShowTabSwitchWarning(false);
       prevQuestionIdRef.current = gameState.question_id;
+      return () => clearTimeout(skeletonTimer);
     }
   }, [gameState.question_id, responses, user?.uid]);
 
@@ -1696,7 +1747,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           {/* Top Return Navigation Bar */}
           <div className="sticky top-0 z-30 flex items-center justify-between p-3.5 bg-slate-950/90 backdrop-blur-md border-b border-amber-500/20 shadow-lg">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-[3px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+              <div className="w-8 h-8 rounded-[2px] bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
                 <BarChart3 className="w-4 h-4" />
               </div>
               <div>
@@ -1715,7 +1766,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 vibrateTap();
                 setShowConcludedLeaderboard(false);
               }}
-              className="px-3 py-1.5 rounded-[3px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-bold font-mono flex items-center gap-1.5 transition cursor-pointer shadow active:scale-95"
+              className="px-3 py-1.5 rounded-[2px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-bold font-mono flex items-center gap-1.5 transition cursor-pointer shadow active:scale-95"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Quay Lại Tổng Kết</span>
@@ -2165,14 +2216,22 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
 
             {/* Display Question / Clue prominently for ALL viewers */}
-            <div className="p-4 fluent-box-nested border border-amber-500/40 rounded-[2px] space-y-1.5 text-left">
-              <p className="text-[11px] text-amber-300 font-mono uppercase font-bold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> {t("view_risk_clue", localLanguage)}
-              </p>
-              <p className="text-sm sm:text-base text-white font-semibold leading-relaxed">
-                {gameState.vcnv_risk_question || t("view_risk_clue_wait", localLanguage)}
-              </p>
-            </div>
+            {showQuestionSkeleton || !gameState.vcnv_risk_question?.trim() ? (
+              <AudienceQuestionSkeleton
+                mode="vcnv-card"
+                localLanguage={localLanguage}
+                roundName={gameState.round_name}
+              />
+            ) : (
+              <div className="p-4 fluent-box-nested border border-amber-500/40 rounded-[2px] space-y-1.5 text-left">
+                <p className="text-[11px] text-amber-300 font-mono uppercase font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> {t("view_risk_clue", localLanguage)}
+                </p>
+                <p className="text-sm sm:text-base text-white font-semibold leading-relaxed">
+                  {gameState.vcnv_risk_question || t("view_risk_clue_wait", localLanguage)}
+                </p>
+              </div>
+            )}
 
             {/* If current user is the contestant on stage */}
             {isRiskUser ? (
@@ -2668,6 +2727,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <span>{t("standby_invite", localLanguage)}</span>
             </button>
           </div>
+
+          {/* Upcoming Question Card Skeleton while waiting for new question data from syncService */}
+          <AudienceQuestionSkeleton
+            mode="standby-preview"
+            roundType={gameState.round_type}
+            options={gameState.options}
+            localLanguage={localLanguage}
+            roundName={gameState.round_name}
+          />
         </div>
 
         {/* Floating Companion Tab & Drawer */}
@@ -2821,7 +2889,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             id="audience-tab-warning"
             className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-[95] w-[92%] max-w-lg animate-fadeIn shadow-2xl"
           >
-            <div className="p-4 rounded-[3px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-2xl shadow-rose-950/90 ring-1 ring-rose-400/40">
+            <div className="p-4 rounded-[2px] border-2 bg-rose-950/95 border-rose-500 text-rose-100 flex items-start gap-3 backdrop-blur-2xl shadow-2xl shadow-rose-950/90 ring-1 ring-rose-400/40">
               <div className="p-2 rounded-[2px] bg-rose-500/20 text-rose-400 shrink-0 mt-0.5">
                 <AlertTriangle className="w-5 h-5 text-rose-400 animate-bounce" />
               </div>
@@ -2879,16 +2947,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isTTRound={isTTRound}
           label={gameState.category || gameState.round_name}
         >
-          {/* Battle Royale Survival Badge */}
-          <div 
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] text-xs font-mono font-bold bg-purple-500/15 text-purple-200 border border-purple-400/30"
-            title={`Đấu trường Sinh tử: ${survivalStats.survivorsCount} / ${survivalStats.totalContestants} người bất bại (${survivalStats.survivalRate}%)`}
-          >
-            <Shield className="w-3.5 h-3.5 text-purple-300" />
-            <span className="hidden md:inline text-[11px]">SINH TỒN:</span>
-            <span className="text-white font-black">{survivalStats.survivorsCount}</span>
-          </div>
-
           {/* Streak Combo Badge (NO point multiplier) */}
           {streakStats.currentStreak >= 2 && (
             <div 
@@ -2899,52 +2957,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <span>x{streakStats.currentStreak}</span>
             </div>
           )}
-
-          {/* Post-match card trigger button */}
-          <button
-            type="button"
-            onClick={() => setIsPostMatchModalOpen(true)}
-            aria-label="Xuất thẻ thành tích Infographic"
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/50 hover:to-indigo-600/50 text-[#FCEEEC] border border-purple-400/30 flex items-center gap-1.5 transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-            title="Xuất thẻ thành tích Infographic"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline text-[11px] font-bold">Thẻ</span>
-          </button>
-
-          {/* AI Auto-Read Answer Toggle Button */}
-          <button
-            type="button"
-            onClick={handleToggleAutoSpeakAnswer}
-            aria-pressed={autoSpeakAnswer}
-            className={`p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium border flex items-center gap-1.5 transition hover-effect cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-              autoSpeakAnswer
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30'
-                : 'bg-white/5 hover:bg-white/10 text-white/50 border-white/10'
-            }`}
-            title={autoSpeakAnswer ? 'Đọc đáp án bằng AI: Đang BẬT (Bấm để Tắt)' : 'Đọc đáp án bằng AI: Đang TẮT (Bấm để Bật)'}
-            aria-label={autoSpeakAnswer ? 'Tắt đọc đáp án bằng AI' : 'Bật đọc đáp án bằng AI'}
-          >
-            <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/40'}`} />
-            <span className="hidden sm:inline text-[11px] font-bold">
-              {autoSpeakAnswer ? 'Đọc đáp án: BẬT' : 'Đọc đáp án: TẮT'}
-            </span>
-          </button>
-
-          <button
-            id="btn-audience-share-active"
-            type="button"
-            onClick={() => {
-              soundFx.playClick();
-              setIsShareModalOpen(true);
-            }}
-            aria-label={t("view_share_qr_title", localLanguage)}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-[2px] text-xs font-medium bg-white/10 hover:bg-white/20 text-[#FCEEEC] border border-white/10 flex items-center gap-1.5 transition hover-effect focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
-            title={t("view_share_qr_title", localLanguage)}
-          >
-            <QrCode className="w-3.5 h-3.5 text-[#F7CAC9]" />
-            <span className="hidden sm:inline text-[11px] font-bold">QR</span>
-          </button>
         </CountdownTimer>
 
         {/* Active Question & Options Area - Full Width for Maximum Reading Space */}
@@ -2953,7 +2965,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             
             {/* LEFT Column: Question Box */}
             <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col" : "lg:col-span-5 flex flex-col justify-start"}>
-                {!isBlindPoll ? (
+                {showQuestionSkeleton ? (
+                  <AudienceQuestionSkeleton
+                    mode="active-question-card"
+                    roundType={gameState.round_type}
+                    options={gameState.options}
+                    isLongQuestion={isLongQuestion}
+                    localLanguage={localLanguage}
+                    roundName={gameState.round_name}
+                  />
+                ) : !isBlindPoll ? (
                   <div 
                     ref={audienceQuestionBoxRef}
                     className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 flex flex-col justify-center relative group ${
@@ -3006,7 +3027,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               <div 
                                 role="menu"
                                 aria-label="Danh sách ngôn ngữ hiển thị"
-                                className="absolute right-0 top-full mt-1.5 w-60 py-1 rounded-[4px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-72 overflow-y-auto"
+                                className="absolute right-0 top-full mt-1.5 w-60 py-1 rounded-[2px] bg-[#190839]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 text-left animate-fadeIn max-h-72 overflow-y-auto"
                               >
                                 <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-[#F7CAC9] border-b border-white/10 uppercase tracking-wider flex items-center justify-between sticky top-0 bg-[#190839] z-10">
                                   <span>Ngôn ngữ hiển thị</span>
@@ -3280,7 +3301,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   )}
 
                   {/* Input Controls */}
-                  {isTrueFalse4 ? (
+                  {showQuestionSkeleton ? (
+                    <AudienceQuestionSkeleton
+                      mode="active-options"
+                      roundType={gameState.round_type}
+                      options={gameState.options}
+                      isLongQuestion={isLongQuestion}
+                      localLanguage={localLanguage}
+                      roundName={gameState.round_name}
+                    />
+                  ) : isTrueFalse4 ? (
                     <div className="space-y-3 pt-1" role="group" aria-label={t("view_choose_tf", localLanguage)}>
                       <div className="text-xs font-mono font-bold text-[#F7CAC9] uppercase tracking-wider flex items-center justify-between pb-1 border-b border-white/10">
                         <span>{t("view_choose_tf", localLanguage)}</span>
@@ -3603,7 +3633,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                     {/* Short Answer Confirm Modal */}
                     {isConfirmingShortAnswer && (
                       <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true" aria-labelledby="short-answer-confirm-title">
-                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[4px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+                        <div className="bg-[#190839] border border-[#F7CAC9]/30 rounded-[2px] w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
                           <div className="w-12 h-12 rounded-[2px] bg-amber-500/20 flex items-center justify-center mb-4">
                             <AlertCircle className="w-6 h-6 text-amber-400" />
                           </div>
@@ -3660,7 +3690,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                             }
                           }}
                           disabled={hasVotedThisQuestion}
-                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[4px] border-2 transition-all overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[2px] border-2 transition-all overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                             isSelected 
                               ? isOptionA ? 'border-emerald-400 bg-emerald-500/20' : 'border-rose-400 bg-rose-500/20'
                               : 'border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/5'
@@ -3804,7 +3834,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               handleOptionSelect(key);
                             }
                           }}
-                          className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[3px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer ${
+                          className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[2px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer ${
                             isEliminated
                               ? 'opacity-30 fluent-box-nested line-through cursor-not-allowed border-white/5'
                               : isCorrectAnswer && (gameState.status === 'REVEAL' || timeLeft <= 0)
@@ -4312,24 +4342,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : (
                   <Volume2 className="w-4 h-4 text-[#F7CAC9]" />
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleToggleAutoSpeakAnswer}
-                aria-label={autoSpeakAnswer ? 'Tắt AI tự đọc đáp án đúng' : 'Bật AI tự đọc đáp án đúng'}
-                aria-pressed={autoSpeakAnswer}
-                className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                  autoSpeakAnswer
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
-                    : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
-                }`}
-                title={autoSpeakAnswer ? 'AI tự đọc đáp án đúng: Đang BẬT (bấm để Tắt)' : 'AI tự đọc đáp án đúng: Đang TẮT (bấm để Bật)'}
-              >
-                <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/30'}`} />
-                <span className="hidden sm:inline font-bold">
-                  {autoSpeakAnswer ? 'AI Đáp án: BẬT' : 'AI Đáp án: TẮT'}
-                </span>
               </button>
             </div>
           </div>
@@ -5120,7 +5132,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       {/* Grand Finale Celebration Banner on Audience Screen */}
       {props.gameState.grand_finale?.active && props.gameState.grand_finale.winner && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-slate-950 p-3.5 rounded-[4px] shadow-2xl border-2 border-yellow-200 flex items-center justify-between gap-3">
+          <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-slate-950 p-3.5 rounded-[2px] shadow-2xl border-2 border-yellow-200 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <Trophy className="w-6 h-6 text-slate-950 fill-current shrink-0 animate-bounce" />
               <div>

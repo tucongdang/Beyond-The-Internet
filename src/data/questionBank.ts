@@ -41,16 +41,16 @@ export const INITIAL_QUESTION_BANK: QuestionItem[] = [
     id: 'KD_03',
     round_name: 'Vòng 1: Khởi động',
     round_type: 'MULTIPLE_CHOICE',
-    category: 'Pháp luật An ninh mạng 2018 & NĐ 13/2023',
+    category: 'Luật ANM 116/2025 & Luật BVDLCN 91/2025',
     question_text: 'Hành vi tự ý thu thập, đăng tải danh sách điểm thi kèm số CCCD của sinh viên lên hội nhóm mạng xã hội khi chưa có sự đồng ý vi phạm quy định nào?',
     options: {
       A: 'Chỉ vi phạm nội quy riêng của cơ sở đào tạo, không có chế tài pháp luật',
-      B: 'Vi phạm quyền bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP',
+      B: 'Vi phạm quyền bảo vệ dữ liệu cá nhân theo Luật BVDLCN 91/2025/QH15 & Nghị định 356/2025/NĐ-CP',
       C: 'Vi phạm điều ước quốc tế về bản quyền sở hữu trí tuệ',
       D: 'Không vi phạm nếu nhằm mục đích minh bạch kết quả học tập'
     },
     correct_key: 'B',
-    explanation: 'Nghị định 13/2023/NĐ-CP quy định CCCD và dữ liệu học tập là dữ liệu cá nhân cần được bảo vệ. Việc công khai trên không gian mạng khi chưa có văn bản đồng ý của chủ thể dữ liệu là hành vi xâm phạm quyền riêng tư và bị xử phạt hành chính theo Nghị định 14/2022/NĐ-CP.',
+    explanation: 'Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và Nghị định 356/2025/NĐ-CP (thay thế Nghị định 13/2023/NĐ-CP từ 01/01/2026) quy định CCCD và dữ liệu cá nhân phải được chủ thể đồng ý rõ ràng trước khi công khai trên không gian mạng.',
     time_limit: 15
   },
   {
@@ -240,8 +240,8 @@ export const INITIAL_QUESTION_BANK: QuestionItem[] = [
     id: 'KD_17',
     round_name: 'Vòng 1: Khởi động',
     round_type: 'MULTIPLE_CHOICE',
-    category: 'Bảo vệ dữ liệu cá nhân (NĐ 13/2023)',
-    question_text: 'Theo Nghị định 13/2023/NĐ-CP, dữ liệu nào sau đây thuộc nhóm "Dữ liệu cá nhân nhạy cảm"?',
+    category: 'Bảo vệ dữ liệu cá nhân (Luật 91/2025 & NĐ 356/2025)',
+    question_text: 'Theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, dữ liệu nào sau đây thuộc nhóm "Dữ liệu cá nhân nhạy cảm"?',
     options: {
       A: 'Họ và tên khai sinh',
       B: 'Dữ liệu về sinh trắc học (vân tay, khuôn mặt), tài khoản ngân hàng và tình trạng sức khỏe',
@@ -249,7 +249,7 @@ export const INITIAL_QUESTION_BANK: QuestionItem[] = [
       D: 'Năm sinh'
     },
     correct_key: 'B',
-    explanation: 'Nghị định 13/2023 phân loại dữ liệu sinh trắc học, dữ liệu tài chính ngân hàng, thông tin sức khỏe và xu hướng giới tính là Dữ liệu cá nhân nhạy cảm, đòi hỏi quy trình bảo vệ nghiêm ngặt nhất.',
+    explanation: 'Điều 4 Nghị định 356/2025/NĐ-CP hướng dẫn Luật BVDLCN 91/2025/QH15 phân loại dữ liệu sinh trắc học, dữ liệu tài chính/thẻ ngân hàng, thông tin sức khỏe và dữ liệu vị trí/hành vi là Dữ liệu cá nhân nhạy cảm, đòi hỏi biện pháp bảo vệ nghiêm ngặt.',
     time_limit: 15
   },
   {

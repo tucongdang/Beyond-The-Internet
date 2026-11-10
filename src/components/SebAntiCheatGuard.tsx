@@ -231,13 +231,10 @@ export const SebAntiCheatGuard: React.FC<SebAntiCheatGuardProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg bg-[#020B19]/98 border-2 border-rose-500/80 rounded-[4px] shadow-2xl overflow-hidden font-sans text-white text-left relative animate-scaleUp">
-            {/* Fluent Alert Header */}
-            <div className="h-1.5 bg-gradient-to-r from-rose-600 via-amber-500 to-rose-600 animate-pulse" />
-
+          <div className="w-full max-w-lg bg-[#020B19]/98 border-2 border-rose-500/80 rounded-[2px] shadow-2xl overflow-hidden font-sans text-white text-left relative animate-scaleUp">
             <div className="p-5 sm:p-6 space-y-4">
               <div className="flex items-start gap-3.5">
-                <div className="w-12 h-12 rounded-[3px] bg-rose-950/90 border border-rose-500/60 flex items-center justify-center text-rose-400 shrink-0 shadow-lg shadow-rose-950/60">
+                <div className="w-12 h-12 rounded-[2px] bg-rose-950/90 border border-rose-500/60 flex items-center justify-center text-rose-400 shrink-0 shadow-lg shadow-rose-950/60">
                   <AlertOctagon className="w-7 h-7 text-rose-400 animate-bounce" />
                 </div>
                 <div>
