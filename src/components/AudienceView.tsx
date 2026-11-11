@@ -106,6 +106,7 @@ import { EventWaitingRoom } from './EventWaitingRoom';
 import { EventConcludedView } from './EventConcludedView';
 import { AudienceQuestionSkeleton } from './AudienceQuestionSkeleton';
 import { shouldShowQuestionSkeleton } from '../utils/questionSkeletonUtils';
+import { AudiencePredictionWidget } from './AudiencePredictionWidget';
 
 interface AudienceViewProps {
   gameState: GameState;
@@ -2707,7 +2708,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </div>
             </div>
 
-            <div className="mt-6 mb-2">
+            <div className="mt-6 mb-2 space-y-4">
+              <AudiencePredictionWidget user={user} gameState={gameState} />
               <AudienceCheerButton user={user} isHighContrast={isHighContrast} />
             </div>
             <div className="mt-4 text-[11px] text-slate-500">
@@ -2795,6 +2797,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         id="audience-state-active"
         className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 pb-6 sm:pb-8 text-white space-y-5 relative"
       >
+        <AudiencePredictionWidget user={user} gameState={gameState} />
         {/* Floating Toast Notification for Drag & Drop / Sequencing Warnings */}
         {/* Small Success Toast */}
         {submitToast && (
@@ -4166,6 +4169,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
 
         <div className="space-y-6">
+          <AudiencePredictionWidget user={user} gameState={gameState} />
         {/* Result Announcement Hero Card */}
         <div
           className={`fluent-box rounded-[2px] p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden ${

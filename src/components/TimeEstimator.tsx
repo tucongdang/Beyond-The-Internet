@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { Clock, Calendar, ChevronRight, CheckCircle2, PlayCircle, AlertCircle, Sparkles, Radio } from 'lucide-react';
+import { Clock, Calendar, ChevronRight, CheckCircle2, PlayCircle, AlertCircle, Sparkles, Radio, Zap } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import {
@@ -8,6 +8,7 @@ import {
   TOURNAMENT_ROUNDS,
   RoundTimeEstimate
 } from '../utils/timeEstimatorUtils';
+import { vibrateCountdown, vibrateCountdownCritical } from '../utils/hapticUtils';
 
 export interface TimeEstimatorProps {
   gameState?: Partial<GameState> | null;
@@ -25,6 +26,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
   const { localLanguage } = useLanguage();
   const isVi = localLanguage === 'vi';
   const [now, setNow] = useState<number>(() => syncService.getSynchronizedNow());
+  const lastVibratedSecondRef = useRef<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -58,6 +60,26 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
     matchStage,
     estimatedNextRoundStartStr
   } = estimate;
+
+  // Detect urgent countdown state when remaining time is under 10 seconds (<10s)
+  const isUrgent = remainingMs > 0 && remainingMs <= 10000;
+
+  // Trigger tactile vibration (Web Haptics) under 10s to create a sense of urgency for contestants
+  useEffect(() => {
+    if (isUrgent) {
+      const currentSec = Math.ceil(remainingMs / 1000);
+      if (currentSec !== lastVibratedSecondRef.current) {
+        lastVibratedSecondRef.current = currentSec;
+        if (currentSec <= 3 && currentSec >= 1) {
+          vibrateCountdownCritical();
+        } else if (currentSec <= 10 && currentSec >= 1) {
+          vibrateCountdown();
+        }
+      }
+    } else {
+      lastVibratedSecondRef.current = null;
+    }
+  }, [isUrgent, remainingMs]);
 
   // Determine status color accents
   const getStatusTheme = () => {
@@ -165,6 +187,13 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
               <span>{isVi ? statusLabelVi : statusLabelEn}</span>
             </span>
 
+            {isUrgent && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] bg-rose-500/25 border border-rose-500/60 text-[11px] font-mono font-black text-rose-300 uppercase tracking-wider animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.4)]">
+                <Zap className="w-3.5 h-3.5 text-rose-400 animate-bounce" />
+                <span>{isVi ? '⚡ SẮP BẮT ĐẦU (<10S)' : '⚡ STARTING SOON (<10S)'}</span>
+              </span>
+            )}
+
             {isPaused && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-rose-500/20 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300 uppercase tracking-wider">
                 <AlertCircle className="w-3 h-3 text-rose-400" />
@@ -255,10 +284,16 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
                   </span>
                 </div>
 
-                <span className="text-xl font-mono text-amber-400/80 font-bold animate-pulse">:</span>
+                <span className={`text-xl font-mono font-bold animate-pulse ${isUrgent ? 'text-rose-400' : 'text-amber-400/80'}`}>:</span>
 
-                <div className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] bg-slate-950/80 border ${theme.border} shadow-inner`}>
-                  <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums text-yellow-300 animate-pulse`}>
+                <div className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] shadow-inner transition-all duration-300 ${
+                  isUrgent 
+                    ? 'bg-rose-950/80 border border-rose-500/80 shadow-[0_0_20px_rgba(244,63,94,0.5)] animate-pulse' 
+                    : `bg-slate-950/80 border ${theme.border}`
+                }`}>
+                  <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums ${
+                    isUrgent ? 'text-rose-300' : 'text-yellow-300 animate-pulse'
+                  }`}>
                     {String(seconds).padStart(2, '0')}
                   </span>
                   <span className="text-[9px] font-mono text-amber-300 uppercase tracking-wider font-bold">

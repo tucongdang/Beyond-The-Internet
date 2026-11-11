@@ -1,30 +1,28 @@
-# Kế hoạch Rà soát & Chuẩn hóa Thuật ngữ Toàn Hệ thống BTI 2027
+# Kế hoạch Triển khai Tính năng: Khán Giả Dự Đoán & Đặt Cược Niềm Tin Thí Sinh
 
 ## 1. Mục tiêu
-Rà soát và tinh chỉnh 100% các thành phần văn bản trên toàn bộ giao diện (Admin Portal, Màn chiếu Sân khấu, Đấu trường Khán giả, các Modal quản trị và dịch vụ nền) nhằm loại bỏ triệt để các dấu vết rập khuôn ("AI", "Gemini", "Chatbot", "Co-pilot") và thay thế bằng bộ thuật ngữ **Chuyên môn & Học thuật Beyond The Internet 2027**.
+Bổ sung chế độ tương tác **Khán Giả Dự Đoán & Đặt Cược Niềm Tin Thí Sinh (Audience Confidence Staking Mode)** trực tiếp trên giao diện di động của Khán giả (`AudienceView.tsx`), tạo trải nghiệm giải trí học thuật cuốn hút, bám sát diễn biến từng trận đấu trên sân khấu.
 
 ---
 
-## 2. Phạm vi rà soát & Chuẩn hóa chi tiết
+## 2. Các điểm cốt lõi của Tính năng
 
-### A. Khu vực Ban Quản Trị & Modal Điều hành (`AdminPortal`, `AdminPollManager`, `AdminSurveyControlModal`, `AiMcCoPilotModal`, `AiTranslationModal`)
-- **Tên Modal & Nút bấm**: 
-  - `AI MC Co-pilot` ➔ `Cố Vấn Kịch Bản MC Sân Khấu`
-  - `Trợ Lý AI` / `Trợ Lý AI Tạo Câu Hỏi` ➔ `Khởi Tạo Đề Thi Khảo Thí` / `Công Cụ Đề Xuất Câu Hỏi`
-  - `Dịch AI` / `Dịch AI Đa Ngôn Ngữ` ➔ `Chuyển Ngữ Đa Ngôn Ngữ Khảo Thí`
-  - `Kịch Tình Huống AI` ➔ `Tình Huống Khảo Thí Thực Tế`
-- **Mô tả & Hướng dẫn**: Thay toàn bộ các mô tả rập khuôn ("AI đang suy nghĩ...", "AI phân tích...") thành thuật ngữ chuyên môn ("Đang tổng hợp dữ liệu khảo thí...", "Đang phân tích tâm lý hội trường...").
+### A. Cơ chế Đặt Cược Niềm Tin (Confidence Staking System)
+- **Chọn Thí Sinh Sân Khấu**: Khán giả chọn 1 trong 4 Thí sinh (hoặc 4 Vị trí góc thi đấu trên sân khấu: *Thí sinh 1*, *Thí sinh 2*, *Thí sinh 3*, *Thí sinh 4*).
+- **Hệ số Niềm tin (Confidence Multipliers)**: Khán giả chọn mức độ tin tưởng (*Tin tưởng nhẹ x1.5*, *Đồng hành x2.0*, *Đặt cược tuyệt đối x3.0*).
+- **Thưởng Điểm & Huy hiệu Học thuật**:
+  - Nếu Thí sinh được đặt cược đưa ra đáp án đúng hoặc bấm chuông giành quyền trả lời thành công, khán giả được cộng điểm thưởng trực tiếp vào Bảng Xếp Hạng Khán Giả.
+  - Mở khóa Huy hiệu danh dự *"Nhà Dự Đoán Thiên Tài BTI 2027"* khi có 3 lần dự đoán chính xác liên tiếp.
 
-### B. Khu vực Màn chiếu Sân khấu & Khán giả (`ProjectorView`, `ProjectorView_no_responsive`, `AudienceView`)
-- **Thanh Ticker & Thẻ tình huống**: Chuẩn hóa thông điệp chữ chạy sân khấu và các thẻ thông báo theo chuẩn phát thanh truyền hình.
-- **Hội đồng cố vấn**: Thống nhất danh xưng "Hội đồng Cố vấn BTI 2027" cho các phân tích căn cứ đáp án.
-
-### C. Ngân hàng Đề thi & Dịch vụ Nền (`questionBank.ts`, `aiExplanationService.ts`, `syncService.ts`)
-- Rà soát gợi ý Ô Mạo Hiểm (VCNV), văn bản giải thích đáp án và thông báo kết nối để đảm bảo văn phong tự nhiên, chính xác, không dùng từ ngữ rập khuôn.
+### B. Giao diện Di động & Trải nghiệm Người dùng (`AudiencePredictionWidget.tsx`)
+- **Thiết kế Cyber-Academic**: Khung thẻ góc vuông sắc nét (`rounded-[2px]`), bảng màu tím sẫm `#190839` và hồng thạch anh `#F7CAC9`.
+- **Hiệu ứng Haptic & Âm thanh**: Phản hồi Rung haptic nhẹ (`vibrateSelection()`) khi đặt cược và âm thanh ăn mừng khi thí sinh được chọn chiến thắng.
+- **Biểu đồ Tỷ lệ Tin tưởng Hội trường**: Hiển thị tỷ lệ phần trăm khán giả đặt niềm tin vào từng thí sinh dạng monospace tabular-nums thời gian thực.
 
 ---
 
 ## 3. Các bước triển khai
-1. Sử dụng `grep` tìm kiếm triệt để tất cả các chuỗi văn bản còn sót lại.
-2. Áp dụng `replace_file_content` / `multi_replace_file_content` để chỉnh sửa chính xác từng file.
-3. Chạy kiểm tra toàn diện bằng `compile_applet` và `lint_applet` để đảm bảo 0 lỗi biên dịch và 0 lỗi TypeScript.
+1. Tạo tiện ích quản lý dự đoán `src/utils/predictionUtils.ts`.
+2. Xây dựng component `src/components/AudiencePredictionWidget.tsx` dành riêng cho di động.
+3. Tích hợp widget dự đoán vào `AudienceView.tsx` và đồng bộ điểm thưởng lên hệ thống tính điểm khán giả (`audienceScoringService.ts`).
+4. Kiểm tra biên dịch và linter bằng `compile_applet` và `lint_applet` để đảm bảo 0 lỗi.
