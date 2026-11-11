@@ -45,6 +45,7 @@ import { AdminSurveyControlModal } from './AdminSurveyControlModal';
 import { AdminEventScheduleModal } from './AdminEventScheduleModal';
 import { MatchBreakModal } from './MatchBreakModal';
 import { AdminMatchConfigSection } from './AdminMatchConfigSection';
+import { AdminContestantsModal } from './AdminContestantsModal';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { ShortcutMappingModal } from './ShortcutMappingModal';
@@ -585,6 +586,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [showLightShowModal, setShowLightShowModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showEventScheduleModal, setShowEventScheduleModal] = useState(false);
+  const [showContestantsModal, setShowContestantsModal] = useState(false);
   const [showAudioSettingsModal, setShowAudioSettingsModal] = useState(false);
   const [showMatchBreakModal, setShowMatchBreakModal] = useState(false);
   const [speechActive, setSpeechActive] = useState<boolean>(() => aiExplanationService.getActiveSpeechState().active);
@@ -1705,6 +1707,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
     syncService.updateGameState({
       status: 'ACTIVE',
+      confidence_staking_open: true,
+      confidence_staking_cutoff_notice: '',
       server_start_time: startTs,
       next_question_wait_limit: 0,
       next_question_wait_start: 0,
@@ -3514,6 +3518,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      setShowContestantsModal(true);
+                      setActiveHeaderMenu('NONE');
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-amber-200 cursor-pointer font-bold"
+                  >
+                    <Users className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="flex-1">Quản Lý Thí Sinh ({gameState.teams?.length || 4})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setShowEventScheduleModal(true);
                       setActiveHeaderMenu('NONE');
                     }}
@@ -3966,6 +3981,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             gameState={gameState} 
             snapshotCount={snapshotCount} 
             activeCount={activeCount} 
+            onOpenContestantsModal={() => {
+              vibrateTap();
+              soundFx.playClick();
+              setShowContestantsModal(true);
+            }}
             onOpenEventSchedule={() => {
               vibrateTap();
               soundFx.playClick();
@@ -5373,7 +5393,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     {/* Stage Contestant Name Input */}
                     <div>
                       <label className="block text-xs font-mono text-white/70 mb-1">
-                        Tên thí sinh / Đội chọn Ô Mạo Hiểm:
+                        Tên thí sinh chọn Ô Mạo Hiểm:
                       </label>
                       <input
                         type="text"
@@ -5586,6 +5606,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         </span>
                       )}
                     </button>
+
+                    {gameState.status === 'REVEAL' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFx.playClick();
+                          setActiveAdminTab('LUCKY_DRAW');
+                          triggerHudToast('STAGE', 'Đã chuyển sang tab Quay Số May Mắn • Predictor Draw');
+                        }}
+                        className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-200 border border-amber-400/40 text-[10px] font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                        title="Mở quay số trúng thưởng Predictor Draw cho các khán giả đã đặt tín nhiệm đúng thí sinh"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Predictor Draw</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -7936,7 +7972,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 Xác Nhận Reset Toàn Bộ Trận Đấu
               </h3>
               <p className="text-xs text-white/60 leading-relaxed">
-                Hành động này sẽ xóa vĩnh viễn toàn bộ phản hồi, điểm tổng, điểm thành phần của tất cả khán giả. Toàn bộ người chơi và màn chiếu sẽ bị chuyển về Màn hình chờ (Standby).
+                Hành động này sẽ xóa vĩnh viễn toàn bộ phản hồi, điểm tổng, điểm thành phần của tất cả khán giả. Toàn bộ thí sinh và màn chiếu sẽ bị chuyển về Màn hình chờ (Standby).
               </p>
             </div>
 
@@ -8038,6 +8074,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         gameState={gameState}
         activeAudienceCount={activeCount}
         triggerToast={(msg) => triggerHudToast('EVENT', msg)}
+      />
+
+      {/* Stage Contestants Management Modal */}
+      <AdminContestantsModal
+        isOpen={showContestantsModal}
+        onClose={() => setShowContestantsModal(false)}
+        gameState={gameState}
+        triggerToast={(msg) => triggerHudToast('CONTESTANT', msg)}
       />
 
       {/* Match Break & Intermission Countdown Modal */}

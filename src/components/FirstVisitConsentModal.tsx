@@ -178,9 +178,9 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
             <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 text-white/90 text-xs leading-relaxed">
               <p className="mb-2">
                 {isVi ? (
-                  <>Bằng việc sử dụng ứng dụng <strong>Beyond The Internet 2027 (BTI 2027)</strong>, Người dùng đồng ý và chấp thuận bị ràng buộc về pháp lý bởi các quyền và nghĩa vụ phát sinh theo quy định tại Quy chế này. BTI 2027 cam kết xử lý dữ liệu minh bạch, đúng mục đích, trong phạm vi cần thiết và phù hợp với pháp luật Việt Nam.</>
+                  <>Khi tham gia tương tác trên <strong>Beyond The Internet 2027 (BTI 2027)</strong>, bạn đồng ý với các quy định và quyền lợi nêu trong Quy chế này. Ban Tổ Chức cam kết bảo vệ và xử lý dữ liệu minh bạch, đúng mục đích sân chơi học thuật và tuân thủ pháp luật Việt Nam.</>
                 ) : (
-                  <>By using the <strong>Beyond The Internet 2027 (BTI 2027)</strong> application, Users agree to be legally bound by the terms and policies set forth herein. BTI 2027 is committed to transparent, lawful, and purposeful data processing.</>
+                  <>By participating on <strong>Beyond The Internet 2027 (BTI 2027)</strong>, you agree to the terms and policies outlined below. The Organizing Committee is committed to transparent, lawful, and purposeful data protection.</>
                 )}
               </p>
               <p className="text-white/60 text-[11px]">
@@ -214,13 +214,13 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
 
             {/* Full text link */}
             <div className="pt-2 flex items-center justify-between text-xs text-[#B6A6D8]">
-              <span>{isVi ? 'Đọc toàn văn có thể xem tại:' : 'Full document available at:'}</span>
+              <span>{isVi ? 'Xem toàn bộ nội dung chi tiết tại:' : 'Full document available at:'}</span>
               <button
                 type="button"
                 onClick={handleOpenPolicy}
                 className="text-[#F7CAC9] hover:underline inline-flex items-center gap-1 cursor-pointer font-medium"
               >
-                <span>{isVi ? 'Trang Chính sách & Pháp lý chuyên sâu' : 'Dedicated Policy Page'}</span>
+                <span>{isVi ? 'Trang Chính sách & Quy định chi tiết' : 'Dedicated Policy Page'}</span>
                 <ExternalLink className="w-3 h-3" />
               </button>
             </div>

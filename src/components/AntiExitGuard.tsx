@@ -228,12 +228,12 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
             </div>
             <div className="min-w-0">
               <strong className="block text-rose-200 font-mono font-bold uppercase text-[11px] tracking-wider">
-                {localLanguage !== 'vi' ? 'Screen Switch Warning' : 'CẢNH BÁO CHUYỂN MÀN HÌNH'}
+                {localLanguage !== 'vi' ? 'Stay With Us Right Here!' : 'Đừng Rời Màn Hình Lúc Này Nhé!'}
               </strong>
               <p className="text-[11px] text-rose-100/90 leading-relaxed mt-0.5">
                 {localLanguage !== 'vi' 
-                  ? 'Please stay on this browser tab to keep your connection active and not miss quiz questions!'
-                  : 'Hãy duy trì màn hình này để giữ kết nối ổn định và không bỏ lỡ điểm số câu hỏi!'}
+                  ? 'Keep this screen open so you do not miss live questions and bonus points!'
+                  : 'Giữ nguyên màn hình này để kết nối luôn mượt và không bỏ lỡ câu hỏi mới từ MC nhé!'}
               </p>
             </div>
           </div>
@@ -264,10 +264,10 @@ export const AntiExitGuard: React.FC<AntiExitGuardProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-white font-mono uppercase tracking-wider">
-                    {localLanguage !== 'vi' ? 'Confirm Exit Match' : 'XÁC NHẬN RỜI TRẬN ĐẤU'}
+                    {localLanguage !== 'vi' ? 'Leave the Arena Now?' : 'Bạn Chắc Chắn Muốn Rời Đấu Trường Chứ?'}
                   </h3>
                   <p className="text-xs text-sky-200/70 font-mono mt-0.5">
-                    {localLanguage !== 'vi' ? 'Anti-Exit Guard Active' : 'Cơ chế chống thoát trình duyệt đang bảo vệ phiên thi'}
+                    {localLanguage !== 'vi' ? 'Keeping your live match session safe' : 'Giữ nguyên màn hình để không bỏ lỡ câu hỏi và điểm thưởng đang diễn ra'}
                   </p>
                 </div>
               </div>

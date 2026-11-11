@@ -6,6 +6,7 @@ import { vibrateTap } from '../utils/hapticUtils';
 import { GameState } from '../types';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import { TimeEstimator } from './TimeEstimator';
+import { BrandLogo } from './BrandLogo';
 
 interface LandingPageProps {
   onEnterAudience: () => void;
@@ -65,30 +66,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7CAC9] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F7CAC9]"></span>
           </span>
-          <span className="text-[11px] uppercase tracking-wider text-[#F7CAC9] font-black">BTI 2027</span>
-          <span aria-hidden="true" className="text-white/30">·</span>
-          <span className="text-white/80 font-mono text-[11px] tracking-wider">Real-time Academic Interactive Arena</span>
+          <span className="text-white/85 font-mono text-[11px] uppercase tracking-wider">
+            {localLanguage !== 'vi' ? 'Real-time Academic Interactive Arena' : 'Đấu Trường Học Thuật Tương Tác Trực Tiếp'}
+          </span>
         </div>
 
-        {/* Official Brand Logo */}
-        <div className="relative mb-5 max-w-sm sm:max-w-md w-full px-4 flex items-center justify-center">
-          <img
-            src="/logo-landscape.png"
-            alt="Beyond The Internet 2027 Logo"
-            className="w-full max-h-24 sm:max-h-28 object-contain mx-auto drop-shadow-[0_8px_30px_rgba(247,202,201,0.22)] select-none pointer-events-none"
-            loading="eager"
-          />
+        {/* Official Compact Brand Logo (No Redundant Visible Title) */}
+        <div className="relative mb-4 flex items-center justify-center">
+          <BrandLogo variant="landscape" size="xl" />
+          <h1 className="sr-only">Beyond The Internet 2027</h1>
         </div>
-
-        {/* Title */}
-        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#F5EFF9] mb-4 drop-shadow-2xl font-mono">
-          BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2027</span>
-        </h1>
         
         <p className="text-sm sm:text-base md:text-lg text-[#B6A6D8] max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
           {localLanguage !== 'vi'
-            ? 'Real-time interactive academic arena. Ultra-fast synchronization between Audience, Organizers, and Stage LED Screen.'
-            : 'Đấu trường tương tác trực tiếp học thuật thời gian thực. Đồng bộ siêu tốc giữa Khán Giả, Ban Tổ Chức và Màn Chiếu Sân Khấu LED.'}
+            ? 'Join the live academic arena, test your wits across every round, and cheer on the contestants right from the hall.'
+            : 'Cùng hòa nhịp tranh tài trực tiếp, thử sức qua từng câu hỏi hóc búa và tiếp lửa cho các thí sinh ngay tại hội trường.'}
         </p>
 
         {/* Real-time Round Time Estimator & Schedule Widget */}
@@ -117,12 +109,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Users className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-extrabold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
-              {localLanguage !== 'vi' ? 'Audience' : 'Khán Giả'}
+              {localLanguage !== 'vi' ? 'Audience & Players' : 'Khán Giả & Người Tham Gia'}
             </h2>
             <p className="text-xs text-[#E2D9F3]/90 mb-5 leading-relaxed">
               {localLanguage !== 'vi'
-                ? 'Join live voting, answer contest questions, and accumulate competitive points.'
-                : 'Tham gia bình chọn trực tiếp, trả lời câu hỏi và tích lũy điểm số thi đấu.'}
+                ? 'Answer live questions alongside contestants, climb the leaderboard, and cheer for your favorite contestant.'
+                : 'Đồng hành giải câu hỏi cùng thí sinh, tích lũy điểm thưởng trên bảng vàng và tiếp lửa cho thí sinh yêu thích.'}
             </p>
             <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-[#F7CAC9] text-[#190839] font-extrabold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shadow-md group-hover:bg-white transition-colors">
               <span>{localLanguage !== 'vi' ? 'Enter Arena' : 'Vào Sàn Đấu'}</span>
@@ -148,15 +140,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Tv className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-sky-300 transition-colors">
-              {localLanguage !== 'vi' ? 'Stage LED' : 'Màn Chiếu LED'}
+              {localLanguage !== 'vi' ? 'Stage LED Screen' : 'Màn Chiếu Sân Khấu'}
             </h2>
             <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
               {localLanguage !== 'vi'
-                ? 'Fullscreen visual display optimized for the main stage LED screens.'
-                : 'Giao diện hiển thị trực quan toàn màn hình dành cho màn LED sân khấu chính.'}
+                ? 'Live stage display showing questions, countdowns, and real-time hall results for the auditorium.'
+                : 'Trình chiếu câu hỏi, đồng hồ đếm ngược và bảng điểm trực tiếp trên màn hình lớn tại hội trường.'}
             </p>
             <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-200 font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 group-hover:bg-sky-500/25 group-hover:text-white transition-colors">
-              <span>{localLanguage !== 'vi' ? 'Open Projector' : 'Mở Màn Chiếu'}</span>
+              <span>{localLanguage !== 'vi' ? 'Open Stage View' : 'Mở Màn Chiếu'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -179,15 +171,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Shield className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-[#F5EFF9] mb-1.5 group-hover:text-purple-200 transition-colors">
-              {localLanguage !== 'vi' ? 'Organizers' : 'Ban Tổ Chức'}
+              {localLanguage !== 'vi' ? 'Organizers & MC' : 'Ban Tổ Chức & Điều Phối'}
             </h2>
             <p className="text-xs text-[#B6A6D8]/85 mb-5 leading-relaxed">
               {localLanguage !== 'vi'
-                ? 'Coordinate questions, control timers, lock responses, and export data.'
-                : 'Điều phối câu hỏi, kiểm soát timer, khóa bình chọn và trích xuất dữ liệu.'}
+                ? 'Manage contest rounds, trigger stage timers, moderate Q&A, and review official scores.'
+                : 'Dẫn dắt nhịp độ vòng thi, mở câu hỏi sân khấu, duyệt giao lưu hỏi đáp và tổng kết điểm số.'}
             </p>
             <div className="mt-auto w-full py-2.5 px-4 rounded-[2px] bg-purple-500/15 border border-purple-400/30 text-[#E2D9F3] font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 group-hover:bg-purple-500/25 group-hover:text-white transition-colors">
-              <span>{localLanguage !== 'vi' ? 'Control Panel' : 'Bảng Điều Khiển'}</span>
+              <span>{localLanguage !== 'vi' ? 'Control Panel' : 'Bàn Điều Khiển'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
@@ -267,7 +259,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
         </div>
         <p className="text-[10px] text-[#B6A6D8]/50 font-mono tracking-widest uppercase">
-          Beyond The Internet 2027 • Academic Gameshow Live System • Phiên bản v2.0-pdpd-2027
+          {localLanguage !== 'vi'
+            ? 'Beyond The Internet 2027 • Academic Gameshow Live System • Version v2.0-pdpd-2027'
+            : 'Beyond The Internet 2027 • Hệ Thống Đấu Trường Học Thuật Trực Tiếp • Phiên bản v2.0-pdpd-2027'}
         </p>
       </div>
 

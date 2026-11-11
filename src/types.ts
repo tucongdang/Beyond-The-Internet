@@ -191,9 +191,43 @@ export interface GrandFinaleState {
   timestamp: number;
 }
 
+export interface ContestantPrediction {
+  questionId: string;
+  contestantId: string;
+  contestantName: string;
+  uid: string;
+  name: string;
+  mssv: string;
+  stakeAmount: number;
+  confidenceLevel?: number; // 0-100% confidence level
+  timestamp: number;
+  won?: boolean;
+}
+
+export interface ChampionVote {
+  uid: string;
+  name: string;
+  mssv: string;
+  contestantId: string;
+  contestantName: string;
+  timestamp: number;
+}
+
 export interface LuckyDrawState {
   status: 'IDLE' | 'SPINNING' | 'REVEALED';
   winner: UserInfo | null;
+  filter_mode?: 'ALL' | 'CHAMPION_VOTE' | 'CORRECT_PREDICTION' | 'BY_CONTESTANT';
+  filter_label?: string;
+  filter_contestant_name?: string;
+  filter_question_id?: string;
+  eligible_count?: number;
+  total_candidates?: number;
+  is_predictor_draw?: boolean;
+  winning_contestant_name?: string;
+  winning_contestant_id?: string;
+  sample_uids?: string[];
+  seed?: number;
+  draw_timestamp?: number;
 }
 
 export interface AudienceSurveyConfig {
@@ -381,6 +415,17 @@ export interface GameState {
     uid: string;
     timestamp: number;
   } | null;
+
+  // Stage Contestant Predictions & Confidence Staking Results (Từng câu độc lập)
+  stage_winning_contestants?: Record<string, string[]>; // questionId -> array of winning contestantIds
+  confidence_staking_open?: boolean; // Mặc định mở, chỉ chốt khi admin phát thông báo chốt dự đoán tín nhiệm hoặc hết giờ câu
+  confidence_staking_cutoff_notice?: string; // Thông báo chốt dự đoán từ Admin
+  confidence_staking_locked_at?: number;
+
+  // Champion Match Prediction (Bình chọn Thí sinh Chiến thắng chung cuộc - Độc lập với Tín nhiệm từng câu)
+  champion_vote_open?: boolean; // Mặc định mở, Admin có thể khóa trước vòng Về Đích
+  champion_contestant_id?: string; // ID của thí sinh đạt giải Quán quân chung cuộc
+  champion_vote_locked_at?: number;
 }
 
 export interface UserResponse {
@@ -397,6 +442,7 @@ export interface UserResponse {
   isDoubleDown?: boolean; // Vòng 4 Về Đích - Cược nhân đôi All-In
   tabSwitchCount?: number; // Phát hiện rời màn hình / đổi tab
   isOfflineSync?: boolean; // Đánh dấu câu trả lời được gửi từ hàng đợi ngoại tuyến
+  contestantPrediction?: ContestantPrediction;
 }
 
 export interface SurvivalStats {

@@ -26,15 +26,25 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
     <div className={`min-h-[calc(100dvh-4rem)] flex flex-col items-center justify-center p-4 sm:p-6 text-white text-center transition-colors duration-1000 ${isWinner && luckyDraw.status === 'REVEALED' ? 'bg-[#3E1D74]/50' : ''}`}>
       <div className={`max-w-md w-full fluent-question-box p-6 sm:p-8 space-y-6 ${isWinner ? 'ring-2 ring-amber-400/80 shadow-2xl' : ''}`}>
         
+        {luckyDraw.filter_label && (
+          <div className="inline-block px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/35 text-xs font-mono font-bold tracking-wide">
+            🎯 {luckyDraw.filter_label}
+          </div>
+        )}
+
         {luckyDraw.status === 'IDLE' && (
           <div className="space-y-4">
             <div className="w-12 h-12 mx-auto rounded-[2px] bg-white/10 flex items-center justify-center text-[#F7CAC9] border border-white/10">
               <Sparkles className="w-6 h-6" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-wider uppercase font-mono">
-              {localLanguage !== 'vi' ? 'LUCKY DRAW' : 'QUAY SỐ MAY MẮN'}
+              {localLanguage !== 'vi' ? 'LUCKY DRAW' : 'VÒNG QUAY MAY MẮN'}
             </h2>
-            <p className="text-white/60 text-xs sm:text-sm">{localLanguage !== 'vi' ? 'System is preparing the draw. Please wait...' : 'Hệ thống đang chuẩn bị quay số. Xin vui lòng chờ đợi...'}</p>
+            <p className="text-white/60 text-xs sm:text-sm">
+              {localLanguage !== 'vi'
+                ? 'The lucky draw is about to begin! Keep an eye on the stage...'
+                : 'Vòng quay may mắn sắp bắt đầu! Cùng hướng mắt lên sân khấu nhé...'}
+            </p>
           </div>
         )}
 
@@ -44,7 +54,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
               <Dices className="w-7 h-7 text-[#F7CAC9] animate-bounce" />
             </div>
             <h2 className="text-sm sm:text-base font-bold text-white/80 tracking-[0.2em] font-mono">
-              {localLanguage !== 'vi' ? 'DRAWING NUMBER...' : 'ĐANG QUAY SỐ...'}
+              {localLanguage !== 'vi' ? 'FINDING LUCKY WINNER...' : 'ĐANG TÌM CHỦ NHÂN MAY MẮN...'}
             </h2>
           </div>
         )}
@@ -63,7 +73,7 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
                 UID: {getUserDisplayUid(luckyDraw.winner)}
               </div>
               <p className="text-[11px] text-white/50 font-mono italic mt-2">
-                {localLanguage !== 'vi' ? '🔒 Student personal information is kept private' : '🔒 Thông tin cá nhân sinh viên được bảo mật công khai'}
+                {localLanguage !== 'vi' ? '🔒 Only your anonymous UID is shown on the main screen' : '🔒 Chỉ hiển thị mã UID ẩn danh để bảo mật thông tin cá nhân'}
               </p>
             </div>
             

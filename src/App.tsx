@@ -7,14 +7,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, UserResponse, QR_PALETTES, QrPaletteId, AdminUser } from './types';
 import { syncService, DEFAULT_GAME_STATE } from './services/syncService';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 import { auth, db, removeUndefined } from './firebase';
 import QRCode from 'qrcode';
 import { soundFx } from './services/audioEffects';
 import { vibrateTap, vibrateCopy } from './utils/hapticUtils';
-import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Palette, Sparkles, ScanLine, Zap, ShieldCheck } from 'lucide-react';
+import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Sparkles, ScanLine } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { AudienceView } from './components/AudienceView';
 import { OnboardingModal } from './components/OnboardingModal';
@@ -23,27 +23,10 @@ import { generate12DigitUID } from './utils/uidUtils';
 import { getSecureItem, setSecureItem, removeSecureItem } from './utils/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PasswordGate } from './components/PasswordGate';
-import { PDPD_CONSENT_VERSION } from './utils/vnLawCompliance';
-
-// Code-split heavy views to shrink initial bundle for mobile audience devices
-const AdminPortal = React.lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
-const ProjectorView = React.lazy(() => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })));
-const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
 import { ClientLandingPage } from './components/ClientLandingPage';
 import { FirstVisitConsentModal } from './components/FirstVisitConsentModal';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { PolicyPage } from './components/PolicyPage';
-
-const ViewLoadingFallback: React.FC = () => (
-  <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#0f041c] text-white">
-    <div className="flex flex-col items-center gap-3 animate-fadeIn">
-      <div className="w-10 h-10 border-2 border-[#F7CAC9]/30 border-t-[#F7CAC9] rounded-full animate-spin" />
-      <span className="text-xs font-mono text-white/60 uppercase tracking-widest animate-pulse">
-        Đang tải giao diện...
-      </span>
-    </div>
-  </div>
-);
 import { NotificationToast } from './components/NotificationToast';
 import { OfflineBanner } from './components/OfflineBanner';
 import { InstallAppModal } from './components/InstallAppModal';
@@ -59,25 +42,24 @@ import { useAnimationControl } from './contexts/AnimationControlContext';
 import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 
+const AdminPortal = React.lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
+const ProjectorView = React.lazy(() => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })));
+const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
+
 export default function App() {
   const { localLanguage } = useLanguage();
   const { isBatterySaver, batteryLevel } = useAnimationControl();
 
-  // Synchronize document lang attribute with active language
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.lang = localLanguage || 'vi';
     }
   }, [localLanguage]);
 
-  // State synchronized from syncService
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
-
-  // QR Code display state (Lifting to App.tsx so both Navbar and AdminPortal can access)
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [audienceJoinUrl, setAudienceJoinUrl] = useState('');
   const [qrError, setQrError] = useState<string | null>(null);
-  const [isQrFading, setIsQrFading] = useState(false);
   const [isCopiedQrUrl, setIsCopiedQrUrl] = useState(false);
   const [batteryToast, setBatteryToast] = useState<{message: string, show: boolean}>({ message: '', show: false });
   const [isBatteryToastDismissed, setIsBatteryToastDismissed] = useState(false);
@@ -85,7 +67,6 @@ export default function App() {
   const [isAudienceQrDismissed, setIsAudienceQrDismissed] = useState(false);
   const [isLocalAudienceQrOpen, setIsLocalAudienceQrOpen] = useState(false);
 
-  // Persistent but dismissible Low Battery warning toast when device battery drops below 15%
   useEffect(() => {
     if (batteryLevel === null) return;
 
@@ -93,8 +74,8 @@ export default function App() {
       if (!isBatteryToastDismissed) {
         const pct = Math.round(batteryLevel * 100);
         const msg = localLanguage !== 'vi'
-          ? `Low Battery Warning (${pct}%) — Please connect charger`
-          : `Cảnh báo pin yếu (${pct}%) — Vui lòng cắm sạc`;
+          ? `Battery is down to ${pct}% — Plug in your charger so you don't miss the next question!`
+          : `Pin máy còn ${pct}% thôi — Cắm sạc ngay kẻo lỡ câu hỏi tiếp theo nhé!`;
         setBatteryToast({ message: msg, show: true });
       }
     } else {
@@ -110,7 +91,6 @@ export default function App() {
     setBatteryToast({ message: '', show: false });
   }, []);
 
-  // When admin broadcasts a new live QR, un-dismiss local audience modal
   useEffect(() => {
     if (gameState.show_qr) {
       setIsAudienceQrDismissed(false);
@@ -126,7 +106,6 @@ export default function App() {
 
   const generateQrCode = useCallback((urlToEncode: string, paletteId?: string, transparentBg?: boolean) => {
     if (!urlToEncode) return;
-    setIsQrFading(true);
     setQrError(null);
     const activePaletteId = (paletteId || gameState.qr_color_palette || 'purple_gold') as QrPaletteId;
     const palette = QR_PALETTES[activePaletteId] || QR_PALETTES.purple_gold;
@@ -145,18 +124,13 @@ export default function App() {
       .then(url => {
         setQrDataUrl(url);
         setQrError(null);
-        setTimeout(() => {
-          setIsQrFading(false);
-        }, 50);
       })
       .catch(err => {
         console.error('QR code generation error:', err);
-        setQrError(localLanguage !== 'vi' ? 'Failed to generate QR code. Please try again.' : 'Lỗi tạo mã QR. Vui lòng thử lại.');
-        setIsQrFading(false);
+        setQrError(localLanguage !== 'vi' ? 'Could not create the QR code yet. Tap below to try again!' : 'Chưa tạo được mã QR rồi. Bạn bấm thử lại chút nhé!');
       });
-  }, [gameState.qr_color_palette, gameState.qr_transparent_bg, gameState.qr_custom_caption, gameState.round_name, localLanguage]);
+  }, [gameState.qr_color_palette, gameState.qr_transparent_bg, localLanguage]);
 
-  // Track Estimated Scans when audience enters via QR scan (?src=qr or ?ref=qr)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -173,12 +147,9 @@ export default function App() {
     }
   }, []);
 
-  // Compute audience join URL dynamically
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      let origin = window.location.origin;
-      let pathname = window.location.pathname;
-      let fullUrl = origin + pathname;
+      let fullUrl = window.location.origin + window.location.pathname;
       if (fullUrl.includes('ais-dev-')) {
         fullUrl = fullUrl.replace('ais-dev-', 'ais-pre-');
       }
@@ -186,7 +157,6 @@ export default function App() {
     }
   }, []);
 
-  // Automatically refresh the QR code whenever audienceJoinUrl, qr_color_palette, or qr_transparent_bg changes dynamically
   useEffect(() => {
     if (audienceJoinUrl) {
       generateQrCode(audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg);
@@ -231,10 +201,8 @@ export default function App() {
     } else {
       handleCopyQrLink();
     }
-  }, [audienceJoinUrl, handleCopyQrLink]);
+  }, [audienceJoinUrl, handleCopyQrLink, localLanguage]);
 
-  // Determine initial view from URL path or query parameter
-  
   const [currentView, setCurrentView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
@@ -260,7 +228,6 @@ export default function App() {
     return 'audience';
   });
 
-  // Track previous view state to ensure users can return smoothly to where they were
   const [previousView, setPreviousView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy' | null>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -276,18 +243,18 @@ export default function App() {
   const getPreviousViewDisplayName = useCallback((viewKey: string | null): string => {
     switch (viewKey) {
       case 'admin':
-        return localLanguage !== 'vi' ? 'Admin Portal' : 'Ban Quản Trị (Admin)';
+        return localLanguage !== 'vi' ? 'Organizer Portal' : 'Trang Ban Tổ Chức';
       case 'client_landing':
-        return localLanguage !== 'vi' ? 'Waiting Room' : 'Phòng Chờ Thi Đấu';
+        return localLanguage !== 'vi' ? 'Waiting Room' : 'Phòng Chờ Sự Kiện';
       case 'audience':
-        return localLanguage !== 'vi' ? 'Live Arena' : 'Đấu Trường Khán Giả';
+        return localLanguage !== 'vi' ? 'Live Stage' : 'Sân Khấu Tương Tác';
       case 'landing':
-        return localLanguage !== 'vi' ? 'Home' : 'Trang Chủ BTI';
+        return localLanguage !== 'vi' ? 'Home' : 'Trang Chủ';
       case 'projector':
         return localLanguage !== 'vi' ? 'Stage Projector' : 'Màn Chiếu Sân Khấu';
       default: {
         const hasSavedProfile = Boolean(getSecureItem('BTI2026_USER_PROFILE'));
-        return hasSavedProfile ? (localLanguage !== 'vi' ? 'Live Arena' : 'Đấu Trường') : (localLanguage !== 'vi' ? 'Home' : 'Trang Chủ');
+        return hasSavedProfile ? (localLanguage !== 'vi' ? 'Live Stage' : 'Sân Khấu Tương Tác') : (localLanguage !== 'vi' ? 'Home' : 'Trang Chủ');
       }
     }
   }, [localLanguage]);
@@ -345,7 +312,6 @@ export default function App() {
     }
   }, [previousView]);
 
-  // Synchronize browser popstate (back / forward navigation) with view state
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       if (typeof window !== 'undefined') {
@@ -370,7 +336,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Automatically optimize Firebase sync listeners based on client role
   useEffect(() => {
     if (currentView === 'admin') {
       syncService.setClientRole('ADMIN');
@@ -381,7 +346,6 @@ export default function App() {
     }
   }, [currentView]);
 
-  // State synchronized from syncService
   const [currentResponses, setCurrentResponses] = useState<Record<string, UserResponse>>({});
   const [lastRouteTs, setLastRouteTs] = useState<number>(0);
   const [allResponses, setAllResponses] = useState<Record<string, Record<string, UserResponse>>>({});
@@ -467,12 +431,17 @@ export default function App() {
     const handleNotice = (e: Event) => {
       const detail = (e as CustomEvent<{ message?: string }>).detail;
       if (detail?.message) {
-        setSystemNotice(detail.message);
+        const raw = detail.message.trim();
+        const isConnErr = /connection error|network error|mất kết nối|lỗi kết nối/i.test(raw);
+        const friendlyMsg = isConnErr
+          ? (localLanguage !== 'vi' ? 'Reconnecting right now!' : 'Đang kết nối lại chút nhé!')
+          : raw;
+        setSystemNotice(friendlyMsg);
       }
     };
     window.addEventListener('bti_system_notice', handleNotice);
     return () => window.removeEventListener('bti_system_notice', handleNotice);
-  }, []);
+  }, [localLanguage]);
 
   useEffect(() => {
     if (!systemNotice) return;
@@ -480,11 +449,10 @@ export default function App() {
     return () => clearTimeout(t);
   }, [systemNotice]);
 
-  // Automatic 30-minute inactivity logout timer for Admin session
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
     let timerId: NodeJS.Timeout | null = null;
 
     const logoutDueToInactivity = () => {
@@ -501,7 +469,11 @@ export default function App() {
       setIsAuthenticated(false);
       setAdminUser(null);
       setCurrentView('landing');
-      setSystemNotice('Phiên làm việc Quản trị (Admin) đã tự động đăng xuất sau 30 phút không hoạt động để bảo mật.');
+      setSystemNotice(
+        localLanguage !== 'vi'
+          ? 'Signed out automatically after 30 minutes of inactivity to keep your account safe!'
+          : 'Mình tạm đăng xuất sau 30 phút vắng mặt để giữ an toàn tài khoản nhé!'
+      );
     };
 
     const resetTimer = () => {
@@ -523,9 +495,8 @@ export default function App() {
         window.removeEventListener(evt, resetTimer);
       });
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, localLanguage]);
 
-  // User Profile
   const handleAudienceLogout = () => {
     try {
       if (auth) {
@@ -543,7 +514,6 @@ export default function App() {
     setCurrentView('landing');
   };
 
-  // Global pure black dark mode (audience-high-contrast) & Battery Saver synchronization
   const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
     return getBatterySaverMode();
   });
@@ -554,13 +524,11 @@ export default function App() {
     setIsHighContrast(nextVal);
   }, []);
 
-  // Keep document.body & html class in sync with isHighContrast & BatterySaverMode
   useEffect(() => {
     const isModeActive = isHighContrast || getBatterySaverMode();
     applyBatterySaverClasses(isModeActive);
   }, [isHighContrast]);
 
-  // Synchronize across tabs or components via battery saver and storage events
   useEffect(() => {
     const handleBatterySaverChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ enabled: boolean }>;
@@ -656,7 +624,6 @@ export default function App() {
           }
           
           if (shouldListen) {
-            // Listen for remote changes
             unsubsDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
               if (docSnap.exists()) {
                 const profile = docSnap.data() as UserInfo;
@@ -672,8 +639,6 @@ export default function App() {
               console.warn('Firestore user profile listener error:', err);
             });
           }
-        } else {
-          // Logged out
         }
       });
     } catch (err) {
@@ -685,27 +650,17 @@ export default function App() {
     };
   }, []);
 
-  // One-time cleanup of old persistent localStorage admin auth
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('BTI2026_ADMIN_AUTH');
-    }
-  }, []);
-
-  // Prompt onboarding if user is visiting Audience view and not registered yet
   useEffect(() => {
     if (!user && currentView === 'audience') {
       setIsOnboardingOpen(true);
     }
   }, [user, currentView]);
 
-  // Handle forced routing from admin (keep policy page fixed, never redirect while user is reading)
   useEffect(() => {
     if (gameState.force_route_ts && gameState.force_route_ts > lastRouteTs) {
       setLastRouteTs(gameState.force_route_ts);
       if (currentView !== 'admin' && currentView !== 'projector' && currentView !== 'policy' && gameState.force_route) {
         if (currentView === 'landing' && gameState.force_route === 'audience') {
-          // Do not force users from the welcome page into the audience view
           return;
         }
         setCurrentView(gameState.force_route as 'landing' | 'client_landing' | 'audience' | 'projector');
@@ -713,22 +668,18 @@ export default function App() {
     }
   }, [gameState.force_route_ts, gameState.force_route, lastRouteTs, currentView]);
 
-  // Play sound on connection drops
   const [prevConnected, setPrevConnected] = useState<boolean | null>(null);
   useEffect(() => {
     if (prevConnected !== null) {
       if (isFirebaseConnected && !prevConnected) {
-        // Recovered connection! Play success pacing chime
         soundFx.playPacingChime('complete');
       } else if (!isFirebaseConnected && prevConnected) {
-        // Disconnected! Play error tone
         soundFx.playError();
       }
     }
     setPrevConnected(isFirebaseConnected);
   }, [isFirebaseConnected, prevConnected]);
 
-  // Subscribe to Realtime Data
   useEffect(() => {
     const unsubState = syncService.subscribeToState((state) => {
       setGameState(state);
@@ -746,7 +697,6 @@ export default function App() {
       setActiveCount(count);
     });
 
-    // Subscribing to dynamic connection status
     const unsubConnection = syncService.subscribeToConnection((connected) => {
       setIsFirebaseConnected(connected);
     });
@@ -760,11 +710,9 @@ export default function App() {
     };
   }, []);
 
-  // Presence heartbeat when user is registered
   useEffect(() => {
     if (!user) return;
 
-    // Send initial presence ping
     syncService.sendPresencePing(user);
 
     const interval = setInterval(() => {
@@ -774,7 +722,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Sound toggle handler
   const handleToggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -782,7 +729,6 @@ export default function App() {
     if (next) soundFx.playClick();
   };
 
-  // Completely disable sound FX on Admin screen
   useEffect(() => {
     soundFx.setAdminMuted(currentView === 'admin');
   }, [currentView]);
@@ -870,7 +816,6 @@ export default function App() {
 
   return (
     <div className={`min-h-[100dvh] h-[100dvh] overflow-hidden ${currentView === 'policy' ? 'bg-[#0D0420]' : 'bg-transparent'} text-[#F5EFF9] font-sans flex flex-col antialiased selection:bg-[#F7CAC9] selection:text-[#190839] relative z-0`}>
-      {/* --- GLOBAL APP BACKGROUND (Sync with Landing Page) --- */}
       {!(isHighContrast || isBatterySaver || currentView === 'policy') && (
         <>
           <div className="fixed inset-0 z-[-3] bg-[#190839]/50 backdrop-blur-md pointer-events-none">
@@ -881,31 +826,28 @@ export default function App() {
         </>
       )}
 
-      {/* Non-blocking System Notice Banner */}
       {systemNotice && (
         <div
           role="status"
           aria-live="polite"
           tabIndex={0}
-          aria-label={localLanguage !== 'vi' ? `System notification: ${systemNotice}` : `Thông báo hệ thống: ${systemNotice}`}
+          aria-label={localLanguage !== 'vi' ? `Quick notice: ${systemNotice}` : `Nhắn nhanh: ${systemNotice}`}
           className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] max-w-md w-[calc(100%-2rem)] fluent-toast px-4 py-3 text-xs sm:text-sm font-medium text-[#F5EFF9] flex items-center justify-between gap-3 animate-fluent-toast-enter outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
         >
           <span>{systemNotice}</span>
           <button
             type="button"
             onClick={() => setSystemNotice(null)}
-            aria-label={localLanguage !== 'vi' ? 'Dismiss system notification' : 'Đóng thông báo hệ thống'}
+            aria-label={localLanguage !== 'vi' ? 'Got it, close notice' : 'Đã rõ, đóng thông báo'}
             tabIndex={0}
             className="px-2 py-1 rounded-[2px] bg-white/10 hover:bg-white/20 text-[#F7CAC9] text-xs font-mono font-bold shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
           >
-            {localLanguage !== 'vi' ? 'Dismiss' : 'Đóng'}
+            {localLanguage !== 'vi' ? 'Got it' : 'Đã rõ'}
           </button>
         </div>
       )}
 
-      {/* Audience Notification Toast (Hidden on Admin & Projector views) */}
       <NotificationToast userUid={user?.uid} gameState={gameState} currentView={currentView} />
-      {/* Top Navigation */}
       {currentView !== 'projector' && currentView !== 'policy' && (
       <Navbar
         currentView={currentView}
@@ -915,7 +857,6 @@ export default function App() {
             return;
           }
           setCurrentView(view);
-          // Sync URL query without full reload
           if (typeof window !== 'undefined' && window.history) {
             const url = new URL(window.location.href);
             if (view === 'audience') {
@@ -956,14 +897,12 @@ export default function App() {
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
       />
       )}
-      {/* Main View Area */}
       <main className={`flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto ${currentView === 'policy' ? 'bg-[#0D0420] min-h-full h-full' : ''}`}>
 
         {currentView === 'client_landing' && (
           <ClientLandingPage gameState={gameState} />
         )}
 
-        
       {batteryToast.show && (
         <div
           role="alert"
@@ -1101,8 +1040,6 @@ export default function App() {
         )}
       </main>
 
-
-
       {user && (
         <ProfileModal
           isOpen={isProfileModalOpen}
@@ -1122,7 +1059,6 @@ export default function App() {
         />
       )}
 
-      {/* Modals */}
       <FirebaseConfigModal
         isOpen={isFirebaseConfigOpen}
         onClose={() => {
@@ -1132,13 +1068,11 @@ export default function App() {
         isConnected={isFirebaseConnected}
       />
 
-      {/* PWA Home Screen Install Modal */}
       <InstallAppModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
       />
 
-      {/* MODAL: Audience QR Code Display (Only on audience/landing views; admin and projector have dedicated controllers) */}
       {((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) && currentView !== 'admin' && currentView !== 'projector' && typeof document !== 'undefined' && !!document.body && createPortal(
         <div 
           id="app-global-qr-modal-overlay"
@@ -1186,7 +1120,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* QR Code Container with Spring Entrance Animation and Smooth Optical Cross-Fade */}
             <div 
               className="my-2.5 inline-block shrink-0 animate-qr-entrance"
               tabIndex={0}
@@ -1215,7 +1148,7 @@ export default function App() {
                       className="mt-1 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-[2px] shadow flex items-center gap-1.5 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >
                       <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>{localLanguage !== 'vi' ? 'Retry' : 'Thử lại (Retry)'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Retry' : 'Thử lại'}</span>
                     </button>
                   </div>
                 ) : (
@@ -1225,7 +1158,7 @@ export default function App() {
                     sizeClass="w-48 h-48 sm:w-52 sm:h-52"
                     loadingFallback={
                       <div className="w-48 h-48 sm:w-52 sm:h-52 bg-slate-100 rounded-[2px] flex items-center justify-center text-xs text-slate-500 font-mono" role="status" aria-live="polite">
-                        {localLanguage !== 'vi' ? 'Generating QR...' : 'Đang tạo QR...'}
+                        {localLanguage !== 'vi' ? 'Creating QR code...' : 'Đang tạo mã QR chút nhé...'}
                       </div>
                     }
                   />
@@ -1233,7 +1166,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Custom Short Caption below QR Code */}
             {gameState.qr_custom_caption && (
               <div 
                 id="landing-qr-custom-caption"
@@ -1247,22 +1179,21 @@ export default function App() {
               </div>
             )}
 
-            {/* Realtime Firebase Connection, Estimated Scans, & Active QR Palette Status Badges */}
             <div 
               className="flex items-center justify-center flex-wrap gap-2 mb-2.5"
               role="region"
-              aria-label={localLanguage !== 'vi' ? 'QR telemetry and database connection info' : 'Thông tin trạng thái kết nối và số lượt quét QR'}
+              aria-label={localLanguage !== 'vi' ? 'Stage connection and QR scan count' : 'Trạng thái kết nối sân khấu và số lượt quét mã QR'}
             >
               <div 
                 id="badge-landing-qr-scans"
                 tabIndex={0}
                 role="status"
-                aria-label={localLanguage !== 'vi' ? `Estimated scans: ${Number(gameState.qr_scan_count) || 0}` : `Ước tính số lượt quét: ${Number(gameState.qr_scan_count) || 0}`}
+                aria-label={localLanguage !== 'vi' ? `Joined via QR: ${Number(gameState.qr_scan_count) || 0}` : `Lượt quét tham gia: ${Number(gameState.qr_scan_count) || 0}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm shadow-sky-950/40"
-                title={localLanguage !== 'vi' ? 'Total audience scans joining arena' : 'Tổng số lượt khán giả quét mã QR tham gia đấu trường'}
+                title={localLanguage !== 'vi' ? 'Friends who joined by scanning this QR code' : 'Số bạn khán giả đã quét mã QR để vào sân khấu'}
               >
                 <ScanLine className="w-3 h-3 text-sky-400" aria-hidden="true" />
-                <span>{localLanguage !== 'vi' ? 'Estimated scans:' : 'Ước tính quét:'} <strong className="text-white font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
+                <span>{localLanguage !== 'vi' ? 'Joined via QR:' : 'Lượt quét mã:'} <strong className="text-white font-bold">{Number(gameState.qr_scan_count) || 0}</strong></span>
               </div>
 
               {isFirebaseConnected ? (
@@ -1270,27 +1201,27 @@ export default function App() {
                   id="badge-firebase-online"
                   tabIndex={0}
                   role="status"
-                  aria-label={localLanguage !== 'vi' ? 'Firebase realtime database: Online' : 'Cơ sở dữ liệu Firebase: Trực tuyến'}
+                  aria-label={localLanguage !== 'vi' ? 'Stage connection: Connected smoothly' : 'Đường truyền sân khấu: Đang kết nối mượt mà'}
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-950/40"
-                  title={localLanguage !== 'vi' ? 'Realtime database is operating stably' : 'Hệ thống cơ sở dữ liệu thời gian thực đang hoạt động ổn định'}
+                  title={localLanguage !== 'vi' ? 'Connected smoothly to the live stage!' : 'Đang kết nối mượt mà với sân khấu!'}
                 >
                   <span className="relative flex h-2 w-2" aria-hidden="true">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                   </span>
-                  <span>Firebase: {localLanguage !== 'vi' ? 'Online' : 'Trực Tuyến'}</span>
+                  <span>{localLanguage !== 'vi' ? 'Connected smoothly' : 'Kết nối mượt mà'}</span>
                 </div>
               ) : (
                 <div 
                   id="badge-firebase-offline"
                   tabIndex={0}
                   role="status"
-                  aria-label={localLanguage !== 'vi' ? 'Firebase realtime database: Offline, reconnecting' : 'Cơ sở dữ liệu Firebase: Ngoại tuyến, đang kết nối lại'}
+                  aria-label={localLanguage !== 'vi' ? 'Stage connection: Reconnecting right now!' : 'Đường truyền sân khấu: Đang kết nối lại chút nhé!'}
                   className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
-                  title={localLanguage !== 'vi' ? 'Reconnecting to Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
+                  title={localLanguage !== 'vi' ? 'Reconnecting to the stage right now!' : 'Đang kết nối lại chút nhé!'}
                 >
                   <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse" aria-hidden="true"></span>
-                  <span>Firebase: {localLanguage !== 'vi' ? 'Offline' : 'Ngoại Tuyến'}</span>
+                  <span>{localLanguage !== 'vi' ? 'Reconnecting right now!' : 'Đang kết nối lại chút nhé!'}</span>
                 </div>
               )}
 
@@ -1300,7 +1231,7 @@ export default function App() {
                 role="note"
                 aria-label={localLanguage !== 'vi' ? `QR palette theme: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).name}` : `Bảng màu mã QR: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).labelVi}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
-                title={localLanguage !== 'vi' ? 'QR Code color palette is synced in real-time from Admin' : 'Bảng màu QR Code đang được đồng bộ thời gian thực từ Admin'}
+                title={localLanguage !== 'vi' ? 'QR color theme synced with the stage' : 'Màu mã QR đang đồng bộ cùng sân khấu'}
               >
                 <span 
                   className="w-2 h-2 rounded-full shrink-0" 
@@ -1315,7 +1246,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Direct URL text display */}
             <div 
               tabIndex={0}
               role="region"
@@ -1327,7 +1257,6 @@ export default function App() {
               </span>
             </div>
 
-            {/* Unified Action Buttons Grid beneath the QR code */}
             <div className="grid grid-cols-2 gap-2.5 mb-2.5">
               <button
                 type="button"
@@ -1350,7 +1279,7 @@ export default function App() {
                 ) : (
                   <>
                     <Copy className="w-4 h-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate">Copy Link</span>
+                    <span className="truncate">{localLanguage !== 'vi' ? 'Copy Link' : 'Sao chép liên kết'}</span>
                   </>
                 )}
               </button>
@@ -1365,7 +1294,7 @@ export default function App() {
                 title={localLanguage !== 'vi' ? 'Share link via system dialog' : 'Chia sẻ link qua ứng dụng hệ thống'}
               >
                 <Share2 className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
-                <span className="truncate">Share</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'Share' : 'Chia sẻ'}</span>
               </button>
             </div>
 
@@ -1384,7 +1313,6 @@ export default function App() {
         document.body
       )}
 
-      {/* Offline Alert Banner with 5s Auto-Reconnect Countdown */}
       <OfflineBanner
         isFirebaseConnected={isFirebaseConnected}
         isDismissed={isOfflineBannerDismissed}
@@ -1396,16 +1324,10 @@ export default function App() {
         }}
       />
 
-      {/* Global Fluent UI 2 Tooltip Overlay */}
       <FluentTooltip />
-
-      {/* Live Speech Subtitles Overlay */}
       <LiveSubtitleOverlay />
-
-      {/* Smart Loud Environment Detection Banner */}
       <LoudEnvironmentAlert />
 
-      {/* Anti-Browser Exit Protection Guard */}
       <AntiExitGuard 
         enabled={currentView === 'audience'} 
         user={user} 
@@ -1414,27 +1336,22 @@ export default function App() {
         onConfirmExit={() => setCurrentView('landing')} 
       />
 
-      {/* Safe Exam Browser (SEB) Anti-Cheat Protection Guard */}
       <SebAntiCheatGuard 
         enabled={currentView === 'audience'} 
         user={user} 
         gameState={gameState} 
       />
 
-      {/* Secret ?splitDebug=1 Floating Debug Console */}
       <FloatingDebugPanel gameState={gameState} />
 
-      {/* Floating Chat Assistant Widget & Modal (Bottom-Right Corner) */}
       <ChatAssistantWidget
         gameState={gameState}
         user={user}
         currentView={currentView}
       />
 
-      {/* European Union (GDPR & ePrivacy Directive) Cookie & LocalStorage Consent Notice */}
       <CookieConsentBanner onOpenPolicy={(tab) => handleNavigateToPolicy(tab)} />
 
-      {/* First-visit Privacy & PDPD Consent Notice (Law 91/2025/QH15 & Decree 356/2025/ND-CP) */}
       {currentView !== 'policy' && (
         <FirstVisitConsentModal onOpenFullPolicy={() => handleNavigateToPolicy()} />
       )}

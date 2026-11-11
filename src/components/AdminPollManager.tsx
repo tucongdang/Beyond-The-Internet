@@ -107,13 +107,13 @@ const SOURCE_TYPE_CONFIG: Record<
     suggestions: ['TS. Cố vấn An ninh mạng', 'Chuyên gia Công nghệ AI', 'Cố vấn Pháp lý số', 'Cố vấn Kỹ thuật Cloud']
   },
   CONTESTANT: {
-    label: 'Thí sinh / Đội thi',
+    label: 'Thí sinh',
     icon: Flame,
     color: 'text-amber-300',
     badgeBg: 'bg-white/10 backdrop-blur-md text-amber-300',
     border: 'border-amber-500/40',
     defaultName: 'Thí sinh phản biện',
-    suggestions: ['Thí sinh phản biện', 'Đội thi số 1 (Alpha)', 'Đội thi số 2 (Beta)', 'Thí sinh xin trợ giúp']
+    suggestions: ['Thí sinh phản biện', 'Thí sinh số 1 (Alpha)', 'Thí sinh số 2 (Beta)', 'Thí sinh xin trợ giúp']
   },
   JURY: {
     label: 'Ban Giám Khảo',
@@ -131,7 +131,7 @@ const SOURCE_TYPE_CONFIG: Record<
     badgeBg: 'bg-white/10 backdrop-blur-md text-emerald-300',
     border: 'border-emerald-500/40',
     defaultName: 'Khán giả hội trường',
-    suggestions: ['Khán giả Hội trường', 'Cổ động viên Đội 1', 'Đại diện Khán phòng', 'Khảo sát dự đoán']
+    suggestions: ['Khán giả Hội trường', 'Cổ động viên Thí sinh 1', 'Đại diện Khán phòng', 'Khảo sát dự đoán']
   },
   HOST: {
     label: 'MC / Ban Tổ Chức',
@@ -163,13 +163,13 @@ const PRESET_POLLS: EmergencyQuestionDraft[] = [
   },
   {
     id: 'PRESET_MC_4_2',
-    question: 'Khán phòng dự đoán đội thi nào sẽ giành điểm cao nhất trong vòng thi Về Đích?',
+    question: 'Khán phòng dự đoán thí sinh nào sẽ giành điểm cao nhất trong vòng thi Về Đích?',
     type: 'MULTIPLE_CHOICE',
     options: {
-      A: 'Đội 1: Cyber Knight',
-      B: 'Đội 2: Cloud Pioneers',
-      C: 'Đội 3: AI Guardians',
-      D: 'Đội 4: Quantum Leap'
+      A: 'Thí sinh 1: Cyber Knight',
+      B: 'Thí sinh 2: Cloud Pioneers',
+      C: 'Thí sinh 3: AI Guardians',
+      D: 'Thí sinh 4: Quantum Leap'
     },
     time_limit: 20,
     source_type: 'HOST',
@@ -201,7 +201,7 @@ const PRESET_POLLS: EmergencyQuestionDraft[] = [
   },
   {
     id: 'PRESET_JURY_1',
-    question: 'Ban Giám Khảo xin ý kiến khán phòng về việc công nhận đáp án thay thế của đội thi?',
+    question: 'Ban Giám Khảo xin ý kiến khán phòng về việc công nhận đáp án thay thế của thí sinh?',
     type: 'AGREE_DISAGREE',
     options: { A: 'Công nhận đáp án', B: 'Không công nhận' },
     time_limit: 20,

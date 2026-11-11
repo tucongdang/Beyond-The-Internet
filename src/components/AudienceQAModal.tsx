@@ -678,7 +678,11 @@ export const AudienceQAModal: React.FC<AudienceQAModalProps> = ({
 
         {/* Footer */}
         <div className="fluent-dialog-footer text-[11px] text-white/40 font-mono">
-          <div className="mr-auto">BEYOND THE INTERNET 2026 • LIVE AUDIENCE Q&A</div>
+          <div className="mr-auto">
+            {localLanguage !== 'vi'
+              ? 'BEYOND THE INTERNET 2027 • LIVE AUDIENCE Q&A'
+              : 'BEYOND THE INTERNET 2027 • HỎI ĐÁP TRỰC TIẾP'}
+          </div>
           <button
             type="button"
             onClick={onClose}

@@ -11,6 +11,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { useBatterySaver } from '../utils/batterySaverUtils';
 import { BatterySaverModal } from './BatterySaverModal';
+import { BrandLogo } from './BrandLogo';
 
 interface NavbarProps {
   currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy';
@@ -120,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         color: 'red',
         badgeClass: 'bg-rose-950/70 border-rose-500/60 text-rose-300 hover:bg-rose-900/70 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.3)]',
         dotClass: 'bg-rose-500 animate-ping',
-        label: effectiveLanguage === 'en' ? 'Critical (Low)' : 'Yếu (Low)',
+        label: effectiveLanguage === 'en' ? 'Critical (Low)' : 'Pin Yếu',
         fullText: effectiveLanguage === 'en' ? 'Energy Mode: Critical Low' : 'Chế Độ Năng Lượng: Pin Cực Yếu'
       };
     }
@@ -356,25 +357,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               onViewChange('landing');
             }}
             aria-label="Về trang chủ Beyond The Internet 2027"
-            className="flex items-center gap-2.5 cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
+            className="flex items-center cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] hover:opacity-95 transition"
             title="Trang chủ BTI 2027"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-[2px] overflow-hidden border border-[#F7CAC9]/40 group-hover:border-[#F7CAC9]/80 shadow-md shadow-purple-950/40 bg-black flex items-center justify-center group-hover:scale-105 transition duration-200">
-              <img
-                src="/logo-square.png"
-                alt="BTI 2027"
-                className="w-full h-full object-cover"
-                loading="eager"
-              />
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight text-white flex items-center gap-1 whitespace-nowrap">
-                BEYOND THE INTERNET <span className="text-[#F7CAC9]">2027</span>
-              </span>
-              <p className="text-[8px] sm:text-[9px] text-white/50 uppercase tracking-wider font-mono leading-none mt-0.5 whitespace-nowrap">
-                {currentView === 'admin' ? 'Ban Kỹ Thuật • Điều Hành' : 'Đấu Trường Trực Tiếp'}
-              </p>
-            </div>
+            <BrandLogo variant="square" size="sm" className="sm:hidden" />
+            <BrandLogo variant="landscape" size="sm" className="hidden sm:inline-flex" />
           </button>
 
           {/* Status Badge - Hidden during Login */}
@@ -645,10 +632,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-toggle-fullscreen"
               type="button"
-              aria-label={isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình'}
+              aria-label={isFullscreen ? (effectiveLanguage === 'en' ? 'Exit fullscreen' : 'Thoát toàn màn hình') : (effectiveLanguage === 'en' ? 'Enter fullscreen' : 'Bật toàn màn hình')}
               onClick={handleToggleFullscreen}
-              data-tooltip={isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình (F11)'}
-              data-tooltip-title="Toàn Màn Hình"
+              data-tooltip={isFullscreen ? (effectiveLanguage === 'en' ? 'Exit Fullscreen' : 'Thoát toàn màn hình') : (effectiveLanguage === 'en' ? 'Enter Fullscreen (F11)' : 'Bật toàn màn hình (F11)')}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Fullscreen' : 'Toàn Màn Hình'}
               data-tooltip-hotkey="F11"
               data-tooltip-placement="bottom"
               className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer items-center justify-center ${
@@ -869,9 +856,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     {isFullscreen ? <Minimize className="w-4 h-4 text-sky-300" /> : <Maximize className="w-4 h-4 text-white/70" />}
-                    <span>{isFullscreen ? 'Thoát Toàn Màn Hình' : 'Toàn Màn Hình'}</span>
+                    <span>{effectiveLanguage === 'en' ? (isFullscreen ? 'Exit Fullscreen' : 'Fullscreen') : (isFullscreen ? 'Thoát Toàn Màn Hình' : 'Toàn Màn Hình')}</span>
                   </div>
-                  <span className="text-[10px] text-white/50">{isFullscreen ? 'ON' : 'OFF'}</span>
+                  <span className="text-[10px] text-white/50">{effectiveLanguage === 'en' ? (isFullscreen ? 'ON' : 'OFF') : (isFullscreen ? 'BẬT' : 'TẮT')}</span>
                 </button>
 
                 {/* Policy Page Link */}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { X, Bell, Trophy, AlertTriangle, Megaphone } from 'lucide-react';
+import { X, Trophy, AlertTriangle, Megaphone } from 'lucide-react';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
 import { GameState } from '../types';
@@ -48,14 +48,63 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     });
   }, []);
 
+  const humanizeToastCopy = useCallback((rawText: string | undefined, fallbackVi: string, fallbackEn: string) => {
+    const trimmed = (rawText || '').trim();
+    if (!trimmed) {
+      return localLanguage !== 'vi' ? fallbackEn : fallbackVi;
+    }
+    if (/^(ready for next question|prepare for the next question|waiting for next question|next question ready|sẵn sàng cho câu hỏi tiếp theo|chuẩn bị cho câu hỏi tiếp theo|đang chờ câu hỏi tiếp theo|sẵn sàng câu tiếp theo)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'Let’s see what the next question brings!' : 'Cùng chờ xem câu tiếp theo nhé!';
+    }
+    if (/^(connection error|network error|sync error|offline|mất kết nối|lỗi kết nối|lỗi mạng|lỗi đồng bộ)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'Reconnecting right now!' : 'Đang kết nối lại chút nhé!';
+    }
+    if (/^(connected|connection restored|online|reconnected|đã kết nối|đã kết nối lại|kết nối thành công)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'Back online and ready to roll!' : 'Đã kết nối mượt mà trở lại rồi!';
+    }
+    if (/^(question locked|voting locked|time expired|time is up|time's up|đã khóa câu hỏi|đã khóa bình chọn|hết giờ|hết thời gian)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi'
+        ? 'Time is up! Let’s wait for the MC to reveal the answer!'
+        : 'Đã khép lại thời gian trả lời! Cùng chờ MC công bố đáp án nhé!';
+    }
+    if (/^(answer submitted|response recorded|submission saved|saved|đã nộp đáp án|đã ghi nhận câu trả lời|đã lưu|đã lưu điểm)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi'
+        ? 'Your answer is locked in! Fingers crossed for full points!'
+        : 'Đã chốt đáp án của bạn! Chúc bạn rinh trọn điểm câu này nhé!';
+    }
+    if (/^(question active|new question|round started|câu hỏi mới|bắt đầu câu hỏi|mở câu hỏi)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi'
+        ? 'New question is live — jump right in!'
+        : 'Câu hỏi mới lên sóng rồi, nhập cuộc thôi nào!';
+    }
+    if (/^(round complete|round ended|round finished|kết thúc vòng thi|hoàn thành vòng thi)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi'
+        ? 'Awesome job finishing this round! Get ready for the next challenge!'
+        : 'Chúc mừng bạn đã hoàn thành vòng thi! Cùng chuẩn bị bứt phá ở thử thách tiếp theo nhé!';
+    }
+    if (/^(🚨\s*)?(system announcement|thông báo toàn hệ thống|system notice|thông báo hệ thống|thông báo khẩn từ ban tổ chức)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'Live Update from the Stage!' : 'Tin mới từ Sân Khấu!';
+    }
+    if (/^(🚨\s*)?(urgent notice|thông báo khẩn|cảnh báo khẩn)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'Quick heads-up from the MC!' : 'Nhắn nhanh từ sân khấu!';
+    }
+    if (/^(personal notice|thông báo cá nhân|thông báo mới)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? 'A special message just for you!' : 'Tin nhắn dành riêng cho bạn!';
+    }
+    if (/^(🎉\s*)?(trúng giải lucky draw|lucky draw winner|lucky draw)[.!]*$/i.test(trimmed)) {
+      return localLanguage !== 'vi' ? '🎉 Congrats! You won the Lucky Draw!' : '🎉 Chúc mừng bạn đã trúng thưởng Vòng Quay May Mắn!';
+    }
+    return trimmed;
+  }, [localLanguage]);
+
   // 1. Subscribe to in-memory & cross-tab BroadcastChannel Global Notifications
   useEffect(() => {
     if (currentView === 'admin' || currentView === 'projector') return;
     const unsubBroadcast = syncService.subscribeToGlobalNotificationBroadcast((notif) => {
       addToast({
         id: notif.id || getSecureRandomId(`global_${Date.now()}_`, 6),
-        title: notif.title || (localLanguage !== 'vi' ? 'Urgent Notice' : 'Thông báo khẩn'),
-        message: notif.message,
+        title: humanizeToastCopy(notif.title, 'Nhắn nhanh từ sân khấu!', 'Quick heads-up from the MC!'),
+        message: humanizeToastCopy(notif.message, 'Cùng chờ xem câu tiếp theo nhé!', 'Let’s see what the next question brings!'),
         type: notif.type || 'URGENT',
         channel: 'global',
         timestamp: notif.timestamp || Date.now()
@@ -71,7 +120,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       unsubBroadcast();
       unsubRecall();
     };
-  }, [currentView, addToast, localLanguage]);
+  }, [currentView, addToast, humanizeToastCopy]);
 
   // 2. Subscribe to Firestore Global Notifications
   useEffect(() => {
@@ -79,9 +128,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     const unsub = syncService.subscribeToNotifications('global', (notifs) => {
       const unread = notifs.filter(n => !n.read).map(n => ({
         id: `global_${n.id}`,
-        title: n.title || (localLanguage !== 'vi' ? 'System Announcement' : 'Thông báo toàn hệ thống'),
-        message: n.message,
-        type: (n.type || (n.title?.includes('KHẨN') ? 'URGENT' : 'GENERAL')) as 'URGENT' | 'GENERAL',
+        title: humanizeToastCopy(n.title, 'Tin mới từ Sân Khấu!', 'Live Update from the Stage!'),
+        message: humanizeToastCopy(n.message, 'Cùng chờ xem câu tiếp theo nhé!', 'Let’s see what the next question brings!'),
+        type: (n.type || (/(khẩn|urgent|chú ý)/i.test(n.title || '') ? 'URGENT' : 'GENERAL')) as 'URGENT' | 'GENERAL',
         channel: 'global',
         rawId: n.id,
         timestamp: n.timestamp || Date.now()
@@ -107,7 +156,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       });
     });
     return () => unsub();
-  }, [currentView, localLanguage]);
+  }, [currentView, humanizeToastCopy]);
 
   // 3. Subscribe to user-specific notifications
   useEffect(() => {
@@ -115,9 +164,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
     const unsub = syncService.subscribeToNotifications(userUid, (notifs) => {
       const unread = notifs.filter(n => !n.read).map(n => ({
         id: `user_${n.id}`,
-        title: n.title || (localLanguage !== 'vi' ? 'Personal Notice' : 'Thông báo cá nhân'),
-        message: n.message,
-        type: (n.title?.includes('LUCKY DRAW') ? 'LUCKY_DRAW' : 'GENERAL') as 'LUCKY_DRAW' | 'GENERAL',
+        title: humanizeToastCopy(n.title, 'Tin nhắn dành riêng cho bạn!', 'A special message just for you!'),
+        message: humanizeToastCopy(n.message, 'Ban Tổ Chức vừa gửi một lời nhắn tới bạn, xem ngay nhé!', 'The stage team just sent you a note — check it out!'),
+        type: (/(lucky draw|quay số|trúng giải|trúng thưởng)/i.test(n.title || '') ? 'LUCKY_DRAW' : 'GENERAL') as 'LUCKY_DRAW' | 'GENERAL',
         channel: userUid,
         rawId: n.id,
         timestamp: n.timestamp || Date.now()
@@ -138,7 +187,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
       });
     });
     return () => unsub();
-  }, [userUid, currentView]);
+  }, [userUid, currentView, humanizeToastCopy]);
 
   const handleDismiss = useCallback((notif: ToastItem) => {
     if (isExiting) return;
@@ -244,7 +293,11 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
                     isUrgent ? 'bg-rose-400 animate-ping' : isLuckyDraw ? 'bg-amber-300 animate-pulse' : 'bg-cyan-400 animate-pulse'
                   }`}
                 />
-                {isUrgent ? (localLanguage !== 'vi' ? 'URGENT NOTICE' : 'THÔNG BÁO KHẨN') : isLuckyDraw ? 'LUCKY DRAW' : (localLanguage !== 'vi' ? 'ORGANIZER NOTICE' : 'THÔNG BÁO TỪ BTC')}
+                {isUrgent
+                  ? (localLanguage !== 'vi' ? 'HEADS UP!' : 'CHÚ Ý NHÉ!')
+                  : isLuckyDraw
+                  ? (localLanguage !== 'vi' ? 'LUCKY DRAW' : 'QUAY SỐ MAY MẮN')
+                  : (localLanguage !== 'vi' ? 'FROM THE STAGE' : 'TIN TỪ SÂN KHẤU')}
               </span>
               <h4 className="font-bold text-xs uppercase tracking-wide truncate text-white/95 font-sans">
                 {activeToast.title}
@@ -260,7 +313,8 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({ userUid, c
             type="button"
             onClick={() => handleDismiss(activeToast)}
             className="fluent-subtab-btn p-1.5 rounded-[2px] border border-transparent hover:border-white/20 hover:bg-white/15 transition shrink-0 text-white/70 hover:text-white cursor-pointer active:scale-95"
-            title={localLanguage !== 'vi' ? 'Close notice' : 'Đóng thông báo'}
+            title={localLanguage !== 'vi' ? 'Got it, close' : 'Đã rõ, đóng lại'}
+            aria-label={localLanguage !== 'vi' ? 'Got it, close notification' : 'Đã rõ, đóng thông báo'}
           >
             <X className="w-4 h-4" />
           </button>

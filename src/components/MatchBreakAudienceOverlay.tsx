@@ -120,7 +120,7 @@ export const MatchBreakAudienceOverlay: React.FC<MatchBreakAudienceOverlayProps>
       {/* Friendly Tip Box */}
       <div className="p-3 rounded-[2px] bg-purple-950/50 border border-purple-500/30 text-[11px] text-purple-200 font-mono flex items-center justify-center gap-2">
         <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-        <span>Khán giả giữ nguyên màn hình để tự động bước vào phần thi kế tiếp!</span>
+        <span>Bạn giữ nguyên màn hình nhé, vòng thi kế tiếp sẽ tự động mở ngay khi hết giờ nghỉ!</span>
       </div>
 
       {/* Interactive Cheer Button */}
@@ -132,7 +132,7 @@ export const MatchBreakAudienceOverlay: React.FC<MatchBreakAudienceOverlayProps>
           className="w-full py-2.5 rounded-[2px] bg-gradient-to-r from-purple-600/80 to-amber-600/80 hover:from-purple-500 hover:to-amber-500 border border-amber-400/40 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer"
         >
           <Heart className={`w-4 h-4 ${cheerSent ? 'fill-rose-400 text-rose-400 animate-ping' : 'text-rose-300'}`} />
-          <span>{cheerSent ? '💖 Đã gửi lời cổ vũ!' : 'Gửi Nhịp Tim Cổ Vũ Thí Sinh (Heart Beat)'}</span>
+          <span>{cheerSent ? '💖 Đã gửi lời cổ vũ lên sân khấu!' : 'Thả Tim Tiếp Lửa Cho Thí Sinh'}</span>
         </button>
       </div>
     </div>

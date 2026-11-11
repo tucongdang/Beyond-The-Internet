@@ -90,8 +90,8 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
   const seconds = remainingSeconds % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  const matchLabel = gameState.event_schedule?.match_name || 'BEYOND THE INTERNET 2026';
-  const matchSubtitle = gameState.event_schedule?.match_subtitle || 'ĐẤU TRƯỜNG AN TOÀN SỐ VÀ TRÍ TUỆ NHÂN TẠO';
+  const matchLabel = gameState.event_schedule?.match_name || 'BEYOND THE INTERNET 2027';
+  const matchSubtitle = gameState.event_schedule?.match_subtitle || 'ĐẤU TRƯỜNG HỌC THUẬT TRỰC TIẾP';
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0c051a]/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 lg:p-14 select-none text-white overflow-hidden animate-fadeIn">
@@ -141,12 +141,12 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
 
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] bg-purple-950/50 border border-purple-500/30 font-mono text-xs text-purple-200 shadow-sm backdrop-blur-md">
             <Users className="w-4 h-4 text-purple-400" />
-            <span>Khán giả online: <strong className="text-white font-bold">{activeCount}</strong></span>
+            <span>Khán giả đang tham gia: <strong className="text-white font-bold">{activeCount}</strong></span>
           </div>
 
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-emerald-950/40 border border-emerald-500/30 font-mono text-xs text-emerald-300">
             <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
-            <span>STAGE SYNC</span>
+            <span>TRỰC TIẾP</span>
           </div>
         </div>
       </div>
@@ -261,7 +261,7 @@ export const MatchBreakProjectorOverlay: React.FC<MatchBreakProjectorOverlayProp
         </div>
 
         <div className="text-right text-[11px] font-mono text-white/40 hidden md:block">
-          <span>HỘI TRƯỜNG BEYOND THE INTERNET 2026 • LIVE BROADCAST</span>
+          <span>HỘI TRƯỜNG BEYOND THE INTERNET 2027 • TRỰC TIẾP</span>
         </div>
       </div>
     </div>

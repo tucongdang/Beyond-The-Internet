@@ -13,16 +13,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Cookie, 
-  ShieldCheck, 
   Sliders, 
   Check, 
   X, 
   ExternalLink, 
   Info, 
   Lock, 
-  RotateCcw, 
-  ChevronDown, 
-  ChevronUp, 
   SlidersHorizontal,
   Search,
   Sparkles
@@ -31,7 +27,6 @@ import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { useLanguage } from '../hooks/useLanguage';
 import { 
-  CookieCategory, 
   CookieConsentState, 
   COOKIE_INVENTORY, 
   getCookieConsent, 
@@ -63,9 +58,6 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onOpen
     analytics: false,
     marketing: false
   });
-
-  // Category accordion expand/collapse state in customize modal
-  const [expandedCategory, setExpandedCategory] = useState<CookieCategory | null>('necessary');
 
   // Search keyword inside cookie technical inventory
   const [searchQuery, setSearchQuery] = useState('');
@@ -343,26 +335,6 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onOpen
             </div>
           </div>
         </aside>
-      )}
-
-      {/* 2. Persistent Floating Cookie Settings Trigger (Withdraw/Modify Consent Anytime - GDPR Standard) */}
-      {hasConsent && (
-        <div className="fixed bottom-4 left-4 z-40 group">
-          <button
-            type="button"
-            onClick={handleOpenCustomize}
-            aria-label={isEn ? 'Open GDPR Cookie Preferences' : 'Mở cài đặt tùy chọn Cookie (Chuẩn GDPR Châu Âu)'}
-            className="p-2.5 rounded-[2px] bg-[#190839]/90 hover:bg-[#190839] text-[#F7CAC9] border border-[#F7CAC9]/40 hover:border-[#F7CAC9] shadow-xl backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer active:scale-95 hover:shadow-[0_0_15px_rgba(247,202,201,0.3)]"
-          >
-            <Cookie className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
-            <span className="hidden sm:inline text-[11px] font-mono font-semibold text-white/90 group-hover:text-white">
-              {isEn ? 'Cookie Settings (EU)' : 'Tùy Chọn Cookie (GDPR)'}
-            </span>
-            <span className="text-[10px] font-mono text-[#F7CAC9] border-l border-white/20 pl-1.5 hidden md:inline">
-              🇪🇺
-            </span>
-          </button>
-        </div>
       )}
 
       {/* 3. European Granular Cookie Customization Modal */}
@@ -687,8 +659,8 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onOpen
                 <div className="leading-relaxed">
                   <strong className="text-white">{isEn ? 'Withdrawal of Consent:' : 'Quyền Rút Lại Đồng Thuận:'} </strong>
                   {isEn 
-                    ? 'According to GDPR Art. 7(3), you can withdraw or alter your cookie consent at any time by clicking the persistent "Cookie Settings" button at the bottom-left corner of the screen.' 
-                    : 'Theo Điều 7(3) GDPR, bạn có quyền rút lại hoặc thay đổi đồng thuận cookie bất kỳ lúc nào bằng cách bấm vào biểu tượng "Tùy Chọn Cookie (GDPR)" ở góc dưới bên trái màn hình.'}
+                    ? 'According to GDPR Art. 7(3), you can withdraw or alter your cookie consent at any time by clicking the Cookie icon on the top navigation bar or inside your Profile settings.' 
+                    : 'Theo Điều 7(3) GDPR, bạn có quyền rút lại hoặc thay đổi đồng thuận cookie bất kỳ lúc nào bằng cách bấm vào biểu tượng Cookie trên thanh điều hướng phía trên hoặc trong phần Hồ sơ cá nhân.'}
                 </div>
               </div>
 

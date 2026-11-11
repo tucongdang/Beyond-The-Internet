@@ -335,8 +335,8 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     vibrateShare();
     try {
       await navigator.share({
-        title: 'BEYOND THE INTERNET 2026',
-        text: 'Tham gia trực tiếp đấu trường tương tác BTI 2026 ngay bây giờ!',
+        title: 'BEYOND THE INTERNET 2027',
+        text: 'Tham gia trực tiếp đấu trường tương tác BTI 2027 ngay bây giờ!',
         url: audienceJoinUrl || window.location.href
       });
     } catch (err: any) {
@@ -1039,7 +1039,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
               STAGE DISPLAY MATRIX • {theme.name.toUpperCase()}
             </div>
             <h1 className="text-sm sm:text-base font-bold tracking-tight text-white whitespace-nowrap flex items-center gap-2">
-              <span>{gameState.event_schedule?.title || 'Beyond The Internet 2026'}</span>
+              <span>{gameState.event_schedule?.title || 'Beyond The Internet 2027'}</span>
               {gameState.event_schedule?.match_name && (
                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
                   {gameState.event_schedule.match_name}
@@ -1634,7 +1634,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   )}
 
                   <div className="pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/40 shrink-0">
-                    <span>BEYOND THE INTERNET 2026</span>
+                    <span>BEYOND THE INTERNET 2027</span>
                     <span>MÀN CHIẾU SÂN KHẤU</span>
                   </div>
                 </div>
@@ -2005,7 +2005,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       {/* Stage Footer (Clean Fluent UI Telemetry Bar - Display Only) */}
       <footer className="relative z-10 w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto flex items-center justify-between gap-3 border-t border-white/10 pt-2.5 text-[10px] text-white/40 font-mono whitespace-nowrap overflow-x-auto scrollbar-none shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="font-bold text-white/70 tracking-wider">BEYOND THE INTERNET 2026</span>
+          <span className="font-bold text-white/70 tracking-wider">BEYOND THE INTERNET 2027</span>
           <span>•</span>
           <span className="text-purple-300">LIVE STAGE MATRIX</span>
           <span>•</span>
@@ -2097,7 +2097,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                     title="Sao chép link tham gia vào bộ nhớ tạm"
                   >
                     {isCopiedUrl ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{isCopiedUrl ? 'Đã chép!' : 'Copy URL'}</span>
+                    <span>{isCopiedUrl ? 'Đã chép!' : 'Sao chép link'}</span>
                   </button>
                 </div>
 
@@ -2116,7 +2116,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
             )}
 
             <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-4">
-              BEYOND THE INTERNET 2026 • REALTIME ENGINE
+              BEYOND THE INTERNET 2027 • HỆ THỐNG ĐỒNG BỘ THỜI GIAN THỰC
             </div>
           </div>
         </div>

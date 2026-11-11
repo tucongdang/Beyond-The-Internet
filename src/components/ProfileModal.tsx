@@ -299,8 +299,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
     setIsTestingTts(true);
     const testPhrase = localLanguage === 'en'
-      ? 'AI Voice narration volume test.'
-      : 'Thử nghiệm âm lượng giọng đọc AI thành công.';
+      ? 'Virtual MC voice is ready to accompany you!'
+      : 'Giọng đọc MC ảo đã sẵn sàng đồng hành cùng bạn!';
     aiExplanationService.speakQuestionText(
       testPhrase,
       localLanguage,
@@ -435,7 +435,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       setFirestoreLastSync(Date.now());
     } catch (err) {
       handleFirestoreError(err, 'get', pathForGetDocs);
-      setFirestoreError(localLanguage !== 'vi' ? 'Could not load history from Firestore' : 'Không thể kết nối lấy lịch sử từ Firestore');
+      setFirestoreError(localLanguage !== 'vi' ? 'Reloading your match history, hang tight!' : 'Đang tải lại lịch sử thi đấu, bạn đợi chút nhé!');
     } finally {
       setFirestoreHistoryLoading(false);
     }
@@ -746,7 +746,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <h2 id="profile-modal-title" className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5 text-[#F7CAC9] drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
             {isWaitingRoom
-              ? (localLanguage !== 'vi' ? 'Edit Personal Information' : 'Chỉnh Sửa Thông Tin Cá Nhân')
+              ? (localLanguage !== 'vi' ? 'Your Contestant Profile' : 'Hồ Sơ Chiến Binh Của Bạn')
               : t("prof_title", localLanguage)}
           </h2>
           <button
@@ -852,7 +852,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               }`}
             >
               <History className="w-4 h-4 text-emerald-400" />
-              <span>{localLanguage !== 'vi' ? 'History' : 'Lịch Sử'}</span>
+              <span>{localLanguage !== 'vi' ? 'Match Journey' : 'Hành Trình Thi'}</span>
               {participatedRoundsList.length > 0 && (
                 <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/25 text-emerald-300 font-mono font-bold border border-emerald-400/30">
                   {participatedRoundsList.length}
@@ -943,7 +943,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <div className="flex items-center gap-2 mb-1">
                       <span className="px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <span>{localLanguage !== 'vi' ? 'Firestore Synced' : 'Đồng bộ Firestore'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Scores Safely Saved' : 'Đã lưu điểm an toàn'}</span>
                       </span>
                       {firestoreLastSync && (
                         <span className="text-[10px] font-mono text-white/50">
@@ -953,12 +953,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                     <h3 className="text-base sm:text-lg font-black text-white font-mono uppercase tracking-wide flex items-center gap-2">
                       <History className="w-5 h-5 text-[#F7CAC9]" />
-                      <span>{localLanguage !== 'vi' ? 'Competition Round History' : 'Lịch Sử Tham Gia Vòng Thi'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Your Round Conquest Journey' : 'Hành Trình Chinh Phục Các Vòng Thi'}</span>
                     </h3>
                     <p className="text-xs text-[#B6A6D8] mt-0.5">
                       {localLanguage !== 'vi'
-                        ? 'List of rounds participated in, scores achieved, and completion timestamps stored in Firestore.'
-                        : 'Danh sách các vòng thi đã tham gia, điểm số đạt được và thời gian hoàn thành lưu trữ trên Firestore.'}
+                        ? 'All your scores and reaction speeds across every round are safely preserved right here.'
+                        : 'Toàn bộ điểm số và tốc độ trả lời của bạn qua từng vòng thi đều được lưu giữ trọn vẹn tại đây.'}
                     </p>
                   </div>
 
@@ -971,7 +971,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     }}
                     disabled={firestoreHistoryLoading}
                     className="self-start sm:self-auto px-3 py-1.5 rounded-[2px] bg-white/10 hover:bg-white/20 active:scale-95 text-white font-mono text-xs font-bold transition border border-white/15 cursor-pointer flex items-center gap-1.5 shadow-sm"
-                    title={localLanguage !== 'vi' ? 'Reload responses from Firestore' : 'Tải lại kết quả từ máy chủ Firestore'}
+                    title={localLanguage !== 'vi' ? 'Refresh latest scoreboard' : 'Cập nhật lại bảng điểm mới nhất'}
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${firestoreHistoryLoading ? 'animate-spin text-sky-300' : 'text-[#F7CAC9]'}`} />
                     <span>{localLanguage !== 'vi' ? 'Refresh' : 'Làm Mới'}</span>
@@ -997,7 +997,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                   </div>
                   <div className="p-2.5 rounded-[2px] bg-white/5 border border-white/10 text-center">
-                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Avg Latency' : 'Độ Trễ TB'}</div>
+                    <div className="text-[10px] font-mono text-white/60 uppercase">{localLanguage !== 'vi' ? 'Avg Speed' : 'Tốc Độ TB'}</div>
                     <div className="text-xl font-black text-purple-300 font-mono">
                       {participatedRoundsList.length > 0
                         ? `${(participatedRoundsList.reduce((acc, r) => acc + r.avgLatencySec, 0) / participatedRoundsList.length).toFixed(1)}s`
@@ -1061,7 +1061,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               {firestoreHistoryLoading && participatedRoundsList.length === 0 && (
                 <div className="p-8 text-center bg-white/5 border border-white/10 rounded-[2px] font-mono text-xs text-white/70 space-y-2">
                   <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p>{localLanguage !== 'vi' ? 'Fetching round history from Firestore...' : 'Đang tải lịch sử các vòng thi từ Firestore...'}</p>
+                  <p>{localLanguage !== 'vi' ? 'Loading your match journey...' : 'Đang tải lại hành trình thi đấu của bạn...'}</p>
                 </div>
               )}
 
@@ -1073,12 +1073,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </div>
                   <div className="max-w-md mx-auto">
                     <h4 className="text-sm font-bold text-white mb-1 font-mono">
-                      {localLanguage !== 'vi' ? 'No Round Submissions Yet' : 'Chưa Có Dữ Liệu Vòng Thi Nào'}
+                      {localLanguage !== 'vi' ? 'Your Journey Awaits Kickoff!' : 'Hành Trình Đang Chờ Bạn Mở Màn!'}
                     </h4>
                     <p className="text-xs text-white/60 leading-relaxed">
                       {localLanguage !== 'vi'
-                        ? 'You have not submitted any answers yet. Responses submitted during live question rounds will automatically appear here with exact scores and timestamps recorded in Firestore.'
-                        : 'Bạn chưa nộp câu trả lời nào trong các vòng thi. Khi tham gia trả lời câu hỏi trực tiếp, kết quả chấm điểm và mốc thời gian hoàn thành từ Firestore sẽ tự động hiển thị tại đây.'}
+                        ? 'You have not locked in any answers yet. As soon as you join a live question with the MC, your scores and reaction speed will show up right here!'
+                        : 'Bạn chưa chốt đáp án ở câu hỏi nào. Ngay khi bạn nhập cuộc cùng MC, điểm số và tốc độ phản xạ sẽ hiện ngay tại đây nhé!'}
                     </p>
                   </div>
                 </div>
@@ -1134,7 +1134,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                                 +{round.totalPoints} {localLanguage !== 'vi' ? 'pts' : 'điểm'}
                               </div>
                               <div className="text-[10px] text-white/50">
-                                {localLanguage !== 'vi' ? 'Avg Latency:' : 'Độ trễ TB:'} {round.avgLatencySec}s
+                                {localLanguage !== 'vi' ? 'Reaction speed:' : 'Tốc độ phản xạ:'} {round.avgLatencySec}s
                               </div>
                             </div>
                             <button
@@ -1250,7 +1250,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   {getUserDisplayUid(user)}
                 </div>
                 <p className="text-[10px] text-purple-200/60 leading-tight">
-                  {localLanguage !== 'vi' ? '💡 12-digit unique identifier format: 4 Student ID + 2 Name chars + Gender + 2 Birth Year + 3 Random.' : '💡 Mã 12 số định danh duy nhất theo chuẩn: 4 số MSSV + 2 ký tự Tên + Giới tính + 2 số Năm sinh + 3 số Ngẫu nhiên.'}
+                  {localLanguage !== 'vi' ? '💡 Your unique 12-character badge on the Honor Board and Lucky Draw wheel.' : '💡 Mã định danh 12 ký tự riêng của bạn trên Bảng Vàng và vòng Quay Số May Mắn.'}
                 </p>
               </div>
 
@@ -1279,13 +1279,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-medium text-white/70 mb-1.5 font-mono">
-                    {localLanguage !== 'vi' ? 'Cheering Team (Optional)' : 'Đội Cổ Vũ (Tùy chọn)'}
+                    {localLanguage !== 'vi' ? 'Cheering Contestant (Optional)' : 'Thí Sinh Cổ Vũ (Tùy chọn)'}
                   </label>
                   <input
                     type="text"
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
-                    placeholder={localLanguage !== 'vi' ? 'e.g. Phoenix, Golden Dragon, Blue Fire...' : 'VD: Rồng Vàng, Lửa Xanh...'}
+                    placeholder={localLanguage !== 'vi' ? 'e.g. Contestant 1, Minh Anh...' : 'VD: Thí sinh 1, Minh Anh...'}
                     className="w-full fluent-input font-mono"
                   />
                 </div>
@@ -1387,7 +1387,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'Voice AI' : 'Giọng Đọc AI'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Voice Guide' : 'Giọng Đọc MC'}</span>
                 </button>
 
                 <button
@@ -1404,7 +1404,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   }`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'PDPD Legal' : 'Pháp Lý BVDLCN'}</span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Privacy & Rules' : 'Quyền Riêng Tư'}</span>
                 </button>
               </div>
 
@@ -1524,7 +1524,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 font-mono text-white font-bold text-[11px]">
                             <Vibrate className="w-3.5 h-3.5 text-purple-300" />
-                            <span>{localLanguage !== 'vi' ? 'Haptic Intensity' : 'Cường Độ Rung (Haptic Intensity)'}</span>
+                            <span>{localLanguage !== 'vi' ? 'Touch Vibration Feel' : 'Độ Rung Phản Hồi Khi Bấm'}</span>
                           </div>
                           <span className="text-[10px] font-mono font-bold text-purple-300 px-2 py-0.5 bg-purple-500/20 rounded-[2px] border border-purple-400/30">
                             {hapticIntensity === 'Soft'

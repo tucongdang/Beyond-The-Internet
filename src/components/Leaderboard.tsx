@@ -333,16 +333,16 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-bold">
-                LEADERBOARD MATRIX • BTI 2026
+                {localLanguage !== 'vi' ? 'LEADERBOARD MATRIX • BTI 2027' : 'BẢNG XẾP HẠNG TRỰC TIẾP • BTI 2027'}
               </span>
               <span className="fluent-badge fluent-badge-success flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                LIVE SYNC
+                {localLanguage !== 'vi' ? 'LIVE SYNC' : 'ĐỒNG BỘ TRỰC TIẾP'}
               </span>
             </div>
             
             <h2 className="text-lg lg:text-xl font-bold tracking-tight text-white flex items-center gap-2 font-mono">
-              {localLanguage !== 'vi' ? 'Leaderboard ' : 'Bảng Xếp Hạng '} {tabFilter === 'TEAM' ? (localLanguage !== 'vi' ? 'Teams' : 'Các Đội') : (localLanguage !== 'vi' ? 'Top 5' : 'Top 5 Cao Điểm Nhất')}
+              {localLanguage !== 'vi' ? 'Leaderboard ' : 'Bảng Xếp Hạng '} {tabFilter === 'TEAM' ? (localLanguage !== 'vi' ? 'Contestants' : 'Các Thí Sinh') : (localLanguage !== 'vi' ? 'Top 5' : 'Top 5 Cao Điểm Nhất')}
             </h2>
           </div>
         </div>
@@ -373,7 +373,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   onClick={() => setTabFilter('TEAM')}
                   className={`px-3 py-1.5 rounded-[2px] text-xs font-bold transition cursor-pointer ${tabFilter === 'TEAM' ? 'bg-rose-600 text-white' : 'text-white/60 hover:text-white'}`}
                 >
-                  {localLanguage !== 'vi' ? 'Team (Average)' : 'Đội (Trung bình)'}
+                  {localLanguage !== 'vi' ? 'Contestant (Average)' : 'Thí sinh (Trung bình)'}
                 </button>
               </div>
             )}
@@ -565,7 +565,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                             <Crown className="w-3.5 h-3.5 text-amber-300 fill-amber-300" /> {localLanguage !== 'vi' ? 'CHAMPION' : 'QUÁN QUÂN'}
                           </span>
                           <span className="text-[10px] sm:text-[11px] lg:text-xs font-mono text-amber-300/80 uppercase tracking-widest mt-0.5 block font-semibold">
-                            {localLanguage !== 'vi' ? 'Highest Points in Arena' : 'Điểm Cao Nhất Đấu Trường BTI 2026'}
+                            {localLanguage !== 'vi' ? 'Highest Points in Arena' : 'Điểm Cao Nhất Đấu Trường BTI 2027'}
                           </span>
                         </div>
                       </div>
@@ -1263,7 +1263,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
       {/* Integrated Footer Stage Note */}
       <div className="flex flex-wrap items-center justify-between text-[10px] sm:text-[11px] font-mono text-white/40 px-4 py-2 border-t border-white/10 bg-black/25 shrink-0">
-        <span>{localLanguage !== 'vi' ? 'BTI 2026 STANDARD LEADERBOARD' : 'BẢNG ĐIỂM TỔNG HỢP THEO TIÊU CHUẨN BTI 2026'}</span>
+        <span>{localLanguage !== 'vi' ? 'BTI 2027 STANDARD LEADERBOARD' : 'BẢNG ĐIỂM TỔNG HỢP THEO TIÊU CHUẨN BTI 2027'}</span>
         <span>{localLanguage !== 'vi' ? 'RANKING CRITERIA: TOTAL POINTS ➔ CORRECT ANSWERS ➔ SPEED' : 'TIÊU CHÍ XẾP HẠNG: TỔNG ĐIỂM ➔ SỐ CÂU ĐÚNG ➔ TỐC ĐỘ GỬI ĐÁP ÁN'}</span>
       </div>
     </div>

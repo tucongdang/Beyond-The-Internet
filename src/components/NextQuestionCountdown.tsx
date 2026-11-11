@@ -54,7 +54,10 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
 
   const progressPercent = Math.min(100, Math.max(0, (timeLeft / limit) * 100));
   const isUrgent = timeLeft <= 3;
-  const displayMsg = gameState?.next_question_wait_message || (localLanguage !== 'vi' ? 'Prepare for the next question' : 'Chuẩn bị cho câu hỏi tiếp theo');
+  const rawWaitMsg = (gameState?.next_question_wait_message || '').trim();
+  const displayMsg = !rawWaitMsg || /^(ready for next question|prepare for the next question|chuẩn bị cho câu hỏi tiếp theo|sẵn sàng cho câu hỏi tiếp theo)[.!]*$/i.test(rawWaitMsg)
+    ? (localLanguage !== 'vi' ? 'Let’s see what the next question brings!' : 'Cùng chờ xem câu tiếp theo nhé!')
+    : rawWaitMsg;
 
   if (compact) {
     return (
@@ -100,7 +103,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
             <div className="flex items-center gap-1.5 mb-0.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
               <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300/90">
-                {localLanguage !== 'vi' ? 'ROUND COUNTDOWN' : 'ĐẾM NGƯỢC THỜI GIAN CHỜ'}
+                {localLanguage !== 'vi' ? 'COMING UP NEXT' : 'SẮP LÊN SÓNG'}
               </span>
             </div>
             <h3 className="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">
@@ -127,7 +130,7 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
           isUrgent={isUrgent}
         />
         <div className="flex items-center justify-between text-[11px] font-mono text-white/60 px-1">
-          <span>{localLanguage !== 'vi' ? 'Wait progress' : 'Tiến trình chờ'}</span>
+          <span>{localLanguage !== 'vi' ? 'Get ready!' : 'Sẵn sàng bứt phá!'}</span>
           <span className="font-bold text-amber-300">{Math.round(progressPercent)}%</span>
         </div>
       </div>

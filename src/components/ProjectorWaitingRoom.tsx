@@ -23,6 +23,7 @@ import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import { RotatingSplitBackground } from './RotatingSplitBackground';
 import { syncService } from '../services/syncService';
+import { BrandLogo } from './BrandLogo';
 
 interface ProjectorWaitingRoomProps {
   gameState: GameState;
@@ -207,7 +208,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
           </div>
           <div>
             <div className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.2em] text-[#F7CAC9] uppercase">
-              {isConcluded ? 'GRAND FINALE • BẾ MẠC VÀ VINH DANH' : 'STAGE DISPLAY • MÀN CHIẾU SÂN KHẤU CHÍNH'}
+              {isConcluded ? 'LỄ BẾ MẠC & VINH DANH CHUNG CUỘC' : 'MÀN CHIẾU SÂN KHẤU CHÍNH • BTI 2027'}
             </div>
             <h1 className="text-sm sm:text-lg font-black text-white tracking-tight flex items-center gap-2">
               <span>{eventTitle}</span>
@@ -224,13 +225,13 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
         <div className="flex items-center gap-3">
           <div className="px-3.5 py-1.5 rounded-[2px] fluent-box-nested flex items-center gap-2 font-mono text-xs text-white/90 border border-white/10">
             <Users className="w-4 h-4 text-[#F7CAC9]" />
-            <span>Khán giả đã kết nối:</span>
+            <span>Khán giả đang tham gia:</span>
             <strong className="text-amber-300 font-bold text-sm">{activeCount}</strong>
           </div>
 
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs">
             <Wifi className="w-3.5 h-3.5 animate-pulse" />
-            <span>{currentPing.latency}ms • Realtime Sync</span>
+            <span>{currentPing.latency}ms • Trực tiếp</span>
           </div>
 
           <div className={`px-3.5 py-1.5 rounded-[2px] font-bold uppercase tracking-wider text-xs font-mono border ${
@@ -245,7 +246,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
             {isConcluded
               ? '🏁 ĐÃ BẾ MẠC'
               : isPanicMode
-              ? '⏸️ HỆ THỐNG TẠM DỪNG'
+              ? '⏸️ TẠM DỪNG NHẬN ĐÁP ÁN'
               : schedule?.status === 'SCHEDULED' && !isTimeReached
               ? '⏳ CHỜ KHAI MẠC'
               : '🔴 SẴN SÀNG TRANH TÀI'}
@@ -306,18 +307,8 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
 
             {/* Title & Match Badge */}
             <div>
-              {/* Official Brand Logo for Stage */}
-              <div className="mb-3">
-                <img
-                  src="/logo-landscape.png"
-                  alt="Beyond The Internet 2027"
-                  className="max-h-16 sm:max-h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(247,202,201,0.25)] select-none pointer-events-none"
-                  loading="eager"
-                />
-              </div>
-
               {schedule?.match_name && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-[3px] bg-gradient-to-r from-amber-500/20 via-purple-600/20 to-sky-500/20 text-amber-300 border border-amber-400/50 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider mb-2.5 shadow-lg">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-[3px] bg-gradient-to-r from-amber-500/20 via-purple-600/20 to-sky-500/20 text-amber-300 border border-amber-400/50 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 shadow-lg">
                   <Trophy className="w-4 h-4 text-amber-400" />
                   <span>{schedule.match_name}</span>
                   {schedule.match_subtitle && (
@@ -327,18 +318,16 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   )}
                 </div>
               )}
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-2xl">
-                {isBreakActive && matchBreak?.title ? (
-                  <>
-                    <span className="text-amber-300">{matchBreak.title}</span>
-                  </>
-                ) : (
-                  <>
-                    BEYOND THE INTERNET <span className="text-gradient-horizon font-black">2027</span>
-                  </>
-                )}
-              </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-[#B6A6D8] mt-2 font-normal leading-relaxed">
+              {isBreakActive && matchBreak?.title ? (
+                <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-amber-300 tracking-tight leading-tight drop-shadow-2xl">
+                  {matchBreak.title}
+                </h2>
+              ) : (
+                <div className="py-1">
+                  <BrandLogo variant="landscape" size="xl" />
+                </div>
+              )}
+              <p className="text-sm sm:text-base lg:text-lg text-[#B6A6D8] mt-2.5 font-normal leading-relaxed">
                 {isBreakActive ? (matchBreak?.subtitle || 'Trận đấu đang tạm dừng ít phút. Các thí sinh và khán giả vui lòng giữ nguyên vị trí.') : briefingNote}
               </p>
             </div>
@@ -369,10 +358,10 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                 <div className="relative z-10 flex items-center justify-between mb-3 border-b border-amber-400/20 pb-2">
                   <div className="flex items-center gap-2 text-xs font-mono text-amber-300 uppercase font-bold tracking-wider">
                     <Clock className="w-4 h-4 text-amber-400 animate-spin" />
-                    <span>Thời gian giải lao / tạm dừng còn lại:</span>
+                    <span>Thời gian giải lao còn lại:</span>
                   </div>
                   <div className="text-[11px] font-mono text-amber-300/70 font-bold">
-                    Trực tiếp từ Trung Tâm Điều Hành
+                    Đồng bộ cùng sân khấu
                   </div>
                 </div>
 
@@ -412,10 +401,10 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                 <div className="relative z-10 flex items-center justify-between mb-3 border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2 text-xs font-mono text-amber-300 uppercase font-bold tracking-wider">
                     <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-                    <span>Thời gian đếm ngược chính xác tới giờ khai mạc:</span>
+                    <span>Đếm ngược tới giờ khai mạc:</span>
                   </div>
                   <div className="text-[11px] font-mono text-slate-400">
-                    Hệ thống đồng bộ Server NTP
+                    Giờ chuẩn sân khấu
                   </div>
                 </div>
 
@@ -530,7 +519,7 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
       {/* Footer / Broadcast Announcer */}
       <footer className="relative z-10 w-full mt-auto shrink-0">
         <div className="text-center text-[10px] sm:text-xs font-mono text-[#B6A6D8]/50 uppercase tracking-widest pt-2">
-          Beyond The Internet 2027 • Academic Interactive Real-time Arena
+          Beyond The Internet 2027 • Đấu Trường Học Thuật Trực Tiếp
         </div>
       </footer>
 

@@ -203,7 +203,7 @@ export const AdminActivityLog: React.FC = () => {
       case 'ADMIN_CONTROL':
         return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">QUẢN TRỊ (ADMIN)</span>;
       case 'USER_INTERACTION':
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">NGƯỜI CHƠI (USER)</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">THÍ SINH (USER)</span>;
       case 'PSYCHOMETRICS':
         return <span className="px-2 py-0.5 text-[10px] font-bold rounded-[2px] bg-purple-500/20 text-purple-300 border border-purple-500/30">ĐỘ KHÓ (ITEM)</span>;
       case 'VCNV_WORKFLOW':
@@ -338,7 +338,7 @@ export const AdminActivityLog: React.FC = () => {
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-white/70 leading-relaxed max-w-4xl">
-              Lưu vết thời gian thực mọi thao tác Ban Tổ Chức (chuyển câu, khóa nhận bài, công bố đáp án), phản xạ tương tác của người chơi (độ trễ phản hồi ms), thăm dò ý kiến và dữ liệu phân tích Item phục vụ <strong>giải trình khiếu nại</strong> &amp; <strong>công bố nghiên cứu khoa học (SPSS, R, Python)</strong>.
+              Lưu vết thời gian thực mọi thao tác Ban Tổ Chức (chuyển câu, khóa nhận bài, công bố đáp án), phản xạ tương tác của thí sinh (độ trễ phản hồi ms), thăm dò ý kiến và dữ liệu phân tích Item phục vụ <strong>giải trình khiếu nại</strong> &amp; <strong>công bố nghiên cứu khoa học (SPSS, R, Python)</strong>.
             </p>
           </div>
 

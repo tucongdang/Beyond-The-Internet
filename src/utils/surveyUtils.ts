@@ -4,7 +4,7 @@ export const DEFAULT_SURVEY_CONFIG: AudienceSurveyConfig = {
   enabled: false,
   form_url: 'https://docs.google.com/forms/d/e/1FAIpQLSc_ExampleFormKey/viewform',
   sample_rate: 10, // 10%
-  title: 'Khảo Sát Khán Giả BTI 2026',
+  title: 'Khảo Sát Khán Giả BTI 2027',
   description: 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!',
   gift_note: 'Hoàn tất khảo sát để nhận phần quà lưu niệm đặc biệt tại bàn Lễ tân.',
   auto_show_on_summary: true,

@@ -41,6 +41,7 @@ import {
   DATA_POLICY_DATA, 
   PolicyDocument 
 } from '../utils/policyData';
+import { BrandLogo } from './BrandLogo';
 
 interface PolicyPageProps {
   onBack: () => void;
@@ -480,29 +481,18 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
             <span className="truncate max-w-[200px] sm:max-w-none">{returnLabel}</span>
           </button>
 
-          {/* Center Brand Title & Reading Time Badge */}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[2px] overflow-hidden bg-black border border-[#F7CAC9]/40 flex items-center justify-center">
-              <img src="/logo-square.png" alt="BTI 2027" className="w-full h-full object-cover" />
-            </div>
-            <div className="text-left hidden sm:block">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  Beyond The Internet 2027
-                </h1>
-                <span 
-                  id="policy-reading-time-header-badge"
-                  className="px-1.5 py-0.2 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-300 font-mono text-[9px] font-semibold flex items-center gap-1"
-                  title={localLanguage !== 'vi' ? 'Estimated time to read this section' : 'Thời gian ước tính để đọc hết mục này'}
-                >
-                  <Clock className="w-2.5 h-2.5 text-sky-400" />
-                  <span>{localLanguage !== 'vi' ? readingTimeEstimate.labelEn : readingTimeEstimate.labelVi}</span>
-                </span>
-              </div>
-              <p className="text-[10px] text-[#F7CAC9]/80 font-mono">
-                {localLanguage !== 'vi' ? 'Legal & Privacy Portal' : 'Cổng Thông Tin Pháp Lý & Quyền Riêng Tư'}
-              </p>
-            </div>
+          {/* Center Brand Logo & Reading Time Badge */}
+          <div className="flex items-center gap-2.5">
+            <BrandLogo variant="landscape" size="xs" className="hidden sm:inline-flex" />
+            <BrandLogo variant="square" size="xs" className="sm:hidden" />
+            <span 
+              id="policy-reading-time-header-badge"
+              className="px-1.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-300 font-mono text-[9px] font-semibold hidden md:flex items-center gap-1"
+              title={localLanguage !== 'vi' ? 'Estimated time to read this section' : 'Thời gian ước tính để đọc hết mục này'}
+            >
+              <Clock className="w-2.5 h-2.5 text-sky-400" />
+              <span>{localLanguage !== 'vi' ? readingTimeEstimate.labelEn : readingTimeEstimate.labelVi}</span>
+            </span>
           </div>
 
           {/* Quick Actions */}

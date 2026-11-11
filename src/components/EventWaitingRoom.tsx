@@ -27,6 +27,7 @@ import { RotatingSplitBackground } from './RotatingSplitBackground';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
 import { getUserDisplayUid } from '../utils/uidUtils';
+import { BrandLogo } from './BrandLogo';
 
 interface EventWaitingRoomProps {
   gameState: GameState;
@@ -116,8 +117,8 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
   };
 
   const eventTitle = schedule?.title || 'Beyond The Internet 2027';
-  const eventLocation = schedule?.location || 'Hội trường Trực tiếp & Nền tảng Tương tác Trực tuyến';
-  const briefingNote = schedule?.briefing_note || 'Chào mừng các bạn khán giả! Vui lòng ổn định vị trí, kiểm tra kết nối mạng và sẵn sàng cho các vòng thi đấu trực tiếp.';
+  const eventLocation = schedule?.location || 'Hội trường chính & Sàn đấu trực tuyến BTI 2027';
+  const briefingNote = schedule?.briefing_note || 'Chào mừng bạn đến với Beyond The Internet 2027! Hãy ổn định chỗ ngồi, kiểm tra nhanh âm thanh và sẵn sàng bùng nổ cùng các vòng thi nhé.';
 
   return (
     <div id="event-waiting-room" className="min-h-[calc(100dvh-5rem)] p-3 sm:p-5 md:p-8 flex flex-col items-center justify-center animate-in fade-in duration-300 relative">
@@ -135,14 +136,9 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
           <div className="relative z-10 flex flex-col items-center text-center">
-            {/* Brand Logo in Audience Waiting Room */}
+            {/* Compact Brand Logo in Audience Waiting Room */}
             <div className="mb-3">
-              <img
-                src="/logo-landscape.png"
-                alt="Beyond The Internet 2027"
-                className="max-h-12 sm:max-h-16 w-auto object-contain drop-shadow-[0_4px_20px_rgba(247,202,201,0.22)] select-none pointer-events-none"
-                loading="eager"
-              />
+              <BrandLogo variant="landscape" size="md" />
             </div>
 
             {/* Stage Status Pill & Match Badge */}
@@ -159,9 +155,11 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-2">
-              {eventTitle}
-            </h1>
+            {eventTitle.trim().toLowerCase() !== 'beyond the internet 2027' && (
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight mb-2">
+                {eventTitle}
+              </h1>
+            )}
 
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-slate-300 font-medium mb-4">
               <span className="flex items-center gap-1.5 text-sky-300">
@@ -254,7 +252,7 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           <div className="flex items-start sm:items-center justify-center gap-2.5 p-3 rounded-[3px] bg-sky-950/40 border border-sky-500/30 text-sky-200 text-xs text-left sm:text-center max-w-xl mx-auto">
             <Lock className="w-4 h-4 text-sky-400 shrink-0 mt-0.5 sm:mt-0" />
             <span>
-              <strong>Bảo mật nội dung tuyệt đối:</strong> Toàn bộ câu hỏi, dữ liệu vòng thi được niêm phong chống rò rỉ. Thiết bị của bạn sẽ tự động chuyển vào sàn đấu mà không cần làm mới trang khi có tín hiệu Bắt đầu.
+              <strong>Đề thi được bảo mật đến phút chót:</strong> Ngay khi MC phát hiệu lệnh bắt đầu trên sân khấu, màn hình của bạn sẽ tự động mở câu hỏi mà không cần tải lại trang.
             </span>
           </div>
         </div>
@@ -296,7 +294,7 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
                     )}
                     {user.teamName && (
                       <div className="flex justify-between items-center text-slate-400">
-                        <span>Đội cổ vũ:</span>
+                        <span>Thí sinh cổ vũ:</span>
                         <span className="font-bold text-amber-300">{user.teamName}</span>
                       </div>
                     )}
@@ -354,11 +352,11 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
               <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5 mb-3">
                 <div className="flex items-center gap-2 text-xs font-bold font-mono text-slate-200 uppercase tracking-wider">
                   <Zap className="w-4 h-4 text-sky-400" />
-                  <span>Kiểm Tra Thiết Bị Trước Giờ Thi</span>
+                  <span>Kiểm Tra Nhanh Trước Giờ Thi</span>
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  ONLINE
+                  ĐÃ KẾT NỐI
                 </span>
               </div>
 
@@ -367,10 +365,10 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
                 <div className="p-2.5 rounded-[3px] bg-slate-950/60 border border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-slate-300">
                     <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Độ trễ kết nối (Ping):</span>
+                    <span>Tốc độ phản hồi mạng:</span>
                   </div>
                   <span className="font-mono font-bold text-emerald-400">
-                    {currentPing.latency} ms ({currentPing.quality})
+                    {currentPing.latency} ms • Ổn định
                   </span>
                 </div>
 
@@ -437,7 +435,7 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
         <div className="fluent-box rounded-[4px] p-4 sm:p-5 border border-white/10 bg-slate-900/60 space-y-2">
           <div className="flex items-center gap-2 text-xs font-bold font-mono text-purple-300 uppercase tracking-wider mb-1">
             <Info className="w-4 h-4 text-purple-400" />
-            <span>Thông Điệp & Thể Lệ Từ Ban Tổ Chức</span>
+            <span>Lời Nhắn Từ Ban Tổ Chức</span>
           </div>
           <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
             &ldquo;{briefingNote}&rdquo;
@@ -445,7 +443,7 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-white/10 text-[11px] text-slate-300">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-              <span>1. Khởi động chung</span>
+              <span>1. Khởi động</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -453,11 +451,11 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-              <span>3. Tăng tốc tốc độ</span>
+              <span>3. Tăng tốc bứt phá</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>4. Về đích tương tác</span>
+              <span>4. Về đích</span>
             </div>
           </div>
         </div>

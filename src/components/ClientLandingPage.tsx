@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { Clock, Megaphone } from 'lucide-react';
+import { Clock, Megaphone, Sparkles, Flame, Coffee } from 'lucide-react';
 import { GameState } from '../types';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import { RotatingSplitBackground } from './RotatingSplitBackground';
@@ -13,6 +13,7 @@ interface ClientLandingPageProps {
 
 export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState, isPanic }) => {
   const { localLanguage } = useLanguage();
+  const isVi = localLanguage === 'vi';
 
   const overlay = gameState?.announcer_overlay;
   const hasLiveAnnouncement = Boolean(overlay?.active && overlay?.text?.trim());
@@ -28,7 +29,19 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
 
       <div className="relative z-10 w-full max-w-xl mx-auto flex flex-col items-center text-center py-6 sm:py-10 animate-fadeIn">
         
-        {/* Animated Clock / Horizon Radar Icon */}
+        {/* Arena Stage Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-[2px] bg-white/5 border border-[#F7CAC9]/25 text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9] shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <span>
+            {isBreakActive
+              ? (isVi ? 'Trạm Nghỉ Giữa Hiệp • BTI 2027' : 'Halftime Lounge • BTI 2027')
+              : isPanicMode
+                ? (isVi ? 'Nhịp Nghỉ Sân Khấu • BTI 2027' : 'Stage Hold • BTI 2027')
+                : (isVi ? 'Đấu Trường Sinh Viên • BTI 2027' : 'Student Arena • BTI 2027')}
+          </span>
+        </div>
+
+        {/* Animated Status Icon */}
         <div className={`relative w-16 h-16 sm:w-20 sm:h-20 mb-5 sm:mb-6 rounded-[4px] flex items-center justify-center border shadow-xl shadow-[#0D0420]/60 ${
           isBreakActive 
             ? 'bg-amber-500/20 border-amber-400/40 text-amber-300' 
@@ -37,31 +50,39 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
           <span className={`animate-ping absolute inline-flex h-full w-full rounded-[4px] opacity-60 ${
             isBreakActive ? 'bg-amber-400/30' : 'bg-[#F7CAC9]/20'
           }`}></span>
-          <Clock className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
+          {isBreakActive ? (
+            <Coffee className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
+          ) : isPanicMode ? (
+            <Clock className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
+          ) : (
+            <Flame className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
+          )}
         </div>
         
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white mb-2 sm:mb-3 drop-shadow-2xl uppercase font-mono">
           {isBreakActive
-            ? (matchBreak?.title || (localLanguage !== 'vi' ? 'Match Break' : 'Tạm Dừng Giữa Trận'))
+            ? (matchBreak?.title || (!isVi ? 'Quick Recharge Break!' : 'Giờ Giải Lao Nạp Năng Lượng!'))
             : isPanicMode
-              ? (localLanguage !== 'vi' ? 'System Paused' : 'Hệ Thống Tạm Dừng')
-              : (localLanguage !== 'vi' ? 'Please Stand By' : 'Vui Lòng Chờ')}
+              ? (!isVi ? 'Quick Stage Hold!' : 'Sân Khấu Đang Tạm Nghỉ Ít Phút!')
+              : (!isVi ? 'Get Ready to Shine Next!' : 'Sẵn Sàng Bùng Nổ Ở Câu Tiếp Theo!')}
         </h1>
         
         <p className="text-xs sm:text-sm text-[#B6A6D8] mb-6 font-normal leading-relaxed max-w-md">
           {isBreakActive ? (
-            matchBreak?.subtitle || (localLanguage !== 'vi' ? 'The match is paused for a short intermission. Please stand by.' : 'Trận đấu đang tạm dừng để hội ý hoặc nghỉ giữa hiệp. Vui lòng giữ nguyên màn hình.')
+            matchBreak?.subtitle || (!isVi
+              ? 'Contestants on stage are preparing their strategy. Relax your fingers and keep this screen open for the next round!'
+              : 'Các thí sinh đang chuẩn bị chiến thuật trên sân khấu. Bạn tranh thủ thả lỏng tay một chút và giữ màn hình mở để chuẩn bị bứt phá tiếp nhé!')
           ) : isPanicMode ? (
-            localLanguage !== 'vi' ? (
-              <>Interaction is currently paused by the Administrator.<br/>All submitted answers are safely preserved. Please wait for further announcements.</>
+            !isVi ? (
+              <>The MC and organizers are adjusting the pace on stage.<br/>All your previous answers are safely recorded — eyes on the stage for the next cue!</>
             ) : (
-              <>Quyền tương tác hiện đang bị tạm dừng bởi Quản trị viên.<br/>Mọi câu trả lời đã nộp vẫn được bảo lưu an toàn. Vui lòng chờ thông báo tiếp theo.</>
+              <>MC và Ban Tổ Chức đang điều chỉnh nhịp độ trên sân khấu.<br/>Mọi câu trả lời trước đó của bạn đều đã được tính điểm trọn vẹn — cùng hướng mắt lên sân khấu chờ hiệu lệnh mới nhé!</>
             )
           ) : (
-            localLanguage !== 'vi' ? (
-              <>The organizers are preparing for the next contest round.<br/>Please stay on this screen and be ready to participate.</>
+            !isVi ? (
+              <>A brand-new challenge is about to drop as soon as the MC gives the cue!<br/>Keep your screen open to lock in your fastest answer and climb the Leaderboard!</>
             ) : (
-              <>Ban tổ chức đang chuẩn bị cho nội dung thi đấu tiếp theo.<br/>Vui lòng giữ nguyên màn hình và sẵn sàng tham gia.</>
+              <>Thử thách mới sắp lên sóng ngay khi MC phát hiệu lệnh!<br/>Giữ màn hình luôn mở để chớp thời cơ chốt đáp án thật nhanh và leo thẳng lên Bảng Vàng nhé!</>
             )
           )}
         </p>
@@ -79,7 +100,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
               </span>
               <span className="text-xs font-mono font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Megaphone className="w-3.5 h-3.5" />
-                {localLanguage !== 'vi' ? 'Live Announcement from Organizers' : 'Thông báo trực tiếp từ Ban Tổ Chức'}
+                {!isVi ? 'Live Message from the Stage' : 'Nhắn Nhanh Từ Sân Khấu'}
               </span>
             </div>
             <p className="text-sm sm:text-base font-bold text-white leading-relaxed">
@@ -95,7 +116,7 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
           </span>
           <span className="text-[11px] uppercase tracking-wider">
-            {localLanguage !== 'vi' ? 'Connected & Synchronized in Real-time' : 'Đã kết nối và đồng bộ thời gian thực'}
+            {!isVi ? 'Connected smoothly • Ready for the MC’s cue' : 'Đường truyền mượt mà • Sẵn sàng bắt nhịp cùng MC'}
           </span>
         </div>
       </div>
@@ -105,3 +126,4 @@ export const ClientLandingPage: React.FC<ClientLandingPageProps> = ({ gameState,
     </div>
   );
 };
+

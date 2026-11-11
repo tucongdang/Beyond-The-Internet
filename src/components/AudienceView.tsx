@@ -2,7 +2,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, UserInfo, UserResponse, OptionKey, QuestionTranslation } from '../types';
+import { GameState, UserInfo, UserResponse, QuestionTranslation } from '../types';
 import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
@@ -19,7 +19,6 @@ import {
 } from '../services/audienceScoringService';
 import {
   vibrateSubmit,
-  vibrateSuccess,
   vibrateWarning,
   vibrateTap,
   vibrateNewQuestion,
@@ -28,9 +27,7 @@ import {
   vibrateCorrect,
   vibrateWrong,
   vibrateLifeline,
-  vibrateCheer,
-  vibrateSelection,
-  vibrateGrandCelebration
+  vibrateSelection
 } from '../utils/hapticUtils';
 import { ZoomIn } from 'lucide-react';
 import { t } from '../utils/i18n';
@@ -38,48 +35,44 @@ import { ShareGameModal } from './ShareGameModal';
 import { Leaderboard } from './Leaderboard';
 import { AudienceRealtimeLeaderboard } from './AudienceRealtimeLeaderboard';
 import { LuckyDrawAudience } from './LuckyDrawAudience';
-import { AudienceChatbot } from './AudienceChatbot';
 import { MatchBreakAudienceOverlay } from './MatchBreakAudienceOverlay';
 import { NextQuestionCountdown } from './NextQuestionCountdown';
 import { CountdownTimer } from './CountdownTimer';
 import { AudienceDesktopSidebar } from './AudienceDesktopSidebar';
+import { ConfidenceStaking } from './ConfidenceStaking';
+import { ChampionVoteModal } from './ChampionVoteModal';
+import { LuckOfTheDrawOverlay } from './LuckOfTheDrawOverlay';
 import confetti from '../utils/confetti';
 import {
   Radio,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle, AlertOctagon,
+  AlertCircle,
   Sparkles,
-  Award,
   BarChart3,
   ArrowLeft,
   HelpCircle,
   Lock,
   Send,
   Zap,
-  ShieldCheck,
   ChevronRight,
   Flame,
   Trophy,
-  TrendingUp,
   QrCode,
   ArrowUpDown,
   AlertTriangle,
   X,
   GripVertical,
-  Share2,
   Home,
   User, Users,
   History,
   Sun,
-  SunMedium,
-  Smartphone,
   Heart,
   MessageSquare,
   Megaphone,
-  RefreshCw, Globe, Languages, ChevronDown, Check,
-  Volume2, VolumeX, Shield, Bot
+  RefreshCw, Globe, ChevronDown,
+  Volume2, VolumeX, Bot, Info
 } from 'lucide-react';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { calculateSurvivalStats } from '../utils/leaderboardUtils';
@@ -107,6 +100,8 @@ import { EventConcludedView } from './EventConcludedView';
 import { AudienceQuestionSkeleton } from './AudienceQuestionSkeleton';
 import { shouldShowQuestionSkeleton } from '../utils/questionSkeletonUtils';
 import { AudiencePredictionWidget } from './AudiencePredictionWidget';
+import { QuickTips } from './QuickTips';
+import { GameRulesModal } from './GameRulesModal';
 
 interface AudienceViewProps {
   gameState: GameState;
@@ -120,6 +115,7 @@ interface AudienceViewProps {
   onOpenQAModal?: () => void;
   onOpenPostMatchModal?: () => void;
   onOpenLeaderboard?: () => void;
+  onOpenRulesModal?: () => void;
   isHighContrast?: boolean;
   onToggleHighContrast?: () => void;
   isWakeLockLocked?: boolean;
@@ -139,6 +135,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   onOpenQAModal,
   onOpenPostMatchModal,
   onOpenLeaderboard,
+  onOpenRulesModal,
   isHighContrast,
   onToggleHighContrast,
   isWakeLockLocked,
@@ -171,10 +168,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   }, []);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
-  const handleOpenShareModal = onOpenShareModal || (() => setIsShareModalOpen(true));
   const [showConcludedLeaderboard, setShowConcludedLeaderboard] = useState<boolean>(false);
-  const [isRealtimeLeaderboardOpen, setIsRealtimeLeaderboardOpen] = useState<boolean>(false);
-  const [isLogModalOpen, setIsLogModalOpen] = useState<boolean>(false);
   const [lastKeyPressed, setLastKeyPressed] = useState<string>('');
   const isLongQuestion = (gameState?.question_text || '').length > 180;
   const [isQuestionZoomed, setIsQuestionZoomed] = useState<boolean>(false);
@@ -269,7 +263,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   // Multilingual Question Translation State & Resolver
   const [localTranslation, setLocalTranslation] = useState<QuestionTranslation | null>(null);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
-  const [translationError, setTranslationError] = useState<string | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
   const [shortAnswerTranslation, setShortAnswerTranslation] = useState<{ text: string; lang: string }>({ text: '', lang: '' });
   const [isTranslatingShortAnswer, setIsTranslatingShortAnswer] = useState<boolean>(false);
@@ -306,7 +299,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     if (gameState.question_text && gameState.question_id) {
       let isCancelled = false;
       setIsTranslating(true);
-      setTranslationError(null);
       translationService.translateQuestion(
         {
           id: gameState.question_id,
@@ -323,7 +315,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       }).catch((err) => {
         if (!isCancelled) {
           console.warn(`Auto translate question to ${targetLang} error:`, err);
-          setTranslationError(err?.message || 'Không thể dịch');
           setIsTranslating(false);
         }
       });
@@ -380,7 +371,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const handleRequestTranslate = async () => {
     if (isTranslating || localLanguage === 'vi') return;
     setIsTranslating(true);
-    setTranslationError(null);
     try {
       const trans = await translationService.translateQuestion(
         {
@@ -394,8 +384,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       setLocalTranslation(trans);
       soundFx.playTing();
       vibrateTap();
-    } catch (err: any) {
-      setTranslationError(err?.message || 'Không thể dịch');
+    } catch {
       soundFx.playAlarm();
     } finally {
       setIsTranslating(false);
@@ -438,9 +427,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     maxFontSize: 24,
     lineHeight: isCjkQuestion ? 1.6 : 1.35
   });
-
-  const hasAnnouncer = Boolean(gameState?.announcer_overlay?.active && gameState?.announcer_overlay?.text?.trim());
-  
 
   // Auto-dismiss notification toast
   useEffect(() => {
@@ -1627,22 +1613,21 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         return () => clearTimeout(timer);
           }
 
-      if (keyUpper === 'B') {
+      if (keyUpper === 'B' && onOpenLeaderboard) {
         e.preventDefault();
         soundFx.playClick();
         vibrateTap();
-        setIsRealtimeLeaderboardOpen(prev => !prev);
+        onOpenLeaderboard();
         return () => clearTimeout(timer);
       }
 
-      if (keyUpper === 'L') {
+      if (keyUpper === 'L' && onOpenLogModal) {
         e.preventDefault();
         soundFx.playClick();
         vibrateTap();
-        if (onOpenLogModal) onOpenLogModal();
-        else setIsLogModalOpen(true);
+        onOpenLogModal();
         return () => clearTimeout(timer);
-          }
+      }
 
       if (keyUpper === 'S') {
         e.preventDefault();
@@ -1756,7 +1741,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   Bảng Xếp Hạng Chung Cuộc
                 </h3>
                 <p className="text-[10px] text-amber-200/60 font-mono">
-                  Beyond The Internet 2026
+                  Beyond The Internet 2027
                 </p>
               </div>
             </div>
@@ -1837,7 +1822,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   if (gameState.panic_mode) {
     return <ClientLandingPage gameState={gameState} isPanic={true} />;
   }
-  if (gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE')) {
+  const isPredictorDraw = Boolean(
+    gameState.lucky_draw &&
+    gameState.lucky_draw.status !== 'IDLE' &&
+    (gameState.lucky_draw.is_predictor_draw || gameState.lucky_draw.filter_mode === 'CORRECT_PREDICTION')
+  );
+
+  if (!isPredictorDraw && (gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE'))) {
     return <LuckyDrawAudience gameState={gameState} currentUserInfo={user} />;
   }
 
@@ -1865,7 +1856,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <div className="w-16 h-16 rounded-[2px] bg-gradient-to-tr from-[#F7CAC9] to-[#F7CAC9] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#F7CAC9]/30">
             <Radio className="w-8 h-8 text-white animate-pulse" />
           </div>
-          <h2 className="text-2xl font-black mb-2 tracking-tight">Beyond The Internet 2026</h2>
+          <h2 className="text-2xl font-black mb-2 tracking-tight">Beyond The Internet 2027</h2>
           <p className="text-[#B6A6D8] text-sm mb-6 leading-relaxed">
             {gameState.lobby_locked
               ? t("view_wait_mc", localLanguage)
@@ -1906,6 +1897,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <QrCode className="w-4 h-4 text-[#F7CAC9]" />
               <span>{t("view_share_qr", localLanguage)}</span>
             </button>
+
+            {onOpenRulesModal && (
+              <button
+                id="btn-audience-rules-unregistered"
+                type="button"
+                aria-label={localLanguage !== 'vi' ? 'Game Rules Guide' : 'Cẩm Nang Luật Chơi BTI 2027'}
+                onClick={() => {
+                  soundFx.playClick();
+                  vibrateTap();
+                  onOpenRulesModal();
+                }}
+                className="w-full py-3 px-4 rounded-[2px] fluent-box-nested hover:bg-white/10 text-[#F7CAC9] border border-white/15 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
+              >
+                <Info className="w-4 h-4 text-[#F7CAC9]" />
+                <span>{localLanguage !== 'vi' ? 'BTI 2027 Game Rules Guide' : 'Xem Cẩm Nang Luật Chơi BTI 2027'}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1961,7 +1969,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -2110,7 +2118,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           <ShareGameModal
             isOpen={isShareModalOpen}
             onClose={() => setIsShareModalOpen(false)}
-            gameTitle="Beyond The Internet 2026"
+            gameTitle="Beyond The Internet 2027"
             roundName={gameState.round_name || gameState.category}
           />
         </div>
@@ -2599,9 +2607,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           onToggleWakeLock={onToggleWakeLock}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onOpenProfile={onOpenProfile}
-          onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
+          onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
-          onOpenLeaderboard={() => setIsRealtimeLeaderboardOpen(true)}
+          onOpenLeaderboard={onOpenLeaderboard}
           selectedChoice={selectedChoice}
           hasVotedThisQuestion={hasVotedThisQuestion}
           timeLeft={timeLeft}
@@ -2613,7 +2621,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -2654,7 +2662,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             </div>
 
             <h2 className="text-xl sm:text-2xl font-black text-slate-100 mb-3">
-              {gameState.round_name || 'Beyond The Internet 2026'}
+              {gameState.round_name || 'Beyond The Internet 2027'}
             </h2>
 
             <p className="text-base sm:text-lg text-[#FCEEEC] font-medium italic mb-6 leading-relaxed">
@@ -2752,7 +2760,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           onToggleWakeLock={onToggleWakeLock}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onOpenProfile={onOpenProfile}
-          onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
+          onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
           selectedChoice={selectedChoice}
           hasVotedThisQuestion={hasVotedThisQuestion}
@@ -2765,7 +2773,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -2943,17 +2951,20 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
         )}
 
-        {/* Reusable CountdownTimer Header: Category, Badges, Timer & Progress Bar */}
+        {/* Reusable CountdownTimer Header: Category, Badges, Progress Ring & Slanted Bar */}
         <CountdownTimer
           timeLeft={timeLeft}
           totalTime={gameState.time_limit}
+          gameState={gameState}
           isTTRound={isTTRound}
+          isPaused={Boolean(gameState.is_timer_paused)}
+          hasAnswered={hasVotedThisQuestion}
           label={gameState.category || gameState.round_name}
         >
           {/* Streak Combo Badge (NO point multiplier) */}
           {streakStats.currentStreak >= 2 && (
             <div 
-              className="flex items-center gap-1 px-2.5 py-1 rounded-[2px] text-xs font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 animate-pulse"
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-[2px] text-xs font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-400/40 animate-pulse"
               title={`Chuỗi thắng: ${streakStats.currentStreak} câu liên tiếp!`}
             >
               <Flame className="w-3.5 h-3.5 text-amber-400" />
@@ -3675,7 +3686,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
-                      const isUserIncorrect = hasVotedThisQuestion && isSelected && serverCorrectKey && key.toUpperCase() !== serverCorrectKey;
                       
                       const isOptionA = key.toUpperCase() === 'A';
                       
@@ -3724,16 +3734,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isImagePoll ? (
                   /* Grid ảnh cho Poll hình ảnh */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`} role="group" aria-label="Danh sách phương án bình chọn">
-                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
                       const isUserIncorrect = hasVotedThisQuestion && isSelected && serverCorrectKey && key.toUpperCase() !== serverCorrectKey;
-                      const hasSelected = Boolean(selectedChoice);
                       const isEliminated = gameState.eliminated_options?.includes(key);
-                      const pct = (timeLeft <= 0) ? (pollStats.percentages[key] || 0) : null;
-                      
-                      const numKey = idx + 1;
                       
                       return (
                         <button
@@ -3810,9 +3816,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
                       const isUserIncorrect = hasVotedThisQuestion && isSelected && serverCorrectKey && key.toUpperCase() !== serverCorrectKey;
-                      const hasSelected = Boolean(selectedChoice);
                       const isEliminated = gameState.eliminated_options?.includes(key);
-                      const pct = (timeLeft <= 0) ? (pollStats.percentages[key] || 0) : null;
 
                       // Blind poll mode label simplification
                       const displayText = isBlindPoll
@@ -3953,6 +3957,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   </span>
                 </div>
               )}
+
+              {/* Confidence Staking on Stage Contestants */}
+              <ConfidenceStaking gameState={gameState} user={user} className="mt-3" />
             </div>
 
           </div>
@@ -3970,7 +3977,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           onToggleWakeLock={onToggleWakeLock}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onOpenProfile={onOpenProfile}
-          onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
+          onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
           selectedChoice={selectedChoice}
           hasVotedThisQuestion={hasVotedThisQuestion}
@@ -3983,7 +3990,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -4043,6 +4050,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             &ldquo;{t("view_recorded_wait", localLanguage)}&rdquo;
           </p>
 
+          {/* Confidence Staking Status in LOCKED State */}
+          <div className="mt-5 max-w-2xl mx-auto text-left">
+            <ConfidenceStaking gameState={gameState} user={user} />
+          </div>
+
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <QuestionLikeButton
               questionId={gameState.question_id}
@@ -4083,7 +4095,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           onToggleWakeLock={onToggleWakeLock}
           onOpenShareModal={() => setIsShareModalOpen(true)}
           onOpenProfile={onOpenProfile}
-          onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
+          onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
           selectedChoice={selectedChoice}
           hasVotedThisQuestion={hasVotedThisQuestion}
@@ -4096,7 +4108,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -4637,6 +4649,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
         </div>
 
+        {/* Confidence Staking Outcome in REVEAL State */}
+        <ConfidenceStaking gameState={gameState} user={user} />
+
         {/* Bottom Share Game Callout */}
         <div className="flex justify-center pt-2">
           <button
@@ -4666,7 +4681,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         onToggleWakeLock={onToggleWakeLock}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         onOpenProfile={onOpenProfile}
-        onOpenLogModal={onOpenLogModal || (() => setIsLogModalOpen(true))}
+        onOpenLogModal={onOpenLogModal}
         onOpenQAModal={onOpenQAModal}
         selectedChoice={selectedChoice}
         hasVotedThisQuestion={hasVotedThisQuestion}
@@ -4680,7 +4695,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         <ShareGameModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2026"
+          gameTitle="Beyond The Internet 2027"
           roundName={gameState.round_name || gameState.category}
         />
       </div>
@@ -4720,21 +4735,35 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const [isQAModalOpen, setIsQAModalOpen] = useState(false);
   const [isShoutModalOpen, setIsShoutModalOpen] = useState(false);
   const [isPostMatchModalOpen, setIsPostMatchModalOpen] = useState(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isChampionVoteModalOpen, setIsChampionVoteModalOpen] = useState(false);
+  const [isPredictorOverlayMinimized, setIsPredictorOverlayMinimized] = useState(false);
+  const lastDrawSeedRef = useRef<number | undefined>(props.gameState.lucky_draw?.seed);
+
+  useEffect(() => {
+    if (props.gameState.lucky_draw?.seed && props.gameState.lucky_draw.seed !== lastDrawSeedRef.current) {
+      lastDrawSeedRef.current = props.gameState.lucky_draw.seed;
+      setIsPredictorOverlayMinimized(false);
+    }
+  }, [props.gameState.lucky_draw?.seed]);
+
+  const isPredictorDrawActive = Boolean(
+    props.gameState.lucky_draw &&
+    props.gameState.lucky_draw.status !== 'IDLE' &&
+    (props.gameState.lucky_draw.is_predictor_draw || props.gameState.lucky_draw.filter_mode === 'CORRECT_PREDICTION')
+  );
+
   const [qaModalInitialTab, setQaModalInitialTab] = useState<'ASK' | 'MY_QUESTIONS' | 'COMMUNITY'>('ASK');
   const handleOpenLogModal = props.onOpenLogModal || (() => setIsLogModalOpen(true));
   const handleOpenShareModal = props.onOpenShareModal || (() => setIsShareModalOpen(true));
   const handleOpenLeaderboard = props.onOpenLeaderboard || (() => setIsRealtimeLeaderboardOpen(true));
-  const handleOpenCheerModal = () => setIsCheerModalOpen(true);
+  const handleOpenRulesModal = props.onOpenRulesModal || (() => setIsRulesModalOpen(true));
   const handleOpenShoutModal = () => setIsShoutModalOpen(true);
   const handleOpenPostMatchModal = () => setIsPostMatchModalOpen(true);
   const handleOpenQAModal = (tab: 'ASK' | 'MY_QUESTIONS' | 'COMMUNITY' = 'ASK') => {
     setQaModalInitialTab(tab);
     setIsQAModalOpen(true);
   };
-
-    // Mini-Tip Quick Guide state
-  const [showMiniTip, setShowMiniTip] = useState<boolean>(false);
-  const [tipQuestionId, setTipQuestionId] = useState<string>('');
 
   const hasAnnouncer = Boolean(props.gameState.announcer_overlay?.active && props.gameState.announcer_overlay?.text?.trim());
   const isHighContrast = Boolean(props.isHighContrast);
@@ -4806,6 +4835,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onToggleWakeLock={toggleWakeLock}
           onOpenLogModal={handleOpenLogModal}
           onOpenPostMatchModal={handleOpenPostMatchModal}
+          onOpenRulesModal={handleOpenRulesModal}
         />
       )}
 
@@ -4816,6 +4846,15 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onOpenShoutModal={handleOpenShoutModal}
           variant="audience"
           isHighContrast={isHighContrast}
+        />
+      )}
+
+      {!isEventSpecialStage && (
+        <QuickTips
+          gameState={props.gameState}
+          user={props.user}
+          isHighContrast={isHighContrast}
+          onOpenRulesModal={handleOpenRulesModal}
         />
       )}
 
@@ -4832,6 +4871,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onOpenQAModal={handleOpenQAModal}
           onOpenPostMatchModal={handleOpenPostMatchModal}
           onOpenLeaderboard={handleOpenLeaderboard}
+          onOpenRulesModal={handleOpenRulesModal}
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={toggleWakeLock}
@@ -4906,6 +4946,22 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           </button>
 
           <button
+            id="btn-audience-champion-vote-floating"
+            type="button"
+            aria-label={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Quán quân'}
+            onClick={() => {
+              vibrateSelection();
+              soundFx.playTing();
+              setIsChampionVoteModalOpen(true);
+            }}
+            className="fluent-action-btn text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 hover:border-amber-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            title={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Thí sinh Chiến thắng (Quán quân)'}
+          >
+            <Trophy className="w-[14px] h-[14px] text-amber-400" />
+            <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Champion' : 'Quán quân'}</span>
+          </button>
+
+          <button
             id="btn-audience-postmatch-floating"
             type="button"
             aria-label="Xuất Thẻ Thành Tích Infographic"
@@ -4919,6 +4975,22 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           >
             <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />
             <span className="font-bold tracking-wide">Thẻ</span>
+          </button>
+
+          <button
+            id="btn-audience-rules-floating"
+            type="button"
+            aria-label={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
+            onClick={() => {
+              vibrateTap();
+              soundFx.playClick();
+              handleOpenRulesModal();
+            }}
+            className="fluent-action-btn text-[#F7CAC9] bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 border-[#F7CAC9]/25 hover:border-[#F7CAC9]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
+            title={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
+          >
+            <Info className="w-[14px] h-[14px] text-[#F7CAC9]" />
+            <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Rules' : 'Luật Chơi'}</span>
           </button>
         </div>
       )}
@@ -5069,6 +5141,25 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         isHighContrast={isHighContrast}
       />
 
+      {/* Champion Match Vote Modal (Bình chọn Thí sinh Chiến thắng chung cuộc) */}
+      <ChampionVoteModal
+        isOpen={isChampionVoteModalOpen}
+        onClose={() => setIsChampionVoteModalOpen(false)}
+        gameState={props.gameState}
+        user={props.user}
+      />
+
+      {/* 'Luck of the Draw' Overlay for Predictor Draw */}
+      {isPredictorDrawActive && (
+        <LuckOfTheDrawOverlay
+          gameState={props.gameState}
+          currentUserInfo={props.user}
+          isMinimized={isPredictorOverlayMinimized}
+          onClose={() => setIsPredictorOverlayMinimized(true)}
+          onRestore={() => setIsPredictorOverlayMinimized(false)}
+        />
+      )}
+
       {/* Audience Q&A Modal (createPortal) */}
       <AudienceQAModal
         isOpen={isQAModalOpen}
@@ -5101,7 +5192,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       <ShareGameModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        gameTitle="Beyond The Internet 2026"
+        gameTitle="Beyond The Internet 2027"
         roundName={props.gameState.round_name || props.gameState.category}
       />
 
@@ -5116,6 +5207,13 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         accuracyRate={myData?.accuracyRate || 0}
         maxStreak={streakStats.maxStreak}
         isSurvivor={survivalStats.isUserAlive}
+      />
+
+      {/* BTI 2027 Game Rules Modal */}
+      <GameRulesModal
+        isOpen={isRulesModalOpen}
+        onClose={() => setIsRulesModalOpen(false)}
+        isHighContrast={isHighContrast}
       />
 
       {/* Live Highlighted Question Toast Notification from Admin */}
@@ -5141,7 +5239,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
               <Trophy className="w-6 h-6 text-slate-950 fill-current shrink-0 animate-bounce" />
               <div>
                 <div className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-900">
-                  {props.user?.uid === props.gameState.grand_finale.winner.uid ? '🎉 BẠN LÀ NHÀ VÔ ĐỊCH!' : '🏆 QUÁN QUÂN BTI 2026:'}
+                  {props.user?.uid === props.gameState.grand_finale.winner.uid ? '🎉 BẠN LÀ NHÀ VÔ ĐỊCH!' : '🏆 QUÁN QUÂN BTI 2027:'}
                 </div>
                 <div className="text-sm font-black text-slate-950 truncate max-w-[200px]">
                   {props.gameState.grand_finale.winner.name} ({props.gameState.grand_finale.winner.totalScore} đ)

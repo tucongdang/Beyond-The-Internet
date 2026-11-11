@@ -1,4 +1,4 @@
-import { GameState, EventScheduleConfig, TournamentMatchStage } from '../types';
+import { GameState, TournamentMatchStage } from '../types';
 
 export interface RoundInfo {
   id: 'R1' | 'R2' | 'R3' | 'R4' | 'FINALE';
@@ -6,6 +6,7 @@ export interface RoundInfo {
   nameVi: string;
   nameEn: string;
   shortName: string;
+  shortNameEn: string;
   estimatedDurationMinutes: number;
 }
 
@@ -16,6 +17,7 @@ export const TOURNAMENT_ROUNDS: RoundInfo[] = [
     nameVi: 'Vòng 1: Khởi Động',
     nameEn: 'Round 1: Warm-up',
     shortName: 'Khởi Động',
+    shortNameEn: 'Warm-up',
     estimatedDurationMinutes: 15
   },
   {
@@ -24,6 +26,7 @@ export const TOURNAMENT_ROUNDS: RoundInfo[] = [
     nameVi: 'Vòng 2: Vượt Chướng Ngại Vật',
     nameEn: 'Round 2: Obstacle Challenge',
     shortName: 'VCNV',
+    shortNameEn: 'Obstacles',
     estimatedDurationMinutes: 20
   },
   {
@@ -32,6 +35,7 @@ export const TOURNAMENT_ROUNDS: RoundInfo[] = [
     nameVi: 'Vòng 3: Tăng Tốc',
     nameEn: 'Round 3: Acceleration',
     shortName: 'Tăng Tốc',
+    shortNameEn: 'Acceleration',
     estimatedDurationMinutes: 15
   },
   {
@@ -40,6 +44,7 @@ export const TOURNAMENT_ROUNDS: RoundInfo[] = [
     nameVi: 'Vòng 4: Về Đích',
     nameEn: 'Round 4: Final Sprint',
     shortName: 'Về Đích',
+    shortNameEn: 'Final Sprint',
     estimatedDurationMinutes: 25
   }
 ];
@@ -237,7 +242,7 @@ export function estimateNextRoundTime(
 
     return {
       status: 'INTERMISSION',
-      statusLabelVi: isPaused ? 'Tạm Dừng Hội Ý (Paused)' : 'Nghỉ Giữa Trận • Sắp Vào Vòng Mới',
+      statusLabelVi: isPaused ? 'Tạm Dừng Hội Ý' : 'Nghỉ Giữa Trận • Sắp Vào Vòng Mới',
       statusLabelEn: isPaused ? 'Break Paused' : 'Match Break • Next Round Soon',
       nextRoundNameVi: nextRound.nameVi,
       nextRoundNameEn: nextRound.nameEn,

@@ -37,7 +37,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
     e.preventDefault();
     if (!databaseURL.trim()) {
       vibrateError();
-      setStatusMsg({ type: 'error', text: 'Vui lòng nhập Firebase Database URL (https://...firebaseio.com)' });
+      setStatusMsg({ type: 'error', text: 'Bạn nhập giúp đường dẫn máy chủ dữ liệu (https://...firebaseio.com) nhé!' });
       return;
     }
 
@@ -52,13 +52,13 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
     const success = syncService.initializeFirebase(config);
     if (success) {
       vibrateSuccess();
-      setStatusMsg({ type: 'success', text: 'Đã kết nối thành công tới Firebase Realtime Database!' });
+      setStatusMsg({ type: 'success', text: 'Đã kết nối mượt mà tới máy chủ trực tuyến!' });
       setTimeout(() => {
         onClose();
       }, 1000);
     } else {
       vibrateError();
-      setStatusMsg({ type: 'error', text: 'Không thể kết nối. Vui lòng kiểm tra lại URL định dạng Firebase RTDB.' });
+      setStatusMsg({ type: 'error', text: 'Chưa kết nối được rồi! Bạn kiểm tra lại đường dẫn máy chủ xem đã chuẩn chưa nhé.' });
     }
   };
 
@@ -69,7 +69,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
     setDatabaseURL('');
     setApiKey('');
     setProjectId('');
-    setStatusMsg({ type: 'success', text: 'Đã ngắt kết nối Firebase. Đang dùng chế độ Đồng bộ Realtime Cục bộ / Đa tab.' });
+    setStatusMsg({ type: 'success', text: 'Đã ngắt kết nối máy chủ đám mây. Hệ thống đang chạy chế độ đồng bộ trực tiếp trên máy.' });
   };
 
   return (
@@ -93,10 +93,10 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
             </div>
             <div>
               <h3 id="firebase-modal-title" className="text-base font-bold text-white">
-                Cấu hình Firebase Realtime Database
+                Kết Nối Máy Chủ Đấu Trường Trực Tuyến
               </h3>
               <p className="text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                Node Cluster Sync • Stage & Multi-client
+                Đồng Bộ Sân Khấu & Điện Thoại Khán Giả
               </p>
             </div>
           </div>
@@ -120,8 +120,8 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
               />
               <span className="font-medium text-white/80">
                 {isConnected
-                  ? 'Đã kết nối trực tiếp Firebase RTDB Cloud'
-                  : 'Chế độ Cục bộ & Broadcast Sync Đa Tab (Không cần cài đặt)'}
+                  ? 'Đang kết nối trực tiếp với máy chủ đám mây'
+                  : 'Đang đồng bộ nhanh giữa các tab trên thiết bị (Không cần cài đặt thêm)'}
               </span>
             </div>
             {isConnected && (
@@ -162,7 +162,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
               <input
                 id="input-firebase-url"
                 type="text"
-                placeholder="https://bti2026-default-rtdb.asia-southeast1.firebasedatabase.app"
+                placeholder="https://bti2027-default-rtdb.asia-southeast1.firebasedatabase.app"
                 value={databaseURL}
                 onChange={(e) => setDatabaseURL(e.target.value)}
                 className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition text-base sm:text-xs"
@@ -196,7 +196,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
                 <input
                   id="input-firebase-projectid"
                   type="text"
-                  placeholder="beyond-the-internet-2026"
+                  placeholder="beyond-the-internet-2027"
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                   className="w-full fluent-box-nested border border-white/10 focus:border-[#F7CAC9] rounded-[2px] px-3.5 py-2.5 text-white font-mono placeholder-white/20 outline-none transition text-base sm:text-xs"
@@ -224,7 +224,7 @@ export const FirebaseConfigModal: React.FC<FirebaseConfigModalProps> = ({
 
           <div className="pt-3 border-t border-white/10 text-[11px] text-white/40">
             <p className="font-semibold text-white/60 mb-1">
-              Gợi ý bảo mật Firebase Rules (Công khai đọc/ghi trong giờ phát sóng):
+              Gợi ý cấu hình quyền truy cập nhanh trong giờ lên sóng:
             </p>
             <pre className="fluent-box-nested p-2.5 rounded-[2px] border border-white/5 font-mono text-[10px] text-emerald-400 overflow-x-auto">
 {`{

@@ -699,7 +699,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
                 Cổng Điều Hành <span className="text-sky-300">Ban Kỹ Thuật</span>
               </h1>
               <p className="text-[10px] sm:text-[11px] text-white/60 font-sans truncate mt-0.5">
-                Dành riêng cho nhân sự vận hành hệ thống phần mềm BTI 2026.
+                Dành riêng cho nhân sự vận hành hệ thống phần mềm BTI 2027.
               </p>
             </div>
           </div>
@@ -805,9 +805,9 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
             <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/40">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-emerald-300/80">Admin Core Active</span>
+                <span className="text-emerald-300/80">Hệ Thống Quản Trị Sẵn Sàng</span>
               </span>
-              <span>BTI 2026 v2.0</span>
+              <span>BTI 2027 v2.0</span>
             </div>
           </div>
 
@@ -1546,7 +1546,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
                   className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Thoát về Trang Chủ BTI 2026</span>
+                  <span>Thoát về Trang Chủ BTI 2027</span>
                 </button>
               </div>
             )}

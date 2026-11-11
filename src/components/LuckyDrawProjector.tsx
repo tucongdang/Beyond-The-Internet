@@ -77,6 +77,20 @@ export const LuckyDrawProjector: React.FC<{ gameState: GameState }> = ({ gameSta
 
   return (
     <div className="relative z-10 w-full max-w-5xl mx-auto flex-1 flex flex-col min-h-[55vh] items-center justify-center p-6 md:p-8 lg:p-12 fluent-box transition-all duration-500 animate-fadeIn">
+      {luckyDraw.filter_label && (
+        <div className="mb-6 animate-fadeIn">
+          <span className="px-4 py-1.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/40 text-xs sm:text-sm md:text-base font-mono font-bold tracking-wider uppercase inline-flex items-center gap-2 shadow-lg backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
+            <span>{luckyDraw.filter_label}</span>
+            {luckyDraw.eligible_count !== undefined && (
+              <span className="text-white/60 text-xs font-normal">
+                ({luckyDraw.eligible_count} ứng viên)
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+
       {luckyDraw.status === 'IDLE' && (
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 animate-pulse w-full">
           <Sparkles className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-white/30" />

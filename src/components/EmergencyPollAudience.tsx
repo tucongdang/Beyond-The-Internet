@@ -276,7 +276,7 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
                 </span>
               </div>
               <h2 className="text-sm sm:text-base font-extrabold text-white mt-0.5 tracking-tight">
-                Live Emergency Poll
+                {localLanguage !== 'vi' ? 'Live Stage Poll' : 'Bình Chọn Nhanh Tại Hội Trường'}
               </h2>
             </div>
           </div>

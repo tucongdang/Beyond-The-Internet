@@ -34,7 +34,7 @@ const SOURCE_BADGE_STYLE: Record<
     text: 'text-sky-300'
   },
   CONTESTANT: {
-    label: 'Thí sinh / Đội thi',
+    label: 'Thí sinh',
     icon: Flame,
     badgeBg: 'bg-white/10 backdrop-blur-md',
     border: 'border-amber-500/40',
@@ -161,7 +161,7 @@ export const EmergencyPollProjector: React.FC<EmergencyPollProjectorProps> = ({
                 🔴 KHẢO SÁT TỨC THÌ TRỰC TIẾP
               </span>
               <span className="text-xs sm:text-sm font-bold text-rose-200/80 hidden sm:inline">
-                Live Audience Sentiment
+                Góc nhìn trực tiếp từ hội trường
               </span>
             </div>
             <h2 className="text-lg sm:text-2xl font-black text-white mt-0.5">

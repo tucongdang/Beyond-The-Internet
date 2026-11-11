@@ -198,8 +198,8 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
               </div>
               <p className="text-[11px] sm:text-xs text-emerald-200/70">
                 {effectiveLanguage === 'en'
-                  ? 'Optimize device power & extend battery runtime'
-                  : 'Tối ưu công suất thiết bị & kéo dài thời gian trải nghiệm'}
+                  ? 'Keep your phone cool & lasting through the entire match'
+                  : 'Giúp điện thoại mát máy, bền pin suốt cả buổi thi gay cấn'}
               </p>
             </div>
           </div>
@@ -300,11 +300,11 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 <p className="text-[11px] sm:text-xs text-white/60 mt-0.5">
                   {isBatterySaver
                     ? (effectiveLanguage === 'en'
-                        ? 'OLED pitch black enabled, motion disabled & GPU load reduced.'
-                        : 'Đang bật nền đen OLED, tắt chuyển động & giảm tải GPU.')
+                        ? 'Eye-friendly dark background on, heavy effects paused to save battery.'
+                        : 'Đang bật nền tối dịu mắt, giảm hiệu ứng chuyển động để giữ pin lâu nhất.')
                     : (effectiveLanguage === 'en'
-                        ? 'Tap to enable maximum power-saving performance.'
-                        : 'Nhấn để bật chế độ tiết kiệm năng lượng tối đa.')}
+                        ? 'Tap to keep your phone cool and save battery during the show.'
+                        : 'Chạm để giữ máy mát và tiết kiệm pin tối đa suốt chương trình.')}
                 </p>
               </div>
             </div>
@@ -321,7 +321,7 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
           {/* Detailed Features List */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400/90 font-mono px-1">
-              {effectiveLanguage === 'en' ? 'Power-saving features:' : 'Tính năng giảm tiêu thụ điện năng:'}
+              {effectiveLanguage === 'en' ? 'How it saves your battery:' : 'Cách chế độ này bảo vệ pin cho bạn:'}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -329,12 +329,12 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 <Eye className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
-                    {effectiveLanguage === 'en' ? 'OLED Pitch Black' : 'Nền đen OLED (Pitch Black)'}
+                    {effectiveLanguage === 'en' ? 'Eye-Friendly Deep Dark' : 'Nền tối sâu dịu mắt'}
                   </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
                     {effectiveLanguage === 'en'
-                      ? 'Completely turn off pixels on AMOLED/OLED screens.'
-                      : 'Tắt hoàn toàn bóng bán dẫn điểm ảnh trên màn hình AMOLED/OLED.'}
+                      ? 'Dim bright background pixels to save maximum battery and reduce eye strain.'
+                      : 'Tắt bớt điểm sáng màn hình giúp tiết kiệm pin tối đa và đỡ mỏi mắt.'}
                   </div>
                 </div>
               </div>
@@ -343,12 +343,12 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 <Sparkles className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
-                    {effectiveLanguage === 'en' ? 'Disable Blur & Glow' : 'Tắt Blur & Visual Glow'}
+                    {effectiveLanguage === 'en' ? 'Streamlined Light Effects' : 'Tinh gọn hiệu ứng ánh sáng'}
                   </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
                     {effectiveLanguage === 'en'
-                      ? 'Disable backdrop-blur glass filters and heavy GPU animations.'
-                      : 'Bỏ hiệu ứng mờ kính backdrop-blur và chuyển động GPU.'}
+                      ? 'Pause glass blur and background motion so your phone runs lighter.'
+                      : 'Tạm tắt các lớp kính mờ và chuyển động nền để máy chạy nhẹ nhàng hơn.'}
                   </div>
                 </div>
               </div>
@@ -357,12 +357,12 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 <Vibrate className="w-4 h-4 text-sky-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
-                    {effectiveLanguage === 'en' ? 'Haptic Feedback Optimization' : 'Tối ưu Rung Haptic'}
+                    {effectiveLanguage === 'en' ? 'Gentle Touch Vibration' : 'Rung chạm vừa đủ'}
                   </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
                     {effectiveLanguage === 'en'
-                      ? 'Shorten tap vibration pulses to reduce vibration motor load.'
-                      : 'Giảm thời lượng nhịp rung phím bấm để giảm tải motor rung.'}
+                      ? 'Shorten vibration feedback when tapping answers to save power.'
+                      : 'Rút gọn nhịp rung khi bấm chọn đáp án để đỡ hao pin.'}
                   </div>
                 </div>
               </div>
@@ -371,12 +371,12 @@ export const BatterySaverModal: React.FC<BatterySaverModalProps> = ({ isOpen, on
                 <Smartphone className="w-4 h-4 text-rose-300 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-bold text-white">
-                    {effectiveLanguage === 'en' ? 'Reduce CPU/GPU Load' : 'Giảm tải CPU/GPU'}
+                    {effectiveLanguage === 'en' ? 'Faster Touch Response' : 'Tăng tốc phản hồi'}
                   </div>
                   <div className="text-[11px] text-white/60 leading-tight mt-0.5">
                     {effectiveLanguage === 'en'
-                      ? 'Limit unnecessary re-renders while waiting for rounds.'
-                      : 'Hạn chế vẽ lại khung hình không cần thiết khi chờ câu hỏi.'}
+                      ? 'Keep your phone cool and snappy while waiting for new stage questions.'
+                      : 'Giúp máy luôn mát và mượt mà khi chờ câu hỏi mới từ sân khấu.'}
                   </div>
                 </div>
               </div>

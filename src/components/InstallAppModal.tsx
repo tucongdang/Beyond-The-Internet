@@ -125,12 +125,12 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
             <div className="p-4 fluent-box-nested border border-emerald-500/30 rounded-[2px] text-center">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm mb-1">
                 <Check className="w-5 h-5" />{' '}
-                {localLanguage !== 'vi' ? 'Application is already installed!' : 'Ứng dụng đã được cài đặt!'}
+                {localLanguage !== 'vi' ? 'App is ready on your device!' : 'App đã sẵn sàng trên máy bạn rồi!'}
               </div>
               <p className="text-xs text-emerald-200/80">
                 {localLanguage !== 'vi'
-                  ? 'You can launch the app directly from your device Home Screen.'
-                  : 'Bạn có thể mở ứng dụng trực tiếp từ Màn hình chính của thiết bị.'}
+                  ? 'You can open the arena right from your device Home Screen.'
+                  : 'Bạn có thể mở thẳng đấu trường từ Màn hình chính của điện thoại nhé.'}
               </p>
             </div>
             <button
@@ -169,7 +169,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               className="fluent-btn w-full py-3.5 px-4 bg-gradient-to-r from-[#F7CAC9] via-[#FCEEEC] to-[#E39A96] hover:brightness-110 active:scale-[0.98] text-[#190839] font-black rounded-[2px] transition shadow-lg shadow-[#F7CAC9]/25 flex items-center justify-center gap-2 text-xs uppercase tracking-wider border border-white/40 cursor-pointer"
             >
               <Download className="w-4 h-4 animate-bounce" />
-              {localLanguage !== 'vi' ? 'Install Now (1-Click Install)' : 'Cài Đặt Ngay (1-Click Install)'}
+              {localLanguage !== 'vi' ? 'Add to Home Screen Now!' : 'Tải Về Màn Hình Chính Ngay!'}
             </button>
             <p className="text-[11px] text-center text-white/50">
               {localLanguage !== 'vi'

@@ -527,7 +527,7 @@ export const aiExplanationService = {
       mcLine = `Hơn ${maxWrongPct}% khán phòng đã chọn ${maxWrongKey}, trong khi đáp án chính xác là ${correctKey}!`;
     } else if (correctPct >= 70) {
       headline = 'Đại đa số hội trường đồng lòng!';
-      mcLine = `Có tới ${correctPct}% người chơi đưa ra đáp án chính xác ${correctKey} trong chớp mắt!`;
+      mcLine = `Có tới ${correctPct}% thí sinh đưa ra đáp án chính xác ${correctKey} trong chớp mắt!`;
     }
 
     return { headline, mcLine };

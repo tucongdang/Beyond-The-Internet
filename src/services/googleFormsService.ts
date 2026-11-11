@@ -240,7 +240,7 @@ export const googleFormsService = {
                   choiceQuestion: {
                     type: 'RADIO',
                     options: [
-                      { value: 'Vòng 1: Khởi Động (Đồng đội & Tốc độ 45s)' },
+                      { value: 'Vòng 1: Khởi Động (Tốc độ 45s)' },
                       { value: 'Vòng 2: Vượt Chướng Ngại Vật & Ô Mạo Hiểm' },
                       { value: 'Vòng 3: Tăng Tốc (Tranh điểm kịch tính)' },
                       { value: 'Vòng 4: Về Đích & Ngôi Sao Hy Vọng' },
@@ -278,7 +278,7 @@ export const googleFormsService = {
         {
           createItem: {
             item: {
-              title: '4. Góp ý hoặc thông điệp bạn muốn gửi đến Ban Tổ Chức & Các Đội thi:',
+              title: '4. Góp ý hoặc thông điệp bạn muốn gửi đến Ban Tổ Chức & Các Thí sinh:',
               questionItem: {
                 question: {
                   required: false,

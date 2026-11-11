@@ -46,14 +46,14 @@ export const TERMS_OF_SERVICE_DATA: PolicyDocument = {
     },
     {
       id: 'terms-sec-2',
-      title: '2. Quyền Và Nghĩa Vụ Của Khách Hàng / Thí Sinh',
+      title: '2. Quyền Và Nghĩa Vụ Của Người Tham Gia (Thí Sinh & Khán Giả)',
       content: [
-        'Bằng việc đồng ý đăng ký tài khoản trên BTI 2027, Người dùng xác nhận đã đọc, hiểu rõ và cam kết tuân thủ toàn diện các điều khoản, quy chế thi đấu và quy định kỹ thuật của hệ thống.',
-        'Sau khi đăng ký thành công, Người dùng được quyền truy cập các tính năng thi đấu tương tác trực tiếp, theo dõi bảng xếp hạng LED, gửi tiếng hô cổ vũ, đặt câu hỏi cho Ban Tổ chức và sử dụng trợ lý hỗ trợ theo quy định.',
-        'Người dùng cam kết sử dụng ứng dụng cho mục đích học thuật, giao lưu trí tuệ và phi thương mại. Người dùng được cấp quyền truy cập không độc quyền và không được phép cấp lại, chuyển nhượng tài khoản thi đấu cho bất kỳ ai dưới bất kỳ hình thức nào.',
-        'Cam kết không can thiệp kỹ thuật: Người dùng cam kết không dịch ngược, đảo ngược, tháo rời mã nguồn phần mềm; không chèn mã độc, bot tự động, script can thiệp luồng WebSocket hoặc độ trễ thi đấu; không thực hiện tấn công từ chối dịch vụ (DoS/DDoS) hoặc làm gián đoạn hạ tầng máy chủ đấu trường.',
+        'Bằng việc đồng ý đăng ký tài khoản trên BTI 2027, Người tham gia xác nhận đã đọc, hiểu rõ và cam kết tuân thủ toàn diện các điều khoản, quy chế thi đấu và quy định kỹ thuật của hệ thống.',
+        'Sau khi đăng ký thành công, Người tham gia được quyền truy cập các tính năng thi đấu tương tác trực tiếp, theo dõi bảng xếp hạng LED, gửi tiếng hô cổ vũ, đặt câu hỏi cho Ban Tổ chức và sử dụng trợ lý hỗ trợ theo quy định.',
+        'Người tham gia cam kết sử dụng ứng dụng cho mục đích học thuật, giao lưu trí tuệ và phi thương mại. Người tham gia được cấp quyền truy cập không độc quyền và không được phép cấp lại, chuyển nhượng tài khoản thi đấu cho bất kỳ ai dưới bất kỳ hình thức nào.',
+        'Cam kết không can thiệp kỹ thuật: Người tham gia cam kết không dịch ngược, đảo ngược, tháo rời mã nguồn phần mềm; không chèn mã độc, bot tự động, script can thiệp luồng WebSocket hoặc độ trễ thi đấu; không thực hiện tấn công từ chối dịch vụ (DoS/DDoS) hoặc làm gián đoạn hạ tầng máy chủ đấu trường.',
         'Cam kết liêm chính học thuật: Tuyệt đối không gian lận đề thi, không sử dụng thiết bị phụ trợ bị cấm, không chia sẻ câu hỏi hoặc đáp án trái phép trong thời gian trận đấu đang diễn ra.',
-        'Chất lượng kết nối: Người dùng hiểu và đồng ý rằng trải nghiệm tương tác thời gian thực phụ thuộc vào đường truyền mạng Internet, độ trễ mạng viễn thông và cấu hình thiết bị cá nhân. BTI 2027 luôn nỗ lực tối ưu hạ tầng nhưng không chịu trách nhiệm đối với lỗi rớt mạng hoặc mất kết nối xuất phát từ thiết bị hoặc đường truyền của Người dùng.'
+        'Chất lượng kết nối: Người tham gia hiểu và đồng ý rằng trải nghiệm tương tác thời gian thực phụ thuộc vào đường truyền mạng Internet, độ trễ mạng viễn thông và cấu hình thiết bị cá nhân. BTI 2027 luôn nỗ lực tối ưu hạ tầng nhưng không chịu trách nhiệm đối với lỗi rớt mạng hoặc mất kết nối xuất phát từ thiết bị hoặc đường truyền của Người tham gia.'
       ]
     },
     {
@@ -211,8 +211,8 @@ export const PRIVACY_POLICY_DATA: PolicyDocument = {
       id: 'privacy-sec-10',
       title: '10. Phạm Vi Áp Dụng & Hiệu Lực',
       content: [
-        'Chính sách này áp dụng cho toàn bộ người dùng truy cập và sử dụng dịch vụ trên website, giao diện khán giả, máy chiếu và bảng điều khiển quản trị của BTI 2027.',
-        'Đối với các liên kết chuyển hướng sang dịch vụ của bên thứ ba, việc xử lý dữ liệu sẽ tuân theo chính sách riêng của đơn vị đó.'
+        'Chính sách này áp dụng cho toàn bộ thí sinh, khán giả và quản trị viên truy cập, tham gia đấu trường trên website, giao diện khán giả, màn chiếu sân khấu và bảng điều khiển của BTI 2027.',
+        'Đối với các liên kết chuyển hướng sang nền tảng của bên thứ ba, việc xử lý dữ liệu sẽ tuân theo chính sách bảo mật riêng của đơn vị đó.'
       ]
     }
   ]

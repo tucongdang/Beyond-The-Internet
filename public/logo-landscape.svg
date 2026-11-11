@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 170" width="100%" height="100%">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'SVN-Gilroy';
+        src: url('/fonts/SVN-Gilroy-Black.otf') format('opentype');
+        font-weight: 900;
+        font-style: normal;
+      }
+      .bti-text {
+        font-family: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-weight: 900;
+        fill: url(#btiLandscapeGradient);
+      }
+    </style>
+    <!-- Smooth Horizontal Gradient from Left (#F7CAC9) to Right (#C7CEEA) -->
+    <linearGradient id="btiLandscapeGradient" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="672" y2="0">
+      <stop offset="0%" stop-color="#F7CAC9" />
+      <stop offset="26%" stop-color="#EFBFCE" />
+      <stop offset="58%" stop-color="#DEC1E6" />
+      <stop offset="82%" stop-color="#CFCAEC" />
+      <stop offset="100%" stop-color="#C7CEEA" />
+    </linearGradient>
+  </defs>
+
+  <!-- Transparent or Optional Background: Seamless on dark backgrounds -->
+  <g class="bti-text">
+    <!-- Left Stacked Text -->
+    <text x="8" y="70" font-size="48" letter-spacing="0.8">BEYOND THE</text>
+    <text x="8" y="136" font-size="48" letter-spacing="0.8">INTERNET</text>
+
+    <!-- Right Giant 2027 -->
+    <text x="332" y="140" font-size="168" letter-spacing="-3.5">2027</text>
+  </g>
+</svg>

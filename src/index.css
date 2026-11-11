@@ -131,9 +131,9 @@
 }
 
 @theme {
-  --font-sans: 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans', 'Meiryo', 'Apple SD Gothic Neo', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: 'SVN-Gilroy', Georgia, 'Times New Roman', Times, serif;
-  --font-mono: 'JetBrains Mono', 'SVN-Gilroy', 'Lexend', 'NEXON Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Noto Sans CJK SC', 'PingFang SC', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-korean: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   --color-primary-bg: #0D0420;
   --color-primary-highlight: #F7CAC9;
@@ -150,6 +150,9 @@
 
 :root {
   color-scheme: dark;
+  --cds-font-sans: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --cds-font-serif: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --cds-font-mono: 'SVN-Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Custom gradient utilities — Serenity (#92A8D1) -> Rose Quartz (#F7CAC9) -> Sunset Pink (#E39A96) */
@@ -208,21 +211,36 @@ html {
   height: 0 !important;
 }
 
-body, input, button, select, textarea {
+body, input, button, select, textarea,
+.font-sans, .font-serif, .font-mono {
   font-family: var(--cds-font-sans);
-  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Korean Question Typography - NEXON Lv1 Gothic applies ONLY to the question text */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Korean Typography Exception - NEXON Lv1 Gothic applies to Korean (ko) */
+html[lang="ko"],
+html[lang="ko"] body,
+html[lang="ko"] input,
+html[lang="ko"] button,
+html[lang="ko"] select,
+html[lang="ko"] textarea,
+html[lang="ko"] .font-sans,
+html[lang="ko"] .font-serif,
+html[lang="ko"] .font-mono,
+:lang(ko),
 .korean-question-font,
 .font-korean-question,
+.cjk-text-ko,
 .cjk-text-ko-question,
 html[lang="ko"] .audience-question-text,
 html[lang="ko"] [data-question-text="true"] {
-  font-family: 'NEXON Lv1 Gothic', 'Nexon Lv1 Gothic', 'Noto Sans CJK KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
+  font-family: var(--font-korean) !important;
 }
 
 /* CJK & Non-Latin Typography Engine - Breathing room & anti-cramping */
@@ -238,32 +256,32 @@ html[lang="km"],
   text-rendering: optimizeLegibility;
 }
 
-/* Specific Script Stacks for Superior International Legibility */
+/* Unified SVN-Gilroy Primary Font with Script Fallbacks for Non-Korean International Languages */
 html[lang="th"] {
-  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi', 'Tahoma', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi', 'Tahoma', sans-serif !important;
   line-height: 1.85 !important;
 }
 
 html[lang="lo"] {
-  font-family: 'Noto Sans Lao', 'Saysettha OT', 'DokChampa', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Noto Sans Lao', 'Saysettha OT', 'DokChampa', sans-serif !important;
   line-height: 1.85 !important;
 }
 
 html[lang="km"] {
-  font-family: 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Noto Sans Khmer', 'Khmer OS Siemreap', 'Khmer OS', sans-serif !important;
   line-height: 1.85 !important;
 }
 
 html[lang="zh"] {
-  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif !important;
 }
 
 html[lang="ja"] {
-  font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', 'Meiryo', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif !important;
 }
 
 html[lang="ru"] {
-  font-family: 'SVN-Gilroy', 'Roboto', 'Noto Sans', 'Segoe UI', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif !important;
+  font-family: 'SVN-Gilroy', 'Roboto', 'Noto Sans', 'Segoe UI', 'Helvetica Neue', sans-serif !important;
   letter-spacing: 0.01em;
 }
 

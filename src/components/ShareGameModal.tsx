@@ -34,7 +34,7 @@ interface ShareGameModalProps {
 export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   isOpen,
   onClose,
-  gameTitle = 'Beyond The Internet 2026',
+  gameTitle = 'Beyond The Internet 2027',
   roundName
 }) => {
   const { localLanguage } = useLanguage();
@@ -196,8 +196,8 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
       soundFx.playClick();
       vibrateShare();
       await navigator.share({
-        title: gameTitle || 'BTI 2026 - Đấu Trường Trực Tiếp',
-        text: `Tham gia trực tiếp đấu trường tương tác ${gameTitle || 'BTI 2026'} ngay bây giờ!`,
+        title: gameTitle || 'BTI 2027 - Đấu Trường Trực Tiếp',
+        text: `Tham gia trực tiếp đấu trường tương tác ${gameTitle || 'BTI 2027'} ngay bây giờ!`,
         url: shareUrl
       });
     } catch (err: any) {
@@ -213,7 +213,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
     vibrateSuccess();
     const link = document.createElement('a');
     link.href = qrDataUrl;
-    link.download = `BTI2026_Join_QRCode_${Date.now()}.png`;
+    link.download = `BTI2027_Join_QRCode_${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -482,16 +482,16 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
               </span>
-              <span>{localLanguage !== 'vi' ? 'Firebase: Online' : 'Firebase: Trực Tuyến'}</span>
+              <span>{localLanguage !== 'vi' ? 'Connection: Smooth' : 'Đường truyền: Mượt mà'}</span>
             </div>
           ) : (
             <div 
               id="badge-share-modal-firebase-offline"
               className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[11px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-sm shadow-rose-950/40"
-              title={localLanguage !== 'vi' ? 'Reconnecting with Firebase server...' : 'Đang kết nối lại với máy chủ Firebase...'}
+              title={localLanguage !== 'vi' ? 'Reconnecting to server...' : 'Đang kết nối lại chút nhé...'}
             >
               <span className="inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
-              <span>{localLanguage !== 'vi' ? 'Firebase: Offline' : 'Firebase: Ngoại Tuyến'}</span>
+              <span>{localLanguage !== 'vi' ? 'Reconnecting...' : 'Đang kết nối lại...'}</span>
             </div>
           )}
         </div>
@@ -575,7 +575,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    <span>{localLanguage !== 'vi' ? 'Copy Audience URL' : 'Copy URL Khán Giả'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Copy Join Link' : 'Sao Chép Link Tham Gia'}</span>
                   </>
                 )}
               </button>

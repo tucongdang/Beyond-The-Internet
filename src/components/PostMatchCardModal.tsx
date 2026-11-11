@@ -93,14 +93,14 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
 
     // 4. Header & Branding
     ctx.textAlign = 'center';
-    ctx.font = 'bold 30px "SVN-Gilroy", "Lexend", sans-serif';
+    ctx.font = 'bold 30px "SVN-Gilroy", sans-serif';
     ctx.fillStyle = '#EBC7D6';
     try {
       (ctx as any).letterSpacing = '4px';
     } catch {}
-    ctx.fillText('BEYOND THE INTERNET 2026', width / 2, 110);
+    ctx.fillText('BEYOND THE INTERNET 2027', width / 2, 110);
 
-    ctx.font = '500 20px "SVN-Gilroy", "Lexend", sans-serif';
+    ctx.font = '500 20px "SVN-Gilroy", sans-serif';
     ctx.fillStyle = '#B6A6D8';
     ctx.fillText('ĐẠI HỘI HỌC THUẬT & AN TOÀN SỐ LIVE GAMESHOW', width / 2, 145);
 
@@ -126,19 +126,19 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
 
     // Avatar Initial
     ctx.fillStyle = '#F5EFF9';
-    ctx.font = 'black 64px "SVN-Gilroy", "Lexend", sans-serif';
+    ctx.font = 'black 64px "SVN-Gilroy", sans-serif';
     ctx.textBaseline = 'middle';
     ctx.fillText(avatarText, width / 2, 272);
     ctx.textBaseline = 'alphabetic';
 
     // Name & MSSV
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 44px "SVN-Gilroy", "Lexend", sans-serif';
+    ctx.font = 'bold 44px "SVN-Gilroy", sans-serif';
     ctx.fillText(user?.name || 'Khán Giả Thi Đấu', width / 2, 385);
 
     ctx.fillStyle = '#F7CAC9';
-    ctx.font = '600 24px "SVN-Gilroy", monospace';
-    ctx.fillText(`MSSV: ${user?.mssv || 'BTI-2026'}  •  UID: ${getUserDisplayUid(user)}`, width / 2, 425);
+    ctx.font = '600 24px "SVN-Gilroy", sans-serif';
+    ctx.fillText(`MSSV: ${user?.mssv || 'BTI-2027'}  •  UID: ${getUserDisplayUid(user)}`, width / 2, 425);
 
     // 6. Score Showcase Card (Big Numbers)
     const cardY = 465;
@@ -214,8 +214,8 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     const nowStr = new Date().toLocaleString('vi-VN');
     ctx.fillStyle = '#8B7AA8';
     ctx.font = '16px "SVN-Gilroy", monospace';
-    ctx.fillText(`Thời gian xác thực: ${nowStr}  |  Mã bảo mật: BTI2026-${getSecureRandomId('', 8).toUpperCase()}`, width / 2, 955);
-    ctx.fillText('Designed with Fluent UI v2 • 2026 Live Arena Interaction', width / 2, 990);
+    ctx.fillText(`Thời gian xác thực: ${nowStr}  |  Mã bảo mật: BTI2027-${getSecureRandomId('', 8).toUpperCase()}`, width / 2, 955);
+    ctx.fillText('Beyond The Internet 2027 • Sân Chơi Học Thuật & An Toàn Số', width / 2, 990);
 
     // Generate export Data URL
     try {
@@ -228,7 +228,7 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
   const handleDownload = () => {
     if (!dataUrl) return;
     const link = document.createElement('a');
-    link.download = `BTI2026_Achievement_${user?.mssv || 'Contestant'}.png`;
+    link.download = `BTI2027_Achievement_${user?.mssv || 'Contestant'}.png`;
     link.href = dataUrl;
     link.click();
   };
@@ -238,11 +238,11 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], `BTI2026_${user?.mssv || 'Card'}.png`, { type: 'image/png' });
+        const file = new File([blob], `BTI2027_${user?.mssv || 'Card'}.png`, { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
-            title: 'Thành tích Beyond The Internet 2026',
-            text: `Tôi đạt ${totalScore} điểm tại Live Gameshow Beyond The Internet 2026!`,
+            title: 'Thành tích Beyond The Internet 2027',
+            text: `Mình vừa đạt ${totalScore} điểm tại Đấu Trường Beyond The Internet 2027!`,
             files: [file]
           });
           setIsShared(true);
@@ -295,11 +295,11 @@ export const PostMatchCardModal: React.FC<PostMatchCardModalProps> = ({
           {isGenerating ? (
             <div className="w-full aspect-square flex flex-col items-center justify-center bg-black/30 rounded-[2px] border border-white/10 text-slate-300 gap-3">
               <div className="w-8 h-8 border-2 border-[#F7CAC9] border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-medium">Đang kết xuất thẻ thành tích HD...</span>
+              <span className="text-xs font-medium">Đang tạo thẻ vinh danh chuẩn HD cho bạn...</span>
             </div>
           ) : dataUrl ? (
             <div className="w-full aspect-square rounded-[2px] overflow-hidden border border-[#F7CAC9]/30 shadow-xl bg-black/40">
-              <img src={dataUrl} alt="Thẻ thành tích BTI 2026" className="w-full h-full object-contain" />
+              <img src={dataUrl} alt="Thẻ thành tích BTI 2027" className="w-full h-full object-contain" />
             </div>
           ) : null}
 

@@ -33,7 +33,7 @@ const PRESET_ANNOUNCEMENTS = [
   {
     type: 'INFO' as const,
     label: 'Ổn định vị trí',
-    text: 'Xin mời tất cả các đội thi và khán giả ổn định vị trí để chuẩn bị bắt đầu phần thi tiếp theo!'
+    text: 'Xin mời tất cả các thí sinh và khán giả ổn định vị trí để chuẩn bị bắt đầu phần thi tiếp theo!'
   },
   {
     type: 'ALERT' as const,

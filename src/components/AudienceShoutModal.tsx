@@ -227,10 +227,10 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             </div>
             <div>
               <h3 id="audience-shout-title" className="font-bold text-sm sm:text-base text-white flex items-center gap-1.5">
-                {localLanguage !== 'vi' ? "Audience Shout" : "Hô To Khán Giả"} <span className="text-[11px] font-mono text-[#F7CAC9] font-normal">Audience Shout</span>
+                {localLanguage !== 'vi' ? "Hall Shout Out" : "Tiếp Lửa Khán Phòng"}
               </h3>
               <p className="text-[11px] text-white/60">
-                {localLanguage !== 'vi' ? 'Appears live on stage & audience screens' : 'Xuất hiện trực tiếp trên màn hình sân khấu & khán phòng'}
+                {localLanguage !== 'vi' ? 'Appears live on stage & audience screens' : 'Gửi lời cổ vũ xuất hiện trực tiếp trên màn chiếu sân khấu'}
               </p>
             </div>
           </div>
@@ -282,7 +282,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
             {/* Live Preview Card */}
             <div>
               <label className="text-[11px] font-mono uppercase text-white/60 font-bold block mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage !== 'vi' ? 'Preview on Marquee:' : 'Xem trước hiển thị trên Marquee:'}
+                <Sparkles className="w-3 h-3 text-[#F7CAC9]" /> {localLanguage !== 'vi' ? 'Stage Screen Preview:' : 'Xem trước trên màn chiếu:'}
               </label>
               <div className={`p-3 rounded-[2px] border ${currentColorConfig.bg} ${currentColorConfig.border} flex items-center gap-2.5 transition-all shadow-inner`}>
                 <span className="text-xl select-none">{selectedEmoji}</span>
@@ -322,7 +322,7 @@ export const AudienceShoutModal: React.FC<AudienceShoutModalProps> = ({
                       setInputText(e.target.value.substring(0, maxChars));
                       if (errorMessage) setErrorMessage(null);
                     }}
-                    placeholder={localLanguage !== 'vi' ? "Ex: Go Team A! You guys rock 🔥" : "VD: Cố lên đội A ơi! Đỉnh chóp quá 🔥"}
+                    placeholder={localLanguage !== 'vi' ? "Ex: Go Contestant 1! You rock 🔥" : "VD: Cố lên thí sinh số 1 ơi! Đỉnh chóp quá 🔥"}
                     maxLength={maxChars}
                     className="w-full px-3.5 py-2.5 rounded-[2px] bg-black/50 border border-white/20 text-white placeholder-white/40 text-base sm:text-sm focus:outline-none focus:border-[#F7CAC9] transition-colors"
                   />

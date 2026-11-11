@@ -129,7 +129,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-200 border border-rose-400/50">
               <AlertCircle className="w-3 h-3 text-rose-400" />
-              {localLanguage !== 'vi' ? 'SERVER DISCONNECTED' : 'MẤT KẾT NỐI MÁY CHỦ'}
+              {localLanguage !== 'vi' ? 'CONNECTION INTERRUPTED' : 'MẠNG ĐANG CHẬP CHỜN'}
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-white/10 text-rose-200 border border-white/15">
               <Clock className="w-3 h-3 text-rose-300" />
@@ -142,16 +142,16 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({
           <p className="text-xs text-white/90 leading-relaxed font-medium">
             {isReconnecting
               ? (localLanguage !== 'vi'
-                  ? 'Reconnecting and resyncing with Firebase Node...'
-                  : 'Đang tái kết nối và đồng bộ lại với Firebase Node...')
+                  ? 'Reconnecting to the live stage...'
+                  : 'Đang kết nối lại với sân khấu...')
               : (localLanguage !== 'vi'
-                  ? 'Network interruption detected. System is automatically recovering connection.'
-                  : 'Đã phát hiện gián đoạn mạng. Hệ thống đang tự động kích hoạt tiến trình phục hồi kết nối.')}
+                  ? 'Your internet connection dropped briefly. Reconnecting automatically...'
+                  : 'Đường truyền mạng vừa bị ngắt quãng. Hệ thống đang tự kết nối lại cho bạn...')}
           </p>
 
           {reconnectAttempts > 0 && (
             <div className="text-[10px] text-rose-300/70 font-mono mt-1">
-              {localLanguage !== 'vi' ? 'Auto-reconnect attempts: ' : 'Số lần đã tự động kết nối lại: '}
+              {localLanguage !== 'vi' ? 'Reconnect attempts: ' : 'Đã thử kết nối lại: '}
               <strong>{reconnectAttempts}</strong>
             </div>
           )}

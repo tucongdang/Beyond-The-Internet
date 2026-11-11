@@ -53,14 +53,14 @@ export const SessionExpiringModal: React.FC<SessionExpiringModalProps> = ({
                 id="session-expiring-title"
                 className="text-base sm:text-lg font-black tracking-wide uppercase text-amber-300"
               >
-                Phiên Làm Việc Sắp Hết Hạn
+                Bạn Vẫn Đang Theo Dõi Chứ?
               </h3>
               <span className="text-[9px] font-mono font-semibold bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 rounded text-amber-200 uppercase">
-                Session Expiring
+                Tạm nghỉ hơi lâu
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-              Do 28 phút không thao tác, hệ thống sẽ tự động đăng xuất để bảo vệ an toàn dữ liệu sau:
+              Đã 28 phút chưa thấy bạn chạm màn hình. Hệ thống sẽ tạm đăng xuất để bảo mật tài khoản sau:
             </p>
           </div>
         </div>
@@ -72,7 +72,7 @@ export const SessionExpiringModal: React.FC<SessionExpiringModalProps> = ({
           </div>
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            Tự động hết hạn khi đếm ngược về 00:00
+            Tự động nghỉ ngơi khi đồng hồ về 00:00
           </p>
 
           {/* Animated Countdown Progress Bar */}
@@ -86,7 +86,7 @@ export const SessionExpiringModal: React.FC<SessionExpiringModalProps> = ({
 
         <div className="bg-amber-950/40 border border-amber-500/20 rounded p-3 text-[11px] text-amber-200/90 flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-          <span>Bấm <strong>Duy trì đăng nhập (Stay Logged In)</strong> để reset bộ đếm và giữ nguyên tiến độ công việc.</span>
+          <span>Bấm <strong>Mình Vẫn Đang Xem!</strong> để tiếp tục đồng hành cùng trận đấu nhé.</span>
         </div>
 
         {/* Modal Buttons */}
@@ -106,7 +106,7 @@ export const SessionExpiringModal: React.FC<SessionExpiringModalProps> = ({
             className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold uppercase rounded-[2px] bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-95"
           >
             <RefreshCw className="w-4 h-4" />
-            Duy Trì Đăng Nhập (Stay Logged In)
+            Mình Vẫn Đang Xem! (Tiếp Tục)
           </button>
         </div>
       </div>

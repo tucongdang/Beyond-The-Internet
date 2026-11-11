@@ -307,8 +307,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
         setSuccessMsg(
           localLanguage !== 'vi'
-            ? 'Email verification successful! Entering arena...'
-            : 'Xác thực tài khoản thành công! Đang chuyển hướng vào sàn đấu BTI 2027...'
+            ? 'Email verified! Welcoming you into the BTI 2027 arena...'
+            : 'Kích hoạt thành công rồi! Chào mừng bạn tiến vào sân khấu BTI 2027 nhé...'
         );
 
         setTimeout(() => {
@@ -319,15 +319,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         vibrateError();
         setErrorMsg(
           localLanguage !== 'vi'
-            ? 'Firebase has not confirmed your email verification yet. Please open your email inbox (check Spam folder) and click the verification link!'
-            : 'Firebase chưa ghi nhận bạn bấm link xác thực trong email. Vui lòng mở hòm thư (kiểm tra cả mục Thư rác / Spam) để bấm link xác thực!'
+            ? 'Looks like the link has not been clicked yet. Please check your inbox (and Spam/Promotions folder) and tap the activation link!'
+            : 'Hệ thống chưa thấy bạn bấm link kích hoạt. Bạn mở hộp thư (nhớ ngó qua cả mục Thư rác / Spam) rồi bấm vào link trong thư nhé!'
         );
       }
     } catch (err: any) {
       console.error('[Email Verification Check] Error:', err);
       soundFx.playError();
       vibrateError();
-      setErrorMsg(localLanguage !== 'vi' ? 'Error checking verification status.' : 'Lỗi kiểm tra trạng thái xác thực từ Firebase.');
+      setErrorMsg(localLanguage !== 'vi' ? 'Could not check activation status right now. Try again in a moment!' : 'Chưa kiểm tra được trạng thái kích hoạt lúc này. Bạn bấm thử lại chút nhé!');
     } finally {
       setIsCheckingVerification(false);
     }
@@ -470,13 +470,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginIdentifier.trim() || !loginPassword) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please enter MSSV/Username and Password.' : 'Vui lòng nhập MSSV/Tên đăng nhập và Mật khẩu.');
+      setErrorMsg(localLanguage !== 'vi' ? 'Please enter your Student ID (MSSV)/Nickname and Password!' : 'Bạn điền giúp mình MSSV (hoặc Nickname) và Mật khẩu nhé!');
       soundFx.playError();
       vibrateError();
       return;
     }
     if (!loginCaptchaAnswer.trim()) {
-      setErrorMsg(localLanguage !== 'vi' ? 'Please solve the CAPTCHA anti-bot challenge.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.');
+      setErrorMsg(localLanguage !== 'vi' ? 'Quick check: Please solve the simple math question below!' : 'Bạn tính nhanh phép toán nhỏ bên dưới để vào thi nhé!');
       soundFx.playError();
       vibrateError();
       return;
@@ -614,8 +614,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           vibrateError();
           setErrorMsg(
             localLanguage !== 'vi'
-              ? 'Account has not been registered yet. Please switch to the "Register" tab to create an account.'
-              : 'Tài khoản chưa được đăng ký! Vui lòng chuyển sang tab "Đăng Ký" để tạo tài khoản trước.'
+              ? 'Looks like you have not signed up yet! Switch to the "Join Now" tab to create your student pass in seconds.'
+              : 'Hình như bạn chưa ghi danh lần nào! Chuyển sang tab "Ghi Danh" để tạo tài khoản mới chỉ trong vài giây nhé.'
           );
           return;
         }
@@ -637,8 +637,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         setErrorMsg(
           data?.error ||
           (localLanguage !== 'vi'
-            ? 'Account has not been registered yet. Please switch to the "Register" tab to create an account.'
-            : 'Tài khoản chưa được đăng ký! Vui lòng chuyển sang tab "Đăng Ký" để tạo tài khoản trước.')
+            ? 'Looks like you have not signed up yet! Switch to the "Join Now" tab to create your student pass in seconds.'
+            : 'Hình như bạn chưa ghi danh lần nào! Chuyển sang tab "Ghi Danh" để tạo tài khoản mới chỉ trong vài giây nhé.')
         );
         return;
       }
@@ -766,45 +766,45 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const validateRegister = () => {
     const newErrors: Record<string, string> = {};
     if (!regName.trim() || regName.trim().length < 2) {
-      newErrors.name = localLanguage !== 'vi' ? 'Name must be at least 2 characters.' : 'Họ và tên tối thiểu 2 ký tự.';
+      newErrors.name = localLanguage !== 'vi' ? 'Please enter your full name (at least 2 characters).' : 'Bạn nhập đầy đủ họ tên giúp mình nhé (tối thiểu 2 ký tự).';
     } else {
       const nameComp = validateUsernameCompliance(regName);
       if (!nameComp.isValid) {
-        newErrors.name = localLanguage !== 'vi' ? 'Name contains restricted or sensitive terms.' : (nameComp.messageVi || 'Tên hiển thị chưa hợp lệ.');
+        newErrors.name = localLanguage !== 'vi' ? 'Please use a polite, appropriate display name.' : (nameComp.messageVi || 'Bạn chọn tên hiển thị lịch sự, phù hợp với sân chơi sinh viên nhé.');
       }
     }
     if (!regMssv.trim()) {
-      newErrors.mssv = localLanguage !== 'vi' ? 'MSSV is required.' : 'MSSV không được bỏ trống.';
+      newErrors.mssv = localLanguage !== 'vi' ? 'Don’t forget your Student ID (MSSV)!' : 'Đừng quên nhập Mã số sinh viên (MSSV) của bạn nhé!';
     }
     if (!regEmail.trim()) {
-      newErrors.email = localLanguage !== 'vi' ? 'Email is required for Firebase verification.' : 'Địa chỉ email không được bỏ trống.';
+      newErrors.email = localLanguage !== 'vi' ? 'Please enter your email to receive the activation link.' : 'Bạn nhập thêm email để nhận link kích hoạt tài khoản nhé.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail.trim())) {
-      newErrors.email = localLanguage !== 'vi' ? 'Invalid email address format.' : 'Định dạng email không hợp lệ (VD: user@example.com).';
+      newErrors.email = localLanguage !== 'vi' ? 'Hmm, that email format looks incomplete (e.g. name@example.com).' : 'Hình như địa chỉ email chưa đúng định dạng (VD: sinhvien@example.com).';
     }
     if (!regGender) {
-      newErrors.gender = localLanguage !== 'vi' ? 'Please select gender.' : 'Vui lòng chọn giới tính.';
+      newErrors.gender = localLanguage !== 'vi' ? 'Please select an option.' : 'Bạn chọn giúp mình mục này nhé.';
     }
     if (!regBirthYear || regBirthYear.length !== 4) {
-      newErrors.birthYear = localLanguage !== 'vi' ? 'Birth year must be 4 digits.' : 'Năm sinh gồm 4 chữ số (VD: 2004).';
+      newErrors.birthYear = localLanguage !== 'vi' ? 'Please enter a 4-digit birth year (e.g. 2004).' : 'Bạn nhập năm sinh gồm 4 chữ số nhé (VD: 2004).';
     }
     if (!regPassword || regPassword.length < 6) {
-      newErrors.password = localLanguage !== 'vi' ? 'Password must be at least 6 characters.' : 'Mật khẩu tối thiểu 6 ký tự.';
+      newErrors.password = localLanguage !== 'vi' ? 'Choose a password with at least 6 characters.' : 'Bạn tạo mật khẩu từ 6 ký tự trở lên cho an toàn nhé.';
     }
     if (regPassword !== regConfirmPassword) {
-      newErrors.confirmPassword = localLanguage !== 'vi' ? 'Passwords do not match.' : 'Mật khẩu xác nhận không khớp.';
+      newErrors.confirmPassword = localLanguage !== 'vi' ? 'The two passwords do not match yet.' : 'Mật khẩu nhập lại chưa khớp rồi, bạn kiểm tra lại chút nhé.';
     }
     if (!regCaptchaAnswer.trim()) {
-      newErrors.captcha = localLanguage !== 'vi' ? 'Please solve the CAPTCHA.' : 'Vui lòng giải bài toán bảo vệ CAPTCHA.';
+      newErrors.captcha = localLanguage !== 'vi' ? 'Please solve the quick math question.' : 'Bạn giải nhanh phép tính nhỏ này nhé.';
     }
     if (!regConsentAgreed) {
       newErrors.consent = localLanguage !== 'vi' 
-        ? 'You must agree to the Privacy Policy and Contest Terms (Law 91/2025 & Decree 356/2025).' 
-        : 'Bạn cần đồng ý với Chính sách Bảo vệ Dữ liệu Cá nhân & Điều lệ Cuộc thi (Luật 91/2025 & NĐ 356/2025).';
+        ? 'Please tick the box to agree to the event rules and privacy policy.' 
+        : 'Bạn tích chọn đồng ý với thể lệ sân chơi và chính sách bảo mật để tiếp tục nhé.';
     }
     if (!regAgeConfirmed) {
       newErrors.age = localLanguage !== 'vi'
-        ? 'Please confirm you are 16+ or have parental/guardian consent.'
-        : 'Vui lòng xác nhận bạn đủ 16 tuổi trở lên hoặc có sự đồng ý của cha mẹ/người giám hộ.';
+        ? 'Please confirm you are 16+ (or have family permission to join).'
+        : 'Bạn tích xác nhận đã đủ 16 tuổi trở lên (hoặc có sự đồng ý của gia đình) nhé.';
     }
 
     setErrors(newErrors);
@@ -1560,15 +1560,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <div className="min-w-0">
             <h1 id="audience-auth-title" className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight uppercase font-mono leading-tight truncate">
               {localLanguage !== 'vi' ? (
-                <>Audience Portal <span className="text-sky-300">Live Arena</span></>
+                <>Student Check-In <span className="text-sky-300">BTI 2027 Arena</span></>
               ) : (
-                <>Cổng Khán Giả <span className="text-sky-300">Đấu Trường Trực Tiếp</span></>
+                <>Trạm Ghi Danh <span className="text-sky-300">Đấu Trường BTI 2027</span></>
               )}
             </h1>
             <p className="text-[10px] sm:text-[11px] text-white/60 font-sans truncate mt-0.5">
               {localLanguage !== 'vi'
-                ? 'BTI 2027 Interactive Arena • Dual-Auth Security • Anonymized 12-Digit UID'
-                : 'Đồng bộ thời gian thực • Định danh 12 số bảo mật • Bảng vàng vinh danh'}
+                ? 'Ready to compete • 12-Digit Privacy Shield • Leaderboard & Lucky Rewards'
+                : 'Sẵn sàng đấu trí • Bảo mật danh tính 12 số • Ghi danh Bảng Vàng & Rinh quà'}
             </p>
           </div>
         </div>
@@ -1601,10 +1601,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   else if (onClose) onClose();
                 }}
                 className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
-                title={localLanguage !== 'vi' ? 'Exit' : 'Thoát'}
+                title={localLanguage !== 'vi' ? 'Exit' : 'Tạm rời'}
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>{localLanguage !== 'vi' ? 'Exit' : 'Thoát'}</span>
+                <span>{localLanguage !== 'vi' ? 'Exit' : 'Tạm rời'}</span>
               </button>
             </>
           )}
@@ -1622,8 +1622,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0 mt-0.5" />
               <span>
                 {localLanguage !== 'vi'
-                  ? 'Realtime Synchronization: Your score and responses are recorded in real-time. Use your student ID (MSSV) for automatic award attribution.'
-                  : 'Đồng bộ thời gian thực: Kết quả thi và thứ hạng được bảo mật qua Mã định danh 12 số, tự động ghi nhận điểm thưởng và quà may mắn.'}
+                  ? 'Welcome aboard! Enter your Student ID (MSSV) so we can track your score, rank you privately via your 12-digit code, and enter you into the lucky draw!'
+                  : 'Chào mừng bạn nhập cuộc! Nhập đúng MSSV để hệ thống tự động cộng điểm, xếp hạng ẩn danh bằng Mã 12 số và trao quà quay số cuối giờ nhé!'}
               </span>
             </div>
 
@@ -1631,7 +1631,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="hidden md:flex flex-col gap-2 pt-1 text-left">
               <div className="text-[10px] font-mono uppercase tracking-wider text-sky-400 font-bold flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{localLanguage !== 'vi' ? 'Live Arena Features' : 'Đặc quyền Đấu Trường'}</span>
+                <span>{localLanguage !== 'vi' ? 'Why Join the Live Arena?' : 'Cùng Cháy Hết Mình Tại Hội Trường'}</span>
               </div>
 
               <div className="p-2 sm:p-2.5 rounded-[2px] bg-white/[0.03] border border-white/10 hover:border-sky-500/30 transition flex items-start gap-2.5">
@@ -1639,9 +1639,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <Zap className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Sub-second Sync' : 'Đồng Bộ Mili-giây'}</div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Race the Stage Clock' : 'Đua Tốc Độ Từng Giây'}</div>
                   <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
-                    {localLanguage !== 'vi' ? 'Live responses sync directly to the main stage projector & timer.' : 'Mọi câu trả lời đồng bộ trực tiếp tới màn chiếu sân khấu & đồng hồ đếm ngược.'}
+                    {localLanguage !== 'vi' ? 'Tap on your phone and watch your answer sync live to the main stage!' : 'Bấm chọn trên điện thoại, kết quả lên thẳng màn chiếu sân khấu ngay tức thì!'}
                   </div>
                 </div>
               </div>
@@ -1651,9 +1651,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <Fingerprint className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? '12-Digit Anonymous UID' : 'Định Danh 12 Số Bảo Mật'}</div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Play Boldly, Stay Private' : 'Tự Tin Thi Tài — Giữ Kín Tên Thật'}</div>
                   <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
-                    {localLanguage !== 'vi' ? 'Zero privacy exposure on stage, automatic award mapping with your MSSV.' : 'Tuyệt đối ẩn danh trên màn chiếu lớn, bảo vệ danh tính & tự động gắn điểm theo MSSV.'}
+                    {localLanguage !== 'vi' ? 'Only your 12-digit code appears on the big screen — compete freely with full privacy!' : 'Chỉ hiện Mã 12 số trên màn chiếu lớn — thoải mái bung sức mà không ngại lộ tên!'}
                   </div>
                 </div>
               </div>
@@ -1663,9 +1663,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <Trophy className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Grand Finale & Rewards' : 'Vinh Danh & Quà May Mắn'}</div>
+                  <div className="text-[11px] font-bold text-white font-mono">{localLanguage !== 'vi' ? 'Climb Leaderboard & Win Prizes' : 'Leo Bảng Vàng & Săn Quà Cực Chất'}</div>
                   <div className="text-[10px] text-white/60 font-sans leading-tight mt-0.5">
-                    {localLanguage !== 'vi' ? 'Realtime leaderboard ranking and eligible for lucky wheel spins at finale.' : 'Thăng hạng Bảng Vàng vinh danh và tự động nhận vé quay số trúng thưởng chung kết.'}
+                    {localLanguage !== 'vi' ? 'Score fast to top the leaderboard and unlock your lucky draw ticket at the finale!' : 'Trả lời nhanh, tích điểm cao để góp mặt trên Bảng Vàng và nhận vé quay số may mắn!'}
                   </div>
                 </div>
               </div>
@@ -1676,9 +1676,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <div className="hidden md:flex items-center justify-between pt-2.5 border-t border-white/10 text-[10px] font-mono text-white/50">
             <span className="flex items-center gap-1.5 text-emerald-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>{localLanguage !== 'vi' ? 'Live Arena Connected' : 'Kết nối Đấu Trường'}</span>
+              <span>{localLanguage !== 'vi' ? 'Connected to Live Stage' : 'Sẵn sàng kết nối sân khấu'}</span>
             </span>
-            <span>{localLanguage !== 'vi' ? 'Protected by Decree 13' : 'Bảo vệ bởi Nghị định 13'}</span>
+            <span>{localLanguage !== 'vi' ? 'Student Privacy Protected' : 'Bảo mật thông tin sinh viên'}</span>
           </div>
         </div>
 
@@ -1695,7 +1695,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 }`}
               >
                 <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="truncate">{localLanguage !== 'vi' ? 'Login' : 'Đăng Nhập'}</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'Sign In' : 'Vào Thi'}</span>
               </button>
 
               <button
@@ -1706,7 +1706,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 }`}
               >
                 <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="truncate">{activeTab === 'EMAIL_VERIFY' ? (localLanguage !== 'vi' ? 'Verify' : 'Xác Thực') : (localLanguage !== 'vi' ? 'Register' : 'Đăng Ký')}</span>
+                <span className="truncate">{activeTab === 'EMAIL_VERIFY' ? (localLanguage !== 'vi' ? 'Activate' : 'Kích Hoạt') : (localLanguage !== 'vi' ? 'Join Now' : 'Ghi Danh')}</span>
               </button>
 
               <button
@@ -1717,7 +1717,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 }`}
               >
                 <KeyRound className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="truncate">{localLanguage !== 'vi' ? 'Reset' : 'Quên MK'}</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'Forgot PW' : 'Quên MK'}</span>
               </button>
 
               <button
@@ -1728,7 +1728,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 }`}
               >
                 <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="truncate">{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'My Code' : 'Kiểm Tra Mã'}</span>
               </button>
 
               <button
@@ -1739,7 +1739,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 }`}
               >
                 <Fingerprint className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="truncate">{localLanguage !== 'vi' ? 'UID 12' : 'Mã 12 Số'}</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'Quick Join' : 'Vào Nhanh'}</span>
               </button>
             </div>
 
@@ -1748,9 +1748,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="flex items-start gap-2.5 text-rose-200 bg-rose-950/90 p-2.5 sm:p-3 rounded-[2px] border border-rose-500/60 text-[11px] sm:text-xs mb-2 sm:mb-3 animate-fadeIn shadow-lg font-mono">
                 <Lock className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 animate-pulse" />
                 <div>
-                  <strong className="text-rose-300 uppercase block font-bold">CỔNG THAM GIA ĐANG KHÓA (LOBBY LOCKED)</strong>
+                  <strong className="text-rose-300 uppercase block font-bold">ĐÃ TẠM KHÉP CỔNG GHI DANH MỚI</strong>
                   <span className="text-[11px] text-rose-200/90 font-sans">
-                    Ban Tổ Chức đang ngưng nhận đăng ký khán giả mới. Nếu bạn đã có tài khoản, hãy đăng nhập qua tab <strong>Đăng Nhập</strong> hoặc <strong>Mã 12 Số</strong>.
+                    Vòng thi đang diễn ra nên Ban Tổ Chức tạm ngưng nhận ghi danh mới. Nếu bạn đã tạo tài khoản rồi, hãy chọn tab <strong>Vào Thi</strong> hoặc <strong>Vào Nhanh</strong> để tiếp tục nhé!
                   </span>
                 </div>
               </div>
@@ -1781,12 +1781,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <form onSubmit={handleLoginSubmit} className="space-y-2.5 sm:space-y-3 text-left">
                 <div>
                   <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                    {localLanguage !== 'vi' ? 'Student ID (MSSV) or Username' : 'Mã số sinh viên (MSSV) hoặc Tên đăng nhập'} *
+                    {localLanguage !== 'vi' ? 'Your Student ID (MSSV) or Nickname' : 'Mã số sinh viên (MSSV) hoặc Nickname của bạn'} *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder={localLanguage !== 'vi' ? 'e.g. 22123456 or username' : 'VD: 22123456 hoặc tên đăng nhập'}
+                    placeholder={localLanguage !== 'vi' ? 'Enter MSSV (e.g. 22123456) or nickname...' : 'Nhập MSSV (VD: 22123456) hoặc nickname...'}
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
                     className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -1797,7 +1797,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                      {localLanguage !== 'vi' ? 'Password' : 'Mật khẩu tài khoản'} *
+                      {localLanguage !== 'vi' ? 'Your Password' : 'Mật khẩu của bạn'} *
                     </label>
                     <button
                       type="button"
@@ -1825,7 +1825,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="text-sky-300/80 hover:text-white hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <KeyRound className="w-3 h-3" />
-                    <span>{localLanguage !== 'vi' ? 'Forgot Password?' : 'Quên mật khẩu?'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Forgot your password?' : 'Lỡ quên mật khẩu?'}</span>
                   </button>
                   <button
                     type="button"
@@ -1833,7 +1833,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="text-white/60 hover:text-white hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <Mail className="w-3 h-3" />
-                    <span>{localLanguage !== 'vi' ? 'Verify Email' : 'Xác thực email'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Activate via email' : 'Mở khóa qua email'}</span>
                   </button>
                 </div>
 
@@ -1861,7 +1861,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
                     />
                     <span className="text-sky-200 font-medium">
-                      {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                      {localLanguage !== 'vi' ? 'Keep me signed in on this device during the show' : 'Nhớ tài khoản trên máy này suốt buổi thi nhé'}
                     </span>
                   </label>
                 </div>
@@ -1876,7 +1876,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   ) : (
                     <>
                       <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span>{localLanguage !== 'vi' ? 'Sign In to Arena' : 'Đăng Nhập Khán Giả'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Jump Into the Arena!' : 'Vào Sân Khấu Ngay!'}</span>
                       <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </>
                   )}
@@ -1903,7 +1903,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <path fill="#FBBC05" d="M5.15 14.93c-.24-.73-.38-1.5-.38-2.31s.14-1.58.38-2.31L1.63 7.55C.6 9.61 0 11.97 0 14.48s.6 4.87 1.63 6.93l3.52-2.73z"/>
                   <path fill="#34A853" d="M12 23c3.24 0 5.95-1.08 7.93-2.91l-3.71-2.88c-1.07.72-2.45 1.16-4.22 1.16-3.21 0-5.93-2.02-6.85-5.07L1.63 16.03C3.55 19.79 7.42 22.37 12 22.37z"/>
                 </svg>
-                <span className="truncate">{localLanguage !== 'vi' ? 'Sign in with Google' : 'Đăng nhập nhanh bằng Google'}</span>
+                <span className="truncate">{localLanguage !== 'vi' ? 'Continue quickly with Google' : 'Vào nhanh bằng tài khoản Google'}</span>
               </button>
 
               <div className="text-center pt-0.5">
@@ -1912,7 +1912,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   onClick={() => handleTabChange('REGISTER')}
                   className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer"
                 >
-                  {localLanguage !== 'vi' ? "Don't have an account? Register now" : "Chưa có tài khoản? Bấm vào đây để Đăng Ký"}
+                  {localLanguage !== 'vi' ? 'First time at BTI 2027? Create your student pass here!' : 'Lần đầu tham gia BTI 2027? Ghi danh mới tại đây nhé!'}
                 </button>
               </div>
             </div>
@@ -1926,8 +1926,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="p-2 sm:p-2.5 bg-sky-950/30 border border-sky-500/30 rounded-[2px] text-[10px] sm:text-xs text-sky-200">
                 <p className="leading-relaxed font-sans">
                   {localLanguage !== 'vi'
-                    ? 'Reset password for your audience account via your registered email. A secure reset link will be sent to your inbox to protect your account from unauthorized changes.'
-                    : 'Khôi phục mật khẩu tài khoản khán giả qua email đăng ký. Hệ thống sẽ gửi liên kết đổi mật khẩu an toàn đến hộp thư của bạn để bảo vệ tài khoản, tránh đổi mật khẩu trái phép.'}
+                    ? 'Forgot your password? No worries! Enter the email you used to sign up and we will send you a quick link to set a new one.'
+                    : 'Lỡ quên mật khẩu rồi sao? Đừng lo nhé! Chỉ cần nhập lại email bạn đã dùng khi ghi danh, tụi mình sẽ gửi ngay một đường link để bạn đặt lại mật khẩu mới.'}
                 </p>
               </div>
 
@@ -1935,13 +1935,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <form onSubmit={handleForgotRequest} className="space-y-2.5 sm:space-y-3">
                   <div>
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                      {localLanguage !== 'vi' ? 'Registered Email Address' : 'Địa chỉ Email đã đăng ký tài khoản'} *
+                      {localLanguage !== 'vi' ? 'Email used when signing up' : 'Email bạn đã dùng khi ghi danh'} *
                     </label>
                     <div className="relative">
                       <input
                         type="email"
                         required
-                        placeholder="your-email@example.com"
+                        placeholder="sinhvien@example.com"
                         value={forgotEmail}
                         onChange={(e) => setForgotEmail(e.target.value)}
                         className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white pl-8 pr-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -1951,8 +1951,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     </div>
                     <p className="text-[9px] sm:text-[10px] text-white/50 mt-1 font-sans">
                       {localLanguage !== 'vi'
-                        ? 'A secure password reset link will be dispatched exclusively to this address.'
-                        : 'Liên kết đặt lại mật khẩu sẽ chỉ được gửi đến hộp thư này để xác minh quyền sở hữu.'}
+                        ? 'We will send a private password reset link straight to this inbox.'
+                        : 'Tụi mình sẽ gửi link đổi mật khẩu riêng vào hộp thư này cho bạn nhé.'}
                     </p>
                   </div>
 
@@ -1975,7 +1975,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     ) : (
                       <>
                         <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>{localLanguage !== 'vi' ? 'Send Reset Email' : 'Gửi Liên Kết Đặt Lại Mật Khẩu'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Send Me a Reset Link' : 'Gửi Link Đổi Mật Khẩu Cho Mình'}</span>
                         <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </>
                     )}
@@ -1990,12 +1990,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     </div>
                     <div>
                       <h4 className="text-xs sm:text-sm font-bold text-white font-mono uppercase tracking-wider">
-                        {localLanguage !== 'vi' ? 'Password Reset Email Sent' : 'Đã Gửi Email Khôi Phục Mật Khẩu'}
+                        {localLanguage !== 'vi' ? 'Reset Link Is on Its Way!' : 'Đã Gửi Link Đổi Mật Khẩu Rồi Nhé!'}
                       </h4>
                       <p className="text-[10px] sm:text-[11px] text-white/70 mt-0.5 font-sans leading-relaxed">
                         {localLanguage !== 'vi'
-                          ? 'A secure password reset link has been dispatched to:'
-                          : 'Liên kết đặt lại mật khẩu an toàn đã được gửi tới:'}
+                          ? 'Check your inbox at this address:'
+                          : 'Bạn kiểm tra hộp thư tại địa chỉ này nhé:'}
                       </p>
                     </div>
 
@@ -2011,23 +2011,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <div className="p-2.5 sm:p-3 bg-white/5 border border-white/10 rounded-[2px] space-y-1.5 text-[11px] sm:text-xs">
                     <span className="font-mono font-bold text-sky-300 flex items-center gap-1.5">
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>{localLanguage !== 'vi' ? 'How to complete reset:' : '3 bước hoàn tất đặt lại mật khẩu:'}</span>
+                      <span>{localLanguage !== 'vi' ? '3 quick steps to get back in:' : '3 bước siêu nhanh để lấy lại mật khẩu:'}</span>
                     </span>
                     <ol className="space-y-1 text-white/75 list-decimal list-inside leading-relaxed font-sans text-[10px] sm:text-[11px]">
                       <li>
                         {localLanguage !== 'vi'
-                          ? 'Open your email inbox (CRITICAL: Check SPAM / JUNK / PROMOTIONS folder).'
-                          : 'Mở hòm thư email của bạn (ĐẶC BIỆT LƯU Ý: Hãy kiểm tra kỹ mục THƯ RÁC / SPAM / QUẢNG CÁO).'}
+                          ? 'Open your email inbox (remember to check your Spam or Promotions folder too).'
+                          : 'Mở hộp thư email của bạn (nhớ ngó qua cả mục Thư rác / Spam hoặc Quảng cáo nếu chưa thấy nhé).'}
                       </li>
                       <li>
                         {localLanguage !== 'vi'
-                          ? 'Click the password reset link inside the email sent by Firebase.'
-                          : 'Bấm vào đường liên kết trong email gửi từ Firebase để đặt mật khẩu mới.'}
+                          ? 'Click the link inside the email to set a new password.'
+                          : 'Bấm vào đường link trong thư để nhập mật khẩu mới dễ nhớ hơn.'}
                       </li>
                       <li>
                         {localLanguage !== 'vi'
-                          ? 'After setting your new password, return to Login tab and sign in.'
-                          : 'Sau khi đổi mật khẩu xong, quay lại tab Đăng Nhập để đăng nhập vào Đấu Trường.'}
+                          ? 'Once updated, head back to the Sign In tab and jump right into the arena!'
+                          : 'Đổi xong rồi thì quay lại tab Vào Thi để tiếp tục tranh tài cùng mọi người nhé!'}
                       </li>
                     </ol>
                   </div>
@@ -2046,8 +2046,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         <Send className="w-3.5 h-3.5 text-sky-400" />
                         <span>
                           {forgotCooldown > 0
-                            ? (localLanguage !== 'vi' ? `Resend email in ${forgotCooldown}s` : `Gửi lại email sau ${forgotCooldown}s`)
-                            : (localLanguage !== 'vi' ? 'Resend Reset Email' : 'Gửi Lại Email Khôi Phục')}
+                            ? (localLanguage !== 'vi' ? `Resend link in ${forgotCooldown}s` : `Gửi lại link sau ${forgotCooldown}s`)
+                            : (localLanguage !== 'vi' ? 'Didn’t get it? Resend Reset Link' : 'Chưa thấy thư? Gửi lại link cho mình')}
                         </span>
                       </>
                     )}
@@ -2059,14 +2059,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       onClick={() => setForgotStep(1)}
                       className="text-[10px] sm:text-[11px] font-mono text-white/60 hover:text-white underline cursor-pointer"
                     >
-                      {localLanguage !== 'vi' ? '← Change email' : '← Đổi email khác'}
+                      {localLanguage !== 'vi' ? '← Use another email' : '← Nhập lại email khác'}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleTabChange('LOGIN')}
                       className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer"
                     >
-                      {localLanguage !== 'vi' ? 'Back to Login →' : 'Quay lại Đăng Nhập →'}
+                      {localLanguage !== 'vi' ? 'Back to Sign In →' : 'Quay lại Vào Thi →'}
                     </button>
                   </div>
                 </div>
@@ -2082,17 +2082,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               {googleLinkedEmail && (
                 <div className="p-2 sm:p-2.5 bg-sky-950/40 border border-sky-500/30 rounded-[2px] text-[11px] text-sky-200 flex items-center gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
-                  <span className="truncate">{localLanguage !== 'vi' ? 'Linked Google:' : 'Đã liên kết Google:'} <strong>{googleLinkedEmail}</strong></span>
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Connected Google:' : 'Đã kết nối Google:'} <strong>{googleLinkedEmail}</strong></span>
                 </div>
               )}
 
               <div>
                 <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                  {localLanguage !== 'vi' ? 'Full Name' : 'Họ và Tên'} *
+                  {localLanguage !== 'vi' ? 'Your Full Name' : 'Họ và tên đầy đủ của bạn'} *
                 </label>
                 <input
                   type="text"
-                  placeholder={localLanguage !== 'vi' ? 'e.g. Nguyen Van A' : 'VD: Nguyễn Văn A'}
+                  placeholder={localLanguage !== 'vi' ? 'e.g. Nguyen Minh Anh (for prize verification)' : 'VD: Nguyễn Minh Anh (để BTC trao giải chính xác nhé)'}
                   value={regName}
                   onChange={(e) => {
                     setRegName(e.target.value);
@@ -2106,9 +2106,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                    {localLanguage !== 'vi' ? 'Email Address (Firebase Verification)' : 'Địa chỉ Email (Nhận link xác thực Firebase)'} *
+                    {localLanguage !== 'vi' ? 'Student or Personal Email (for activation link)' : 'Email sinh viên hoặc cá nhân (nhận link kích hoạt)'} *
                   </label>
-                  <span className="text-[9px] text-amber-300/90 font-mono">{localLanguage !== 'vi' ? 'Required' : 'Bắt buộc'}</span>
+                  <span className="text-[9px] text-amber-300/90 font-mono">{localLanguage !== 'vi' ? 'Required' : 'Cần thiết'}</span>
                 </div>
                 <div className="relative">
                   <input
@@ -2127,8 +2127,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 {errors.email && <p className="text-[10px] sm:text-[11px] text-rose-400 mt-1">{errors.email}</p>}
                 <p className="text-[9px] text-white/40 mt-0.5 font-sans">
                   {localLanguage !== 'vi'
-                    ? 'Firebase will send a confirmation link to this address after registration.'
-                    : 'Firebase sẽ gửi liên kết xác thực vào email này sau khi bấm Đăng Ký.'}
+                    ? 'We will send a quick activation link to this email right after you sign up.'
+                    : 'Tụi mình sẽ gửi một link kích hoạt ngắn gọn vào email này ngay sau khi bạn bấm Ghi Danh.'}
                 </p>
               </div>
 
@@ -2139,7 +2139,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="22123456"
+                    placeholder="VD: 22123456"
                     value={regMssv}
                     onChange={(e) => {
                       setRegMssv(e.target.value.toUpperCase());
@@ -2152,11 +2152,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div>
                   <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                    {localLanguage !== 'vi' ? 'Username (Optional)' : 'Tên đăng nhập (Tùy chọn)'}
+                    {localLanguage !== 'vi' ? 'Easy Nickname (Optional)' : 'Nickname dễ nhớ (Tùy chọn)'}
                   </label>
                   <input
                     type="text"
-                    placeholder={regMssv ? regMssv.toLowerCase() : 'username'}
+                    placeholder={regMssv ? regMssv.toLowerCase() : 'nickname'}
                     value={regUsername}
                     onChange={(e) => setRegUsername(e.target.value.toLowerCase())}
                     className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -2207,12 +2207,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                      {localLanguage !== 'vi' ? 'Password' : 'Mật khẩu'} *
+                      {localLanguage !== 'vi' ? 'Create Password' : 'Tạo mật khẩu'} *
                     </label>
                   </div>
                   <input
                     type={showRegPassword ? 'text' : 'password'}
-                    placeholder="≥ 6 ký tự"
+                    placeholder="Từ 6 ký tự trở lên"
                     value={regPassword}
                     onChange={(e) => {
                       setRegPassword(e.target.value);
@@ -2226,12 +2226,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
-                      {localLanguage !== 'vi' ? 'Confirm' : 'Xác nhận'} *
+                      {localLanguage !== 'vi' ? 'Confirm Password' : 'Nhập lại mật khẩu'} *
                     </label>
                   </div>
                   <input
                     type={showRegPassword ? 'text' : 'password'}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Gõ lại mật khẩu vừa tạo"
                     value={regConfirmPassword}
                     onChange={(e) => {
                       setRegConfirmPassword(e.target.value);
@@ -2248,13 +2248,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold text-white/80 flex items-center gap-1 sm:gap-1.5 truncate">
                     <Fingerprint className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                    <span className="truncate">{localLanguage !== 'vi' ? '12-Digit UID' : 'Mã định danh (12 số)'}</span>
+                    <span className="truncate">{localLanguage !== 'vi' ? 'Your 12-Digit Privacy Code' : 'Mã Định Danh Ẩn Danh (12 số) Của Bạn'}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => {
                       if (!regName.trim() || !regMssv.trim()) {
-                        setErrorMsg(localLanguage !== 'vi' ? 'Please fill in Name and MSSV first.' : 'Vui lòng nhập Họ tên và MSSV trước.');
+                        setErrorMsg(localLanguage !== 'vi' ? 'Please fill in your Name and MSSV first!' : 'Bạn điền Họ tên và MSSV ở trên trước nhé!');
                         soundFx.playError();
                         vibrateError();
                         return;
@@ -2267,7 +2267,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="text-[10px] text-sky-300 hover:underline font-mono uppercase tracking-wider flex items-center gap-1 cursor-pointer shrink-0 ml-1"
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>{localLanguage !== 'vi' ? 'Refresh' : 'Tạo mới'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Refresh' : 'Đổi mã'}</span>
                   </button>
                 </div>
                 <input
@@ -2278,8 +2278,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 />
                 <p className="text-[9px] sm:text-[10px] text-white/50 mt-1 leading-normal">
                   {localLanguage !== 'vi'
-                    ? 'This unique 12-digit code identifies you on the leaderboard while protecting your identity.'
-                    : 'Mã 12 chữ số giúp hiển thị thứ hạng trên Bảng Xếp Hạng mà không làm lộ danh tính cá nhân.'}
+                    ? 'This 12-digit code represents you on the big screen and Leaderboard — keeping your real name private!'
+                    : 'Mã 12 số này sẽ đại diện cho bạn trên màn chiếu lớn và Bảng Vàng — vừa ngầu vừa giữ kín tên thật!'}
                 </p>
               </div>
 
@@ -2287,7 +2287,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               {teamModeActive && teams && teams.length > 0 && !randomTeamAssignment && (
                 <div>
                   <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                    {localLanguage !== 'vi' ? 'Select Team to Support' : 'Chọn Đội Thi Cổ Vũ'}
+                    {localLanguage !== 'vi' ? 'Which Contestant Are You Cheering For?' : 'Bạn muốn tiếp lửa cho Thí sinh nào?'}
                   </label>
                   <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                     {teams.map(tTeam => (
@@ -2332,12 +2332,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
                   />
                   <span className="text-sky-200 font-medium">
-                    {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                    {localLanguage !== 'vi' ? 'Keep me signed in on this device' : 'Nhớ tài khoản trên máy này suốt buổi thi nhé'}
                   </span>
                 </label>
               </div>
 
-              {/* PDPD Consent Checkbox & Legal Transparency Card (Luật 91/2025/QH15, NĐ 356/2025/NĐ-CP & Điều lệ BTI 2026) */}
+              {/* PDPD Consent Checkbox & Legal Transparency Card */}
               <div className={`p-3 sm:p-3.5 rounded-[2px] border transition-all text-left ${
                 errors.consent || errors.age
                   ? 'bg-rose-950/40 border-rose-500 shadow-md shadow-rose-950/50'
@@ -2346,10 +2346,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
                   <div className="flex items-center gap-1.5 text-sky-300 font-mono text-[11px] font-bold">
                     <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
-                    <span className="uppercase tracking-wider">Đồng Thuận Dữ Liệu & Quy Chế</span>
+                    <span className="uppercase tracking-wider">
+                      {localLanguage !== 'vi' ? 'Fair Play & Privacy Commitment' : 'Cam Kết Tham Gia Văn Minh & Bảo Mật'}
+                    </span>
                   </div>
                   <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-200">
-                    Luật 91/2025 & NĐ 356/2025
+                    {localLanguage !== 'vi' ? 'Safe & Transparent' : 'Bảo mật thông tin'}
                   </span>
                 </div>
 
@@ -2368,8 +2370,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     />
                     <span className="text-[10px] sm:text-[11px] text-white/90 font-sans leading-snug">
                       {localLanguage !== 'vi' 
-                        ? 'I confirm I am 16+ years of age or have obtained parental/guardian consent to participate.' 
-                        : 'Tôi xác nhận từ đủ 16 tuổi trở lên hoặc có sự đồng ý của cha mẹ/người giám hộ hợp pháp.'} <span className="text-rose-400 font-bold">*</span>
+                        ? 'I confirm I am 16 or older (or have family permission to join the event).' 
+                        : 'Mình xác nhận đã đủ 16 tuổi trở lên (hoặc đã được gia đình đồng ý cho tham gia chương trình).'} <span className="text-rose-400 font-bold">*</span>
                     </span>
                   </label>
                   {errors.age && (
@@ -2392,7 +2394,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       className="w-4 h-4 mt-0.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500 shrink-0 group-hover:border-sky-400"
                     />
                     <span className="text-[10px] sm:text-[11px] text-white/90 font-sans leading-snug">
-                      {localLanguage !== 'vi' ? 'I have read, understood and agree to the ' : 'Tôi đã đọc, hiểu rõ và đồng ý với '}
+                      {localLanguage !== 'vi' ? 'I have reviewed and agree to the ' : 'Mình đã xem qua và đồng ý với '}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -2401,7 +2403,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         }}
                         className="text-sky-300 hover:text-sky-200 underline font-semibold cursor-pointer"
                       >
-                        {localLanguage !== 'vi' ? 'Privacy Policy' : 'Chính Sách Bảo Vệ Dữ Liệu Cá Nhân'}
+                        {localLanguage !== 'vi' ? 'Data Privacy Policy' : 'Chính Sách Bảo Mật Dữ Liệu'}
                       </button>
                       {localLanguage !== 'vi' ? ' and ' : ' cùng '}
                       <button
@@ -2412,7 +2414,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         }}
                         className="text-sky-300 hover:text-sky-200 underline font-semibold cursor-pointer"
                       >
-                        {localLanguage !== 'vi' ? 'Contest Terms & AI Transparency' : 'Điều Lệ Cuộc Thi & Minh Bạch AI'}
+                        {localLanguage !== 'vi' ? 'BTI 2027 Arena Rules' : 'Thể Lệ Sân Chơi BTI 2027'}
                       </button>. <span className="text-rose-400 font-bold">*</span>
                     </span>
                   </label>
@@ -2425,14 +2427,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                   {/* Direct link to standalone policy page */}
                   <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-white/50 pl-6 border-t border-white/5">
-                    <span>Phiên bản pháp lý: v{PDPD_CONSENT_VERSION} (Luật 91/2025 &amp; NĐ 356/2025)</span>
+                    <span>Phiên bản: v{PDPD_CONSENT_VERSION} • Tuân thủ Luật 91/2025 &amp; NĐ 356/2025</span>
                     <a
                       href="/policy"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sky-300 hover:text-sky-100 flex items-center gap-1 hover:underline"
                     >
-                      <span>Mở Trang Policy Riêng</span>
+                      <span>{localLanguage !== 'vi' ? 'Read full policy' : 'Xem chi tiết quy định'}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
@@ -2442,7 +2444,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               {isLobbyLocked ? (
                 <div className="w-full py-2.5 sm:py-3 rounded-[2px] bg-rose-950/80 border border-rose-500/50 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed select-none font-mono shadow-md">
                   <Lock className="w-4 h-4 text-rose-400 animate-pulse" />
-                  <span>{localLanguage !== 'vi' ? 'LOBBY LOCKED — REGISTRATION DISABLED' : 'CỔNG TẠM KHÓA — KHÔNG THỂ ĐĂNG KÝ MỚI'}</span>
+                  <span>{localLanguage !== 'vi' ? 'SIGN-UP PAUSED WHILE ROUND IS LIVE' : 'ĐANG TẠM DỪNG GHI DANH TRONG LÚC THI'}</span>
                 </div>
               ) : (
                 <button
@@ -2459,7 +2461,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   ) : (
                     <>
                       <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span>{localLanguage !== 'vi' ? 'Complete Registration' : 'Hoàn Tất Đăng Ký Khán Giả'}</span>
+                      <span>{localLanguage !== 'vi' ? 'Complete Sign-Up & Join In!' : 'Hoàn Tất Ghi Danh & Nhập Cuộc!'}</span>
                       <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </>
                   )}
@@ -2480,12 +2482,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-white font-mono uppercase tracking-wider">
-                    {localLanguage !== 'vi' ? 'Firebase Email Verification Required' : 'Xác Thực Email Kích Hoạt Tài Khoản'}
+                    {localLanguage !== 'vi' ? 'Just One Quick Step to Enter the Stage!' : 'Chỉ Còn 1 Bước Nhỏ Để Vào Sân Khấu!'}
                   </h4>
                   <p className="text-[10px] sm:text-[11px] text-white/70 mt-0.5 font-sans leading-relaxed">
                     {localLanguage !== 'vi'
-                      ? 'A confirmation email from Firebase has been sent to:'
-                      : 'Hệ thống Firebase Authentication đã gửi email kích hoạt tới:'}
+                      ? 'We just sent a quick confirmation email to:'
+                      : 'Tụi mình vừa gửi một thư xác nhận tới địa chỉ email của bạn:'}
                   </p>
                 </div>
 
@@ -2494,7 +2496,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <div className="flex items-center gap-1.5 truncate">
                     <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                     <span className="text-xs font-mono font-bold text-sky-200 truncate">
-                      {pendingVerifyEmail || 'your-email@example.com'}
+                      {pendingVerifyEmail || 'sinhvien@example.com'}
                     </span>
                   </div>
                   <button
@@ -2508,7 +2510,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       }
                     }}
                     className="p-1 text-white/60 hover:text-white transition shrink-0 cursor-pointer"
-                    title="Copy Email"
+                    title="Sao chép email"
                   >
                     {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
@@ -2519,23 +2521,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="p-2.5 sm:p-3 bg-white/5 border border-white/10 rounded-[2px] space-y-1.5 text-[11px] sm:text-xs">
                 <span className="font-mono font-bold text-sky-300 flex items-center gap-1.5">
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>{localLanguage !== 'vi' ? 'Next steps to activate:' : 'Hướng dẫn kích hoạt tài khoản:'}</span>
+                  <span>{localLanguage !== 'vi' ? 'How to activate in seconds:' : 'Cách kích hoạt siêu nhanh:'}</span>
                 </span>
                 <ol className="space-y-1 text-white/75 list-decimal list-inside leading-relaxed font-sans text-[10px] sm:text-[11px]">
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Open your email inbox (CRITICAL: Check SPAM / JUNK / PROMOTIONS folder).'
-                      : 'Mở hòm thư email của bạn (ĐẶC BIỆT LƯU Ý: Hãy kiểm tra kỹ mục THƯ RÁC / SPAM / QUẢNG CÁO).'}
+                      ? 'Open your email inbox (remember to check your Spam or Promotions folder too).'
+                      : 'Mở hộp thư email của bạn (nhớ kiểm tra cả mục Thư rác / Spam hoặc Quảng cáo nhé).'}
                   </li>
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Click the verification link provided in the email sent by Firebase.'
-                      : 'Bấm vào đường liên kết xác thực (verification link) trong email do Firebase gửi.'}
+                      ? 'Tap the confirmation link inside the email.'
+                      : 'Bấm vào đường link xác nhận bên trong thư.'}
                   </li>
                   <li>
                     {localLanguage !== 'vi'
-                      ? 'Return to this screen and click "I Have Clicked the Verification Link" below.'
-                      : 'Quay lại màn hình này và bấm nút "Tôi Đã Bấm Link Xác Thực Trong Email" bên dưới.'}
+                      ? 'Come right back here and tap "I Clicked the Activation Link!" below.'
+                      : 'Quay lại đây và bấm nút "Mình Đã Bấm Link Kích Hoạt Rồi!" bên dưới để vào thi ngay.'}
                   </li>
                 </ol>
               </div>
@@ -2545,12 +2547,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-2.5 sm:p-3 bg-amber-500/10 border border-amber-500/30 rounded-[2px] space-y-2 text-[10px] sm:text-[11px] text-amber-200 animate-fadeIn">
                   <div className="font-bold flex items-center gap-1.5 text-amber-300 font-mono">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{localLanguage !== 'vi' ? 'Notice: Existing Firebase Account' : 'Lưu ý: Email đã từng đăng ký trên Firebase'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Welcome back! This email was used before' : 'À, email này đã từng tham gia trước đây rồi!'}</span>
                   </div>
                   <p className="leading-relaxed text-white/80 font-sans">
                     {localLanguage !== 'vi'
-                      ? 'This email was previously registered on Firebase with another password. You can request a password reset email below to reset your password and verify.'
-                      : 'Email này đã từng được tạo trên Firebase Authentication từ trước với mật khẩu cũ. Bạn có thể bấm nút gửi email đặt lại mật khẩu bên dưới để cập nhật mật khẩu mới.'}
+                      ? 'This email already has an account from an earlier session. If you forgot your old password, tap below to get a fresh password reset link!'
+                      : 'Email này đã có sẵn tài khoản từ đợt trước. Nếu bạn không nhớ mật khẩu cũ, bấm nút bên dưới để nhận link tạo mật khẩu mới nhé!'}
                   </p>
                   <div className="flex items-center gap-2 pt-0.5">
                     <button
@@ -2564,7 +2566,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       ) : (
                         <>
                           <Send className="w-3 h-3" />
-                          <span>{localLanguage !== 'vi' ? 'Send Password Reset Email' : 'Gửi Email Đặt Lại Mật Khẩu'}</span>
+                          <span>{localLanguage !== 'vi' ? 'Send Password Reset Link' : 'Nhận Link Đặt Mật Khẩu Mới'}</span>
                         </>
                       )}
                     </button>
@@ -2577,14 +2579,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-2.5 sm:p-3 bg-amber-500/10 border border-amber-500/30 rounded-[2px] space-y-1.5 animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-amber-200">
-                      {localLanguage !== 'vi' ? 'Account Password (for Firebase Auth):' : 'Mật khẩu tài khoản (để ủy quyền Firebase):'}
+                      {localLanguage !== 'vi' ? 'Your Password (to resend activation email):' : 'Nhập lại mật khẩu của bạn (để gửi lại thư):'}
                     </label>
-                    <span className="text-[9px] text-amber-300 font-mono">{localLanguage !== 'vi' ? 'Required for resend' : 'Cần để gửi lại'}</span>
+                    <span className="text-[9px] text-amber-300 font-mono">{localLanguage !== 'vi' ? 'For resend' : 'Để gửi lại'}</span>
                   </div>
                   <div className="relative">
                     <input
                       type={showVerifyPassword ? 'text' : 'password'}
-                      placeholder={localLanguage !== 'vi' ? 'Enter password...' : 'Nhập mật khẩu của bạn...'}
+                      placeholder={localLanguage !== 'vi' ? 'Enter your password...' : 'Nhập mật khẩu của bạn...'}
                       value={verifyPasswordInput}
                       onChange={(e) => {
                         setVerifyPasswordInput(e.target.value);
@@ -2617,7 +2619,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                      <span>{localLanguage !== 'vi' ? 'I Have Clicked the Verification Link' : 'Tôi Đã Bấm Link Xác Thực Trong Email'}</span>
+                      <span>{localLanguage !== 'vi' ? 'I Clicked the Activation Link!' : 'Mình Đã Bấm Link Kích Hoạt Rồi!'}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
@@ -2637,8 +2639,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       <Send className="w-3.5 h-3.5 text-sky-400" />
                       <span>
                         {resendCooldown > 0
-                          ? (localLanguage !== 'vi' ? `Resend email in ${resendCooldown}s` : `Gửi lại email sau ${resendCooldown}s`)
-                          : (localLanguage !== 'vi' ? 'Resend Verification Email' : 'Gửi Lại Email Xác Thực')}
+                          ? (localLanguage !== 'vi' ? `Resend email in ${resendCooldown}s` : `Gửi lại thư sau ${resendCooldown}s`)
+                          : (localLanguage !== 'vi' ? 'Didn’t get it? Resend Email' : 'Chưa thấy thư? Gửi lại cho mình')}
                       </span>
                     </>
                   )}
@@ -2650,14 +2652,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     onClick={() => handleTabChange('REGISTER')}
                     className="text-[10px] sm:text-[11px] font-mono text-white/60 hover:text-white underline cursor-pointer"
                   >
-                    {localLanguage !== 'vi' ? '← Edit Registration Info' : '← Đổi Thông Tin / Email'}
+                    {localLanguage !== 'vi' ? '← Edit Email / Info' : '← Sửa lại email / thông tin'}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleTabChange('LOGIN')}
                     className="text-[10px] sm:text-[11px] font-mono text-sky-300 hover:text-white hover:underline cursor-pointer"
                   >
-                    {localLanguage !== 'vi' ? 'Back to Login →' : 'Quay lại Đăng Nhập →'}
+                    {localLanguage !== 'vi' ? 'Back to Sign In →' : 'Về trang Vào Thi →'}
                   </button>
                 </div>
               </div>
@@ -2673,27 +2675,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="p-3.5 sm:p-4 rounded-[3px] bg-rose-950/80 border border-rose-500/50 text-rose-200 space-y-2 font-mono shadow-lg">
                   <div className="flex items-center gap-2 text-rose-300 font-bold text-xs uppercase">
                     <ShieldAlert className="w-4 h-4 text-rose-400 animate-pulse shrink-0" />
-                    <span>{localLanguage !== 'vi' ? 'LOOKUP FEATURE LOCKED' : 'CƠ CHẾ CHỐNG TRA CỨU ĐANG BẬT'}</span>
+                    <span>{localLanguage !== 'vi' ? 'PRIVACY SHIELD ACTIVE' : 'ĐANG TẠM KHÓA TRA CỨU ĐỂ BẢO MẬT'}</span>
                   </div>
                   <p className="text-[11px] text-rose-100/90 leading-relaxed font-sans">
                     {localLanguage !== 'vi'
-                      ? 'Account status search and profile probing are currently disabled by the Administrator to protect participant privacy.'
-                      : 'Ban Tổ Chức đang kích hoạt chế độ bảo mật dữ liệu và tạm ngưng tính năng tra cứu thông tin khán giả.'}
+                      ? 'While the round is heating up, profile lookup is temporarily paused by the Organizers to keep everyone’s info private!'
+                      : 'Trong lúc vòng thi đang gay cấn, Ban Tổ Chức tạm ẩn tính năng tra cứu để bảo vệ thông tin cho các bạn sinh viên nhé!'}
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleCheckStatus} className="space-y-2 sm:space-y-3">
                   <p className="text-[10px] sm:text-xs text-white/60 leading-relaxed font-mono">
                     {localLanguage !== 'vi'
-                      ? 'Lookup your registration and active status by entering your MSSV, Username, Email, or 12-Digit UID.'
-                      : 'Tra cứu thông tin tài khoản và mã định danh bằng cách nhập MSSV, Tên đăng nhập, Email hoặc Mã 12 số.'}
+                      ? 'Forgot your 12-digit code or checking if you are signed up? Enter your MSSV, Nickname, or Email below!'
+                      : 'Quên mất Mã 12 số hoặc muốn kiểm tra xem mình đã ghi danh chưa? Nhập MSSV, Nickname hoặc Email vào đây để xem ngay nhé!'}
                   </p>
 
                   <div className="flex gap-1.5 sm:gap-2">
                     <input
                       type="text"
                       required
-                      placeholder={localLanguage !== 'vi' ? 'Enter MSSV, Username, or UID...' : 'Nhập MSSV, Tên đăng nhập, hoặc UID...'}
+                      placeholder={localLanguage !== 'vi' ? 'Type your MSSV, Nickname, or 12-digit code...' : 'Gõ MSSV, Nickname hoặc Mã 12 số của bạn...'}
                       value={checkQuery}
                       onChange={(e) => setCheckQuery(e.target.value)}
                       className="flex-1 min-w-0 bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none uppercase transition placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -2708,7 +2710,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       ) : (
                         <>
                           <Search className="w-3.5 h-3.5" />
-                          <span>{localLanguage !== 'vi' ? 'Lookup' : 'Tra Cứu'}</span>
+                          <span>{localLanguage !== 'vi' ? 'Check' : 'Kiểm Tra'}</span>
                         </>
                       )}
                     </button>
@@ -2722,12 +2724,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     <div className="p-2.5 sm:p-3 bg-rose-950/40 border border-rose-500/30 rounded-[2px] text-xs text-rose-300">
                       <div className="flex items-center gap-2 font-bold mb-1 font-mono">
                         <AlertCircle className="w-4 h-4 text-rose-400" />
-                        <span>{localLanguage !== 'vi' ? 'Profile Not Found' : 'Không tìm thấy hồ sơ'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Not Found Yet!' : 'Chưa tìm thấy thông tin của bạn rồi!'}</span>
                       </div>
                       <p className="text-rose-200/80 text-[10px] sm:text-[11px] leading-relaxed">
                         {localLanguage !== 'vi'
-                          ? `No audience profile matches "${checkResult.query}". Please register a new account.`
-                          : `Không tìm thấy hồ sơ khán giả nào khớp với "${checkResult.query}". Bạn có thể đăng ký tài khoản mới ngay bây giờ.`}
+                          ? `No student pass matches "${checkResult.query}" yet. Tap below to sign up in just a few seconds!`
+                          : `Chưa có hồ sơ nào khớp với "${checkResult.query}". Bạn bấm nút bên dưới để ghi danh mới chỉ trong vài giây nhé!`}
                       </p>
                       <button
                         type="button"
@@ -2738,7 +2740,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         className="mt-2 text-xs font-bold text-sky-300 hover:underline flex items-center gap-1 font-mono cursor-pointer"
                       >
                         <UserPlus className="w-3 h-3" />
-                        <span>{localLanguage !== 'vi' ? 'Register with this MSSV' : 'Đăng ký ngay với MSSV này'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Sign up now with this MSSV' : 'Ghi danh ngay với MSSV này'}</span>
                       </button>
                     </div>
                   ) : (
@@ -2746,10 +2748,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
                         <div className="flex items-center gap-1.5 font-bold text-emerald-300 font-mono text-xs">
                           <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
-                          <span>{localLanguage !== 'vi' ? 'Active Verified Audience' : 'Khán Giả Đã Xác Thực'}</span>
+                          <span>{localLanguage !== 'vi' ? 'You Are Registered & Ready!' : 'Bạn Đã Có Tên Trong Đấu Trường!'}</span>
                         </div>
                         <span className="text-[9px] sm:text-[10px] font-mono px-1.5 sm:px-2 py-0.5 rounded-[2px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                          {checkResult.authProvider === 'google' ? 'Google SSO' : 'Local Auth'}
+                          {checkResult.authProvider === 'google' ? 'Google SSO' : 'Tài khoản BTI'}
                         </span>
                       </div>
 
@@ -2763,12 +2765,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                           <span className="font-bold text-sky-300 truncate block">{checkResult.mssv}</span>
                         </div>
                         <div className="col-span-2">
-                          <span className="text-white/50 block">{localLanguage !== 'vi' ? '12-Digit UID:' : 'Mã định danh 12 số:'}</span>
+                          <span className="text-white/50 block">{localLanguage !== 'vi' ? '12-Digit Privacy Code:' : 'Mã định danh 12 số:'}</span>
                           <span className="font-bold text-sky-300 tracking-wider truncate block">{checkResult.anonymizedUid}</span>
                         </div>
                         {checkResult.registeredAt && (
                           <div className="col-span-2">
-                            <span className="text-white/50 block">{localLanguage !== 'vi' ? 'Registered Date:' : 'Thời gian đăng ký:'}</span>
+                            <span className="text-white/50 block">{localLanguage !== 'vi' ? 'Signed up at:' : 'Thời gian ghi danh:'}</span>
                             <span className="text-white/70">{new Date(checkResult.registeredAt).toLocaleString(localLanguage === 'vi' ? 'vi-VN' : 'en-US')}</span>
                           </div>
                         )}
@@ -2783,7 +2785,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         className="w-full mt-2 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-[2px] flex items-center justify-center gap-1.5 transition cursor-pointer font-mono"
                       >
                         <LogIn className="w-3.5 h-3.5" />
-                        <span>{localLanguage !== 'vi' ? 'Sign In with this Account' : 'Đăng nhập vào tài khoản này'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Sign In With This Account' : 'Vào Thi Với Tài Khoản Này Ngay'}</span>
                       </button>
                     </div>
                   )}
@@ -2800,19 +2802,19 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="p-2 sm:p-2.5 bg-sky-950/30 border border-sky-500/30 rounded-[2px] text-[10px] sm:text-xs text-sky-200">
                 <p className="leading-relaxed font-sans">
                   {localLanguage !== 'vi'
-                    ? 'Already have your 12-digit student UID? Reconnect immediately without needing a password.'
-                    : 'Nếu bạn đã có Mã định danh 12 số từ trước, hãy nhập MSSV và Mã 12 số để mở khóa vào sàn đấu ngay lập tức.'}
+                    ? 'Saved your 12-digit code? Enter your MSSV and 12-digit code below to jump straight into the stage without a password!'
+                    : 'Đã lưu sẵn Mã 12 số của mình rồi? Nhập nhanh MSSV kèm Mã 12 số bên dưới để vào thẳng sân khấu mà không cần gõ mật khẩu nhé!'}
                 </p>
               </div>
 
               <div>
                 <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                  MSSV *
+                  {localLanguage !== 'vi' ? 'Your Student ID (MSSV)' : 'Mã số sinh viên (MSSV) của bạn'} *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="22123456"
+                  placeholder="VD: 22123456"
                   value={quickMssv}
                   onChange={(e) => setQuickMssv(e.target.value.toUpperCase())}
                   className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -2821,7 +2823,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <div>
                 <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                  {localLanguage !== 'vi' ? '12-Digit Anonymized UID' : 'Mã định danh 12 số'} *
+                  {localLanguage !== 'vi' ? 'Your Saved 12-Digit Code' : 'Mã Định Danh 12 Số đã lưu'} *
                 </label>
                 <input
                   type="text"
@@ -2848,7 +2850,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="w-3.5 h-3.5 rounded-[2px] bg-[#0D0420] border-white/30 text-sky-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-sky-500"
                   />
                   <span className="text-sky-200 font-medium">
-                    {localLanguage !== 'vi' ? 'Keep me logged in' : 'Duy trì đăng nhập (Keep Me Logged In)'}
+                    {localLanguage !== 'vi' ? 'Keep me signed in on this device' : 'Nhớ tài khoản trên máy này suốt buổi thi nhé'}
                   </span>
                 </label>
               </div>
@@ -2863,7 +2865,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 ) : (
                   <>
                     <Fingerprint className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span>{localLanguage !== 'vi' ? 'Quick Unlock Arena' : 'Xác Thực Nhanh Bằng UID'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Jump Right In!' : 'Vào Thẳng Sân Khấu!'}</span>
                     <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </>
                 )}
@@ -2921,15 +2923,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <ShieldCheck className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
                 <span>
                   {localLanguage !== 'vi'
-                    ? 'Verify your Student ID (MSSV) and 12-digit UID to link your scores and leaderboard identity.'
-                    : 'Vui lòng xác thực MSSV và Mã định danh 12 số để lưu giữ thành tích và vinh danh trên Bảng Xếp Hạng.'}
+                    ? 'Awesome! Add your Student ID (MSSV) below so we can create your 12-digit privacy code and track your score & prizes!'
+                    : 'Tuyệt vời! Bạn bổ sung thêm MSSV bên dưới để hệ thống tạo Mã 12 số ẩn danh, cộng điểm và trao giải chính xác cho bạn nhé!'}
                 </span>
               </div>
 
               {/* Name & MSSV */}
               <div>
                 <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                  {localLanguage !== 'vi' ? 'Full Name' : 'Họ và Tên'} *
+                  {localLanguage !== 'vi' ? 'Your Full Name' : 'Họ và tên đầy đủ của bạn'} *
                 </label>
                 <input
                   type="text"
@@ -2947,7 +2949,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="22123456"
+                  placeholder="VD: 22123456"
                   value={gVerMssv}
                   onChange={(e) => setGVerMssv(e.target.value.toUpperCase())}
                   className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition uppercase font-bold tracking-wider placeholder:normal-case placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
@@ -2992,13 +2994,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold text-white/80 flex items-center gap-1 sm:gap-1.5 truncate">
                     <Fingerprint className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                    <span className="truncate">{localLanguage !== 'vi' ? '12-Digit UID' : 'Mã định danh (12 số)'}</span>
+                    <span className="truncate">{localLanguage !== 'vi' ? 'Your 12-Digit Privacy Code' : 'Mã Định Danh Ẩn Danh (12 số) Của Bạn'}</span>
                   </span>
                   <button
                     type="button"
                     onClick={() => {
                       if (!gVerName.trim() || !gVerMssv.trim()) {
-                        setErrorMsg(localLanguage !== 'vi' ? 'Please fill in Name and MSSV first.' : 'Vui lòng nhập Họ tên và MSSV trước.');
+                        setErrorMsg(localLanguage !== 'vi' ? 'Please fill in your Name and MSSV first!' : 'Bạn điền Họ tên và MSSV ở trên trước nhé!');
                         soundFx.playError();
                         vibrateError();
                         return;
@@ -3011,7 +3013,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="text-[10px] text-sky-300 hover:underline font-mono uppercase tracking-wider flex items-center gap-1 cursor-pointer shrink-0 ml-1"
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>{localLanguage !== 'vi' ? 'Recalculate' : 'Tính lại'}</span>
+                    <span>{localLanguage !== 'vi' ? 'Refresh' : 'Đổi mã'}</span>
                   </button>
                 </div>
                 <input
@@ -3022,8 +3024,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 />
                 <p className="text-[9px] sm:text-[10px] text-white/50 mt-1 leading-normal">
                   {localLanguage !== 'vi'
-                    ? 'This unique 12-digit code identifies you on the leaderboard while protecting your identity.'
-                    : 'Mã 12 chữ số giúp hiển thị thứ hạng trên Bảng Xếp Hạng mà không làm lộ danh tính cá nhân.'}
+                    ? 'This 12-digit code represents you on the big screen and Leaderboard — keeping your real name private!'
+                    : 'Mã 12 số này sẽ đại diện cho bạn trên màn chiếu lớn và Bảng Vàng — vừa ngầu vừa giữ kín tên thật!'}
                 </p>
               </div>
 
@@ -3031,7 +3033,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               {teamModeActive && teams && teams.length > 0 && !randomTeamAssignment && (
                 <div>
                   <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70 mb-1">
-                    {localLanguage !== 'vi' ? 'Select Team to Support' : 'Chọn Đội Thi Cổ Vũ'}
+                    {localLanguage !== 'vi' ? 'Which Contestant Are You Cheering For?' : 'Bạn muốn tiếp lửa cho Thí sinh nào?'}
                   </label>
                   <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                     {teams.map(tTeam => (
@@ -3062,7 +3064,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 ) : (
                   <>
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="truncate">{localLanguage !== 'vi' ? 'Confirm MSSV / UID & Enter Arena' : 'Xác Nhận & Vào Sàn Đấu'}</span>
+                    <span className="truncate">{localLanguage !== 'vi' ? 'All Set, Let’s Go!' : 'Xong Rồi, Vào Sân Khấu Thôi!'}</span>
                     <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                   </>
                 )}
@@ -3074,7 +3076,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   onClick={() => handleTabChange('LOGIN')}
                   className="text-xs text-white/60 hover:text-white underline font-mono cursor-pointer"
                 >
-                  {localLanguage !== 'vi' ? '← Back to standard login' : '← Quay lại đăng nhập thông thường'}
+                  {localLanguage !== 'vi' ? '← Back to Sign In' : '← Quay lại trang Vào Thi'}
                 </button>
               </div>
             </form>
@@ -3097,7 +3099,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 className="text-[11px] font-mono text-white/50 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer py-1 px-3 rounded-[2px] hover:bg-white/5"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{localLanguage !== 'vi' ? 'Return to Home Page' : 'Thoát về Trang Chủ BTI 2027'}</span>
+                <span>{localLanguage !== 'vi' ? 'Back to BTI 2027 Home' : 'Quay về Trang Chủ BTI 2027'}</span>
               </button>
             </div>
           )}

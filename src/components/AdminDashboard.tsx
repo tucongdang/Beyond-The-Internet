@@ -43,6 +43,7 @@ interface AdminDashboardProps {
   snapshotCount: number;
   activeCount?: number;
   onOpenEventSchedule?: () => void;
+  onOpenContestantsModal?: () => void;
   onStartEvent?: () => void;
   onEndEvent?: () => void;
   triggerToast?: (message: string) => void;
@@ -54,6 +55,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   snapshotCount,
   activeCount = 0,
   onOpenEventSchedule,
+  onOpenContestantsModal,
   onStartEvent,
   onEndEvent,
   triggerToast
@@ -92,16 +94,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </p>
         </div>
 
-        {onOpenEventSchedule && (
-          <button
-            type="button"
-            onClick={onOpenEventSchedule}
-            className="px-3.5 py-2 rounded-[3px] bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-mono font-bold text-xs shadow-md shadow-sky-950/50 flex items-center gap-2 cursor-pointer transition active:scale-95 shrink-0 self-start sm:self-auto"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Lịch Trình & Ngày Giờ</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap shrink-0 self-start sm:self-auto">
+          {onOpenContestantsModal && (
+            <button
+              type="button"
+              onClick={onOpenContestantsModal}
+              className="px-3.5 py-2 rounded-[3px] bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-mono font-bold text-xs shadow-md shadow-amber-950/50 flex items-center gap-2 cursor-pointer transition active:scale-95"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Thí Sinh Sân Khấu ({gameState.teams?.length || 4})</span>
+            </button>
+          )}
+
+          {onOpenEventSchedule && (
+            <button
+              type="button"
+              onClick={onOpenEventSchedule}
+              className="px-3.5 py-2 rounded-[3px] bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-mono font-bold text-xs shadow-md shadow-sky-950/50 flex items-center gap-2 cursor-pointer transition active:scale-95"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Lịch Trình & Ngày Giờ</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ================= 4 REALTIME KPI TELEMETRY CARDS ================= */}
@@ -549,6 +564,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <AdminMatchConfigSection
         gameState={gameState}
         onOpenFullScheduleModal={onOpenEventSchedule}
+        onOpenContestantsModal={onOpenContestantsModal}
         triggerToast={triggerToast}
       />
     </div>

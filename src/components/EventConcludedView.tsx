@@ -13,6 +13,7 @@ import {
 import { GameState, UserInfo } from '../types';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess } from '../utils/hapticUtils';
+import { BrandLogo } from './BrandLogo';
 
 interface EventConcludedViewProps {
   gameState: GameState;
@@ -50,32 +51,21 @@ export const EventConcludedView: React.FC<EventConcludedViewProps> = ({
           <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
-          {/* Official Brand Logo */}
-          <div className="mb-4">
-            <img
-              src="/logo-landscape.png"
-              alt="Beyond The Internet 2027"
-              className="max-h-12 sm:max-h-14 w-auto object-contain mx-auto drop-shadow-md select-none pointer-events-none"
-              loading="eager"
-            />
-          </div>
-
-          {/* Golden Trophy Icon */}
-          <div className="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-amber-400/20 animate-ping" />
-            <div className="w-16 h-16 rounded-[4px] bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-slate-950 shadow-xl shadow-amber-500/30">
-              <Trophy className="w-9 h-9 fill-current" />
-            </div>
+          {/* Official Compact Brand Logo */}
+          <div className="mb-3 flex justify-center">
+            <BrandLogo variant="landscape" size="md" />
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <Trophy className="w-3.5 h-3.5 text-amber-300" />
             <span>SỰ KIỆN ĐÃ KHÉP LẠI THÀNH CÔNG • BẾ MẠC</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-snug mb-3">
-            {eventTitle}
-          </h1>
+          {eventTitle.trim().toLowerCase() !== 'beyond the internet 2027' && (
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug mb-2">
+              {eventTitle}
+            </h1>
+          )}
 
           <p className="text-sm sm:text-base text-amber-100/90 leading-relaxed max-w-xl mx-auto italic font-medium">
             &ldquo;{concludingMessage}&rdquo;

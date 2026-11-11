@@ -63,7 +63,7 @@ const SOURCE_CONFIG: Record<
     text: 'text-sky-300'
   },
   CONTESTANT: {
-    label: 'Thí sinh / Đội thi',
+    label: 'Thí sinh',
     icon: Flame,
     badgeBg: 'fluent-box-nested',
     border: 'border-amber-500/40',

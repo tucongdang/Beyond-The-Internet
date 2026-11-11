@@ -74,13 +74,13 @@ export const DEFAULT_SHOUT_SETTINGS: ShoutSettings = {
 
 // Preset quick shout suggestions for gameshow audience
 export const POPULAR_SHOUT_PRESETS = [
-  { text: 'BTI 2026 đỉnh chóp! 🔥', emoji: '🔥', color: 'pink' as ShoutBadgeColor },
+  { text: 'BTI 2027 đỉnh chóp! 🔥', emoji: '🔥', color: 'pink' as ShoutBadgeColor },
   { text: 'Cố lên cả nhà ơi! 💪', emoji: '💪', color: 'emerald' as ShoutBadgeColor },
   { text: 'Câu này gài bẫy rồi! 🧠', emoji: '🧠', color: 'purple' as ShoutBadgeColor },
   { text: 'Quá nhanh quá nguy hiểm! ⚡', emoji: '⚡', color: 'amber' as ShoutBadgeColor },
   { text: 'Tự tin 100 điểm về tay! 🏆', emoji: '🏆', color: 'cyan' as ShoutBadgeColor },
   { text: 'Hồi hộp từng giây luôn 🎉', emoji: '🎉', color: 'blue' as ShoutBadgeColor },
-  { text: 'Ủng hộ đội nhà hết mình ❤️', emoji: '❤️', color: 'pink' as ShoutBadgeColor },
+  { text: 'Ủng hộ thí sinh hết mình ❤️', emoji: '❤️', color: 'pink' as ShoutBadgeColor },
   { text: 'Đỉnh nóc kịch trần bay phấp phới 🚀', emoji: '🚀', color: 'purple' as ShoutBadgeColor }
 ];
 
@@ -197,7 +197,7 @@ class RealtimeShoutService {
             uid: 'system_host',
             sender_name: 'MC Sân Khấu',
             sender_mssv: 'HOST',
-            text: 'Chào mừng tất cả khán giả đến với Beyond The Internet 2026!',
+            text: 'Chào mừng tất cả khán giả đến với Beyond The Internet 2027!',
             emoji: '🎉',
             color: 'amber',
             timestamp: now - 35000,
@@ -212,7 +212,7 @@ class RealtimeShoutService {
             uid: 'seed_u1',
             sender_name: 'Minh Hoàng',
             sender_mssv: '2212****',
-            text: 'Cố lên đội A ơi, câu 3 đỉnh quá! 🔥',
+            text: 'Cố lên thí sinh số 1 ơi, câu 3 đỉnh quá! 🔥',
             emoji: '🔥',
             color: 'pink',
             timestamp: now - 18000,

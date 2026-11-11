@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { Clock, Calendar, ChevronRight, CheckCircle2, PlayCircle, AlertCircle, Sparkles, Radio, Zap } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, Sparkles, Radio, Zap } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
 import {
@@ -45,8 +45,6 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
     statusLabelEn,
     nextRoundNameVi,
     nextRoundNameEn,
-    currentRoundNameVi,
-    currentRoundNameEn,
     currentRoundIndex,
     days,
     hours,
@@ -139,7 +137,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
     return (
       <aside
         role="region"
-        aria-label={isVi ? 'Ước tính thời gian vòng đấu' : 'Round Time Estimator'}
+        aria-label={isVi ? 'Đồng hồ nhịp độ trận đấu' : 'Arena Pace Clock'}
         className={`flex items-center gap-3 px-3 py-1.5 rounded-[2px] bg-slate-950/70 border ${theme.border} text-xs font-mono text-[#F5EFF9] ${className}`}
       >
         <span className="relative flex h-2 w-2 shrink-0">
@@ -148,7 +146,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
         </span>
         <div className="flex items-center gap-1.5 truncate">
           <span className="font-semibold text-[#B6A6D8]">
-            {isVi ? 'Vòng kế tiếp:' : 'Next round:'}
+            {isVi ? 'Chặng kế tiếp:' : 'Up next:'}
           </span>
           <span className="font-bold text-white truncate">
             {isVi ? nextRoundNameVi : nextRoundNameEn}
@@ -168,7 +166,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
   return (
     <aside
       role="region"
-      aria-label={isVi ? 'Ước tính thời gian vòng đấu' : 'Round Time Estimator'}
+      aria-label={isVi ? 'Đồng hồ nhịp độ trận đấu' : 'Arena Pace Clock'}
       className={`w-full rounded-[4px] fluent-box border ${theme.border} shadow-2xl ${theme.glow} bg-gradient-to-b from-[#180b2b]/95 via-[#120624]/90 to-slate-950/95 backdrop-blur-xl relative overflow-hidden select-none animate-fadeIn ${className}`}
     >
       {/* Decorative Cyber Top Gradient Line */}
@@ -223,7 +221,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
           <div className="flex flex-col items-center md:items-start text-center md:text-left min-w-0 flex-1">
             <div className="text-xs font-mono text-[#B6A6D8] uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isVi ? 'Vòng Đấu Tiếp Theo Dự Kiến' : 'Next Scheduled Round'}</span>
+              <span>{isVi ? 'Chặng Tranh Tài Sắp Tới' : 'Up Next on Stage'}</span>
             </div>
             
             <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
@@ -234,7 +232,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
               <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-mono text-amber-300">
                 <Sparkles className="w-3 h-3 text-amber-400" />
                 <span>
-                  {isVi ? 'Thời điểm bắt đầu dự kiến:' : 'Estimated start time:'}
+                  {isVi ? 'Dự kiến lên sóng lúc:' : 'Expected to kick off at:'}
                 </span>
                 <span className="font-bold underline decoration-amber-400/50 underline-offset-2">
                   ~{estimatedNextRoundStartStr}
@@ -304,7 +302,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
             ) : (
               <div className="px-4 py-3 rounded-[2px] bg-slate-950/80 border border-white/10 flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>{isVi ? 'Sẵn sàng bắt đầu' : 'Ready to start'}</span>
+                <span>{isVi ? 'Sẵn sàng khai cuộc!' : 'Ready to kick off!'}</span>
               </div>
             )}
           </div>
@@ -314,7 +312,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
         {progressPercent > 0 && progressPercent < 100 && (
           <div className="w-full">
             <div className="flex items-center justify-between text-[10px] font-mono text-[#B6A6D8] mb-1">
-              <span>{isVi ? 'Tiến độ giai đoạn hiện tại' : 'Current stage progress'}</span>
+              <span>{isVi ? 'Nhịp độ chặng hiện tại' : 'Current round pace'}</span>
               <span className="font-bold text-white tabular-nums">{progressPercent}%</span>
             </div>
             <div className="w-full h-1.5 rounded-[1px] bg-white/10 overflow-hidden">
@@ -331,10 +329,10 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
           <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
             <div className="flex items-center justify-between text-[11px] font-mono text-[#B6A6D8]">
               <span className="uppercase tracking-wider font-semibold">
-                {isVi ? 'Lộ Trình Các Vòng Thi Đấu' : 'Tournament Round Roadmap'}
+                {isVi ? 'Lộ Trình 4 Vòng Tranh Tài' : '4-Round Contest Roadmap'}
               </span>
               <span className="text-[10px] text-white/50">
-                {isVi ? 'Chuẩn Olympia 4 Vòng' : 'Olympia 4-Round Standard'}
+                {isVi ? 'Thể Thức 4 Vòng Chính Thức' : 'Official 4-Round Format'}
               </span>
             </div>
 
@@ -371,7 +369,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
                     {dotIcon}
                     <div className="flex flex-col min-w-0 leading-tight">
                       <span className="text-[10px] font-mono uppercase tracking-wider font-bold truncate">
-                        {round.shortName}
+                        {isVi ? round.shortName : round.shortNameEn}
                       </span>
                       <span className="text-[9px] font-mono text-white/40 truncate">
                         ~{round.estimatedDurationMinutes} {isVi ? 'phút' : 'min'}
@@ -388,9 +386,9 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
         <div className="flex items-center justify-between text-[10px] font-mono text-white/40 pt-1">
           <span className="flex items-center gap-1.5">
             <Radio className="w-3 h-3 text-emerald-400" />
-            <span>{isVi ? 'Đồng bộ thời gian thực NTP' : 'NTP Real-time Clock Synced'}</span>
+            <span>{isVi ? 'Đã đồng bộ giờ sân khấu' : 'Synced with Stage Clock'}</span>
           </span>
-          <span>BTI 2027 Arena Engine</span>
+          <span>{isVi ? 'Đấu trường BTI 2027' : 'BTI 2027 Live Arena'}</span>
         </div>
 
       </div>

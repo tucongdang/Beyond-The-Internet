@@ -32,7 +32,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
         role="status"
         aria-busy="true"
         aria-live="polite"
-        aria-label={isEn ? 'Loading new question from syncService' : 'Đang tải dữ liệu câu hỏi mới từ syncService'}
+        aria-label={isEn ? 'Loading new question from stage' : 'Đang tải câu hỏi mới từ sân khấu'}
         className={`fluent-question-box rounded-[2px] p-5 sm:p-6 lg:p-7 xl:p-8 flex flex-col justify-between relative overflow-hidden ${
           isLongQuestion
             ? 'min-h-[140px] md:min-h-[170px] w-full'
@@ -44,7 +44,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
           <div className="flex items-center gap-2 min-w-0">
             <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin shrink-0" />
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9] truncate">
-              {isEn ? 'Syncing new question...' : 'Đang đồng bộ câu hỏi mới...'}
+              {isEn ? 'Opening new question...' : 'Đang mở câu hỏi mới...'}
             </span>
             <div className="hidden sm:block h-3.5 w-20 fluent-skeleton-bar" />
           </div>
@@ -237,7 +237,7 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
           <div className="flex items-center gap-2">
             <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin" />
             <span className="text-xs font-mono font-bold uppercase text-[#F7CAC9]">
-              {isEn ? 'Syncing VCNV clue data...' : 'Đang đồng bộ dữ liệu câu hỏi VCNV...'}
+              {isEn ? 'Loading obstacle clue...' : 'Đang tải gợi ý Vượt Chướng Ngại Vật...'}
             </span>
           </div>
           <div className="h-4 w-20 fluent-skeleton-bar" />
@@ -265,8 +265,8 @@ export const AudienceQuestionSkeleton: React.FC<AudienceQuestionSkeletonProps> =
           <RefreshCw className="w-3.5 h-3.5 text-[#F7CAC9] animate-spin shrink-0" />
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F7CAC9]">
             {isEn
-              ? 'Waiting for new question data from syncService...'
-              : 'Đang đợi dữ liệu câu hỏi mới từ syncService...'}
+              ? 'Receiving new question from stage...'
+              : 'Đang nhận câu hỏi mới từ sân khấu...'}
           </span>
         </div>
         <div className="h-4 w-16 fluent-skeleton-bar shrink-0" />

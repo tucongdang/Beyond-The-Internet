@@ -445,7 +445,7 @@ export const AdminGuide: React.FC = () => {
                   </h4>
                 </div>
                 <p className="text-xs text-white/80 leading-relaxed">
-                  Trải nghiệm đăng nhập linh hoạt cho người chơi/khán giả trên điện thoại cá nhân:
+                  Trải nghiệm đăng nhập linh hoạt cho thí sinh/khán giả trên điện thoại cá nhân:
                 </p>
                 <ul className="text-xs text-white/70 space-y-1.5 list-disc list-inside font-mono">
                   <li><strong>Hộp chọn Onboarding:</strong> Tích chọn <code className="text-sky-300">Duy trì đăng nhập</code> trên giao diện Đăng nhập / Đăng ký / Quick Access.</li>

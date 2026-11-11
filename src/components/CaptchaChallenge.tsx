@@ -98,7 +98,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
       <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
         <span className="flex items-center gap-1 text-sky-300 truncate">
           <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-          <span className="truncate">Mã bảo vệ (CAPTCHA)</span>
+          <span className="truncate">Phép tính khởi động nhanh</span>
         </span>
         <button
           type="button"
@@ -109,10 +109,10 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
           }}
           disabled={isLoading || disabled}
           className="hover:text-white flex items-center gap-1 transition text-[10px] text-white/50 cursor-pointer disabled:opacity-40 shrink-0 ml-1"
-          title="Đổi bài toán khác"
+          title="Đổi phép tính khác"
         >
           <RefreshCw className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>Đổi mã</span>
+          <span>Đổi câu khác</span>
         </button>
       </div>
 
@@ -123,7 +123,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
             width={105}
             height={34}
             className="block"
-            title={`Bài toán CAPTCHA: ${question} = ?`}
+            title={`Phép tính nhỏ: ${question} = ?`}
           />
         </div>
 
@@ -131,7 +131,7 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
-          placeholder="Đáp án..."
+          placeholder="Nhập kết quả..."
           value={value}
           disabled={disabled}
           onChange={(e) => {

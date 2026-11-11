@@ -219,7 +219,7 @@ export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayPr
         <div className="space-y-1 sm:space-y-2 mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 font-mono text-xs sm:text-sm font-black tracking-widest uppercase shadow-lg">
             <Star className="w-4 h-4 fill-current text-amber-300" />
-            <span>NHÀ VÔ ĐỊCH BEYOND THE INTERNET 2026</span>
+            <span>NHÀ VÔ ĐỊCH BEYOND THE INTERNET 2027</span>
             <Star className="w-4 h-4 fill-current text-amber-300" />
           </div>
 
@@ -235,7 +235,7 @@ export const GrandFinaleProjectorOverlay: React.FC<GrandFinaleProjectorOverlayPr
             )}
             {winner.teamName && (
               <span className="px-3 py-0.5 rounded-[2px] bg-purple-500/20 border border-purple-400/30 text-purple-200 font-semibold">
-                Đội: {winner.teamName}
+                Thí sinh: {winner.teamName}
               </span>
             )}
           </div>

@@ -239,10 +239,10 @@ export const SebAntiCheatGuard: React.FC<SebAntiCheatGuardProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-rose-300 font-mono uppercase tracking-wider">
-                    {localLanguage !== 'vi' ? '⚠️ SEB SECURITY BREACH DETECTED' : '⚠️ PHÁT HIỆN VI PHẠM AN NINH SEB'}
+                    {localLanguage !== 'vi' ? '⚠️ COMPETITION SCREEN RULE NOTICE' : '⚠️ LƯU Ý QUY CHẾ MÀN HÌNH THI ĐẤU'}
                   </h3>
                   <p className="text-xs text-rose-200/80 font-mono mt-0.5">
-                    Safe Exam Browser Kiosk Protocol Enforced
+                    {localLanguage !== 'vi' ? 'Fair Play & Fullscreen Arena Mode' : 'Đảm bảo công bằng cho toàn bộ thí sinh trên sân khấu'}
                   </p>
                 </div>
               </div>
@@ -250,11 +250,11 @@ export const SebAntiCheatGuard: React.FC<SebAntiCheatGuardProps> = ({
               {/* Violation Detail Box */}
               <div className="p-4 bg-rose-950/50 border border-rose-500/40 rounded-[3px] space-y-2 font-mono text-xs text-rose-100">
                 <div className="flex items-center justify-between border-b border-rose-500/30 pb-2">
-                  <span className="text-rose-300 uppercase">Lý do vi phạm:</span>
+                  <span className="text-rose-300 uppercase">Thao tác vừa ghi nhận:</span>
                   <span className="font-bold text-amber-300">{violationReason || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between pt-1 text-[11px]">
-                  <span className="text-slate-300">Tổng số lần vi phạm:</span>
+                  <span className="text-slate-300">Số lần nhắc nhở:</span>
                   <span className="font-bold text-rose-400 text-sm bg-rose-950 px-2 py-0.5 rounded border border-rose-500/40">
                     {violationCount} / 5
                   </span>
@@ -269,8 +269,8 @@ export const SebAntiCheatGuard: React.FC<SebAntiCheatGuardProps> = ({
 
               <p className="text-xs text-slate-300 leading-relaxed font-sans">
                 {localLanguage !== 'vi'
-                  ? 'To maintain examination integrity, Safe Exam Browser requires remaining in Fullscreen Kiosk Mode without closing or inspecting elements.'
-                  : 'Để đảm bảo tính minh bạch của kỳ thi, hệ thống yêu cầu duy trì chế độ Toàn Màn Hình Kiosk và nghiêm cấm mọi hành vi kiểm tra phần tử hoặc sử dụng phím tắt.'}
+                  ? 'For a fair and transparent competition, please stay in Fullscreen Mode and avoid using browser shortcuts during the round.'
+                  : 'Để cuộc thi diễn ra công bằng và minh bạch nhất, bạn vui lòng giữ nguyên chế độ Toàn màn hình và không mở cửa sổ khác trong lúc làm bài nhé!'}
               </p>
 
               {/* Action Buttons */}
@@ -281,7 +281,7 @@ export const SebAntiCheatGuard: React.FC<SebAntiCheatGuardProps> = ({
                   className="w-full py-3 px-4 rounded-[3px] bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-sky-950/50 flex items-center justify-center gap-2 transition cursor-pointer font-mono border border-sky-400/30"
                 >
                   <Maximize2 className="w-4 h-4 text-sky-200" />
-                  <span>{localLanguage !== 'vi' ? 'Re-Enter Fullscreen Kiosk Mode' : 'QUAY LẠI MÀN HÌNH KIOSK TOÀN CẢNH'}</span>
+                  <span>{localLanguage !== 'vi' ? 'Return to Fullscreen Arena Mode' : 'QUAY LẠI CHẾ ĐỘ TOÀN MÀN HÌNH THI ĐẤU'}</span>
                 </button>
               </div>
             </div>

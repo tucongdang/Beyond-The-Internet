@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { ScoreBreakdown, GameState, UserInfo, UserResponse } from '../types';
-import { Trophy, Zap, Shield, Target, Flame, Star, ChevronDown, ChevronUp, Contrast, Sun, SunMedium, Smartphone, History, Maximize, Minimize, Sparkles } from 'lucide-react';
+import { GameState, UserInfo, UserResponse } from '../types';
+import { Trophy, Zap, Shield, Target, Flame, Star, ChevronDown, ChevronUp, Contrast, Sun, SunMedium, History, Sparkles, Info } from 'lucide-react';
 import { computeAudienceScoreFromResponses, getAudienceTotalScore, getAudienceScoreBreakdown } from '../services/audienceScoringService';
 import { t } from '../utils/i18n';
 import { calculateLeaderboard, calculateSurvivalStats } from '../utils/leaderboardUtils';
@@ -24,6 +24,7 @@ interface ScoreDisplayProps {
   onToggleWakeLock?: () => void;
   onOpenLogModal?: () => void;
   onOpenPostMatchModal?: () => void;
+  onOpenRulesModal?: () => void;
 }
 
 const getRoundDetails = (lang: 'vi' | 'en') => [
@@ -72,39 +73,19 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   isWakeLockSupported = true,
   onToggleWakeLock,
   onOpenLogModal,
-  onOpenPostMatchModal
+  onOpenPostMatchModal,
+  onOpenRulesModal
 }) => {
   const { localLanguage } = useLanguage();
   const ROUND_DETAILS = getRoundDetails(localLanguage);
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(Boolean(document.fullscreenElement));
   const { isBatterySaver } = useBatterySaver();
   const [isBatteryModalOpen, setIsBatteryModalOpen] = useState(false);
   
   const prevScoreRef = useRef(0);
   const [displayScore, setDisplayScore] = useState(0);
   const [popups, setPopups] = useState<{ id: number, diff: number }[]>([]);
-
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, []);
-
-  const handleToggleFullscreen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    soundFx.playClick();
-    vibrateTap();
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen?.().catch(() => {});
-    }
-  };
 
   const stats = useMemo(() => {
     if (!user?.uid || !allResponses) return null;
@@ -227,6 +208,26 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
           </button>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {onOpenRulesModal && (
+              <button
+                type="button"
+                id="btn-audience-game-rules-info"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  soundFx.playClick();
+                  vibrateTap();
+                  onOpenRulesModal();
+                }}
+                aria-label={localLanguage !== 'vi' ? 'Game Rules Guide' : 'Xem Cẩm Nang Luật Chơi'}
+                title={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono font-bold transition hover-effect cursor-pointer fluent-box-nested hover:bg-white/15 text-[#F7CAC9] border-[#F7CAC9]/35 whitespace-nowrap shrink-0"
+              >
+                <Info className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
+                <span className="hidden sm:inline text-[11px]">
+                  {localLanguage !== 'vi' ? 'Rules' : 'Luật Chơi'}
+                </span>
+              </button>
+            )}
             {isWakeLockSupported !== false && onToggleWakeLock && (
               <button
                 type="button"

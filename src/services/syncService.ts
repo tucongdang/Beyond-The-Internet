@@ -2,7 +2,7 @@ import { getFirestore, initializeFirestore, doc, collection, onSnapshot, setDoc,
 import { app, db } from '../firebase';
 import { getBatterySaverMode } from '../utils/batterySaverUtils';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { GameState, UserResponse, FirebaseConfig, UserInfo, PingInfo, PingQuality, LatencyHistoryPoint, LatencyStats, EmergencyPoll, EmergencyPollHistoryItem, ActivityLogType, ActivityLogCategory, QrHistoryItem, QrScanEvent, HourlyScanDataPoint, QrScanTrendMetrics } from '../types';
+import { GameState, UserResponse, FirebaseConfig, UserInfo, PingInfo, PingQuality, LatencyHistoryPoint, LatencyStats, EmergencyPoll, EmergencyPollHistoryItem, ActivityLogType, ActivityLogCategory, QrHistoryItem, QrScanEvent, HourlyScanDataPoint, QrScanTrendMetrics, ContestantPrediction, ChampionVote } from '../types';
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import { getSecureRandomId, getSecureRandomInt, secureShuffle } from '../utils/cryptoUtils';
@@ -13,6 +13,8 @@ const STORAGE_KEY_RESPONSES = 'BTI2026_RESPONSES';
 const STORAGE_KEY_PRESENCE = 'BTI2026_PRESENCE';
 const STORAGE_KEY_QR_SCAN_EVENTS = 'BTI2026_QR_SCAN_EVENTS';
 const STORAGE_KEY_LOCAL_AUDIT_LOGS = 'BTI2026_LOCAL_AUDIT_LOGS';
+const STORAGE_KEY_PREDICTIONS = 'BTI2026_CONTESTANT_PREDICTIONS';
+const STORAGE_KEY_CHAMPION_VOTES = 'BTI2026_CHAMPION_VOTES';
 
 export const DEFAULT_GAME_STATE: GameState = {
   active_module: 'GAME',
@@ -84,9 +86,9 @@ export const DEFAULT_GAME_STATE: GameState = {
   power_save_refresh_rate_ms: 1000,
 
   teams: [
-    { id: 'team_alpha', name: 'Đội Alpha', color: '#3b82f6' },
-    { id: 'team_beta', name: 'Đội Beta', color: '#ef4444' },
-    { id: 'team_gamma', name: 'Đội Gamma', color: '#22c55e' }
+    { id: 'team_alpha', name: 'Thí sinh Alpha', color: '#3b82f6' },
+    { id: 'team_beta', name: 'Thí sinh Beta', color: '#ef4444' },
+    { id: 'team_gamma', name: 'Thí sinh Gamma', color: '#22c55e' }
   ],
 
   qr_scan_count: 0,
@@ -103,7 +105,11 @@ export const DEFAULT_GAME_STATE: GameState = {
     slow_mode_sec: 15
   },
   question_likes: {},
-  question_likes_uids: {}
+  question_likes_uids: {},
+  champion_vote_open: true,
+  champion_contestant_id: '',
+  confidence_staking_open: true,
+  confidence_staking_cutoff_notice: ''
 };
 
 type StateListener = (state: GameState) => void;
@@ -147,12 +153,16 @@ class RealtimeSyncService {
   private adminAlertListeners = new Set<(msg: string) => void>();
   private scanEventsListeners: Set<(events: QrScanEvent[], hourlyData: HourlyScanDataPoint[], metrics: QrScanTrendMetrics) => void> = new Set();
   private auditLogListeners: Set<(logs: any[]) => void> = new Set();
+  private predictionListeners: Set<(predictions: Record<string, Record<string, ContestantPrediction>>) => void> = new Set();
+  private championVoteListeners: Set<(votes: Record<string, ChampionVote>) => void> = new Set();
   private questionSyncListeners: Set<(isSyncing: boolean) => void> = new Set();
   private isSyncingQuestion: boolean = false;
   private questionSyncTimeout: any = null;
 
   private cachedGameState: GameState = DEFAULT_GAME_STATE;
   private cachedResponses: Record<string, Record<string, UserResponse>> = {};
+  private cachedPredictions: Record<string, Record<string, ContestantPrediction>> = {};
+  private cachedChampionVotes: Record<string, ChampionVote> = {};
   private cachedPresence: Record<string, { online: boolean; last_active: number; name?: string; mssv?: string }> = {};
   private cachedScanEvents: QrScanEvent[] = [];
   private cachedAuditLogs: any[] = [];
@@ -237,6 +247,23 @@ class RealtimeSyncService {
             this.cachedResponses[questionId][uid] = response;
             this.saveLocalResponses();
             this.notifyResponseListeners();
+          } else if (type === 'CONTESTANT_PREDICTION') {
+            const pred = payload as ContestantPrediction;
+            if (pred && pred.questionId && pred.uid) {
+              if (!this.cachedPredictions[pred.questionId]) {
+                this.cachedPredictions[pred.questionId] = {};
+              }
+              this.cachedPredictions[pred.questionId][pred.uid] = pred;
+              this.saveLocalPredictions();
+              this.notifyPredictionListeners();
+            }
+          } else if (type === 'CHAMPION_VOTE') {
+            const vote = payload as ChampionVote;
+            if (vote && vote.uid) {
+              this.cachedChampionVotes[vote.uid] = vote;
+              this.saveLocalChampionVotes();
+              this.notifyChampionVoteListeners();
+            }
           } else if (type === 'RESPONSES_CLEARED') {
             const { questionId } = payload;
             if (questionId) {
@@ -355,6 +382,14 @@ class RealtimeSyncService {
       if (savedResponses) {
         this.cachedResponses = JSON.parse(savedResponses);
       }
+      const savedPredictions = localStorage.getItem(STORAGE_KEY_PREDICTIONS);
+      if (savedPredictions) {
+        this.cachedPredictions = JSON.parse(savedPredictions);
+      }
+      const savedChampionVotes = localStorage.getItem(STORAGE_KEY_CHAMPION_VOTES);
+      if (savedChampionVotes) {
+        this.cachedChampionVotes = JSON.parse(savedChampionVotes);
+      }
       const savedPresence = localStorage.getItem(STORAGE_KEY_PRESENCE);
       if (savedPresence) {
         this.cachedPresence = JSON.parse(savedPresence);
@@ -397,6 +432,20 @@ class RealtimeSyncService {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(STORAGE_KEY_RESPONSES, JSON.stringify(this.cachedResponses));
+    } catch {}
+  }
+
+  private saveLocalPredictions() {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEY_PREDICTIONS, JSON.stringify(this.cachedPredictions));
+    } catch {}
+  }
+
+  private saveLocalChampionVotes() {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEY_CHAMPION_VOTES, JSON.stringify(this.cachedChampionVotes));
     } catch {}
   }
 
@@ -809,6 +858,22 @@ class RealtimeSyncService {
     const currentQResponses = this.cachedResponses[this.cachedGameState.question_id] || {};
     this.responseListeners.forEach(listener => listener(currentQResponses));
     this.allResponsesListeners.forEach(listener => listener(this.cachedResponses));
+  }
+
+  private notifyPredictionListeners() {
+    this.predictionListeners.forEach(listener => {
+      try {
+        listener(this.cachedPredictions);
+      } catch (err) {}
+    });
+  }
+
+  private notifyChampionVoteListeners() {
+    this.championVoteListeners.forEach(listener => {
+      try {
+        listener(this.cachedChampionVotes);
+      } catch (err) {}
+    });
   }
 
   private checkAutoPowerSavePresentation() {
@@ -2287,6 +2352,193 @@ class RealtimeSyncService {
     if (!questionId || !uid) return false;
     const uids = this.cachedGameState.question_likes_uids?.[questionId];
     return Array.isArray(uids) && uids.includes(uid);
+  }
+
+  // --- Stage Contestant Confidence Predictions & Staking Sync ---
+  public async submitContestantPrediction(prediction: ContestantPrediction): Promise<void> {
+    const { questionId, uid } = prediction;
+    if (!questionId || !uid) return;
+
+    if (!this.cachedPredictions[questionId]) {
+      this.cachedPredictions[questionId] = {};
+    }
+    this.cachedPredictions[questionId][uid] = prediction;
+    this.saveLocalPredictions();
+    this.notifyPredictionListeners();
+
+    // Attach to user response if already created
+    if (this.cachedResponses[questionId] && this.cachedResponses[questionId][uid]) {
+      this.cachedResponses[questionId][uid].contestantPrediction = prediction;
+      this.saveLocalResponses();
+      this.notifyResponseListeners();
+    }
+
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({
+          type: 'CONTESTANT_PREDICTION',
+          payload: prediction
+        });
+      } catch (err) {}
+    }
+
+    if (this.db && this.isFirebaseConnected) {
+      try {
+        await setDoc(
+          doc(this.db, 'contestant_predictions', `${questionId}_${uid}`),
+          this.removeUndefined({
+            ...prediction,
+            updatedAt: Date.now()
+          }),
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn('Failed to save contestant prediction to Firestore:', err);
+      }
+    }
+
+    this.logActivity(
+      'SYSTEM_EVENT',
+      'Dự đoán Thí sinh',
+      `${prediction.name || 'Khán giả'} (${prediction.mssv || prediction.uid.slice(0, 6)}) đã đặt niềm tin vào ${prediction.contestantName}.`,
+      { questionId, uid, contestantId: prediction.contestantId }
+    );
+  }
+
+  public getPredictionsForQuestion(questionId?: string): Record<string, ContestantPrediction> {
+    const qId = questionId || this.cachedGameState.question_id;
+    return this.cachedPredictions[qId] || {};
+  }
+
+  public getAllPredictions(): Record<string, Record<string, ContestantPrediction>> {
+    return this.cachedPredictions;
+  }
+
+  public subscribeToPredictions(callback: (predictions: Record<string, Record<string, ContestantPrediction>>) => void): () => void {
+    this.predictionListeners.add(callback);
+    callback(this.cachedPredictions);
+    return () => {
+      this.predictionListeners.delete(callback);
+    };
+  }
+
+  public async setStageWinningContestant(questionId: string, contestantIds: string[]): Promise<void> {
+    const currentWinningMap = { ...(this.cachedGameState.stage_winning_contestants || {}) };
+    currentWinningMap[questionId] = contestantIds;
+
+    // Update won flag in cached predictions
+    if (this.cachedPredictions[questionId]) {
+      Object.values(this.cachedPredictions[questionId]).forEach(pred => {
+        pred.won = contestantIds.includes(pred.contestantId);
+      });
+      this.saveLocalPredictions();
+      this.notifyPredictionListeners();
+    }
+
+    await this.updateGameState({
+      stage_winning_contestants: currentWinningMap
+    });
+  }
+
+  // --- Champion Vote (Bình chọn Thí sinh Chiến thắng chung cuộc - Tách biệt hoàn toàn với Điểm Tín Nhiệm từng câu) ---
+  public async submitChampionVote(vote: ChampionVote): Promise<boolean> {
+    if (this.cachedGameState.champion_vote_open === false) {
+      console.warn('Cổng bình chọn Thí sinh Chiến thắng đã khóa!');
+      return false;
+    }
+    if (!vote || !vote.uid || !vote.contestantId) return false;
+
+    this.cachedChampionVotes[vote.uid] = vote;
+    this.saveLocalChampionVotes();
+    this.notifyChampionVoteListeners();
+
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({
+          type: 'CHAMPION_VOTE',
+          payload: vote
+        });
+      } catch (err) {}
+    }
+
+    if (this.db && this.isFirebaseConnected) {
+      try {
+        await setDoc(
+          doc(this.db, 'champion_votes', vote.uid),
+          this.removeUndefined({
+            ...vote,
+            updatedAt: Date.now()
+          }),
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn('Failed to save champion vote to Firestore:', err);
+      }
+    }
+
+    this.logActivity(
+      'SYSTEM_EVENT',
+      'Bình chọn Quán quân',
+      `${vote.name || 'Khán giả'} (${vote.mssv || vote.uid.slice(0, 6)}) đã bình chọn Thí sinh chiến thắng: ${vote.contestantName}.`,
+      { uid: vote.uid, contestantId: vote.contestantId }
+    );
+
+    return true;
+  }
+
+  public getChampionVotes(): Record<string, ChampionVote> {
+    return this.cachedChampionVotes;
+  }
+
+  public subscribeToChampionVotes(callback: (votes: Record<string, ChampionVote>) => void): () => void {
+    this.championVoteListeners.add(callback);
+    callback(this.cachedChampionVotes);
+    return () => {
+      this.championVoteListeners.delete(callback);
+    };
+  }
+
+  public async toggleChampionVoteOpen(open: boolean): Promise<void> {
+    const update: Partial<GameState> = {
+      champion_vote_open: open,
+    };
+    if (!open) {
+      update.champion_vote_locked_at = Date.now();
+    }
+    await this.updateGameState(update);
+    this.logActivity(
+      'ADMIN_CONTROL',
+      open ? 'Mở Bình chọn Quán quân' : 'Khóa Bình chọn Quán quân',
+      open ? 'Admin đã mở cổng bình chọn Thí sinh Chiến thắng.' : 'Admin đã khóa cổng bình chọn Thí sinh Chiến thắng (trước vòng Về Đích).'
+    );
+  }
+
+  public async toggleConfidenceStakingOpen(open: boolean, notice?: string): Promise<void> {
+    const update: Partial<GameState> = {
+      confidence_staking_open: open,
+      confidence_staking_cutoff_notice: notice || (open ? '' : 'Ban Tổ Chức đã chốt danh sách đặt điểm tín nhiệm cho câu hỏi này.')
+    };
+    if (!open) {
+      update.confidence_staking_locked_at = Date.now();
+    }
+    await this.updateGameState(update);
+    this.logActivity(
+      'ADMIN_CONTROL',
+      open ? 'Mở Đặt Tín Nhiệm' : 'Chốt Dự Đoán Tín Nhiệm',
+      open ? 'Admin mở lại cổng đặt điểm tín nhiệm câu này.' : 'Admin đã phát thông báo chốt dự đoán tín nhiệm câu hỏi hiện tại.'
+    );
+  }
+
+  public async setChampionContestant(contestantId: string): Promise<void> {
+    await this.updateGameState({
+      champion_contestant_id: contestantId
+    });
+    const cName = this.cachedGameState.teams?.find(t => t.id === contestantId)?.name || contestantId;
+    this.logActivity(
+      'ADMIN_CONTROL',
+      'Xác nhận Thí sinh Quán quân',
+      `Admin đã xác nhận ${cName} là Thí sinh Chiến thắng chung cuộc.`
+    );
   }
 }
 

@@ -97,6 +97,7 @@ export const MATCH_PRESETS: MatchPreset[] = [
 interface AdminMatchConfigSectionProps {
   gameState: GameState;
   onOpenFullScheduleModal?: () => void;
+  onOpenContestantsModal?: () => void;
   triggerToast?: (message: string) => void;
   className?: string;
   compact?: boolean;
@@ -105,6 +106,7 @@ interface AdminMatchConfigSectionProps {
 export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = ({
   gameState,
   onOpenFullScheduleModal,
+  onOpenContestantsModal,
   triggerToast,
   className = '',
   compact = false
@@ -264,6 +266,18 @@ export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = (
                 <span>{currentMatchName}</span>
               </span>
             </div>
+
+            {onOpenContestantsModal && (
+              <button
+                type="button"
+                onClick={onOpenContestantsModal}
+                className="px-2.5 py-1 rounded-[3px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 border border-amber-400/40 text-[11px] font-mono font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                title="Quản lý danh sách tên và số lượng thí sinh trên sân khấu"
+              >
+                <Users className="w-3.5 h-3.5 text-amber-400" />
+                <span>Thí Sinh Sân Khấu ({gameState.teams?.length || 4})</span>
+              </button>
+            )}
 
             {onOpenFullScheduleModal && (
               <button

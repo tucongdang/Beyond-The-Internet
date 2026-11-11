@@ -250,6 +250,6 @@ export function validateUsernameCompliance(name: string): { isValid: boolean; me
  * Tiêu chuẩn văn bản chính sách bảo vệ dữ liệu cá nhân theo Luật BVDLCN 91/2025/QH15 & Nghị định 356/2025/NĐ-CP
  * (Thay thế Nghị định 13/2023/NĐ-CP hết hiệu lực từ 01/01/2026)
  */
-export const PDPD_CONSENT_VERSION = '2.0-pdpd-2026';
+export const PDPD_CONSENT_VERSION = '2.0-pdpd-2027';
 export const PDPD_LAW_REFERENCE = 'Luật BVDLCN 91/2025/QH15, NĐ 356/2025/NĐ-CP & Luật ANM 116/2025/QH15';
 
