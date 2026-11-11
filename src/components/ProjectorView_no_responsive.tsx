@@ -1030,7 +1030,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   {gameState.round_type === 'BLIND_POLL' && gameState.status === 'ACTIVE' ? (
                     <div className="text-center py-4 relative z-10">
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] text-xs font-mono uppercase tracking-widest bg-[#F7CAC9]/20 backdrop-blur-md text-[#F7CAC9] border border-[#3E1D74]/80 mb-3">
-                        <Sparkles className="w-3.5 h-3.5" /> Kịch Tình Huống AID (Blind Poll)
+                        <Sparkles className="w-3.5 h-3.5" /> Tình Huống Khảo Thí (Blind Poll)
                       </div>
                       <h2 className="text-xl text-2xl font-medium text-white/90 leading-relaxed">
                         Khán giả đang theo dõi kịch bản trên sân khấu và bình chọn trên điện thoại

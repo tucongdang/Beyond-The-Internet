@@ -58,6 +58,7 @@ import {
   Scale, 
   Lock, 
   ExternalLink,
+  Cookie,
   History,
   Clock,
   Calendar,
@@ -1893,7 +1894,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                               : 'bg-white/10 text-white/60 border-white/15'
                           }`}
                         >
-                          <span>{useGeminiTts ? '✦ Gemini AI TTS' : 'Mặc định'}</span>
+                          <span>{useGeminiTts ? '✦ Phát Thanh Viên Số' : 'Mặc định'}</span>
                         </button>
                       </div>
 
@@ -1901,7 +1902,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         <div className="space-y-1">
                           <label htmlFor="profile-gemini-voice-select" className="text-[10px] font-mono text-emerald-300 flex items-center gap-1">
                             <Mic className="w-2.5 h-2.5 text-emerald-400" />
-                            <span>Giọng đọc Gemini AI (gemini-3.1-flash-tts)</span>
+                            <span>Kênh giọng đọc truyền thanh số (Chuẩn Studio)</span>
                           </label>
                           <select
                             id="profile-gemini-voice-select"
@@ -2082,12 +2083,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <div className="p-3.5 rounded-[2px] fluent-box-nested border border-white/10 space-y-2.5">
                       <div className="flex items-center gap-2 text-white font-bold text-xs font-mono">
                         <Scale className="w-4 h-4 text-purple-400" />
-                        <span>{localLanguage !== 'vi' ? 'Contest Terms & AI' : 'Điều Lệ & Minh Bạch AI'}</span>
+                        <span>{localLanguage !== 'vi' ? 'Contest Terms & Integrity' : 'Điều Lệ & Quy Chế Thi Đấu'}</span>
                       </div>
                       <p className="text-[10px] text-white/60 leading-normal">
                         {localLanguage !== 'vi'
-                          ? 'Academic integrity, anti-cheat rules, and AI assistance disclaimers.'
-                          : 'Quy chế liêm chính học thuật, chống gian lận và miễn trừ trách nhiệm của Trợ lý AI.'}
+                          ? 'Academic integrity, fair play regulations, and automated advisory boundaries.'
+                          : 'Quy chế liêm chính học thuật, phòng chống gian lận và nguyên tắc vận hành hệ thống cố vấn tự động.'}
                       </p>
                       <button
                         type="button"
@@ -2099,7 +2100,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         className="w-full py-2 px-3 rounded-[2px] bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-300 font-mono text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95"
                       >
                         <Scale className="w-3.5 h-3.5" />
-                        <span>{localLanguage !== 'vi' ? 'View Contest Terms' : 'Xem Điều Lệ & Minh Bạch AI'}</span>
+                        <span>{localLanguage !== 'vi' ? 'View Contest Terms' : 'Xem Điều Lệ Thi Đấu'}</span>
                       </button>
                     </div>
                   </div>
@@ -2116,6 +2117,32 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <span>Mở Trang Policy Riêng</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
+                  </div>
+
+                  {/* EU GDPR Cookie Settings Button */}
+                  <div className="flex items-center justify-between p-2.5 rounded-[2px] bg-blue-950/20 border border-blue-500/30 text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <Cookie className="w-4 h-4 text-blue-300" />
+                      <div>
+                        <span className="font-bold text-white block">
+                          {localLanguage !== 'vi' ? 'EU Cookie Preferences (GDPR)' : 'Tùy Chọn Cookie (Chuẩn GDPR Châu Âu)'}
+                        </span>
+                        <span className="text-[10px] text-white/60">
+                          {localLanguage !== 'vi' ? 'Directive 2002/58/EC & GDPR Art. 7' : 'Chỉ thị 2002/58/EC & GDPR Điều 7'}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        vibrateTap();
+                        window.dispatchEvent(new CustomEvent('bti-open-cookie-settings'));
+                      }}
+                      className="px-2.5 py-1 rounded-[2px] bg-blue-600/30 hover:bg-blue-600/50 border border-blue-400/50 text-blue-200 text-xs font-bold transition cursor-pointer active:scale-95"
+                    >
+                      {localLanguage !== 'vi' ? 'Configure' : 'Cài Đặt Cookie'}
+                    </button>
                   </div>
 
                   {/* Right to Erasure / Data Deletion Box (Article 4 Law 91/2025 & Article 5 Decree 356/2025) */}

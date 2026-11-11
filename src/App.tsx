@@ -31,6 +31,7 @@ const ProjectorView = React.lazy(() => import('./components/ProjectorView').then
 const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
 import { ClientLandingPage } from './components/ClientLandingPage';
 import { FirstVisitConsentModal } from './components/FirstVisitConsentModal';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { PolicyPage } from './components/PolicyPage';
 
 const ViewLoadingFallback: React.FC = () => (
@@ -1429,6 +1430,9 @@ export default function App() {
         user={user}
         currentView={currentView}
       />
+
+      {/* European Union (GDPR & ePrivacy Directive) Cookie & LocalStorage Consent Notice */}
+      <CookieConsentBanner onOpenPolicy={(tab) => handleNavigateToPolicy(tab)} />
 
       {/* First-visit Privacy & PDPD Consent Notice (Law 91/2025/QH15 & Decree 356/2025/ND-CP) */}
       {currentView !== 'policy' && (

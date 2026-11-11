@@ -734,7 +734,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Trợ Lý AI</span>
+              <span>Tạo Tự Động</span>
             </button>
           </div>
 
@@ -1651,10 +1651,10 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
-                Trợ Lý AI Tạo Câu Hỏi
+                Công Cụ Khởi Tạo Câu Hỏi Tự Động
               </h2>
               <p className="text-xs text-white/50">
-                Nhập chủ đề hoặc yêu cầu, AI sẽ sinh ngay một câu trắc nghiệm 4 đáp án
+                Nhập chủ đề hoặc từ khóa, hệ thống sẽ đề xuất ngay câu hỏi trắc nghiệm 4 phương án
               </p>
             </div>
           </div>
@@ -1662,12 +1662,12 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-white/70 uppercase tracking-wider mb-2">
-                Chủ đề hoặc Yêu cầu cho AI
+                Chủ đề hoặc Nội dung trọng tâm
               </label>
               <textarea
                 value={aiPrompt}
                 onChange={e => setAiPrompt(e.target.value)}
-                placeholder="VD: Tạo 1 câu trắc nghiệm vui về chủ đề bảo mật mạng, độ khó trung bình..."
+                placeholder="VD: Tạo 1 câu trắc nghiệm về chủ đề bảo mật không gian mạng, độ khó vừa phải..."
                 className="w-full bg-[#0E051C]/60 border border-white/10 focus:border-emerald-500/50 rounded-[2px] p-4 text-sm text-white placeholder-white/30 outline-none transition min-h-[120px] resize-none"
               />
             </div>
@@ -1689,7 +1689,7 @@ export const AdminPollManager: React.FC<AdminPollManagerProps> = ({
                 {isAiGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>AI Đang Suy Nghĩ...</span>
+                    <span>Đang Tổng Hợp...</span>
                   </>
                 ) : (
                   <>

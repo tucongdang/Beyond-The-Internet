@@ -3097,7 +3097,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                     <button
                                       type="button"
                                       role="menuitem"
-                                      aria-label="Dịch lại câu hỏi bằng AI"
+                                      aria-label="Chuyển ngữ lại câu hỏi"
                                       onClick={() => {
                                         handleRequestTranslate();
                                         setIsLanguageMenuOpen(false);
@@ -3106,7 +3106,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                     >
                                       <span className="flex items-center gap-1.5">
                                         <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isTranslating ? 'animate-spin' : ''}`} />
-                                        {isTranslating ? 'Đang dịch AI...' : 'Dịch lại câu hỏi bằng AI'}
+                                        {isTranslating ? 'Đang chuyển ngữ...' : 'Chuyển ngữ lại câu hỏi'}
                                       </span>
                                     </button>
                                   </div>
@@ -4450,13 +4450,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </div>
               <div>
                 <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                  <span>AI Trợ Lý Học Tập</span>
+                  <span>Hội Đồng Cố Vấn BTI</span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[2px] bg-purple-500/30 text-purple-200 border border-purple-400/40">
-                    HỎI NHANH VÌ SAO
+                    CĂN CỨ ĐÁP ÁN
                   </span>
                 </h4>
                 <p className="text-xs text-purple-200/80 mt-0.5">
-                  Chưa hiểu rõ vì sao đáp án này đúng? Bấm để nhận phân tích tức thì từ Gemini AI.
+                  Chưa rõ căn cứ kiến thức của câu hỏi này? Bấm để xem phân tích chuyên môn chi tiết từ Hội đồng Học thuật.
                 </p>
               </div>
             </div>
@@ -4464,18 +4464,18 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               type="button"
               onClick={handleRequestAiExplanation}
               disabled={isAiExplaining}
-              aria-label={aiExplanation ? 'Giải thích lại với AI' : 'Hỏi AI vì sao đáp án đúng'}
+              aria-label={aiExplanation ? 'Xem lại phân tích chuyên môn' : 'Xem giải thích đáp án'}
               className="px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             >
               {isAiExplaining ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
-                  <span>Đang giải thích...</span>
+                  <span>Đang tổng hợp...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-purple-200" />
-                  <span>{aiExplanation ? 'Giải thích lại' : 'Hỏi AI vì sao đúng'}</span>
+                  <span>{aiExplanation ? 'Phân tích lại' : 'Xem giải thích'}</span>
                 </>
               )}
             </button>

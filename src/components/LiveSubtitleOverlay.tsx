@@ -66,7 +66,7 @@ export const LiveSubtitleOverlay: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-[10px] text-white/50 font-mono">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>AI Voice</span>
+              <span>Phát Thanh Viên</span>
             </div>
             <button
               onClick={handleClose}

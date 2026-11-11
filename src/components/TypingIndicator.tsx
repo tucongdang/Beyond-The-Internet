@@ -37,7 +37,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
     <div
       role="status"
       aria-live="polite"
-      aria-label="Trợ lý AI đang soạn câu trả lời"
+      aria-label="Cố vấn BTI đang soạn câu trả lời"
       className={`flex flex-col items-start animate-fadeIn select-none ${className}`}
     >
       {/* Assistant Bubble Container */}
@@ -48,11 +48,11 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
             <Bot className="w-2.5 h-2.5 text-white" />
           </div>
           <span className="font-mono font-bold text-[10px] text-white/80 tracking-tight flex items-center gap-1">
-            <span>Trợ Lý BTI</span>
+            <span>Cố Vấn BTI</span>
             <Sparkles className="w-2.5 h-2.5 text-[#F7CAC9] animate-pulse" />
           </span>
           <span className="px-1 py-0.2 rounded-[2px] text-[7px] font-mono font-semibold bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30 uppercase ml-auto">
-            AI Gemini
+            BTI Core
           </span>
         </div>
 

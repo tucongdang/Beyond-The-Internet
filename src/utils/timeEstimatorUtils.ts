@@ -175,6 +175,16 @@ export function estimateNextRoundTime(
   const scheduledStartTime = schedule?.scheduled_start_time || 0;
   const isPreEvent = (schedule?.status === 'SCHEDULED' || (!schedule?.status && scheduledStartTime > 0)) && now < scheduledStartTime;
 
+  const formatTargetClock = (ts?: number): string | undefined => {
+    if (!ts || isNaN(ts)) return undefined;
+    try {
+      const d = new Date(ts);
+      return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } catch {
+      return undefined;
+    }
+  };
+
   if (isPreEvent && scheduledStartTime > 0) {
     const diffMs = Math.max(0, scheduledStartTime - now);
     const { days, hours, minutes, seconds } = splitMsToTime(diffMs);
@@ -195,6 +205,7 @@ export function estimateNextRoundTime(
       seconds,
       formattedTime: formatRemainingTimeString(days, hours, minutes, seconds),
       targetTimestamp: scheduledStartTime,
+      estimatedNextRoundStartStr: formatTargetClock(scheduledStartTime),
       progressPercent: 0,
       isPaused: false,
       matchTitle,
@@ -222,6 +233,7 @@ export function estimateNextRoundTime(
     const progressPercent = totalDurationSec > 0 
       ? Math.min(100, Math.max(0, Math.round(((totalDurationSec - remainingSec) / totalDurationSec) * 100))) 
       : 0;
+    const targetTimestamp = now + remainingMs;
 
     return {
       status: 'INTERMISSION',
@@ -238,7 +250,8 @@ export function estimateNextRoundTime(
       minutes,
       seconds,
       formattedTime: formatRemainingTimeString(days, hours, minutes, seconds),
-      targetTimestamp: now + remainingMs,
+      targetTimestamp,
+      estimatedNextRoundStartStr: formatTargetClock(targetTimestamp),
       progressPercent,
       isPaused,
       matchTitle: matchBreak.title || matchTitle,
@@ -258,6 +271,7 @@ export function estimateNextRoundTime(
     const remainingMs = Math.max(0, totalMs - elapsedMs);
     const { days, hours, minutes, seconds } = splitMsToTime(remainingMs);
     const progressPercent = Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)));
+    const targetTimestamp = nextQWaitStart + totalMs;
 
     return {
       status: 'COUNTDOWN',
@@ -274,7 +288,8 @@ export function estimateNextRoundTime(
       minutes,
       seconds,
       formattedTime: formatRemainingTimeString(days, hours, minutes, seconds),
-      targetTimestamp: nextQWaitStart + totalMs,
+      targetTimestamp,
+      estimatedNextRoundStartStr: formatTargetClock(targetTimestamp),
       progressPercent,
       isPaused: false,
       matchTitle,
@@ -284,16 +299,16 @@ export function estimateNextRoundTime(
   }
 
   // Case 5: Active Round in Progress with estimated remaining time
-  // If the event started at `schedule.started_at` or `server_start_time`
-  const startedAt = schedule?.started_at || (schedule?.status === 'IN_PROGRESS' ? scheduledStartTime : 0);
+  // If the event started at `schedule.started_at` or `server_start_time` or match is underway
+  const isMatchLive = schedule?.status === 'IN_PROGRESS' || Boolean(gameState?.round_name);
+  const startedAt = schedule?.started_at || (schedule?.status === 'IN_PROGRESS' ? scheduledStartTime : 0) || (gameState?.server_start_time as number | undefined) || 0;
   const roundEstimatedDurationMs = currentRound.estimatedDurationMinutes * 60 * 1000;
 
-  if (startedAt > 0 && schedule?.status === 'IN_PROGRESS') {
-    // Calculate estimated end of current round
-    const elapsedSinceStart = Math.max(0, now - startedAt);
+  if (isMatchLive) {
+    const effectiveStart = startedAt > 0 ? startedAt : (now - 2 * 60 * 1000); // sensible baseline
     // Prior rounds duration before current round
     const priorRoundsMs = TOURNAMENT_ROUNDS.slice(0, currentRoundIdx).reduce((acc, r) => acc + r.estimatedDurationMinutes * 60 * 1000, 0);
-    const currentRoundStartEst = startedAt + priorRoundsMs;
+    const currentRoundStartEst = effectiveStart + priorRoundsMs;
     const currentRoundEndEst = currentRoundStartEst + roundEstimatedDurationMs;
     const remainingInRoundMs = Math.max(0, currentRoundEndEst - now);
     const { days, hours, minutes, seconds } = splitMsToTime(remainingInRoundMs);
@@ -316,6 +331,7 @@ export function estimateNextRoundTime(
       seconds,
       formattedTime: formatRemainingTimeString(days, hours, minutes, seconds),
       targetTimestamp: currentRoundEndEst,
+      estimatedNextRoundStartStr: formatTargetClock(currentRoundEndEst),
       progressPercent,
       isPaused: Boolean(gameState?.is_timer_paused),
       matchTitle,

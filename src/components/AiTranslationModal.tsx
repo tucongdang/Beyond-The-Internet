@@ -126,7 +126,7 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
             </div>
             <div>
               <h3 id="ai-translation-title" className="text-white font-bold text-sm sm:text-base flex items-center gap-1.5">
-                Dịch Câu Hỏi Bằng AI (Gemini Flash)
+                Trung Tâm Chuyển Ngữ Đề Thi Khảo Thí
               </h3>
               <p className="text-[11px] text-white/50 font-mono">
                 Mã: {gameState.question_id} • {gameState.round_name}
@@ -255,7 +255,7 @@ export const AiTranslationModal: React.FC<AiTranslationModalProps> = ({
             {isLoading ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                <span>Đang dịch AI ({selectedLangs.length} ngôn ngữ)...</span>
+                <span>Đang chuyển ngữ tự động ({selectedLangs.length} ngôn ngữ)...</span>
               </>
             ) : (
               <>

@@ -126,7 +126,7 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
             </div>
             <div>
               <h3 id="ai-mccopilot-title" className="font-bold text-base text-amber-300 flex items-center gap-1.5">
-                AI MC Co-pilot
+                Cố Vấn Kịch Bản MC Sân Khấu
                 <span className="text-[10px] px-1.5 py-0.5 rounded-[2px] bg-amber-400/20 text-amber-200 border border-amber-400/40">
                   Live Stage Assist
                 </span>
@@ -198,7 +198,7 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
             {isLoading ? (
               <div className="py-6 flex flex-col items-center justify-center gap-2 text-white/70">
                 <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-mono">AI đang phân tích tâm lý hội trường...</span>
+                <span className="text-xs font-mono">Đang phân tích dữ liệu tâm lý hội trường...</span>
               </div>
             ) : commentary ? (
               <div className="space-y-2.5">
@@ -210,7 +210,7 @@ export const AiMcCoPilotModal: React.FC<AiMcCoPilotModalProps> = ({
                 </p>
               </div>
             ) : (
-              <p className="text-xs text-white/50 text-center py-4">Chưa có gợi ý. Bấm nút tạo để AI phân tích.</p>
+              <p className="text-xs text-white/50 text-center py-4">Chưa có gợi ý. Bấm nút phân tích để tổng hợp kịch bản lời dẫn.</p>
             )}
           </div>
 

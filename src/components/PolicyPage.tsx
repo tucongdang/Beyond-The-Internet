@@ -26,13 +26,21 @@ import {
   X,
   Bookmark,
   BookmarkCheck,
-  ArrowUp
+  ArrowUp,
+  Cookie,
+  SlidersHorizontal
 } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateCopy } from '../utils/hapticUtils';
 import { PDPD_CONSENT_VERSION, PDPD_LAW_REFERENCE } from '../utils/vnLawCompliance';
 import { useLanguage } from '../hooks/useLanguage';
 import { UserInfo } from '../types';
+import { 
+  TERMS_OF_SERVICE_DATA, 
+  PRIVACY_POLICY_DATA, 
+  DATA_POLICY_DATA, 
+  PolicyDocument 
+} from '../utils/policyData';
 
 interface PolicyPageProps {
   onBack: () => void;
@@ -41,7 +49,7 @@ interface PolicyPageProps {
   previousViewName?: string;
 }
 
-type PolicyTab = 'PRIVACY' | 'TERMS_AI' | 'SUBJECT_RIGHTS';
+export type PolicyTab = 'TERMS' | 'PRIVACY' | 'DATA' | 'SUBJECT_RIGHTS' | 'TERMS_AI';
 
 interface PolicyBookmark {
   tab: PolicyTab;
@@ -66,10 +74,12 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab')?.toLowerCase();
-      if (tabParam === 'terms' || tabParam === 'ai' || tabParam === 'terms_ai') return 'TERMS_AI';
+      if (tabParam === 'terms' || tabParam === 'ai' || tabParam === 'terms_ai') return 'TERMS';
+      if (tabParam === 'privacy') return 'PRIVACY';
+      if (tabParam === 'data') return 'DATA';
       if (tabParam === 'rights' || tabParam === 'dpo' || tabParam === 'subject_rights') return 'SUBJECT_RIGHTS';
     }
-    return 'PRIVACY';
+    return 'TERMS';
   });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -379,197 +389,40 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
     note?: string;
   }
 
-  // Articles data for tab 1 with structured clauses (Law 91/2025/QH15 & Decree 356/2025/ND-CP)
-  const articles: ArticleClause[] = useMemo(() => [
-    {
-      id: 'dieu-1',
-      num: 1,
-      title: 'Bên Kiểm Soát & Bên Xử Lý Dữ Liệu',
-      intro: 'Căn cứ quy định về vai trò của Bên Kiểm soát dữ liệu và Bên Xử lý dữ liệu cá nhân theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15:',
-      items: [
-        {
-          label: 'Đơn vị kiểm soát và xử lý',
-          text: 'Ban Tổ Chức Cuộc Thi Học Thuật Beyond The Internet 2027 phối hợp cùng Bộ phận Kỹ thuật & Công nghệ Hội trường.'
-        },
-        {
-          label: 'Phạm vi áp dụng',
-          text: 'Áp dụng đối với toàn bộ dữ liệu phát sinh qua tương tác web-app đấu trường trực tiếp (Live Arena), hạ tầng cơ sở dữ liệu Firebase Firestore và dịch vụ máy chủ tính điểm.'
-        },
-        {
-          label: 'Trách nhiệm pháp lý',
-          text: 'Bảo đảm an toàn bảo mật, tính toàn vẹn dữ liệu và thực thi đầy đủ quyền của chủ thể dữ liệu trong suốt thời gian diễn ra giải đấu.'
+  const currentPolicyDoc: PolicyDocument | null = useMemo(() => {
+    if (activeTab === 'TERMS' || activeTab === 'TERMS_AI') return TERMS_OF_SERVICE_DATA;
+    if (activeTab === 'PRIVACY') return PRIVACY_POLICY_DATA;
+    if (activeTab === 'DATA') return DATA_POLICY_DATA;
+    return null;
+  }, [activeTab]);
+
+  // Articles data dynamically mapped from policyData.ts
+  const articles: ArticleClause[] = useMemo(() => {
+    if (!currentPolicyDoc) return [];
+
+    return currentPolicyDoc.sections.map((sec, idx) => {
+      const intro = sec.content[0] || '';
+      const items = sec.content.slice(1).map(txt => {
+        const colonIdx = txt.indexOf(':');
+        if (colonIdx > 0 && colonIdx < 50 && !txt.startsWith('•')) {
+          return {
+            label: txt.substring(0, colonIdx).trim(),
+            text: txt.substring(colonIdx + 1).trim()
+          };
         }
-      ],
-      note: 'Tuân thủ Điều 2 & Điều 7 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15.'
-    },
-    {
-      id: 'dieu-2',
-      num: 2,
-      title: 'Phân Loại Dữ Liệu Cá Nhân Cơ Bản & Dữ Liệu Kỹ Thuật (Điều 4 NĐ 356/2025/NĐ-CP)',
-      intro: 'Hệ thống phân định minh bạch các nhóm thông tin thu thập nhằm phục vụ tổ chức thi đấu và phòng chống gian lận theo Nghị định 356/2025/NĐ-CP:',
-      items: [
-        {
-          label: 'Dữ liệu cá nhân cơ bản (Điều 3 & Phụ lục I NĐ 356/2025)',
-          text: 'Mã số sinh viên/học sinh (MSSV/MSHS), Họ và tên, Tên hiển thị (Nickname), Giới tính, Năm sinh, Địa chỉ Email xác thực tài khoản và Đội thi yêu thích.'
-        },
-        {
-          label: 'Mã định danh ẩn danh UID 12 số',
-          text: 'Hệ thống tự động sinh Mã định danh ẩn danh UID 12 số trên thiết bị để đại diện cho người chơi trên màn chiếu LED và bảng xếp hạng công cộng, ngăn chặn lộ danh tính thực tế.'
-        },
-        {
-          label: 'Dữ liệu kỹ thuật & phiên thi (Điểm l khoản 1 Điều 4 NĐ 356/2025)',
-          text: 'Thời gian nộp đáp án (mili-giây), phương án trả lời câu hỏi, điểm số các vòng, độ trễ mạng (Ping/RTT) và nhật ký chuyển tab trong giờ mở câu hỏi nhằm chống gian lận.'
-        },
-        {
-          label: 'Cam kết dữ liệu không thu thập',
-          text: 'Hệ thống KHÔNG thu thập dữ liệu vị trí GPS chính xác, sinh trắc học, thông tin tài chính/ngân hàng và KHÔNG gắn công cụ theo dõi hành vi phục vụ quảng cáo thương mại.'
-        }
-      ],
-      note: 'Dữ liệu nhạy cảm theo Phụ lục II Nghị định 356/2025/NĐ-CP hoàn toàn không được thu thập.'
-    },
-    {
-      id: 'dieu-3',
-      num: 3,
-      title: 'Mục Đích Xử Lý & Nguyên Tắc Đồng Ý (Điều 9 Luật 91/2025/QH15)',
-      intro: 'Dữ liệu chỉ được xử lý sau khi người tham gia chủ động tích chọn đồng ý rõ ràng. Không sử dụng ô tích sẵn; im lặng hoặc tiếp tục sử dụng không được coi là đồng ý (khoản 4 Điều 9 Luật 91/2025/QH15 và khoản 3 Điều 6 Nghị định 356/2025/NĐ-CP). Các mục đích xử lý bao gồm:',
-      items: [
-        {
-          label: 'Xác thực tài khoản thi đấu',
-          text: 'Định danh người tham gia đấu trường câu hỏi trực tiếp và lưu trữ tiến trình làm bài an toàn.'
-        },
-        {
-          label: 'Tổng hợp bảng xếp hạng thời gian thực',
-          text: 'Tính toán điểm số, xếp hạng trực tiếp (Live Leaderboard) và hiển thị kết quả trên màn chiếu LED hội trường.'
-        },
-        {
-          label: 'Đối soát trao giải & cấp chứng nhận',
-          text: 'Xác minh danh tính người chiến thắng để trao thưởng hiện vật, quay số may mắn (Lucky Draw) và cấp giấy chứng nhận tham gia.'
-        },
-        {
-          label: 'Bảo đảm an toàn an ninh mạng',
-          text: 'Ngăn chặn bot tự động, phòng chống gian lận thi cử và đảm bảo tính công bằng của giải đấu.'
-        }
-      ],
-      note: 'Người dùng có quyền thay đổi hoặc rút lại sự đồng ý bất cứ lúc nào tại trang này hoặc mục Hồ Sơ.'
-    },
-    {
-      id: 'dieu-4',
-      num: 4,
-      title: 'Biện Pháp Bảo Vệ & Thông Báo Sự Cố (Điều 23 Luật 91/2025 & Luật ANM 116/2025)',
-      intro: 'Ban Tổ Chức áp dụng các giải pháp kỹ thuật và an toàn thông tin theo tiêu chuẩn bảo mật hiện đại nhằm bảo vệ tối đa dữ liệu người dùng:',
-      items: [
-        {
-          label: 'Mã hóa mật khẩu một chiều',
-          text: 'Mật khẩu tài khoản được băm bằng thuật toán PBKDF2/scrypt kèm chuỗi ngẫu nhiên (salt) độc lập tại cả phía Client và Server, tuyệt đối không lưu trữ dạng văn bản thuần (plain text).'
-        },
-        {
-          label: 'Mã hóa đường truyền TLS/HTTPS',
-          text: 'Mọi dữ liệu trao đổi giữa thiết bị người dùng và máy chủ đều được mã hóa bằng giao thức HTTPS/WSS an toàn.'
-        },
-        {
-          label: 'Cơ chế cách ly dữ liệu',
-          text: 'Dữ liệu khán giả được phân tách quyền nghiêm ngặt theo quy tắc bảo mật Firestore Rules và token xác thực phiên.'
-        },
-        {
-          label: 'Thông báo sự cố trong 72 giờ',
-          text: 'Trường hợp phát sinh sự cố rò rỉ hoặc xâm phạm dữ liệu cá nhân, Ban Tổ Chức thực hiện quy trình thông báo tới cơ quan chuyên trách bảo vệ dữ liệu cá nhân chậm nhất trong vòng 72 giờ theo khoản 1 Điều 23 Luật 91/2025/QH15 và Điều 28 Nghị định 356/2025/NĐ-CP.'
-        }
-      ],
-      note: 'Tuân thủ Điều 23 Luật 91/2025/QH15 & Điều 7 Luật An ninh mạng số 116/2025/QH15.'
-    },
-    {
-      id: 'dieu-5',
-      num: 5,
-      title: 'Thời Hạn Lưu Trữ Dữ Liệu & Nhật Ký Hệ Thống',
-      intro: 'Thời hạn lưu trữ dữ liệu cá nhân được quy định chặt chẽ, tối thiểu hóa thời gian lưu giữ thông tin:',
-      items: [
-        {
-          label: 'Dữ liệu phục vụ giải đấu',
-          text: 'Được lưu trữ trong suốt thời gian diễn ra cuộc thi BTI 2027 và tối đa 60 ngày sau đêm Chung kết để hoàn tất công tác đối soát giải thưởng, sau đó tự động xóa hoặc ẩn danh hóa vĩnh viễn.'
-        },
-        {
-          label: 'Nhật ký an ninh mạng (System Logs)',
-          text: 'Lưu trữ bảo mật theo quy định tại Luật An ninh mạng số 116/2025/QH15 và Nghị định 333/2026/NĐ-CP phục vụ công tác thanh tra an toàn thông tin khi có yêu cầu.'
-        },
-        {
-          label: 'Dữ liệu lưu tạm trên thiết bị (LocalStorage)',
-          text: 'Khán giả có thể chủ động xóa sạch dữ liệu phiên bất cứ lúc nào qua nút "Xóa Dữ Liệu Khỏi Máy" tại Hồ Sơ Cá Nhân.'
-        }
-      ],
-      note: 'Sau 60 ngày kể từ khi kết thúc giải đấu, toàn bộ dữ liệu cá nhân định danh sẽ được tự động xóa bỏ.'
-    },
-    {
-      id: 'dieu-6',
-      num: 6,
-      title: 'Bên Thứ Ba & Chuyển Dữ Liệu Xuyên Biên Giới (Điều 20 Luật 91/2025/QH15)',
-      intro: 'Ban Tổ Chức tuyệt đối không mua bán dữ liệu cá nhân dưới mọi hình thức (khoản 6 Điều 7 Luật 91/2025/QH15) và không chia sẻ cho bên thứ ba vì mục đích quảng cáo. Để vận hành hệ thống, ứng dụng sử dụng các dịch vụ đám mây đặt ngoài lãnh thổ Việt Nam:',
-      items: [
-        {
-          label: 'Google Cloud Platform & Firebase Firestore',
-          text: 'Lưu trữ tài khoản, trạng thái câu hỏi và bảng điểm thi đấu theo thời gian thực (máy chủ đám mây của Google LLC).'
-        },
-        {
-          label: 'Google Gemini API',
-          text: 'Xử lý tương tác hỏi đáp thể lệ qua Trợ lý AI và tạo giọng đọc âm thanh. Toàn bộ thông tin định danh (SĐT, Email, CCCD) đều được hệ thống tự động lọc bỏ (redact) trước khi gửi qua API.'
-        },
-        {
-          label: 'Quy chuẩn chuyển dữ liệu xuyên biên giới',
-          text: 'Việc lưu trữ trên đám mây nước ngoài thuộc phạm vi chuyển dữ liệu xuyên biên giới theo Điều 20 Luật 91/2025/QH15 và Điều 18 Nghị định 356/2025/NĐ-CP.'
-        }
-      ],
-      note: 'Dữ liệu gửi sang dịch vụ AI bên ngoài luôn được khử thông tin định danh trước khi xử lý.'
-    },
-    {
-      id: 'dieu-7',
-      num: 7,
-      title: 'Bảo Vệ Dữ Liệu Trẻ Em & Người Chưa Thành Niên (Điều 24 Luật 91/2025/QH15)',
-      intro: 'Căn cứ Điều 24 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 và Luật Trẻ em 2016, hệ thống thực thi chính sách bảo vệ nghiêm ngặt đối với người tham gia là trẻ em (dưới 16 tuổi):',
-      items: [
-        {
-          label: 'Sự đồng ý của người giám hộ',
-          text: 'Đối với thí sinh dưới 16 tuổi, việc xử lý dữ liệu cá nhân và công bố thông tin phải có sự đồng ý của cha mẹ hoặc người đại diện theo pháp luật.'
-        },
-        {
-          label: 'Sự đồng ý của trẻ từ đủ 7 tuổi trở lên',
-          text: 'Bắt buộc phải có thêm sự đồng ý của chính trẻ từ đủ 7 tuổi trở lên theo quy định tại khoản 2 Điều 24 Luật 91/2025/QH15.'
-        },
-        {
-          label: 'Bảo vệ hình ảnh học đường',
-          text: 'Không công khai danh tính đầy đủ, trường lớp hay hình ảnh cá nhân của thí sinh dưới 16 tuổi khi chưa được người giám hộ chấp thuận bằng văn bản.'
-        }
-      ],
-      note: 'Bảo đảm quyền riêng tư tối cao cho học sinh và người chưa thành niên tham gia giải đấu.'
-    },
-    {
-      id: 'dieu-8',
-      num: 8,
-      title: 'Quyền Của Chủ Thể Dữ Liệu & Thời Hạn Xử Lý (Điều 4 Luật 91/2025 & Điều 5 NĐ 356/2025)',
-      intro: 'Chủ thể dữ liệu có đầy đủ 11 nhóm quyền theo quy định tại khoản 1 Điều 4 Luật 91/2025/QH15. Thời hạn thực hiện yêu cầu tuân thủ nghiêm ngặt Điều 5 Nghị định 356/2025/NĐ-CP:',
-      items: [
-        {
-          label: 'Thời hạn phản hồi & hướng dẫn thủ tục',
-          text: 'Trong vòng 02 ngày làm việc kể từ ngày tiếp nhận yêu cầu hợp lệ của chủ thể dữ liệu.'
-        },
-        {
-          label: 'Thời hạn xem, chỉnh sửa & cung cấp dữ liệu',
-          text: 'Trong vòng 10 – 15 ngày làm việc theo quy định.'
-        },
-        {
-          label: 'Thời hạn rút đồng ý, hạn chế hoặc phản đối xử lý',
-          text: 'Trong vòng 15 – 20 ngày làm việc.'
-        },
-        {
-          label: 'Thời hạn xóa dữ liệu cá nhân',
-          text: 'Trong vòng 20 – 30 ngày làm việc (người dùng có thể xóa/ẩn danh hóa ngay lập tức qua công cụ tự phục vụ trên ứng dụng).'
-        },
-        {
-          label: 'Phương thức tiếp nhận',
-          text: 'Qua biểu mẫu yêu cầu trực tuyến tại Mục 3 trang này hoặc gửi văn bản trực tiếp tới Bộ phận DPO (Email: bti2027.dpo@edu.vn).'
-        }
-      ],
-      note: 'Biểu mẫu gửi yêu cầu trực tuyến có sẵn ngay tại Tab 3 (Quyền Chủ Thể & DPO).'
-    }
-  ], []);
+        return { text: txt };
+      });
+
+      return {
+        id: sec.id,
+        num: idx + 1,
+        title: sec.title.replace(/^[0-9.]+\s*/, ''),
+        intro,
+        items: items.length > 0 ? items : [{ text: intro }],
+        note: `Căn cứ ${currentPolicyDoc.nameVi} - Beyond The Internet 2027`
+      };
+    });
+  }, [currentPolicyDoc]);
 
   const filteredArticles = useMemo(() => {
     if (!searchQuery.trim()) return articles;
@@ -767,9 +620,10 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-amber-200/80 truncate">
-                  {savedBookmark.tab === 'PRIVACY' ? (localLanguage !== 'vi' ? '1. Privacy Policy' : 'Mục 1. Chính sách bảo mật') :
-                   savedBookmark.tab === 'TERMS_AI' ? (localLanguage !== 'vi' ? '2. Contest Terms & AI' : 'Mục 2. Điều lệ & AI') :
-                   (localLanguage !== 'vi' ? '3. Subject Rights' : 'Mục 3. Quyền chủ thể')}
+                  {savedBookmark.tab === 'TERMS' || savedBookmark.tab === 'TERMS_AI' ? (localLanguage !== 'vi' ? '1. Terms of Service' : 'Mục 1. Điều khoản sử dụng') :
+                   savedBookmark.tab === 'PRIVACY' ? (localLanguage !== 'vi' ? '2. Privacy Policy' : 'Mục 2. Chính sách bảo mật') :
+                   savedBookmark.tab === 'DATA' ? (localLanguage !== 'vi' ? '3. Data Policy' : 'Mục 3. Chính sách dữ liệu') :
+                   (localLanguage !== 'vi' ? '4. Subject Rights' : 'Mục 4. Quyền chủ thể')}
                   <span className="hidden sm:inline"> • {savedBookmark.formattedDate}</span>
                 </p>
               </div>
@@ -836,53 +690,67 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1 bg-white/5 border border-white/10 rounded-[2px] font-mono text-xs font-bold select-none print:hidden">
+        {/* Navigation Tabs (4 Comprehensive Tabs) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1 bg-white/5 border border-white/10 rounded-[2px] font-mono text-xs font-bold select-none print:hidden">
           <button
             type="button"
-            id="tab-privacy-policy-btn"
+            id="tab-terms-btn"
+            onClick={() => handleTabChange('TERMS')}
+            className={`py-2.5 px-2.5 rounded-[2px] transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+              activeTab === 'TERMS' || activeTab === 'TERMS_AI'
+                ? 'bg-[#F7CAC9] text-[#190839] shadow-md font-black' 
+                : 'text-white/70 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">1. {localLanguage !== 'vi' ? 'Terms of Service' : 'Điều Khoản Sử Dụng'}</span>
+          </button>
+
+          <button
+            type="button"
+            id="tab-privacy-btn"
             onClick={() => handleTabChange('PRIVACY')}
-            className={`py-2.5 px-3 rounded-[2px] transition flex items-center justify-center gap-2 cursor-pointer ${
+            className={`py-2.5 px-2.5 rounded-[2px] transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
               activeTab === 'PRIVACY' 
                 ? 'bg-[#F7CAC9] text-[#190839] shadow-md font-black' 
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>1. {localLanguage !== 'vi' ? 'Privacy Policy (Law 91/2025)' : 'Chính Sách Bảo Mật (Luật 91 & NĐ 356)'}</span>
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">2. {localLanguage !== 'vi' ? 'Privacy Policy' : 'Chính Sách Bảo Mật'}</span>
           </button>
 
           <button
             type="button"
-            id="tab-contest-terms-btn"
-            onClick={() => handleTabChange('TERMS_AI')}
-            className={`py-2.5 px-3 rounded-[2px] transition flex items-center justify-center gap-2 cursor-pointer ${
-              activeTab === 'TERMS_AI' 
+            id="tab-data-btn"
+            onClick={() => handleTabChange('DATA')}
+            className={`py-2.5 px-2.5 rounded-[2px] transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+              activeTab === 'DATA' 
                 ? 'bg-[#F7CAC9] text-[#190839] shadow-md font-black' 
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Bot className="w-4 h-4 shrink-0" />
-            <span>2. {localLanguage !== 'vi' ? 'Contest Terms & AI Law 134' : 'Điều Lệ & Minh Bạch AI (Luật 134)'}</span>
+            <Scale className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">3. {localLanguage !== 'vi' ? 'Data Policy' : 'Chính Sách Dữ Liệu'}</span>
           </button>
 
           <button
             type="button"
             id="tab-subject-rights-btn"
             onClick={() => handleTabChange('SUBJECT_RIGHTS')}
-            className={`py-2.5 px-3 rounded-[2px] transition flex items-center justify-center gap-2 cursor-pointer ${
+            className={`py-2.5 px-2.5 rounded-[2px] transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
               activeTab === 'SUBJECT_RIGHTS' 
                 ? 'bg-[#F7CAC9] text-[#190839] shadow-md font-black' 
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Scale className="w-4 h-4 shrink-0" />
-            <span>3. {localLanguage !== 'vi' ? 'Subject Rights & DPO' : 'Quyền Chủ Thể & DPO (Đ.5 NĐ 356)'}</span>
+            <Award className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">4. {localLanguage !== 'vi' ? 'Subject Rights & DPO' : 'Quyền Chủ Thể & DPO'}</span>
           </button>
         </div>
 
-        {/* Tab 1: Privacy Policy (Luật 91/2025/QH15 & Nghị định 356/2025/NĐ-CP) */}
-        {activeTab === 'PRIVACY' && (
+        {/* Content Tabs 1, 2, 3: TERMS, PRIVACY, DATA */}
+        {activeTab !== 'SUBJECT_RIGHTS' && (
           <div className="space-y-6 text-left leading-relaxed animate-fadeIn">
             
             {/* Quick in-page Search & Jump Filter */}
@@ -893,14 +761,14 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={localLanguage !== 'vi' ? 'Search legal articles...' : 'Tìm kiếm điều khoản (VD: xóa dữ liệu, xuyên biên giới...)'}
+                  placeholder={localLanguage !== 'vi' ? 'Search legal articles...' : 'Tìm kiếm điều khoản trong mục này...'}
                   className="w-full pl-8 pr-7 py-1.5 bg-[#0D0420] border border-white/15 focus:border-[#F7CAC9] rounded-[2px] text-xs text-white placeholder:text-white/30 font-mono outline-none"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white p-0.5"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white p-0.5 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -937,13 +805,14 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
               </div>
             </div>
 
+            {/* Document Introduction Box */}
             <div className="p-4 rounded-[2px] bg-sky-950/40 border border-sky-500/30 text-sky-200 text-xs flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
               <div>
                 <strong className="block font-bold text-white mb-0.5 uppercase font-mono">
-                  Cơ sở pháp lý cập nhật theo khung pháp luật Việt Nam 2025–2026
+                  {currentPolicyDoc?.nameVi} • Beyond The Internet 2027
                 </strong>
-                Chính sách này được xây dựng dựa trên <strong>Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15</strong> và <strong>Nghị định số 356/2025/NĐ-CP</strong> (có hiệu lực từ 01/01/2026, thay thế Nghị định 13/2023/NĐ-CP), kết hợp cùng <strong>Luật An ninh mạng số 116/2025/QH15</strong> (và Nghị định 333/2026/NĐ-CP). Nền tảng chỉ xử lý dữ liệu khi có sự đồng ý tự nguyện, rõ ràng của người tham gia.
+                {currentPolicyDoc?.shortDescriptionVi} Áp dụng chính thức theo quy định của Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Nghị định 356/2025/NĐ-CP và Luật An ninh mạng 116/2025/QH15.
               </div>
             </div>
 
@@ -988,7 +857,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                       {art.intro}
                     </p>
 
-                    {/* Bulleted list of clauses (ul / li) */}
+                    {/* Bulleted list of clauses */}
                     <ul className="pl-2 sm:pl-7 space-y-2 text-xs sm:text-sm text-white/80 list-none">
                       {art.items.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
@@ -1012,77 +881,61 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
                         <span>{art.note}</span>
                       </div>
                     )}
+
+                    {/* Interactive European GDPR Cookie Settings trigger for Article 5 */}
+                    {art.id === 'data-sec-5' && (
+                      <div className="mt-4 sm:ml-7 p-3.5 rounded-[2px] bg-gradient-to-r from-blue-950/40 via-purple-950/30 to-[#120726] border border-blue-500/40 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base" aria-hidden="true">🇪🇺</span>
+                            <span className="font-bold text-white font-mono text-xs">
+                              {localLanguage !== 'vi' ? 'EU GDPR & ePrivacy Compliance Dashboard' : 'Trung Tâm Tùy Chọn Cookie Theo Chuẩn Châu Âu (GDPR)'}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-[2px] border border-blue-500/30 w-fit">
+                            Directive 2002/58/EC & GDPR Art. 7
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-white/80 leading-relaxed font-sans">
+                          {localLanguage !== 'vi'
+                            ? 'You have the right to withdraw or modify your cookie consent at any time without affecting contest participation.'
+                            : 'Bạn có quyền rút lại hoặc điều chỉnh danh mục cookie & lưu trữ cục bộ bất cứ lúc nào mà không làm ảnh hưởng đến tính công bằng của trận đấu.'}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFx.playClick();
+                              vibrateTap();
+                              window.dispatchEvent(new CustomEvent('bti-open-cookie-settings'));
+                            }}
+                            className="px-3.5 py-1.5 rounded-[2px] bg-[#F7CAC9] hover:bg-white text-[#190839] font-mono text-xs font-bold transition cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-md"
+                          >
+                            <SlidersHorizontal className="w-3.5 h-3.5" />
+                            <span>{localLanguage !== 'vi' ? 'Open EU Cookie Settings' : 'Mở Cài Đặt Cookie Châu Âu'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </section>
                 ))
               )}
             </div>
 
-          </div>
-        )}
-
-        {/* Tab 2: Contest Terms & AI Transparency */}
-        {activeTab === 'TERMS_AI' && (
-          <div className="space-y-6 text-left leading-relaxed animate-fadeIn">
-            
-            <div className="p-4 rounded-[2px] bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs flex items-start gap-3">
-              <Bot className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="block font-bold text-white mb-0.5 uppercase font-mono">
-                  Minh bạch Trí tuệ Nhân tạo (Luật Trí tuệ nhân tạo số 134/2025/QH15 & Nghị định 142/2026/NĐ-CP)
-                </strong>
-                Căn cứ Điều 11 Luật Trí tuệ nhân tạo số 134/2025/QH15 (hiệu lực 01/03/2026) và Điều 18 Nghị định 142/2026/NĐ-CP (hiệu lực 01/05/2026), Beyond The Internet 2027 công bố rõ vai trò Bên triển khai hệ thống AI, gắn nhãn rõ ràng các tính năng tương tác với Trợ lý AI và giọng đọc AI tự động.
+            {/* AI Transparency & Anti-cheat special addendum for Terms tab */}
+            {(activeTab === 'TERMS' || activeTab === 'TERMS_AI') && (
+              <div className="pt-4 space-y-4">
+                <div className="p-4 rounded-[2px] bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs flex items-start gap-3">
+                  <Bot className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block font-bold text-white mb-0.5 uppercase font-mono">
+                      Phụ lục: Minh Bạch Hệ Thống Hỗ Trợ Tự Động & Chuẩn Mực Đấu Trường (Điều 11 Luật 134/2025/QH15)
+                    </strong>
+                    Hệ thống Cố vấn Học thuật BTI 2027 được vận hành nhằm mục đích tra cứu thể lệ và giải thích kiến thức sau giờ thi đấu, hoàn toàn độc lập với Hội đồng Giám khảo. Hệ thống không can thiệp vào quá trình tính điểm, bảng xếp hạng hay dữ liệu khảo thí thời gian thực.
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* AI Policy */}
-            <section className="p-4 sm:p-5 rounded-[2px] bg-white/5 border border-white/10 space-y-3">
-              <h3 className="text-sm sm:text-base font-bold text-[#F7CAC9] flex items-center gap-2 font-mono">
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                Mô Hình AI, Gắn Nhãn Minh Bạch & Phạm Vi Hoạt Động
-              </h3>
-              <div className="text-xs sm:text-sm text-white/85 pl-2 sm:pl-7 space-y-2">
-                <p>
-                  Hệ thống tích hợp mô hình <strong>Google Gemini Flash</strong> thông qua kênh proxy máy chủ (Server-side Proxy) và gắn nhãn nhận biết trực tiếp trên giao diện:
-                </p>
-                <ul className="list-disc list-inside space-y-1 text-white/80">
-                  <li><strong>Thông báo tương tác AI (Khoản 1 Điều 11 Luật 134/2025/QH15):</strong> Khung Trợ lý Khán giả và tính năng đọc câu hỏi/đáp án đều được gắn nhãn rõ là hệ thống AI tự động để người dùng nhận biết ngay khi tiếp cận.</li>
-                  <li><strong>Giới hạn của AI (Phân loại rủi ro thấp - Điều 9 Luật 134/2025/QH15):</strong> AI chỉ giải đáp thể lệ cuộc thi, tóm tắt câu hỏi và hỗ trợ dịch thuật/giọng đọc; AI không có quyền can thiệp vào mã nguồn tính điểm, không quyết định thí sinh thắng/thua và không sửa đổi kết quả thi đấu.</li>
-                  <li><strong>Bảo vệ dữ liệu khi tương tác AI:</strong> Nội dung câu hỏi gửi tới API Google Gemini chỉ bao gồm văn bản thắc mắc và bối cảnh vòng thi; hệ thống không đính kèm mật khẩu hay mã định danh nhạy cảm của người dùng.</li>
-                </ul>
-              </div>
-            </section>
-
-            {/* Fair Play & Anti-Cheat */}
-            <section className="p-4 sm:p-5 rounded-[2px] bg-white/5 border border-white/10 space-y-3">
-              <h3 className="text-sm sm:text-base font-bold text-[#F7CAC9] flex items-center gap-2 font-mono">
-                <Lock className="w-4 h-4 text-sky-400" />
-                Quy Chế Liêm Chính Học Thuật & Phòng Chống Gian Lận
-              </h3>
-              <div className="text-xs sm:text-sm text-white/85 pl-2 sm:pl-7 space-y-2">
-                <p>
-                  Để đảm bảo sự công bằng tuyệt đối cho toàn bộ thí sinh và khán giả tham gia, hệ thống áp dụng các lớp bảo vệ kỹ thuật:
-                </p>
-                <ol className="list-decimal list-inside space-y-1 text-white/80">
-                  <li><strong>Hàng rào CAPTCHA toán học:</strong> Bắt buộc xác thực chống bot tự động khi đăng ký hoặc đăng nhập.</li>
-                  <li><strong>Khóa phiên thi đấu & Chống thoát màn hình (Anti-Exit Guard):</strong> Cảnh báo khi người chơi rời khỏi giao diện câu hỏi trong thời gian làm bài.</li>
-                  <li><strong>Chống can thiệp gói tin (Anti-Tampering):</strong> Khóa thời gian gửi đáp án ở cấp độ server; mọi câu trả lời gửi sau khi hết thời gian đếm ngược sẽ tự động bị từ chối.</li>
-                  <li><strong>Chế độ Safe Exam Browser (SEB):</strong> Khóa các phím tắt và chế độ kiểm tra phần tử F12 trên các thiết bị phòng máy của thí sinh.</li>
-                </ol>
-              </div>
-            </section>
-
-            {/* Contest Rules */}
-            <section className="p-4 sm:p-5 rounded-[2px] bg-white/5 border border-white/10 space-y-3">
-              <h3 className="text-sm sm:text-base font-bold text-[#F7CAC9] flex items-center gap-2 font-mono">
-                <Award className="w-4 h-4 text-emerald-400" />
-                Cơ Chế Tính Điểm & Giải Quyết Khiếu Nại
-              </h3>
-              <div className="text-xs sm:text-sm text-white/85 pl-2 sm:pl-7 space-y-2">
-                <p>
-                  Điểm số được tính dựa trên độ chính xác của đáp án và tốc độ gửi câu trả lời hợp lệ. Trong trường hợp xảy ra sự cố kỹ thuật về đường truyền Internet của hội trường, quyết định của Ban Trọng Tài và Ban Tổ Chức là quyết định cuối cùng.
-                </p>
-              </div>
-            </section>
+            )}
 
           </div>
         )}

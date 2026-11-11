@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, PingInfo, AdminUser, TECHNICAL_ROLES } from '../types';
-import { Users, Shield, ShieldCheck, Scale, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap } from 'lucide-react';
+import { Users, Shield, ShieldCheck, Scale, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap, Cookie } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
@@ -623,6 +623,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               <ShieldCheck className="w-3.5 h-3.5" />
             </button>
 
+            {/* EU GDPR Cookie Settings Link */}
+            <button
+              id="btn-navbar-cookie"
+              type="button"
+              aria-label={effectiveLanguage === 'en' ? 'EU Cookie Preferences (GDPR)' : 'Cài đặt Cookie (Chuẩn Châu Âu GDPR)'}
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                window.dispatchEvent(new CustomEvent('bti-open-cookie-settings'));
+              }}
+              data-tooltip={effectiveLanguage === 'en' ? 'Manage EU GDPR & ePrivacy Cookie Consent' : 'Quản lý tùy chọn Cookie & lưu trữ cục bộ (GDPR Châu Âu)'}
+              data-tooltip-title={effectiveLanguage === 'en' ? 'EU Cookie Settings' : 'Cài Đặt Cookie (EU)'}
+              data-tooltip-placement="bottom"
+              className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <Cookie className="w-3.5 h-3.5 text-[#F7CAC9]" />
+            </button>
+
             {/* Fullscreen Toggle */}
             <button
               id="btn-toggle-fullscreen"
@@ -871,6 +889,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (Luật 91)'}</span>
                   </div>
                   <span className="text-[10px] font-bold text-sky-300">v2.0</span>
+                </button>
+
+                {/* EU GDPR Cookie Settings Button in Mobile Menu */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    window.dispatchEvent(new CustomEvent('bti-open-cookie-settings'));
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2.5 bg-blue-950/20 hover:bg-blue-900/30 text-blue-200 border border-blue-500/30 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                >
+                  <div className="flex items-center gap-2">
+                    <Cookie className="w-4 h-4 text-blue-300" />
+                    <span>{effectiveLanguage === 'en' ? 'EU Cookie Preferences (GDPR)' : 'Cài Đặt Cookie (Chuẩn Châu Âu)'}</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-blue-400">🇪🇺 GDPR</span>
                 </button>
 
                 {/* Return Home */}

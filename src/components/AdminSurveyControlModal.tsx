@@ -489,10 +489,10 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
       soundFx.playTing();
       vibrateSuccess();
       const langLabel = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label || surveyTargetLang;
-      showToast(`Đã dịch AI sang ${langLabel}!`);
+      showToast(`Đã chuyển ngữ sang ${langLabel}!`);
     } catch (err: any) {
       console.error('Survey translate error:', err);
-      showToast('Lỗi khi dịch AI. Vui lòng thử lại.');
+      showToast('Lỗi khi chuyển ngữ. Vui lòng thử lại.');
     } finally {
       setIsTranslatingSurvey(false);
     }
@@ -559,10 +559,10 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
       soundFx.playTing();
       vibrateSuccess();
       const langLabel = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === targetLang)?.label || targetLang;
-      showToast(`Đã dịch toàn bộ câu hỏi sang ${langLabel}! Nhớ nhấn "Lưu Biểu Mẫu" để cập nhật.`);
+      showToast(`Đã chuyển ngữ toàn bộ câu hỏi sang ${langLabel}! Nhớ nhấn "Lưu Biểu Mẫu" để cập nhật.`);
     } catch (err: any) {
       console.error('Failed to translate questions:', err);
-      showToast('Lỗi khi dịch AI câu hỏi khảo sát.');
+      showToast('Lỗi khi chuyển ngữ câu hỏi khảo sát.');
     } finally {
       setIsTranslatingQuestions(false);
     }
@@ -1159,10 +1159,10 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-[#F7CAC9] animate-pulse" />
                     <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                      Dịch AI Cấu Hình Khảo Sát (Multilingual Survey)
+                      Chuyển Ngữ Đa Ngôn Ngữ Khảo Sát (Multilingual Survey)
                     </span>
                     <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/40 font-bold">
-                      Gemini Flash
+                      Tự Động
                     </span>
                   </div>
                   {Object.keys(translations).length > 0 && (
@@ -1203,12 +1203,12 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                     {isTranslatingSurvey ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Đang dịch AI...</span>
+                        <span>Đang chuyển ngữ...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>Dịch sang {SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label || surveyTargetLang}</span>
+                        <span>Chuyển ngữ sang {SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === surveyTargetLang)?.label || surveyTargetLang}</span>
                       </>
                     )}
                   </button>
@@ -1520,12 +1520,12 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                           {isTranslatingQuestions ? (
                             <>
                               <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Đang dịch AI...</span>
+                              <span>Đang chuyển ngữ...</span>
                             </>
                           ) : (
                             <>
                               <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
-                              <span>Dịch AI toàn bộ ({questionsTargetLang.toUpperCase()})</span>
+                              <span>Chuyển ngữ toàn bộ ({questionsTargetLang.toUpperCase()})</span>
                             </>
                           )}
                         </button>
@@ -1564,15 +1564,15 @@ export const AdminSurveyControlModal: React.FC<AdminSurveyControlModalProps> = (
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {/* AI Translate Single Question */}
+                            {/* Translate Single Question */}
                             <button
                               type="button"
                               onClick={() => handleAiTranslateSingleQuestion(index, questionsTargetLang)}
                               className="px-2 py-1 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/40 text-purple-300 text-[11px] font-mono flex items-center gap-1 cursor-pointer transition"
-                              title={`Dịch câu hỏi này sang ${questionsTargetLang.toUpperCase()} bằng AI`}
+                              title={`Chuyển ngữ câu hỏi này sang ${questionsTargetLang.toUpperCase()}`}
                             >
                               <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
-                              <span>Dịch AI</span>
+                              <span>Chuyển ngữ</span>
                             </button>
 
                             {/* Required Checkbox */}

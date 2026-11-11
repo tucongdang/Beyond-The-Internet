@@ -219,7 +219,7 @@ Hệ thống tính điểm tự động và cập nhật tức thì:
 
 Để đảm bảo tính công bằng và tinh thần thể thao trí tuệ cao nhất:
 
-• **Khóa hỗ trợ giải đề khi câu hỏi mở**: Khi câu hỏi thi đấu đang diễn ra trên sàn đấu (\`ACTIVE\`), Trợ lý AI tuyệt đối từ chối tiết lộ, giải thích hay đưa ra gợi ý đáp án.
+• **Khóa hỗ trợ giải đề khi câu hỏi mở**: Khi câu hỏi thi đấu đang diễn ra trên sàn đấu (\`ACTIVE\`), hệ thống hỗ trợ học thuật tuyệt đối từ chối tiết lộ, giải thích hay đưa ra gợi ý đáp án nhằm bảo đảm tính công bằng.
 • **Kiểm soát phiên thi đấu**: Mỗi mã số sinh viên (MSSV) chỉ được đăng nhập và gửi câu trả lời từ một thiết bị duy nhất.
 • **Giám sát thời gian thực**: Ban Trọng Tài có hệ thống giám sát tự động phát hiện các mẫu hành vi bất thường.
 
@@ -599,7 +599,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
           role: 'system',
           systemType: 'security_alert',
           title: 'CẢNH BÁO AN NINH & BẢO MẬT ĐỀ THI',
-          content: '🛡️ Câu hỏi thi đấu đang diễn ra trên sàn đấu. Theo quy chế giải đấu Beyond The Internet 2027, Trợ lý AI tuyệt đối không giải đề, gợi ý hay tiết lộ đáp án cho khán giả.\n\nHãy quan sát thật kỹ màn chiếu và đưa ra lựa chọn theo kiến thức của bạn nhé! Chúc bạn ghi trọn điểm!',
+          content: '🛡️ Câu hỏi thi đấu đang diễn ra trên sàn đấu. Theo quy chế giải đấu Beyond The Internet 2027, hệ thống cố vấn tự động không hỗ trợ giải đề, gợi ý hay can thiệp vào câu trả lời của khán giả trong giờ thi đấu.\n\nHãy quan sát thật kỹ màn chiếu và đưa ra lựa chọn theo kiến thức của bạn nhé! Chúc bạn ghi trọn điểm!',
           timestamp: Date.now()
         };
         setMessages(prev => [...prev, securityAlertMsg]);
@@ -666,7 +666,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
       const fallbackMessage: ChatMessage = {
         id: `assistant_${Date.now()}`,
         role: 'assistant',
-        content: 'Chào bạn! Kết nối AI đang có độ trễ nhẹ. Bạn có thể tham khảo luật thi 4 vòng đấu hoặc liên hệ Ban Tổ Chức tại bàn Kỹ Thuật nếu gặp sự cố mạng nhé!',
+        content: 'Chào bạn! Tín hiệu kết nối máy chủ đang có độ trễ nhẹ. Bạn có thể tham khảo trực tiếp cẩm nang thể lệ 4 vòng đấu hoặc liên hệ Bàn Kỹ thuật Hội trường để được hỗ trợ tức thì nhé!',
         timestamp: Date.now()
       };
       setMessages(prev => [...prev, fallbackMessage]);
@@ -783,10 +783,10 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h3 className="text-xs font-black font-mono text-white tracking-tight truncate">
-                TRỢ LÝ KHÁN GIẢ BTI
+                TỔ CỐ VẤN HỌC THUẬT BTI
               </h3>
               <span className="px-1.5 py-0.2 rounded-[2px] text-[8px] font-mono font-bold bg-[#F7CAC9]/20 text-[#F7CAC9] border border-[#F7CAC9]/30 uppercase shrink-0">
-                AI 3.8 Flash
+                BTI Core 2027
               </span>
             </div>
             <div className="flex items-center gap-1 text-[9px] text-white/50 font-mono mt-0.5">
@@ -940,13 +940,13 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
                 </span>
               </div>
 
-              {/* AI Transparency & Regulatory Disclaimer (Luật TTNT 134/2025 & Luật BVDLCN 91/2025) */}
+              {/* Advisory Transparency & Regulatory Reference (Điều 11 Luật 134/2025 & Luật 91/2025) */}
               <div className="bg-[#100320] border-b border-white/5 px-3 py-1 flex items-center justify-between text-[9px] font-mono text-white/50 shrink-0">
                 <span className="flex items-center gap-1 text-purple-300">
                   <Shield className="w-2.5 h-2.5 text-purple-400" />
-                  <span>Trợ lý AI tự động (Gemini Flash • Điều 11 Luật 134/2025)</span>
+                  <span>Cổng thông tin hỗ trợ khán giả • BTI 2027 (Điều 11 Luật 134/2025)</span>
                 </span>
-                <span className="text-white/40">Mang tính tham khảo • Luật 91/2025</span>
+                <span className="text-white/40">Tham khảo quy chế • Luật 91/2025</span>
               </div>
 
               {/* Active Question Warning Alert Banner */}
@@ -954,7 +954,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
                 <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 flex items-center gap-2 shrink-0">
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
                   <p className="text-[10px] text-amber-300 font-mono leading-tight">
-                    Câu hỏi đang mở: Chế độ chống gian lận đề thi đang bật. AI từ chối giải đề.
+                    Câu hỏi đang mở: Chế độ bảo mật đề thi đang bật. Khóa hỗ trợ gợi ý đáp án.
                   </p>
                 </div>
               )}
@@ -1416,7 +1416,7 @@ export const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
                   className="w-full py-2.5 px-3 rounded-[4px] bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white font-mono text-xs font-bold border border-[#F7CAC9]/40 flex items-center justify-center gap-2 transition shadow-lg cursor-pointer active:scale-98"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#F7CAC9]" />
-                  <span>Hỏi Trợ lý AI về Vòng {roundDetails.roundNumber} ({roundDetails.roundTitle})</span>
+                  <span>Tra cứu thể lệ Vòng {roundDetails.roundNumber} ({roundDetails.roundTitle})</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>

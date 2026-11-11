@@ -57,8 +57,8 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
           id="btn-chat-assistant-widget"
           onClick={handleToggle}
           className={`fixed bottom-20 right-3.5 sm:bottom-6 sm:right-6 z-40 p-3 sm:p-3.5 rounded-[2px] bg-[#190839] hover:bg-[#241148] text-[#F5EFF9] shadow-xl border border-white/18 hover:border-[#F7CAC9]/60 transition-all active:scale-95 cursor-pointer flex items-center gap-2.5 group backdrop-blur-xl ${className}`}
-          title={`Mở Trợ Lý Khán Giả AI (${activeRoundName} • ${activeStatus})`}
-          aria-label={`Mở Trợ Lý Khán Giả AI - Vòng ${activeRoundName}`}
+          title={`Cổng Cố Vấn Khán Giả BTI (${activeRoundName} • ${activeStatus})`}
+          aria-label={`Cổng Cố Vấn Khán Giả BTI - Vòng ${activeRoundName}`}
         >
           <div className="relative flex items-center justify-center">
             <Bot className="w-5 h-5 text-[#F7CAC9] transition-transform" />
@@ -69,7 +69,7 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
 
           <div className="hidden sm:flex flex-col text-left">
             <span className="text-[11px] font-bold font-mono tracking-tight text-[#F5EFF9] flex items-center gap-1">
-              <span>Trợ Lý BTI</span>
+              <span>Cố Vấn BTI</span>
               <Sparkles className="w-3 h-3 text-[#F7CAC9]" />
             </span>
             <span className="text-[9px] text-white/70 font-mono flex items-center gap-1 truncate max-w-[140px]">

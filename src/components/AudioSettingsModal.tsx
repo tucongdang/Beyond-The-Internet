@@ -216,8 +216,8 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
 
     setIsTestingTts(true);
     const testPhrase = localLanguage === 'en'
-      ? `This is a test of the AI Voice tone at pitch ${ttsPitch.toFixed(2)}.`
-      : `Kiểm tra giọng đọc AI với cao độ ${ttsPitch.toFixed(2)}.`;
+      ? `This is a test of the live studio announcer voice at pitch ${ttsPitch.toFixed(2)}.`
+      : `Kiểm tra thử giọng đọc phát thanh trường quay với cao độ ${ttsPitch.toFixed(2)}.`;
 
     aiExplanationService.speakQuestionText(
       testPhrase,
@@ -541,7 +541,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
                       : 'bg-white/10 text-white/60 border-white/15'
                   }`}
                 >
-                  <span>{useGeminiTts ? '✦ Gemini AI TTS' : 'Mặc định Trình duyệt'}</span>
+                  <span>{useGeminiTts ? '✦ Phát Thanh Viên Số' : 'Mặc định Trình duyệt'}</span>
                 </button>
               </div>
 
@@ -550,7 +550,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({
                   <div className="flex items-center justify-between">
                     <label htmlFor="select-gemini-voice" className="text-[11px] font-mono text-emerald-300/90 flex items-center gap-1">
                       <Mic className="w-3 h-3 text-emerald-400" />
-                      <span>Giọng đọc Gemini AI (gemini-3.1-flash-tts)</span>
+                      <span>Kênh giọng đọc truyền thanh số (Chuẩn Studio)</span>
                     </label>
                   </div>
                   <select

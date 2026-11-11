@@ -3058,7 +3058,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
                   >
                     <Mic className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Trợ Lý MC AI (Co-pilot)</span>
+                    <span>Cố Vấn Kịch Bản MC Sân Khấu</span>
                   </button>
                   <button
                     type="button"
@@ -3531,7 +3531,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     className="w-full text-left px-2.5 py-1.5 rounded-[2px] hover:bg-white/10 flex items-center gap-2 text-white/90 cursor-pointer"
                   >
                     <Globe className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="flex-1">Dịch Thuật Đa Ngôn Ngữ AI</span>
+                    <span className="flex-1">Chuyển Ngữ Đa Ngôn Ngữ</span>
                   </button>
                   <button
                     type="button"
@@ -5576,10 +5576,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       type="button"
                       onClick={() => setIsAiTranslateModalOpen(true)}
                       className="px-2.5 py-1 rounded-[2px] bg-gradient-to-r from-sky-500/20 to-indigo-500/20 hover:from-sky-500/30 hover:to-indigo-500/30 text-sky-200 border border-sky-400/40 text-[10px] font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-                      title="Dịch câu hỏi hiện tại sang tiếng Anh, Trung, Nhật, Hàn... bằng AI và phát sóng ngay"
+                      title="Chuyển ngữ câu hỏi hiện tại sang tiếng Anh, Trung, Nhật, Hàn... và phát sóng ngay"
                     >
                       <Globe className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Dịch AI Đa Ngôn Ngữ</span>
+                      <span>Chuyển Ngữ Đa Ngôn Ngữ</span>
                       {Object.keys(gameState.translations || {}).length > 0 && (
                         <span className="px-1.5 py-0.2 rounded-[2px] bg-sky-500 text-[#0D0420] text-[9px] font-mono font-black">
                           {Object.keys(gameState.translations || {}).length} thứ tiếng
