@@ -9,12 +9,9 @@ export interface BrandLogoProps {
 
 /**
  * Official Beyond The Internet 2027 Brand Logo component.
- * Directly mounts and displays the official image files:
- * - /assets/LOGO GRADIENT - LANDSCAPE.png
- * - /assets/LOGO GRADIENT.png
- * 
- * Uses mix-blend-screen so the pure black background seamlessly integrates
- * into the cosmic twilight theme while keeping the gradient letters vivid and crisp.
+ * Uses the exact vector SVG files provided by the user:
+ * - /logo-landscape.svg
+ * - /logo-square.svg
  */
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = 'landscape',
@@ -33,18 +30,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
     return (
       <img
-        src="/assets/LOGO GRADIENT.png"
+        src="/logo-square.svg?v=2027"
         alt="Beyond The Internet 2027"
         draggable={false}
-        style={{ mixBlendMode: withBackground ? 'normal' : 'screen' }}
         className={`object-contain select-none shrink-0 drop-shadow-[0_2px_12px_rgba(247,202,201,0.22)] ${
-          withBackground ? 'bg-black rounded-lg' : ''
+          withBackground ? 'bg-black rounded-lg p-1' : ''
         } ${squareSizeMap[size]} ${className}`}
-        onError={(e) => {
-          if (e.currentTarget.src.includes('/assets/')) {
-            e.currentTarget.src = '/logo-square.png';
-          }
-        }}
       />
     );
   }
@@ -60,18 +51,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   return (
     <img
-      src="/assets/LOGO GRADIENT - LANDSCAPE.png"
+      src="/logo-landscape.svg?v=2027"
       alt="Beyond The Internet 2027"
       draggable={false}
-      style={{ mixBlendMode: withBackground ? 'normal' : 'screen' }}
       className={`w-auto object-contain select-none shrink-0 drop-shadow-[0_2px_14px_rgba(247,202,201,0.22)] ${
-        withBackground ? 'bg-black rounded-lg' : ''
+        withBackground ? 'bg-black rounded-lg p-1' : ''
       } ${landscapeHeightMap[size]} ${className}`}
-      onError={(e) => {
-        if (e.currentTarget.src.includes('/assets/')) {
-          e.currentTarget.src = '/logo-landscape.png';
-        }
-      }}
     />
   );
 };
