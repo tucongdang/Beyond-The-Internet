@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface BrandLogoProps {
-  variant?: 'landscape' | 'square';
+  variant?: 'square' | 'landscape';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   withBackground?: boolean;
@@ -9,32 +9,31 @@ export interface BrandLogoProps {
 
 /**
  * Official Beyond The Internet 2027 Brand Logo component.
- * Uses the exact vector SVG files provided by the user:
- * - /logo-landscape.svg
- * - /logo-square.svg
+ * Features 100% cropped tight viewBox (excess whitespace removed)
+ * and enlarged square stacked vector SVG logo layout by default.
  */
 export const BrandLogo: React.FC<BrandLogoProps> = ({
-  variant = 'landscape',
+  variant = 'square',
   size = 'md',
   className = '',
   withBackground = false,
 }) => {
   if (variant === 'square') {
     const squareSizeMap = {
-      xs: 'w-6 h-6',
-      sm: 'w-8 h-8 sm:w-9 sm:h-9',
-      md: 'w-10 h-10 sm:w-11 sm:h-11',
-      lg: 'w-14 h-14 sm:w-16 sm:h-16',
-      xl: 'w-20 h-20 sm:w-24 sm:h-24',
+      xs: 'w-8 h-auto',
+      sm: 'w-12 sm:w-14 h-auto',
+      md: 'w-16 sm:w-20 h-auto',
+      lg: 'w-28 sm:w-32 h-auto',
+      xl: 'w-44 sm:w-52 md:w-60 h-auto',
     };
 
     return (
       <img
-        src="/logo-square.svg?v=2027"
+        src="/logo-square.svg?v=2027_cropped"
         alt="Beyond The Internet 2027"
         draggable={false}
-        className={`object-contain select-none shrink-0 drop-shadow-[0_2px_12px_rgba(247,202,201,0.22)] ${
-          withBackground ? 'bg-black rounded-lg p-1' : ''
+        className={`object-contain select-none shrink-0 drop-shadow-[0_2px_14px_rgba(247,202,201,0.3)] ${
+          withBackground ? 'bg-black rounded-lg p-1.5' : ''
         } ${squareSizeMap[size]} ${className}`}
       />
     );
@@ -42,20 +41,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   // LANDSCAPE VARIANT
   const landscapeHeightMap = {
-    xs: 'h-5 sm:h-6',
-    sm: 'h-6 sm:h-7',
-    md: 'h-8 sm:h-9',
-    lg: 'h-10 sm:h-12',
-    xl: 'h-12 sm:h-14 md:h-16',
+    xs: 'h-6 sm:h-7',
+    sm: 'h-8 sm:h-10',
+    md: 'h-10 sm:h-12',
+    lg: 'h-14 sm:h-16',
+    xl: 'h-16 sm:h-20 md:h-24',
   };
 
   return (
     <img
-      src="/logo-landscape.svg?v=2027"
+      src="/logo-landscape.svg?v=2027_cropped"
       alt="Beyond The Internet 2027"
       draggable={false}
-      className={`w-auto object-contain select-none shrink-0 drop-shadow-[0_2px_14px_rgba(247,202,201,0.22)] ${
-        withBackground ? 'bg-black rounded-lg p-1' : ''
+      className={`w-auto object-contain select-none shrink-0 drop-shadow-[0_2px_14px_rgba(247,202,201,0.3)] ${
+        withBackground ? 'bg-black rounded-lg p-1.5' : ''
       } ${landscapeHeightMap[size]} ${className}`}
     />
   );

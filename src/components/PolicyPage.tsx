@@ -483,8 +483,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({
 
           {/* Center Brand Logo & Reading Time Badge */}
           <div className="flex items-center gap-2.5">
-            <BrandLogo variant="landscape" size="xs" className="hidden sm:inline-flex" />
-            <BrandLogo variant="square" size="xs" className="sm:hidden" />
+            <BrandLogo variant="square" size="xs" />
             <span 
               id="policy-reading-time-header-badge"
               className="px-1.5 py-0.5 rounded-[2px] bg-sky-500/15 border border-sky-400/30 text-sky-300 font-mono text-[9px] font-semibold hidden md:flex items-center gap-1"

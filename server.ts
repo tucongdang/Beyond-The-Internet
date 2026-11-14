@@ -69,6 +69,45 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Audience response reconciliation endpoint for HTTP submission & Service Worker Background Sync replay
+  app.post(["/api/responses", "/api/responses/sync", "/api/audience/response"], (req, res) => {
+    const body = req.body;
+    if (!body || typeof body !== "object") {
+      res.status(400).json({ ok: false, error: "Invalid response payload" });
+      return;
+    }
+
+    const questionId = typeof body.questionId === "string" ? body.questionId.trim() : "";
+    const uid =
+      typeof body.uid === "string"
+        ? body.uid.trim()
+        : typeof body.user_info?.uid === "string"
+        ? body.user_info.uid.trim()
+        : "";
+    const choice =
+      typeof body.choice === "string"
+        ? body.choice
+        : typeof body.response?.choice === "string"
+        ? body.response.choice
+        : "";
+
+    if (!uid && !questionId && !body.id) {
+      res.status(400).json({ ok: false, error: "Missing response identifier (questionId or uid)" });
+      return;
+    }
+
+    const isReplay = req.get("X-BTI-Background-Sync-Replay") === "1";
+    res.json({
+      ok: true,
+      reconciled: true,
+      replayedBySw: isReplay,
+      questionId: questionId || null,
+      uid: uid || null,
+      choice: choice || null,
+      reconciledAt: Date.now(),
+    });
+  });
+
   // Vietnamese Legal & Security Policy Compliance Status (Luật BVDLCN 91/2025/QH15, NĐ 356/2025/NĐ-CP, Luật ANM 116/2025/QH15, Luật TTNT 134/2025/QH15)
   app.get("/api/compliance/status", (_req, res) => {
     res.json({
@@ -2808,9 +2847,9 @@ Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể 
       immutable: true,
       setHeaders: (res, filePath) => {
         res.set('Access-Control-Allow-Origin', '*');
-        if (filePath.endsWith('.html')) {
+        if (filePath.endsWith('.html') || filePath.endsWith('sw.js') || filePath.endsWith('manifest.json')) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else if (filePath.includes('assets') || filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.woff2') || filePath.endsWith('.png') || filePath.endsWith('.svg')) {
+        } else if (filePath.includes('assets') || filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.woff2') || filePath.endsWith('.otf') || filePath.endsWith('.ttf') || filePath.endsWith('.png') || filePath.endsWith('.svg')) {
           res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
       }

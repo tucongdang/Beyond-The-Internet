@@ -28,35 +28,35 @@ import {
   subscribeHapticPreference,
   HapticIntensity
 } from '../utils/hapticUtils';
-import { 
-  X, 
-  User, 
-  Globe, 
-  BarChart2, 
-  Edit3, 
-  Save, 
-  Activity, 
-  Camera, 
-  Smartphone, 
-  Vibrate, 
-  Check, 
-  Sliders, 
-  Sparkles, 
-  Contrast, 
-  Volume2, 
-  Volume1, 
-  VolumeX, 
-  Play, 
-  Square, 
-  Music, 
-  RotateCcw, 
-  Mic, 
-  MessageSquare, 
-  ShieldCheck, 
-  Trash2, 
-  FileText, 
-  Scale, 
-  Lock, 
+import {
+  X,
+  User,
+  Globe,
+  BarChart2,
+  Edit3,
+  Save,
+  Activity,
+  Camera,
+  Smartphone,
+  Vibrate,
+  Check,
+  Sliders,
+  Sparkles,
+  Contrast,
+  Volume2,
+  Volume1,
+  VolumeX,
+  Play,
+  Square,
+  Music,
+  RotateCcw,
+  Mic,
+  MessageSquare,
+  ShieldCheck,
+  Trash2,
+  FileText,
+  Scale,
+  Lock,
   ExternalLink,
   Cookie,
   History,
@@ -72,9 +72,13 @@ import {
   Gauge,
   Flag,
   Layers,
-  Award
+  Award,
+  WifiOff,
 } from 'lucide-react';
 import { ambientNoiseService } from '../services/ambientNoiseService';
+import { syncService } from '../services/syncService';
+import { useOfflineSyncState } from '../utils/offlineModeUtils';
+import { OfflineModePanel } from './OfflineModePanel';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsOfServiceModal } from './TermsOfServiceModal';
 import { PDPD_CONSENT_VERSION, PDPD_LAW_REFERENCE } from '../utils/vnLawCompliance';
@@ -116,7 +120,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   // Sub-tab selection inside Settings
-  const [settingsSubTab, setSettingsSubTab] = useState<'visual' | 'audio' | 'voice' | 'privacy'>('visual');
+  const [settingsSubTab, setSettingsSubTab] = useState<'visual' | 'audio' | 'voice' | 'offline' | 'privacy'>('visual');
+  const offlineSyncState = useOfflineSyncState();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showErasureConfirm, setShowErasureConfirm] = useState(false);
@@ -206,11 +211,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           soundPack: pack
         };
         onUpdateUser(updatedUser);
-        const app = getApps()[0];
-        const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
-        await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedUser), { merge: true });
+        await syncService.saveUserProfile(updatedUser);
       } catch (e) {
-        console.warn("Notice saving sound pack to firestore:", e);
+        console.warn("Notice saving sound pack:", e);
       }
     }
   };
@@ -398,6 +401,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const fetchFirestoreRoundHistory = async () => {
     if (!user?.uid) return;
+    if (!syncService.getIsFirebaseConnected()) {
+      setFirestoreError(null);
+      setFirestoreHistoryLoading(false);
+      setFirestoreLastSync(Date.now());
+      return;
+    }
     setFirestoreHistoryLoading(true);
     setFirestoreError(null);
     const pathForGetDocs = 'responses';
@@ -624,9 +633,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         hapticIntensity
       };
       
-      const app = getApps()[0];
-      const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
-      await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedUser), { merge: true });
+      await syncService.saveUserProfile(updatedUser);
       
       onUpdateUser(updatedUser);
       vibrateSuccess();
@@ -658,11 +665,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           hapticIntensity: intensity
         };
         onUpdateUser(updatedUser);
-        const app = getApps()[0];
-        const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || '(default)');
-        await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedUser), { merge: true });
+        await syncService.saveUserProfile(updatedUser);
       } catch (e) {
-        console.warn("Notice saving haptic intensity to firestore:", e);
+        console.warn("Notice saving haptic intensity:", e);
       }
     }
   };
@@ -1338,7 +1343,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {tab === 'settings' && (
             <div className="space-y-4">
               {/* Settings Sub-Tab Navigation Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 bg-black/50 backdrop-blur-2xl rounded-[2px] border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1.5 bg-black/50 backdrop-blur-2xl rounded-[2px] border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
                 <button
                   type="button"
                   onClick={() => {
@@ -1391,13 +1396,36 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </button>
 
                 <button
+                  id="btn-settings-subtab-offline"
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    vibrateTap();
+                    setSettingsSubTab('offline');
+                  }}
+                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                    settingsSubTab === 'offline'
+                      ? 'bg-gradient-to-r from-amber-600/90 to-orange-600/90 text-white shadow-[0_4px_16px_rgba(245,158,11,0.35)] border border-amber-300/40 ring-1 ring-white/20'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <WifiOff className={`w-3.5 h-3.5 shrink-0 ${offlineSyncState.isOfflineMode ? 'text-amber-300' : 'text-sky-300'}`} />
+                  <span className="truncate">{localLanguage !== 'vi' ? 'Offline Mode' : 'Ngoại Tuyến'}</span>
+                  {(offlineSyncState.isOfflineMode || offlineSyncState.pendingCount > 0) && (
+                    <span className="px-1.5 py-0.2 rounded-[2px] bg-amber-500/25 text-amber-200 border border-amber-400/40 text-[9px] font-black shrink-0">
+                      {offlineSyncState.pendingCount > 0 ? offlineSyncState.pendingCount : 'ON'}
+                    </span>
+                  )}
+                </button>
+
+                <button
                   type="button"
                   onClick={() => {
                     soundFx.playClick();
                     vibrateTap();
                     setSettingsSubTab('privacy');
                   }}
-                  className={`py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
+                  className={`col-span-2 sm:col-span-1 py-2 px-2 rounded-[2px] text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-98 backdrop-blur-md ${
                     settingsSubTab === 'privacy'
                       ? 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)] border border-purple-300/40 ring-1 ring-white/20'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -2029,7 +2057,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               )}
 
-              {/* Sub-Tab 4: PDPD Privacy & Legal Compliance */}
+              {/* Sub-Tab 4: Offline Mode & Local Quiz Progress Sync */}
+              {settingsSubTab === 'offline' && (
+                <OfflineModePanel user={user} />
+              )}
+
+              {/* Sub-Tab 5: PDPD Privacy & Legal Compliance */}
               {settingsSubTab === 'privacy' && (
                 <div className="space-y-4 text-left">
                   {/* Status Banner */}

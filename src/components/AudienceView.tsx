@@ -651,15 +651,20 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       }
     };
 
-    if (!navigator.onLine) {
-      queueOfflineResponse(payload);
-    }
-
+    showSavedLocallyNoticeIfOffline();
+    setIsPendingSync(true);
     try {
       await syncService.submitResponse(gameState.question_id, user.uid, payload);
     } catch (err) {
-      console.warn('TF submit failed, queued offline:', err);
-      queueOfflineResponse(payload);
+      console.warn('TF submit failed:', err);
+      if (!syncService.isOfflineModeEnabled()) {
+        setHasVotedThisQuestion(false);
+        setSelectedChoice('');
+        soundFx.playError();
+      }
+      showSavedLocallyNoticeIfOffline(true);
+    } finally {
+      setIsPendingSync(false);
     }
   };
 
@@ -684,39 +689,50 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   }, [userRiskResponse, isEditingRisk]);
 
   const handleRiskAnswerSubmit = async () => {
-    setIsPendingSync(true);
     if (!user) {
       onOpenRegister();
       return;
     }
     if (!riskAnswerText.trim() && !riskCnvText.trim()) return;
 
+    setIsPendingSync(true);
     soundFx.playClick();
     vibrateSubmit();
     setHasSubmittedRisk(true);
     setIsEditingRisk(false);
     const latency = Number(((syncService.getSynchronizedNow() - (gameState.vcnv_risk_start_time || syncService.getSynchronizedNow())) / 1000).toFixed(2));
+    showSavedLocallyNoticeIfOffline();
 
-    // 1. Submit prediction for Risk Box (VCNV_RISK)
-    if (riskAnswerText.trim()) {
-      await syncService.submitResponse('VCNV_RISK', user.uid, {
-        choice: riskAnswerText.trim().toUpperCase(),
-        timestamp: syncService.getSynchronizedNow(),
-        latency_sec: latency,
-        user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
-      });
-    }
+    try {
+      // 1. Submit prediction for Risk Box (VCNV_RISK)
+      if (riskAnswerText.trim()) {
+        await syncService.submitResponse('VCNV_RISK', user.uid, {
+          choice: riskAnswerText.trim().toUpperCase(),
+          timestamp: syncService.getSynchronizedNow(),
+          latency_sec: latency,
+          user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+        });
+      }
 
-    // 2. Submit prediction for CNV Keyword (VCNV_01)
-    if (riskCnvText.trim()) {
-      await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
-        choice: riskCnvText.trim().toUpperCase(),
-        timestamp: syncService.getSynchronizedNow(),
-        latency_sec: latency,
-        user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
-      });
+      // 2. Submit prediction for CNV Keyword (VCNV_01)
+      if (riskCnvText.trim()) {
+        await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
+          choice: riskCnvText.trim().toUpperCase(),
+          timestamp: syncService.getSynchronizedNow(),
+          latency_sec: latency,
+          user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+        });
+      }
+    } catch (err) {
+      console.warn('Risk answer submit failed:', err);
+      if (!syncService.isOfflineModeEnabled()) {
+        setHasSubmittedRisk(false);
+        soundFx.playError();
+      }
+      showSavedLocallyNoticeIfOffline(true);
+    } finally {
+      setIsPendingSync(false);
     }
-    setIsPendingSync(false);
   };
 
   // Compute live user stats and score breakdown across all rounds
@@ -774,59 +790,48 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     return { currentStreak, maxStreak };
   }, [userPerformance?.audienceScoreState?.history]);
 
-  // Offline queue storage key
-  const OFFLINE_QUEUE_KEY = 'bti_offline_queue';
+  const offlineNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const queueOfflineResponse = (payload: UserResponse) => {
-    try {
-      const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
-      const queue: any[] = raw ? JSON.parse(raw) : [];
-      // Remove any prior pending entry for the same question and user so newest choice takes precedence
-      const filteredQueue = queue.filter(item => !(item.questionId === gameState.question_id && item.uid === user?.uid));
-      filteredQueue.push({
-        id: `${gameState.question_id}_${user?.uid}_${Date.now()}`,
-        questionId: gameState.question_id,
-        uid: user?.uid,
-        payload: { ...payload, isOfflineSync: true },
-        savedAt: Date.now()
-      });
-      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(filteredQueue));
-      setOfflineNotice('📶 Mạng gián đoạn! Đáp án đã được lưu ngoại tuyến, sẽ tự động đồng bộ khi có kết nối.');
-    } catch (err) {
-      console.warn('Queue offline response error:', err);
-    }
-  };
+  const showSavedLocallyNoticeIfOffline = useCallback((forceFallback = false) => {
+    const isOfflineBackupOn = syncService.isOfflineModeEnabled();
+    const isDisconnected = !syncService.getIsFirebaseConnected() || !navigator.onLine;
+    if (!forceFallback && !isDisconnected) return;
 
-  // Auto-sync queued offline answers when browser regains network
+    const msg = isOfflineBackupOn
+      ? (localLanguage !== 'vi'
+          ? '📶 WiFi/4G disconnected! Offline Mode saved your answer locally — will auto-sync on reconnect.'
+          : '📶 Mất kết nối mạng! Chế độ Ngoại tuyến đã lưu đáp án cục bộ, sẽ tự đồng bộ khi có WiFi/4G lại.')
+      : (localLanguage !== 'vi'
+          ? '⚠️ Network lost & Offline Mode is OFF — answer not saved. Enable Offline Mode in Settings.'
+          : '⚠️ Mất mạng và Chế độ Ngoại tuyến đang TẮT — không thể lưu đáp án. Hãy bật trong Cài đặt.');
+
+    setOfflineNotice(msg);
+    if (offlineNoticeTimeoutRef.current) clearTimeout(offlineNoticeTimeoutRef.current);
+    offlineNoticeTimeoutRef.current = setTimeout(() => setOfflineNotice(null), 7500);
+  }, [localLanguage]);
+
+  // Listen for sync completion notifications emitted by syncService
   useEffect(() => {
-    const syncOfflineQueue = async () => {
-      try {
-        const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
-        if (!raw) return;
-        const queue: any[] = JSON.parse(raw);
-        if (queue.length === 0) return;
-        let syncedCount = 0;
-        for (const item of queue) {
-          await syncService.submitResponse(item.questionId, item.uid, item.payload);
-          syncedCount++;
-        }
-        localStorage.removeItem(OFFLINE_QUEUE_KEY);
-        if (syncedCount > 0) {
-          setOfflineNotice(`✅ Đã tự động đồng bộ ${syncedCount} câu trả lời ngoại tuyến!`);
-          soundFx.playTing();
-          setTimeout(() => setOfflineNotice(null), 4000);
-        }
-      } catch (err) {
-        console.warn('Sync offline queue error:', err);
+    const handleOfflineSyncCompleted = (e: Event) => {
+      const detail = (e as CustomEvent<{ syncedCount?: number; remainingCount?: number }>).detail;
+      const syncedCount = detail?.syncedCount || 0;
+      if (syncedCount > 0) {
+        const msg = localLanguage !== 'vi'
+          ? `✅ Synced ${syncedCount} offline quiz item(s) to Firebase!`
+          : `✅ Đã tự động đồng bộ ${syncedCount} mục tiến trình ngoại tuyến lên Firebase!`;
+        setOfflineNotice(msg);
+        soundFx.playTing();
+        if (offlineNoticeTimeoutRef.current) clearTimeout(offlineNoticeTimeoutRef.current);
+        offlineNoticeTimeoutRef.current = setTimeout(() => setOfflineNotice(null), 4500);
       }
     };
 
-    window.addEventListener('online', syncOfflineQueue);
-    if (navigator.onLine) {
-      syncOfflineQueue();
-    }
-    return () => window.removeEventListener('online', syncOfflineQueue);
-  }, []);
+    window.addEventListener('bti_offline_sync_completed', handleOfflineSyncCompleted);
+    return () => {
+      window.removeEventListener('bti_offline_sync_completed', handleOfflineSyncCompleted);
+      if (offlineNoticeTimeoutRef.current) clearTimeout(offlineNoticeTimeoutRef.current);
+    };
+  }, [localLanguage]);
 
   // Tab-switch / focus departure detection during active question
   useEffect(() => {
@@ -1253,16 +1258,19 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       }
     };
 
-    if (!navigator.onLine) {
-      queueOfflineResponse(responsePayload);
-    }
-
+    showSavedLocallyNoticeIfOffline();
     setIsPendingSync(true);
     try {
       await syncService.submitResponse(gameState.question_id, user.uid, responsePayload);
     } catch (err) {
-      console.warn('Submit response failed, saving to offline queue:', err);
-      queueOfflineResponse(responsePayload);
+      console.warn('Submit response failed:', err);
+      if (!syncService.isOfflineModeEnabled()) {
+        setHasVotedThisQuestion(false);
+        setSelectedChoice('');
+        setSubmitToast(false);
+        soundFx.playError();
+      }
+      showSavedLocallyNoticeIfOffline(true);
     } finally {
       setIsPendingSync(false);
     }
@@ -1271,28 +1279,38 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   // Handle Short text submit
 
   const handleVcnvSubmit = async () => {
-    setIsPendingSync(true);
     if (!vcnvPrediction.trim() || gameState.vcnv_summary_active) return;
     if (!user) {
       onOpenRegister();
       return;
     }
+    setIsPendingSync(true);
     soundFx.playClick();
     vibrateSubmit();
-    
+    showSavedLocallyNoticeIfOffline();
+
     const now = Date.now();
     const latency = gameState.server_start_time
       ? Math.max(0.1, (now - gameState.server_start_time) / 1000)
       : 1.0;
 
-    await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
-      choice: vcnvPrediction.trim().toUpperCase(),
-      timestamp: now,
-      latency_sec: Number(latency.toFixed(2)),
-      user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
-    });
-    setIsEditingVcnv(false);
-    setIsPendingSync(false);
+    try {
+      await syncService.submitResponse(gameState.question_id || 'VCNV_01', user.uid, {
+        choice: vcnvPrediction.trim().toUpperCase(),
+        timestamp: now,
+        latency_sec: Number(latency.toFixed(2)),
+        user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
+      });
+      setIsEditingVcnv(false);
+    } catch (err) {
+      console.warn('VCNV submit failed:', err);
+      if (!syncService.isOfflineModeEnabled()) {
+        soundFx.playError();
+      }
+      showSavedLocallyNoticeIfOffline(true);
+    } finally {
+      setIsPendingSync(false);
+    }
   };
 
   const handleShortAnswerSubmit = (e?: React.FormEvent) => {
@@ -1379,16 +1397,17 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         }
       };
 
-      if (!navigator.onLine) {
-        queueOfflineResponse(responsePayload);
-      }
-
+      showSavedLocallyNoticeIfOffline();
       setIsPendingSync(true);
       try {
         await syncService.submitResponse(gameState.question_id, user.uid, responsePayload);
       } catch (err) {
-        console.warn('Auto submit response failed, saving to offline queue:', err);
-        queueOfflineResponse(responsePayload);
+        console.warn('Auto submit response failed:', err);
+        if (!syncService.isOfflineModeEnabled()) {
+          setHasVotedThisQuestion(false);
+          setSelectedChoice('');
+        }
+        showSavedLocallyNoticeIfOffline(true);
       } finally {
         setIsPendingSync(false);
       }
@@ -2934,21 +2953,26 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
 
         {/* Offline sync status notice */}
-        {offlineNotice && (
-          <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeIn pointer-events-auto">
-            <div className="flex items-center gap-2 bg-slate-900/95 border border-amber-400/50 text-amber-200 px-4 py-2.5 rounded-[2px] shadow-2xl text-xs font-semibold backdrop-blur-md">
+        {offlineNotice && typeof document !== 'undefined' && createPortal(
+          <div
+            id="audience-offline-notice-toast"
+            style={{ position: 'fixed', opacity: 1 }}
+            className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:top-20 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-lg opacity-100 pointer-events-auto"
+          >
+            <div className="flex items-center gap-2.5 bg-slate-900/95 border border-amber-400/50 text-amber-200 px-4 py-2.5 rounded-[2px] shadow-2xl text-xs font-semibold backdrop-blur-md">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>{offlineNotice}</span>
+              <span className="flex-1 leading-snug">{offlineNotice}</span>
               <button 
                 type="button"
                 onClick={() => setOfflineNotice(null)} 
                 aria-label="Đóng thông báo ngoại tuyến"
-                className="ml-2 text-slate-400 hover:text-white cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                className="ml-1 text-slate-400 hover:text-white cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Reusable CountdownTimer Header: Category, Badges, Progress Ring & Slanted Bar */}

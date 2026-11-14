@@ -1,11 +1,80 @@
-import { getFirestore, initializeFirestore, doc, collection, onSnapshot, setDoc, updateDoc, Firestore, getDocs, deleteDoc, getDoc, getDocFromServer, addDoc, query, orderBy, limit, where, writeBatch } from 'firebase/firestore';
-import { app, db } from '../firebase';
+import { doc, collection, onSnapshot, setDoc, updateDoc, Firestore, getDocs, deleteDoc, getDoc, getDocFromServer, addDoc, query, orderBy, limit, where, writeBatch } from 'firebase/firestore';
+import { app, db, auth } from '../firebase';
 import { getBatterySaverMode } from '../utils/batterySaverUtils';
+import {
+  getOfflineModeEnabled,
+  setOfflineModeEnabled,
+  getPendingSyncQueue,
+  savePendingSyncQueue,
+  enqueuePendingSyncItem,
+  removeSyncedItemsFromQueue,
+  markFailedSyncItems,
+  recordLocalQuizProgress,
+  getOfflineSyncMeta,
+  saveOfflineSyncMeta,
+  getOfflineSyncState,
+  buildPendingDedupeKey,
+  OFFLINE_MODE_STORAGE_KEY,
+  OfflineSyncState,
+} from '../utils/offlineModeUtils';
+import {
+  enqueueResponseForBackgroundSync,
+  resolveBackgroundSyncItems,
+  triggerBackgroundResponseSync,
+  registerReconcileCallback,
+} from './serviceWorkerManager';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { GameState, UserResponse, FirebaseConfig, UserInfo, PingInfo, PingQuality, LatencyHistoryPoint, LatencyStats, EmergencyPoll, EmergencyPollHistoryItem, ActivityLogType, ActivityLogCategory, QrHistoryItem, QrScanEvent, HourlyScanDataPoint, QrScanTrendMetrics, ContestantPrediction, ChampionVote } from '../types';
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import { getSecureRandomId, getSecureRandomInt, secureShuffle } from '../utils/cryptoUtils';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid,
+      email: auth?.currentUser?.email,
+      emailVerified: auth?.currentUser?.emailVerified,
+      isAnonymous: auth?.currentUser?.isAnonymous,
+      tenantId: auth?.currentUser?.tenantId,
+      providerInfo: auth?.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 const STORAGE_KEY_FIREBASE_CONFIG = 'BTI2026_FIREBASE_CONFIG';
 const STORAGE_KEY_GAME_STATE = 'BTI2026_GAME_STATE';
@@ -122,6 +191,7 @@ class RealtimeSyncService {
   private db: Firestore | null = null;
   private broadcastChannel: BroadcastChannel | null = null;
   private isFirebaseConnected: boolean = false;
+  private isSyncingPendingQueue: boolean = false;
   private batterySaverInterval: any = null;
   private spamCounters: Record<string, number> = {};
   private currentConfig: FirebaseConfig | null = null;
@@ -202,12 +272,19 @@ class RealtimeSyncService {
     }
     // Setup connection monitoring for online/offline events
     if (typeof window !== 'undefined') {
+      registerReconcileCallback(() => this.syncPendingOfflineProgress(false));
       window.addEventListener('online', () => {
+        if (!this.isFirebaseConnected) {
+          this.initializeFirebase();
+        }
         this.notifyConnectionChange();
-        this.measurePing();
+        triggerBackgroundResponseSync().catch(() => {});
+        this.measurePing().then(() => {
+          this.syncPendingOfflineProgress().catch(() => {});
+        });
       });
       window.addEventListener('offline', () => {
-        this.notifyConnectionChange();
+        this.setFirebaseConnected(false);
         this.currentPingInfo = {
           latencyMs: null,
           quality: 'offline',
@@ -216,8 +293,14 @@ class RealtimeSyncService {
         this.notifyPingListeners();
       });
       window.addEventListener('focus', () => {
-        if (Date.now() - this.currentPingInfo.lastChecked > 8000) {
+        if ((typeof navigator === 'undefined' || navigator.onLine) && Date.now() - this.currentPingInfo.lastChecked > 8000) {
           this.measurePing();
+        }
+      });
+      window.addEventListener('storage', (e: StorageEvent) => {
+        if (e.key === OFFLINE_MODE_STORAGE_KEY) {
+          const nextOffline = e.newValue === 'true';
+          this.applyOfflineModeSideEffects(nextOffline).catch(() => {});
         }
       });
     }
@@ -326,10 +409,15 @@ class RealtimeSyncService {
       }
     }
 
-    // Load initial local data
+    // Load initial local data & migrate any legacy offline queue
     this.loadLocalData();
+    getPendingSyncQueue();
+    const initialMeta = getOfflineSyncMeta();
+    if (initialMeta.isSyncing) {
+      saveOfflineSyncMeta({ ...initialMeta, isSyncing: false });
+    }
 
-    // Check stored Firebase Config, otherwise initialize with default applet config
+    // Always connect to Firebase when available; Offline Mode acts as local backup when network drops
     if (!this.loadStoredFirebaseConfig()) {
       this.initializeFirebase();
     }
@@ -468,8 +556,16 @@ class RealtimeSyncService {
   }
 
   public getIsFirebaseConnected(): boolean {
-    // Incorporate both Firebase initialization state and browser network online state
+    // Reflect actual Firebase and browser network connectivity
     return this.isFirebaseConnected && (typeof navigator === 'undefined' || navigator.onLine);
+  }
+
+  public isOfflineModeEnabled(): boolean {
+    return getOfflineModeEnabled();
+  }
+
+  public getOfflineSyncStatus(): OfflineSyncState {
+    return getOfflineSyncState();
   }
 
   public getLocalAuditLogs(): any[] {
@@ -612,9 +708,20 @@ class RealtimeSyncService {
   }
 
   private setFirebaseConnected(status: boolean) {
-    if (this.isFirebaseConnected !== status) {
-      this.isFirebaseConnected = status;
+    const isBrowserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+    const nextStatus = isBrowserOffline ? false : status;
+    const wasConnected = this.isFirebaseConnected;
+    if (wasConnected !== nextStatus) {
+      this.isFirebaseConnected = nextStatus;
       this.notifyConnectionChange();
+      if (!wasConnected && nextStatus) {
+        const pending = getPendingSyncQueue();
+        if (pending.length > 0) {
+          setTimeout(() => {
+            this.syncPendingOfflineProgress().catch(() => {});
+          }, 150);
+        }
+      }
     }
   }
 
@@ -635,7 +742,7 @@ class RealtimeSyncService {
   }
 
   public initializeFirebase(config?: FirebaseConfig): boolean {
-    if (this.isFirebaseConnected && this.firebaseApp) return true;
+    if (this.isFirebaseConnected && this.firebaseApp && this.unsubscribes.length > 0) return true;
     try {
       const activeConfig = config ? {
         apiKey: config.apiKey || firebaseConfig.apiKey,
@@ -662,10 +769,309 @@ class RealtimeSyncService {
       return false;
     }
   }
+
+  private clearFirestoreListeners() {
+    const activeUnsubs = [...this.unsubscribes];
+    this.unsubscribes = [];
+    activeUnsubs.forEach(unsub => {
+      try {
+        unsub();
+      } catch {}
+    });
+    if (this.batterySaverInterval) {
+      clearInterval(this.batterySaverInterval);
+      this.batterySaverInterval = null;
+    }
+  }
+
+  private async applyOfflineModeSideEffects(enabled: boolean): Promise<{ syncedCount: number; failedCount: number; pendingCount: number }> {
+    // Always keep Firebase listeners active when online; Offline Mode enables local backup when network drops
+    if (!this.db || this.unsubscribes.length === 0) {
+      this.initializeFirebase();
+    }
+
+    if (enabled) {
+      this.addLocalAuditLog(
+        'SYSTEM_EVENT',
+        'Offline Mode',
+        'Đã bật Chế độ Ngoại tuyến — Nếu mất WiFi/4G, tiến trình quiz vẫn được lưu cục bộ và tự đồng bộ khi có mạng.'
+      );
+      if (this.getIsFirebaseConnected() && getPendingSyncQueue().length > 0) {
+        return this.syncPendingOfflineProgress(false);
+      }
+      return {
+        syncedCount: 0,
+        failedCount: 0,
+        pendingCount: getPendingSyncQueue().length
+      };
+    }
+
+    const pendingCount = getPendingSyncQueue().length;
+    if (pendingCount > 0 && (typeof navigator === 'undefined' || navigator.onLine)) {
+      const syncResult = await this.syncPendingOfflineProgress(false);
+      this.addLocalAuditLog(
+        'SYSTEM_EVENT',
+        'Offline Mode',
+        `Đã tắt Chế độ Ngoại tuyến (${syncResult.syncedCount} mục chờ đã được đồng bộ).`
+      );
+      return syncResult;
+    }
+
+    this.addLocalAuditLog(
+      'SYSTEM_EVENT',
+      'Offline Mode',
+      'Đã tắt Chế độ Ngoại tuyến (chỉ đồng bộ trực tuyến).'
+    );
+    return {
+      syncedCount: 0,
+      failedCount: 0,
+      pendingCount
+    };
+  }
+
+  public async setOfflineMode(enabled: boolean): Promise<{ syncedCount: number; failedCount: number; pendingCount: number }> {
+    setOfflineModeEnabled(enabled);
+    return this.applyOfflineModeSideEffects(enabled);
+  }
+
+  private async verifyFirebaseServerConnection(timeoutMs: number = 4500): Promise<boolean> {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+    const targetDb = this.db || db;
+    if (!targetDb) return false;
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Firebase server check timeout')), timeoutMs);
+      });
+      await Promise.race([
+        getDocFromServer(doc(targetDb, 'game_state', 'current')),
+        timeoutPromise
+      ]);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async withWriteTimeout<T>(promise: Promise<T>, timeoutMs: number = 4500): Promise<T> {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('Network offline');
+    }
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Firestore write timeout (network interrupted)')), timeoutMs);
+        })
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  public async syncPendingOfflineProgress(force: boolean = false): Promise<{ syncedCount: number; failedCount: number; pendingCount: number }> {
+    const queue = getPendingSyncQueue();
+    if (this.isSyncingPendingQueue) {
+      return { syncedCount: 0, failedCount: 0, pendingCount: queue.length };
+    }
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const meta = getOfflineSyncMeta();
+      if (queue.length > 0) {
+        saveOfflineSyncMeta({
+          ...meta,
+          isSyncing: false,
+          lastSyncError: 'Thiết bị đang mất kết nối mạng. Sẽ tự đồng bộ ngay khi có WiFi/4G lại.'
+        });
+      }
+      return { syncedCount: 0, failedCount: 0, pendingCount: queue.length };
+    }
+    if (queue.length === 0) {
+      triggerBackgroundResponseSync().catch(() => {});
+      const meta = getOfflineSyncMeta();
+      if (meta.isSyncing || meta.lastSyncError) {
+        saveOfflineSyncMeta({
+          ...meta,
+          isSyncing: false,
+          lastSyncError: null
+        });
+      }
+      return { syncedCount: 0, failedCount: 0, pendingCount: 0 };
+    }
+
+    triggerBackgroundResponseSync().catch(() => {});
+
+    this.isSyncingPendingQueue = true;
+    const prevMeta = getOfflineSyncMeta();
+    saveOfflineSyncMeta({
+      ...prevMeta,
+      isSyncing: true,
+      lastSyncError: null
+    });
+
+    try {
+      this.firebaseApp = this.firebaseApp || app;
+      this.db = this.db || db;
+
+      const reachable = await this.verifyFirebaseServerConnection();
+      if (!reachable && !force) {
+        saveOfflineSyncMeta({
+          ...getOfflineSyncMeta(),
+          isSyncing: false,
+          lastSyncError: 'Không thể kết nối tới Firebase. Tiến trình cục bộ vẫn được giữ nguyên.'
+        });
+        return { syncedCount: 0, failedCount: queue.length, pendingCount: queue.length };
+      }
+
+      if (reachable && !this.isFirebaseConnected) {
+        this.isFirebaseConnected = true;
+        this.notifyConnectionChange();
+      }
+
+      const syncedIds: string[] = [];
+      const failuresById: Record<string, string> = {};
+
+      for (const item of queue) {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) break;
+        try {
+          if (item.type === 'response' && item.questionId && item.uid) {
+            const path = `responses/${item.questionId}_${item.uid}`;
+            try {
+              await this.withWriteTimeout(
+                setDoc(
+                  doc(this.db!, 'responses', `${item.questionId}_${item.uid}`),
+                  this.removeUndefined({
+                    questionId: item.questionId,
+                    uid: item.uid,
+                    response: {
+                      ...item.payload,
+                      isOfflineSync: true,
+                      syncedAt: Date.now()
+                    }
+                  })
+                ),
+                4500
+              );
+              syncedIds.push(item.id);
+            } catch (err: any) {
+              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+                try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
+                  failuresById[item.id] = loggedErr?.message || 'Permission denied';
+                }
+              } else {
+                failuresById[item.id] = err?.message || 'Firestore write failed';
+              }
+            }
+          } else if (item.type === 'prediction' && item.questionId && item.uid) {
+            const path = `contestant_predictions/${item.questionId}_${item.uid}`;
+            try {
+              await setDoc(
+                doc(this.db!, 'contestant_predictions', `${item.questionId}_${item.uid}`),
+                this.removeUndefined({
+                  ...item.payload,
+                  updatedAt: Date.now()
+                }),
+                { merge: true }
+              );
+              syncedIds.push(item.id);
+            } catch (err: any) {
+              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+                try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
+                  failuresById[item.id] = loggedErr?.message || 'Permission denied';
+                }
+              } else {
+                failuresById[item.id] = err?.message || 'Firestore write failed';
+              }
+            }
+          } else if (item.type === 'champion_vote' && item.uid) {
+            const path = `champion_votes/${item.uid}`;
+            try {
+              await setDoc(
+                doc(this.db!, 'champion_votes', item.uid),
+                this.removeUndefined({
+                  ...item.payload,
+                  updatedAt: Date.now()
+                }),
+                { merge: true }
+              );
+              syncedIds.push(item.id);
+            } catch (err: any) {
+              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+                try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
+                  failuresById[item.id] = loggedErr?.message || 'Permission denied';
+                }
+              } else {
+                failuresById[item.id] = err?.message || 'Firestore write failed';
+              }
+            }
+          } else if (item.type === 'user_profile' && item.uid) {
+            const path = `users/${item.uid}`;
+            try {
+              await setDoc(
+                doc(this.db!, 'users', item.uid),
+                this.removeUndefined(item.payload),
+                { merge: true }
+              );
+              syncedIds.push(item.id);
+            } catch (err: any) {
+              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+                try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
+                  failuresById[item.id] = loggedErr?.message || 'Permission denied';
+                }
+              } else {
+                failuresById[item.id] = err?.message || 'Firestore write failed';
+              }
+            }
+          } else {
+            syncedIds.push(item.id);
+          }
+        } catch (unexpectedErr: any) {
+          failuresById[item.id] = unexpectedErr?.message || 'Sync failed';
+        }
+      }
+
+      const resolvedKeys = queue
+        .filter((item) => syncedIds.includes(item.id))
+        .flatMap((item) => [item.id, item.dedupeKey]);
+      if (resolvedKeys.length > 0) {
+        resolveBackgroundSyncItems(resolvedKeys).catch(() => {});
+      }
+
+      const afterRemoval = removeSyncedItemsFromQueue(getPendingSyncQueue(), syncedIds);
+      const finalQueue = markFailedSyncItems(afterRemoval, failuresById);
+      savePendingSyncQueue(finalQueue);
+
+      const failedCount = Object.keys(failuresById).length;
+      const syncedCount = syncedIds.length;
+      const now = Date.now();
+
+      saveOfflineSyncMeta({
+        ...getOfflineSyncMeta(),
+        isSyncing: false,
+        lastSyncedAt: syncedCount > 0 ? now : getOfflineSyncMeta().lastSyncedAt,
+        syncedCountLastRun: syncedCount,
+        lastSyncError:
+          failedCount > 0
+            ? `${failedCount} mục chưa thể đồng bộ lên Firebase, sẽ tự thử lại khi kết nối ổn định.`
+            : null,
+      });
+
+      if (syncedCount > 0 && typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('bti_offline_sync_completed', {
+            detail: { syncedCount, failedCount, pendingCount: finalQueue.length },
+          })
+        );
+      }
+
+      return { syncedCount, failedCount, pendingCount: finalQueue.length };
+    } finally {
+      this.isSyncingPendingQueue = false;
+    }
+  }
+
   public disconnectFirebase() {
     this.setFirebaseConnected(false);
-    this.unsubscribes.forEach(unsub => unsub());
-    this.unsubscribes = [];
+    this.clearFirestoreListeners();
     this.firebaseApp = null;
     this.db = null;
     this.currentConfig = null;
@@ -680,15 +1086,10 @@ class RealtimeSyncService {
     }
   }
 
-    private attachFirebaseListeners() {
+  private attachFirebaseListeners() {
     if (!this.db) return;
     
-    this.unsubscribes.forEach(unsub => unsub());
-    this.unsubscribes = [];
-    if (this.batterySaverInterval) {
-      clearInterval(this.batterySaverInterval);
-      this.batterySaverInterval = null;
-    }
+    this.clearFirestoreListeners();
 
     const isBatterySaver = getBatterySaverMode();
 
@@ -773,7 +1174,11 @@ class RealtimeSyncService {
           this.notifyResponseListeners();
         }
       }, (error) => {
-        console.error('Firestore game_state listener error:', error);
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          console.warn('Firestore game_state listener paused (device offline)');
+        } else {
+          console.error('Firestore game_state listener error:', error);
+        }
         this.setFirebaseConnected(false);
       }));
 
@@ -794,7 +1199,11 @@ class RealtimeSyncService {
         this.saveLocalResponses();
         this.notifyResponseListeners();
       }, (error) => {
-        console.error('Firestore responses listener error:', error);
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          console.warn('Firestore responses listener paused (device offline)');
+        } else {
+          console.error('Firestore responses listener error:', error);
+        }
         this.setFirebaseConnected(false);
       }));
     }
@@ -811,7 +1220,11 @@ class RealtimeSyncService {
         this.saveLocalPresence();
         this.notifyPresenceListeners();
       }, (error) => {
-        console.error('Firestore presence listener error:', error);
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          console.warn('Firestore presence listener paused (device offline)');
+        } else {
+          console.error('Firestore presence listener error:', error);
+        }
         this.setFirebaseConnected(false);
       }));
     }
@@ -1444,20 +1857,162 @@ class RealtimeSyncService {
       }
     }
 
+    const offlineStorageEnabled = getOfflineModeEnabled();
+    const isNetworkOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+    const isDisconnected = !this.db || !this.getIsFirebaseConnected() || isNetworkOffline;
+
+    const backupAndQueueLocally = () => {
+      this.cachedResponses[questionId][uid] = processedResponse;
+      this.saveLocalResponses();
+      recordLocalQuizProgress({
+        uid,
+        questionId,
+        roundName: this.cachedGameState.round_name,
+        roundType: this.cachedGameState.round_type,
+        choice: processedResponse.choice,
+        timestamp: processedResponse.timestamp || Date.now(),
+      });
+      const respId = `resp_${questionId}_${uid}_${Date.now()}`;
+      const respSavedAt = processedResponse.timestamp || Date.now();
+      enqueuePendingSyncItem({
+        id: respId,
+        type: 'response',
+        questionId,
+        uid,
+        payload: { ...processedResponse, isOfflineSync: true },
+        savedAt: respSavedAt,
+      });
+      enqueueResponseForBackgroundSync({
+        id: respId,
+        dedupeKey: buildPendingDedupeKey('response', uid, questionId),
+        payload: { questionId, uid, response: { ...processedResponse, isOfflineSync: true } },
+        savedAt: respSavedAt,
+      }).catch(() => {});
+      this.notifyResponseListeners();
+      if (this.broadcastChannel) {
+        this.broadcastChannel.postMessage({ type: 'RESPONSE_ADDED', payload: { questionId, uid, response: processedResponse } });
+      }
+    };
+
+    if (isDisconnected) {
+      if (!offlineStorageEnabled) {
+        throw new Error('OFFLINE_MODE_DISABLED');
+      }
+      backupAndQueueLocally();
+      return;
+    }
+
+    // Optimistically update in-memory UI & local backup snapshot if Offline Mode is ON
     const isNewResponse = !this.cachedResponses[questionId][uid];
     this.cachedResponses[questionId][uid] = processedResponse;
-    this.saveLocalResponses();
     this.notifyResponseListeners();
-    if (this.broadcastChannel) this.broadcastChannel.postMessage({ type: 'RESPONSE_ADDED', payload: { questionId, uid, response: processedResponse } });
-        
-    if (this.db && this.isFirebaseConnected) {
-      try {
-        await setDoc(doc(this.db, 'responses', `${questionId}_${uid}`), this.removeUndefined({ questionId, uid, response: processedResponse }));
-        if (isNewResponse) {
-          const userName = processedResponse.user_info?.name || 'Khán giả';
-          this.logActivity('QUESTION_SUBMITTED', 'Gửi câu trả lời', `${userName} đã gửi đáp án cho câu hỏi ${questionId}.`, { questionId, uid, choice: processedResponse.choice });
-        }
-      } catch (err) { console.error('Failed to submit response to Firestore:', err); }
+    if (this.broadcastChannel) {
+      this.broadcastChannel.postMessage({ type: 'RESPONSE_ADDED', payload: { questionId, uid, response: processedResponse } });
+    }
+    if (offlineStorageEnabled) {
+      this.saveLocalResponses();
+      recordLocalQuizProgress({
+        uid,
+        questionId,
+        roundName: this.cachedGameState.round_name,
+        roundType: this.cachedGameState.round_type,
+        choice: processedResponse.choice,
+        timestamp: processedResponse.timestamp || Date.now(),
+      });
+    }
+
+    const docPath = `responses/${questionId}_${uid}`;
+    try {
+      await this.withWriteTimeout(
+        setDoc(doc(this.db!, 'responses', `${questionId}_${uid}`), this.removeUndefined({ questionId, uid, response: processedResponse })),
+        4500
+      );
+      if (offlineStorageEnabled) {
+        saveOfflineSyncMeta({
+          ...getOfflineSyncMeta(),
+          lastSyncedAt: Date.now(),
+          lastSyncError: null,
+        });
+      }
+      if (isNewResponse) {
+        const userName = processedResponse.user_info?.name || 'Khán giả';
+        this.logActivity('QUESTION_SUBMITTED', 'Gửi câu trả lời', `${userName} đã gửi đáp án cho câu hỏi ${questionId}.`, { questionId, uid, choice: processedResponse.choice });
+      }
+    } catch (err: any) {
+      if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+        handleFirestoreError(err, OperationType.WRITE, docPath);
+      }
+      this.setFirebaseConnected(false);
+      if (offlineStorageEnabled) {
+        backupAndQueueLocally();
+        console.warn('Network interrupted during submit — saved locally for sync:', err?.message || err);
+        return;
+      }
+      delete this.cachedResponses[questionId][uid];
+      this.notifyResponseListeners();
+      throw err;
+    }
+  }
+
+  public async saveUserProfile(userInfo: UserInfo): Promise<void> {
+    if (!userInfo?.uid) return;
+    const offlineStorageEnabled = getOfflineModeEnabled();
+    const isDisconnected = !this.db || !this.getIsFirebaseConnected() || (typeof navigator !== 'undefined' && !navigator.onLine);
+
+    const queueProfileLocally = () => {
+      recordLocalQuizProgress({
+        uid: userInfo.uid,
+        timestamp: Date.now(),
+      });
+      const profileId = `profile_${userInfo.uid}_${Date.now()}`;
+      const profileSavedAt = Date.now();
+      enqueuePendingSyncItem({
+        id: profileId,
+        type: 'user_profile',
+        uid: userInfo.uid,
+        payload: userInfo,
+        savedAt: profileSavedAt,
+      });
+      enqueueResponseForBackgroundSync({
+        id: profileId,
+        dedupeKey: buildPendingDedupeKey('user_profile', userInfo.uid),
+        payload: { uid: userInfo.uid, userInfo },
+        savedAt: profileSavedAt,
+      }).catch(() => {});
+    };
+
+    if (offlineStorageEnabled) {
+      recordLocalQuizProgress({
+        uid: userInfo.uid,
+        timestamp: Date.now(),
+      });
+    }
+
+    if (isDisconnected) {
+      if (offlineStorageEnabled) {
+        queueProfileLocally();
+        return;
+      }
+      throw new Error('OFFLINE_MODE_DISABLED');
+    }
+
+    const docPath = `users/${userInfo.uid}`;
+    try {
+      await this.withWriteTimeout(
+        setDoc(doc(this.db!, 'users', userInfo.uid), this.removeUndefined(userInfo), { merge: true }),
+        4500
+      );
+    } catch (err: any) {
+      if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+        handleFirestoreError(err, OperationType.WRITE, docPath);
+      }
+      this.setFirebaseConnected(false);
+      if (offlineStorageEnabled) {
+        queueProfileLocally();
+        console.warn('Failed to update user profile in Firestore (saved locally for sync):', err);
+        return;
+      }
+      throw err;
     }
   }
 
@@ -2382,18 +2937,57 @@ class RealtimeSyncService {
       } catch (err) {}
     }
 
-    if (this.db && this.isFirebaseConnected) {
+    const offlineStorageEnabled = getOfflineModeEnabled();
+    const isDisconnected = !this.db || !this.getIsFirebaseConnected() || (typeof navigator !== 'undefined' && !navigator.onLine);
+
+    const queuePredictionLocally = () => {
+      this.saveLocalPredictions();
+      const predId = `pred_${questionId}_${uid}_${Date.now()}`;
+      const predSavedAt = Date.now();
+      enqueuePendingSyncItem({
+        id: predId,
+        type: 'prediction',
+        questionId,
+        uid,
+        payload: prediction,
+        savedAt: predSavedAt,
+      });
+      enqueueResponseForBackgroundSync({
+        id: predId,
+        dedupeKey: buildPendingDedupeKey('prediction', uid, questionId),
+        payload: { questionId, uid, prediction },
+        savedAt: predSavedAt,
+      }).catch(() => {});
+    };
+
+    if (isDisconnected) {
+      if (offlineStorageEnabled) {
+        queuePredictionLocally();
+      } else {
+        throw new Error('OFFLINE_MODE_DISABLED');
+      }
+    } else {
+      if (offlineStorageEnabled) this.saveLocalPredictions();
       try {
-        await setDoc(
-          doc(this.db, 'contestant_predictions', `${questionId}_${uid}`),
-          this.removeUndefined({
-            ...prediction,
-            updatedAt: Date.now()
-          }),
-          { merge: true }
+        await this.withWriteTimeout(
+          setDoc(
+            doc(this.db!, 'contestant_predictions', `${questionId}_${uid}`),
+            this.removeUndefined({
+              ...prediction,
+              updatedAt: Date.now()
+            }),
+            { merge: true }
+          ),
+          4500
         );
       } catch (err) {
         console.warn('Failed to save contestant prediction to Firestore:', err);
+        this.setFirebaseConnected(false);
+        if (offlineStorageEnabled) {
+          queuePredictionLocally();
+        } else {
+          throw err;
+        }
       }
     }
 
@@ -2449,7 +3043,6 @@ class RealtimeSyncService {
     if (!vote || !vote.uid || !vote.contestantId) return false;
 
     this.cachedChampionVotes[vote.uid] = vote;
-    this.saveLocalChampionVotes();
     this.notifyChampionVoteListeners();
 
     if (this.broadcastChannel) {
@@ -2461,18 +3054,56 @@ class RealtimeSyncService {
       } catch (err) {}
     }
 
-    if (this.db && this.isFirebaseConnected) {
+    const offlineStorageEnabled = getOfflineModeEnabled();
+    const isDisconnected = !this.db || !this.getIsFirebaseConnected() || (typeof navigator !== 'undefined' && !navigator.onLine);
+
+    const queueVoteLocally = () => {
+      this.saveLocalChampionVotes();
+      const voteId = `vote_${vote.uid}_${Date.now()}`;
+      const voteSavedAt = Date.now();
+      enqueuePendingSyncItem({
+        id: voteId,
+        type: 'champion_vote',
+        uid: vote.uid,
+        payload: vote,
+        savedAt: voteSavedAt,
+      });
+      enqueueResponseForBackgroundSync({
+        id: voteId,
+        dedupeKey: buildPendingDedupeKey('champion_vote', vote.uid),
+        payload: { uid: vote.uid, vote },
+        savedAt: voteSavedAt,
+      }).catch(() => {});
+    };
+
+    if (isDisconnected) {
+      if (offlineStorageEnabled) {
+        queueVoteLocally();
+      } else {
+        throw new Error('OFFLINE_MODE_DISABLED');
+      }
+    } else {
+      if (offlineStorageEnabled) this.saveLocalChampionVotes();
       try {
-        await setDoc(
-          doc(this.db, 'champion_votes', vote.uid),
-          this.removeUndefined({
-            ...vote,
-            updatedAt: Date.now()
-          }),
-          { merge: true }
+        await this.withWriteTimeout(
+          setDoc(
+            doc(this.db!, 'champion_votes', vote.uid),
+            this.removeUndefined({
+              ...vote,
+              updatedAt: Date.now()
+            }),
+            { merge: true }
+          ),
+          4500
         );
       } catch (err) {
         console.warn('Failed to save champion vote to Firestore:', err);
+        this.setFirebaseConnected(false);
+        if (offlineStorageEnabled) {
+          queueVoteLocally();
+        } else {
+          throw err;
+        }
       }
     }
 

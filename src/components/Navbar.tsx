@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GameState, UserInfo, PingInfo, AdminUser, TECHNICAL_ROLES } from '../types';
-import { Users, Shield, ShieldCheck, Scale, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap, Cookie } from 'lucide-react';
+import { Users, Shield, ShieldCheck, Scale, Tv, Volume2, VolumeX, Database, Menu, X, LogOut, QrCode, Eye, Maximize, Minimize, Activity, RefreshCw, Download, Globe, Sliders, User, Sparkles, Zap, Cookie, WifiOff, Cloud } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection } from '../utils/hapticUtils';
 import { syncService } from '../services/syncService';
@@ -11,6 +11,8 @@ import { useLanguage } from '../hooks/useLanguage';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { useBatterySaver } from '../utils/batterySaverUtils';
 import { BatterySaverModal } from './BatterySaverModal';
+import { OfflineModeModal } from './OfflineModeModal';
+import { useOfflineSyncState } from '../utils/offlineModeUtils';
 import { BrandLogo } from './BrandLogo';
 
 interface NavbarProps {
@@ -66,6 +68,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
   const [isBatterySaverModalOpen, setIsBatterySaverModalOpen] = useState(false);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
+  const offlineSyncState = useOfflineSyncState();
 
   // System Battery & Energy Mode State
   const { isBatterySaver, batteryLevel } = useBatterySaver();
@@ -240,6 +244,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const getPingBadgeStyle = () => {
     if (pingInfo.quality === 'offline' || pingInfo.latencyMs === null) {
+      if (offlineSyncState.isOfflineMode) {
+        return {
+          dot: 'bg-amber-400 shadow-[0_0_6px_#fbbf24]',
+          text: 'text-amber-300',
+          label: effectiveLanguage === 'en' ? 'Offline Backup' : 'Lưu cục bộ',
+          qualityText: effectiveLanguage === 'en' ? 'Offline (Saved Locally)' : 'Mất mạng (Đang lưu cục bộ)',
+          description: effectiveLanguage === 'en' ? 'Network lost — saving locally' : 'Mất mạng — đang lưu cục bộ'
+        };
+      }
       return {
         dot: 'bg-zinc-500',
         text: 'text-zinc-400',
@@ -360,8 +373,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center cursor-pointer group shrink-0 text-left rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] hover:opacity-95 transition"
             title="Trang chủ BTI 2027"
           >
-            <BrandLogo variant="square" size="sm" className="sm:hidden" />
-            <BrandLogo variant="landscape" size="sm" className="hidden sm:inline-flex" />
+            <BrandLogo variant="square" size="sm" />
           </button>
 
           {/* Status Badge - Hidden during Login */}
@@ -460,6 +472,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? (effectiveLanguage === 'en'
                         ? `Firebase ping: ${pingInfo.latencyMs}ms (${pingBadge.description})`
                         : `Độ trễ Firebase: ${pingInfo.latencyMs}ms (${pingBadge.description}). Bấm để đo lại.`)
+                    : offlineSyncState.isOfflineMode
+                    ? (effectiveLanguage === 'en'
+                        ? 'Network offline — Offline Mode is saving progress locally. Click to retry.'
+                        : 'Đang mất mạng — Chế độ Ngoại tuyến đang lưu tiến trình cục bộ. Bấm để thử lại.')
                     : 'Realtime offline'
                 }
                 data-tooltip-title={effectiveLanguage === 'en' ? 'Ping Latency' : 'Độ Trễ Mạng'}
@@ -586,6 +602,69 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
               <span className="hidden sm:inline opacity-35 text-[10px]">•</span>
               <Sliders className="w-3.5 h-3.5 text-sky-300/90 shrink-0" />
+            </button>
+
+            {/* Offline Mode & Sync Settings Button */}
+            <button
+              id="btn-navbar-offline-mode"
+              type="button"
+              onClick={() => {
+                vibrateSelection();
+                soundFx.playClick();
+                setIsOfflineModalOpen(true);
+              }}
+              aria-label={
+                offlineSyncState.isOfflineMode
+                  ? (effectiveLanguage === 'en' ? 'Offline Mode: ON — Network-drop local backup active' : 'Chế độ Ngoại tuyến: BẬT — Lưu dự phòng khi mất mạng')
+                  : (effectiveLanguage === 'en' ? 'Offline Mode: OFF — Open Offline & Backup Settings' : 'Chế độ Ngoại tuyến: TẮT — Mở cài đặt lưu dự phòng')
+              }
+              data-tooltip={
+                offlineSyncState.isOfflineMode && !isFirebaseConnected
+                  ? (effectiveLanguage === 'en'
+                      ? `Network offline — saving locally (${offlineSyncState.pendingCount} pending). Click to view.`
+                      : `Đang mất mạng — lưu cục bộ (${offlineSyncState.pendingCount} chờ đồng bộ). Bấm để xem.`)
+                  : offlineSyncState.isOfflineMode
+                  ? (effectiveLanguage === 'en'
+                      ? 'Offline Backup ON: stays online now and keeps saving locally if WiFi/4G drops.'
+                      : 'Chế độ Ngoại tuyến đang BẬT: vẫn kết nối mạng và tự lưu cục bộ nếu sập WiFi/4G.')
+                  : offlineSyncState.pendingCount > 0
+                  ? (effectiveLanguage === 'en'
+                      ? `${offlineSyncState.pendingCount} local item(s) waiting to sync`
+                      : `Có ${offlineSyncState.pendingCount} mục đã lưu đang chờ đồng bộ`)
+                  : (effectiveLanguage === 'en'
+                      ? 'Enable Offline Backup so quiz progress stays saved if WiFi/4G drops'
+                      : 'Bật Chế độ Ngoại tuyến để vẫn lưu bài thi khi sập WiFi hoặc hết 4G')
+              }
+              data-tooltip-title={effectiveLanguage === 'en' ? 'Offline Mode & Backup' : 'Chế Độ Ngoại Tuyến'}
+              data-tooltip-placement="bottom"
+              data-tooltip-variant={offlineSyncState.isOfflineMode && !isFirebaseConnected ? 'warning' : undefined}
+              className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] px-2 py-1.5 rounded-[2px] border transition cursor-pointer items-center justify-center gap-1.5 select-none ${
+                offlineSyncState.isOfflineMode && !isFirebaseConnected
+                  ? 'bg-amber-500/20 border-amber-400/50 text-amber-200 hover:bg-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.2)]'
+                  : offlineSyncState.isOfflineMode
+                  ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/25'
+                  : offlineSyncState.pendingCount > 0
+                  ? 'bg-sky-500/15 border-sky-400/40 text-sky-200 hover:bg-sky-500/25'
+                  : 'border-transparent text-white/75 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              {offlineSyncState.isOfflineMode && !isFirebaseConnected ? (
+                <WifiOff className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              ) : (
+                <Cloud className={`w-3.5 h-3.5 shrink-0 ${offlineSyncState.isSyncing ? 'animate-pulse text-sky-300' : offlineSyncState.isOfflineMode ? 'text-emerald-300' : 'text-white/70'}`} />
+              )}
+              {offlineSyncState.isOfflineMode && (
+                <span className="hidden lg:inline text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {!isFirebaseConnected
+                    ? (effectiveLanguage === 'en' ? 'SAVING' : 'LƯU CỤC BỘ')
+                    : (effectiveLanguage === 'en' ? 'BACKUP' : 'DỰ PHÒNG')}
+                </span>
+              )}
+              {offlineSyncState.pendingCount > 0 && (
+                <span className="px-1 py-0.5 rounded-[2px] bg-amber-400 text-[#190839] text-[9px] font-mono font-black leading-none tabular-nums">
+                  {offlineSyncState.pendingCount}
+                </span>
+              )}
             </button>
 
             {/* Policy & Legal Portal Link */}
@@ -823,6 +902,50 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
                     </span>
                     <Sliders className="w-3.5 h-3.5 text-sky-300" />
+                  </div>
+                </button>
+
+                {/* Offline Mode & Sync Button (Mobile Login Drawer) */}
+                <button
+                  id="btn-mobile-offline-mode"
+                  type="button"
+                  onClick={() => {
+                    vibrateSelection();
+                    soundFx.playClick();
+                    setIsOfflineModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
+                    offlineSyncState.isOfflineMode && !isFirebaseConnected
+                      ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
+                      : offlineSyncState.isOfflineMode
+                      ? 'bg-emerald-500/15 border-emerald-400/35 text-emerald-200'
+                      : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {offlineSyncState.isOfflineMode && !isFirebaseConnected ? (
+                      <WifiOff className="w-4 h-4 text-amber-300" />
+                    ) : (
+                      <Cloud className={`w-4 h-4 ${offlineSyncState.isOfflineMode ? 'text-emerald-300' : 'text-white/70'}`} />
+                    )}
+                    <span>{effectiveLanguage === 'en' ? 'Offline Mode (Backup)' : 'Chế Độ Ngoại Tuyến'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {offlineSyncState.pendingCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-400 text-[#190839] font-black text-[10px] tabular-nums">
+                        {offlineSyncState.pendingCount}
+                      </span>
+                    )}
+                    <span className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border uppercase ${
+                      offlineSyncState.isOfflineMode && !isFirebaseConnected
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                        : offlineSyncState.isOfflineMode
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                        : 'bg-white/10 text-white/60 border-white/15'
+                    }`}>
+                      {offlineSyncState.isOfflineMode ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'OFF' : 'TẮT')}
+                    </span>
                   </div>
                 </button>
 
@@ -1086,6 +1209,50 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
                   </button>
 
+                  {/* Offline Mode & Sync Button (Mobile Authenticated Drawer) */}
+                  <button
+                    id="btn-mobile-offline-mode"
+                    type="button"
+                    onClick={() => {
+                      vibrateSelection();
+                      soundFx.playClick();
+                      setIsOfflineModalOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`px-3 py-2.5 rounded-[2px] border transition flex items-center justify-between text-xs font-mono cursor-pointer ${
+                      offlineSyncState.isOfflineMode && !isFirebaseConnected
+                        ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
+                        : offlineSyncState.isOfflineMode
+                        ? 'bg-emerald-500/15 border-emerald-400/35 text-emerald-200'
+                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/90'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {offlineSyncState.isOfflineMode && !isFirebaseConnected ? (
+                        <WifiOff className="w-4 h-4 text-amber-300" />
+                      ) : (
+                        <Cloud className={`w-4 h-4 ${offlineSyncState.isOfflineMode ? 'text-emerald-300' : 'text-white/70'}`} />
+                      )}
+                      <span>{effectiveLanguage === 'en' ? 'Offline Mode (Backup)' : 'Chế Độ Ngoại Tuyến'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {offlineSyncState.pendingCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-[2px] bg-amber-400 text-[#190839] font-black text-[10px] tabular-nums">
+                          {offlineSyncState.pendingCount}
+                        </span>
+                      )}
+                      <span className={`px-2 py-0.5 rounded-[2px] font-bold text-[10px] border uppercase ${
+                        offlineSyncState.isOfflineMode && !isFirebaseConnected
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                          : offlineSyncState.isOfflineMode
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                          : 'bg-white/10 text-white/60 border-white/15'
+                      }`}>
+                        {offlineSyncState.isOfflineMode ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'OFF' : 'TẮT')}
+                      </span>
+                    </div>
+                  </button>
+
                   {currentView !== 'admin' && (
                     <button
                       onClick={() => {
@@ -1137,6 +1304,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       <BatterySaverModal
         isOpen={isBatterySaverModalOpen}
         onClose={() => setIsBatterySaverModalOpen(false)}
+        forceLanguage={currentView === 'admin' ? 'vi' : undefined}
+      />
+
+      {/* Offline Mode & Local Quiz Progress Sync Modal */}
+      <OfflineModeModal
+        isOpen={isOfflineModalOpen}
+        onClose={() => setIsOfflineModalOpen(false)}
+        user={user}
+        isFirebaseConnected={isFirebaseConnected}
         forceLanguage={currentView === 'admin' ? 'vi' : undefined}
       />
     </header>

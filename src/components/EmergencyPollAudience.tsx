@@ -216,16 +216,25 @@ export const EmergencyPollAudience: React.FC<EmergencyPollAudienceProps> = ({
       ? Number(((syncService.getSynchronizedNow() - poll.server_start_time) / 1000).toFixed(2))
       : 0;
 
-    await syncService.submitResponse(`EMERGENCY_POLL_${poll.id}`, user.uid, {
-      choice,
-      timestamp: syncService.getSynchronizedNow(),
-      latency_sec: latencySec,
-      user_info: {
-        name: user.name,
-        mssv: user.mssv,
-        uid: user.uid
+    try {
+      await syncService.submitResponse(`EMERGENCY_POLL_${poll.id}`, user.uid, {
+        choice,
+        timestamp: syncService.getSynchronizedNow(),
+        latency_sec: latencySec,
+        user_info: {
+          name: user.name,
+          mssv: user.mssv,
+          uid: user.uid
+        }
+      });
+    } catch (err) {
+      console.warn('Emergency poll vote failed:', err);
+      if (!syncService.isOfflineModeEnabled()) {
+        setSelectedChoice(null);
+        setSubmitToast(false);
+        soundFx.playError();
       }
-    });
+    }
   };
 
   // Compute votes stats

@@ -673,7 +673,7 @@ export default function App() {
     if (prevConnected !== null) {
       if (isFirebaseConnected && !prevConnected) {
         soundFx.playPacingChime('complete');
-      } else if (!isFirebaseConnected && prevConnected) {
+      } else if (!isFirebaseConnected && prevConnected && !syncService.isOfflineModeEnabled()) {
         soundFx.playError();
       }
     }

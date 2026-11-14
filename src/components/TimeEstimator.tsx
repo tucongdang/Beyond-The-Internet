@@ -172,13 +172,13 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
       {/* Decorative Cyber Top Gradient Line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${theme.barColor}`} />
 
-      <div className="p-4 sm:p-6 flex flex-col gap-4 sm:gap-5">
+      <div className="p-4 sm:p-5 flex flex-col justify-between gap-3.5 h-full">
         
         {/* Header: Status badge & Tournament Stage */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] border text-[11px] font-mono font-bold uppercase tracking-wider ${theme.badgeBg}`}>
-              <span className="relative flex h-2 w-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] border text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider ${theme.badgeBg}`}>
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${theme.dotColor} opacity-75`} />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${theme.dotColor}`} />
               </span>
@@ -186,8 +186,8 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
             </span>
 
             {isUrgent && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[2px] bg-rose-500/25 border border-rose-500/60 text-[11px] font-mono font-black text-rose-300 uppercase tracking-wider animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.4)]">
-                <Zap className="w-3.5 h-3.5 text-rose-400 animate-bounce" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-rose-500/25 border border-rose-500/60 text-[10px] font-mono font-black text-rose-300 uppercase tracking-wider animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.4)]">
+                <Zap className="w-3 h-3 text-rose-400 animate-bounce" />
                 <span>{isVi ? '⚡ SẮP BẮT ĐẦU (<10S)' : '⚡ STARTING SOON (<10S)'}</span>
               </span>
             )}
@@ -201,38 +201,40 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
           </div>
 
           {(matchStage || matchTitle) && (
-            <div className="text-[11px] font-mono text-[#B6A6D8] flex items-center gap-1.5 ml-auto">
+            <div className="text-[10px] sm:text-[11px] font-mono text-[#B6A6D8] flex items-center gap-1.5 ml-auto min-w-0">
               {matchStage && (
-                <span className="px-2 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-white font-bold uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-white font-bold uppercase tracking-wider shrink-0">
                   {matchStage}
                 </span>
               )}
               {matchSubtitle && (
-                <span className="text-white/40 hidden sm:inline">• {matchSubtitle}</span>
+                <span className="text-white/45 hidden sm:inline truncate max-w-[180px]">• {matchSubtitle}</span>
               )}
             </div>
           )}
         </div>
 
         {/* Main Countdown Display & Next Round Details */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-5 py-1">
+        <div className="flex flex-col gap-3">
           
-          {/* Left: Next Round Identification */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left min-w-0 flex-1">
-            <div className="text-xs font-mono text-[#B6A6D8] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isVi ? 'Chặng Tranh Tài Sắp Tới' : 'Up Next on Stage'}</span>
+          {/* Top/Meta: Next Round Identification & Kickoff Info */}
+          <div className="flex flex-wrap items-end justify-between gap-2 pb-2.5 border-b border-white/10">
+            <div className="min-w-0">
+              <div className="text-[11px] font-mono text-[#B6A6D8] uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>{isVi ? 'Chặng Tranh Tài Sắp Tới' : 'Up Next on Stage'}</span>
+              </div>
+              
+              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug drop-shadow-md">
+                {isVi ? nextRoundNameVi : nextRoundNameEn}
+              </h3>
             </div>
-            
-            <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
-              {isVi ? nextRoundNameVi : nextRoundNameEn}
-            </h3>
 
             {estimatedNextRoundStartStr && (
-              <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-mono text-amber-300">
-                <Sparkles className="w-3 h-3 text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-mono text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-[2px] border border-amber-500/25 shrink-0 whitespace-nowrap">
+                <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
                 <span>
-                  {isVi ? 'Dự kiến lên sóng lúc:' : 'Expected to kick off at:'}
+                  {isVi ? 'Dự kiến:' : 'Kickoff:'}
                 </span>
                 <span className="font-bold underline decoration-amber-400/50 underline-offset-2">
                   ~{estimatedNextRoundStartStr}
@@ -241,66 +243,66 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
             )}
           </div>
 
-          {/* Right: Digital Tabular Countdown Units */}
-          <div className="shrink-0 flex items-center justify-center">
+          {/* Bottom: Digital Tabular Countdown Units (Single compact row) */}
+          <div className="flex items-center justify-center py-0.5">
             {remainingMs > 0 ? (
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 w-full">
                 {days > 0 && (
                   <>
-                    <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
-                      <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums ${theme.digitColor}`}>
+                    <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[68px] flex-1 max-w-[84px] py-2 px-1.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
+                      <span className={`text-2xl sm:text-3xl font-black font-mono tabular-nums leading-none ${theme.digitColor}`}>
                         {String(days).padStart(2, '0')}
                       </span>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+                      <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold mt-1">
                         {isVi ? 'Ngày' : 'Days'}
                       </span>
                     </div>
-                    <span className="text-xl font-mono text-white/30 font-bold">:</span>
+                    <span className="text-lg sm:text-xl font-mono text-white/30 font-bold shrink-0">:</span>
                   </>
                 )}
 
                 {(days > 0 || hours > 0) && (
                   <>
-                    <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
-                      <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums ${theme.digitColor}`}>
+                    <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[68px] flex-1 max-w-[84px] py-2 px-1.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
+                      <span className={`text-2xl sm:text-3xl font-black font-mono tabular-nums leading-none ${theme.digitColor}`}>
                         {String(hours).padStart(2, '0')}
                       </span>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+                      <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold mt-1">
                         {isVi ? 'Giờ' : 'Hours'}
                       </span>
                     </div>
-                    <span className="text-xl font-mono text-white/30 font-bold">:</span>
+                    <span className="text-lg sm:text-xl font-mono text-white/30 font-bold shrink-0">:</span>
                   </>
                 )}
 
-                <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
-                  <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums ${theme.digitColor}`}>
+                <div className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[68px] flex-1 max-w-[84px] py-2 px-1.5 rounded-[2px] bg-slate-950/80 border border-white/10 shadow-inner">
+                  <span className={`text-2xl sm:text-3xl font-black font-mono tabular-nums leading-none ${theme.digitColor}`}>
                     {String(minutes).padStart(2, '0')}
                   </span>
-                  <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold mt-1">
                     {isVi ? 'Phút' : 'Mins'}
                   </span>
                 </div>
 
-                <span className={`text-xl font-mono font-bold animate-pulse ${isUrgent ? 'text-rose-400' : 'text-amber-400/80'}`}>:</span>
+                <span className={`text-lg sm:text-xl font-mono font-bold animate-pulse shrink-0 ${isUrgent ? 'text-rose-400' : 'text-amber-400/80'}`}>:</span>
 
-                <div className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] p-2 rounded-[2px] shadow-inner transition-all duration-300 ${
+                <div className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[68px] flex-1 max-w-[84px] py-2 px-1.5 rounded-[2px] shadow-inner transition-all duration-300 ${
                   isUrgent 
                     ? 'bg-rose-950/80 border border-rose-500/80 shadow-[0_0_20px_rgba(244,63,94,0.5)] animate-pulse' 
                     : `bg-slate-950/80 border ${theme.border}`
                 }`}>
-                  <span className={`text-xl sm:text-3xl font-black font-mono tabular-nums ${
+                  <span className={`text-2xl sm:text-3xl font-black font-mono tabular-nums leading-none ${
                     isUrgent ? 'text-rose-300' : 'text-yellow-300 animate-pulse'
                   }`}>
                     {String(seconds).padStart(2, '0')}
                   </span>
-                  <span className="text-[9px] font-mono text-amber-300 uppercase tracking-wider font-bold">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-amber-300 uppercase tracking-wider font-bold mt-1">
                     {isVi ? 'Giây' : 'Secs'}
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="px-4 py-3 rounded-[2px] bg-slate-950/80 border border-white/10 flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
+              <div className="px-4 py-2.5 rounded-[2px] bg-slate-950/80 border border-white/10 flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>{isVi ? 'Sẵn sàng khai cuộc!' : 'Ready to kick off!'}</span>
               </div>
@@ -326,24 +328,24 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
 
         {/* Tournament 4-Round Roadmap Stepper */}
         {showRoadmap && (
-          <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#B6A6D8]">
+          <div className="pt-2.5 border-t border-white/10 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-[#B6A6D8]">
               <span className="uppercase tracking-wider font-semibold">
                 {isVi ? 'Lộ Trình 4 Vòng Tranh Tài' : '4-Round Contest Roadmap'}
               </span>
               <span className="text-[10px] text-white/50">
-                {isVi ? 'Thể Thức 4 Vòng Chính Thức' : 'Official 4-Round Format'}
+                {isVi ? '4 Vòng Chính Thức' : '4 Official Rounds'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className={`grid gap-2 ${variant === 'hero' ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'}`}>
               {TOURNAMENT_ROUNDS.map((round, idx) => {
                 const isPast = currentRoundIndex > idx || status === 'CONCLUDED';
                 const isCurrent = currentRoundIndex === idx && status !== 'CONCLUDED';
                 const isNext = currentRoundIndex + 1 === idx && status !== 'CONCLUDED';
 
                 let itemBg = 'bg-black/30 border-white/10 text-white/50';
-                let dotIcon = <div className="w-1.5 h-1.5 rounded-full bg-white/30" />;
+                let dotIcon = <div className="w-1.5 h-1.5 rounded-full bg-white/30 shrink-0" />;
 
                 if (isPast) {
                   itemBg = 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300';
@@ -364,14 +366,14 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
                 return (
                   <div
                     key={round.id}
-                    className={`flex items-center gap-2 p-2 rounded-[2px] border text-left transition-all ${itemBg}`}
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] border text-left transition-all ${itemBg}`}
                   >
                     {dotIcon}
                     <div className="flex flex-col min-w-0 leading-tight">
                       <span className="text-[10px] font-mono uppercase tracking-wider font-bold truncate">
                         {isVi ? round.shortName : round.shortNameEn}
                       </span>
-                      <span className="text-[9px] font-mono text-white/40 truncate">
+                      <span className="text-[9px] font-mono text-white/45 truncate">
                         ~{round.estimatedDurationMinutes} {isVi ? 'phút' : 'min'}
                       </span>
                     </div>
@@ -383,7 +385,7 @@ export const TimeEstimator: React.FC<TimeEstimatorProps> = ({
         )}
 
         {/* Live sync footer note */}
-        <div className="flex items-center justify-between text-[10px] font-mono text-white/40 pt-1">
+        <div className="flex items-center justify-between text-[10px] font-mono text-white/45 pt-0.5">
           <span className="flex items-center gap-1.5">
             <Radio className="w-3 h-3 text-emerald-400" />
             <span>{isVi ? 'Đã đồng bộ giờ sân khấu' : 'Synced with Stage Clock'}</span>

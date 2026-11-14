@@ -323,8 +323,8 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
                   {matchBreak.title}
                 </h2>
               ) : (
-                <div className="py-1">
-                  <BrandLogo variant="landscape" size="xl" />
+                <div className="py-2 flex items-center justify-center">
+                  <BrandLogo variant="square" size="xl" className="mx-auto block" />
                 </div>
               )}
               <p className="text-sm sm:text-base lg:text-lg text-[#B6A6D8] mt-2.5 font-normal leading-relaxed">

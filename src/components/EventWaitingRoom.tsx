@@ -137,8 +137,8 @@ export const EventWaitingRoom: React.FC<EventWaitingRoomProps> = ({
 
           <div className="relative z-10 flex flex-col items-center text-center">
             {/* Compact Brand Logo in Audience Waiting Room */}
-            <div className="mb-3">
-              <BrandLogo variant="landscape" size="md" />
+            <div className="mb-4">
+              <BrandLogo variant="square" size="lg" />
             </div>
 
             {/* Stage Status Pill & Match Badge */}

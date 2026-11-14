@@ -52,8 +52,8 @@ export const EventConcludedView: React.FC<EventConcludedViewProps> = ({
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
           {/* Official Compact Brand Logo */}
-          <div className="mb-3 flex justify-center">
-            <BrandLogo variant="landscape" size="md" />
+          <div className="mb-4 flex justify-center">
+            <BrandLogo variant="square" size="lg" />
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40 mb-3">
