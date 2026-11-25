@@ -41,10 +41,21 @@ import { ChatAssistantWidget } from './components/ChatAssistantWidget';
 import { useAnimationControl } from './contexts/AnimationControlContext';
 import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
+import { lazyWithRetry } from './utils/lazyWithRetry';
+import { ViewErrorBoundary } from './components/ViewErrorBoundary';
 
-const AdminPortal = React.lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
-const ProjectorView = React.lazy(() => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })));
-const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
+const AdminPortal = lazyWithRetry(
+  () => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })),
+  'AdminPortal'
+);
+const ProjectorView = lazyWithRetry(
+  () => import('./components/ProjectorView').then(m => ({ default: m.ProjectorView })),
+  'ProjectorView'
+);
+const LandingPage = lazyWithRetry(
+  () => import('./components/LandingPage').then(m => ({ default: m.LandingPage })),
+  'LandingPage'
+);
 
 export default function App() {
   const { localLanguage } = useLanguage();
@@ -585,6 +596,7 @@ export default function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isFirebaseConfigOpen, setIsFirebaseConfigOpen] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => soundFx.isEnabled());
+  useEffect(() => soundFx.subscribeEnabled(setSoundEnabled), []);
   const [isOfflineBannerDismissed, setIsOfflineBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
@@ -726,12 +738,70 @@ export default function App() {
     const next = !soundEnabled;
     setSoundEnabled(next);
     soundFx.setEnabled(next);
-    if (next) soundFx.playClick();
+    if (next) {
+      soundFx.notifyUserInteraction();
+      soundFx.playClick();
+    }
   };
 
   useEffect(() => {
     soundFx.setAdminMuted(currentView === 'admin');
   }, [currentView]);
+
+  useEffect(() => {
+    soundFx.syncAppSoundContext({
+      currentView,
+      isAdminAuthenticated: isAuthenticated,
+      hasAudienceUser: Boolean(user),
+      isOnboardingOpen,
+      activeModule: gameState.active_module || 'GAME',
+      gameStatus: gameState.status || 'STANDBY',
+      drawStatus: gameState.lucky_draw?.status || 'IDLE',
+      spinSeed: gameState.lucky_draw?.seed ?? gameState.lucky_draw?.draw_timestamp ?? null,
+      adminMusicMuted: Boolean(gameState.lucky_draw_music_muted),
+      autoStopOnMusicEnd: Boolean(
+        gameState.lucky_draw?.status === 'SPINNING'
+          ? (gameState.lucky_draw?.auto_stop_on_music_end ?? gameState.lucky_draw_auto_stop_on_music_end)
+          : gameState.lucky_draw_auto_stop_on_music_end
+      ),
+      isMatchBreakActive: Boolean(gameState.match_break?.active),
+      eventScheduleEnabled: Boolean(gameState.event_schedule?.enabled),
+      eventScheduleStatus: gameState.event_schedule?.status || 'IN_PROGRESS',
+    });
+  }, [
+    currentView,
+    isAuthenticated,
+    user,
+    isOnboardingOpen,
+    gameState.active_module,
+    gameState.status,
+    gameState.lucky_draw?.status,
+    gameState.lucky_draw?.seed,
+    gameState.lucky_draw?.draw_timestamp,
+    gameState.lucky_draw?.auto_stop_on_music_end,
+    gameState.lucky_draw_music_muted,
+    gameState.lucky_draw_auto_stop_on_music_end,
+    gameState.match_break?.active,
+    gameState.event_schedule?.enabled,
+    gameState.event_schedule?.status,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleUserGesture = () => {
+      soundFx.notifyUserInteraction();
+    };
+    window.addEventListener('click', handleUserGesture, { passive: true });
+    window.addEventListener('touchend', handleUserGesture, { passive: true });
+    window.addEventListener('pointerup', handleUserGesture, { passive: true });
+    window.addEventListener('keydown', handleUserGesture, { passive: true });
+    return () => {
+      window.removeEventListener('click', handleUserGesture);
+      window.removeEventListener('touchend', handleUserGesture);
+      window.removeEventListener('pointerup', handleUserGesture);
+      window.removeEventListener('keydown', handleUserGesture);
+    };
+  }, []);
 
   // Global Escape key listener to close modals & 'M' hotkey to toggle sound
   useEffect(() => {
@@ -941,103 +1011,127 @@ export default function App() {
           />
         )}
 
-        {currentView === 'landing' && (
-          <LandingPage
-            gameState={gameState}
-            onEnterAudience={() => {
-              if (gameState.force_route === 'client_landing') {
-                setCurrentView('client_landing');
-                return;
-              }
-              setCurrentView('audience');
-            }}
-            onEnterAdmin={() => setCurrentView('admin')}
-            onEnterProjector={() => setCurrentView('projector')}
-            onEnterPolicy={() => handleNavigateToPolicy()}
-          />
-        )}
-
-        {currentView === 'audience' && (
-          (!user || isOnboardingOpen) ? (
-            <OnboardingModal
-              isOpen={true}
-              isInline={true}
-              onComplete={handleUserComplete}
-              currentUser={user}
-              isLobbyLocked={Boolean(gameState.lobby_locked)}
-              isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
-              onExit={() => {
-                if (user && isOnboardingOpen) {
-                  setIsOnboardingOpen(false);
-                } else {
-                  setCurrentView('landing');
-                }
-              }}
-              onClose={() => {
-                if (user && isOnboardingOpen) {
-                  setIsOnboardingOpen(false);
-                } else {
-                  setCurrentView('landing');
-                }
-              }}
-            />
-          ) : (
-            <AudienceView
-              gameState={gameState}
-              user={user}
-              responses={allResponses[gameState.question_id] || currentResponses || {}}
-              allResponses={allResponses}
-              isHighContrast={isHighContrast}
-              onToggleHighContrast={handleToggleHighContrast}
-              onOpenRegister={() => setIsOnboardingOpen(true)}
-              onOpenProfile={() => {
-                if (user) {
-                  setIsProfileModalOpen(true);
-                } else {
-                  setIsOnboardingOpen(true);
-                }
-              }}
-            />
-          )
-        )}
-
-        {currentView === 'admin' && (
-          <PasswordGate
-            isAuthenticated={isAuthenticated}
-            onAuthenticated={handleAuthenticate}
-            viewName="Ban Kỹ Thuật (Admin)"
-            isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
-            onExit={() => setCurrentView('landing')}
+        <ViewErrorBoundary
+          key={currentView}
+          viewName={
+            currentView === 'admin'
+              ? 'Ban Kỹ Thuật (Admin)'
+              : currentView === 'projector'
+              ? 'Màn Chiếu (Projector)'
+              : 'Beyond The Internet 2027'
+          }
+          language={localLanguage}
+          onGoHome={() => setCurrentView('landing')}
+        >
+          <React.Suspense
+            fallback={
+              <div className="flex-1 flex items-center justify-center p-8 min-h-[50vh]">
+                <div className="fluent-box px-6 py-4 rounded-[3px] border border-[#F7CAC9]/30 bg-[#190839]/80 flex items-center gap-3 text-sm font-mono text-[#FCEEEC]">
+                  <span className="w-4 h-4 rounded-full border-2 border-[#F7CAC9] border-t-transparent animate-spin shrink-0" />
+                  <span>{localLanguage !== 'vi' ? 'Loading module...' : 'Đang tải giao diện...'}</span>
+                </div>
+              </div>
+            }
           >
-            <AdminPortal
-              adminUser={adminUser}
-              onLogout={handleLogout}
-              gameState={gameState}
-              activeCount={activeCount}
-              currentResponses={allResponses[gameState.question_id] || currentResponses || {}}
-              allResponses={allResponses}
-              isFirebaseConnected={isFirebaseConnected}
-              onOpenFirebaseConfig={() => setIsFirebaseConfigOpen(true)}
-              onViewChange={(view) => setCurrentView(view)}
-            />
-          </PasswordGate>
-        )}
+            {currentView === 'landing' && (
+              <LandingPage
+                gameState={gameState}
+                onEnterAudience={() => {
+                  if (gameState.force_route === 'client_landing') {
+                    setCurrentView('client_landing');
+                    return;
+                  }
+                  setCurrentView('audience');
+                }}
+                onEnterAdmin={() => setCurrentView('admin')}
+                onEnterProjector={() => setCurrentView('projector')}
+                onEnterPolicy={() => handleNavigateToPolicy()}
+              />
+            )}
 
-        {currentView === 'projector' && (
-          <PasswordGate
-            isAuthenticated={isAuthenticated}
-            onAuthenticated={handleAuthenticate}
-            viewName="Màn Chiếu (Projector)"
-            onExit={() => setCurrentView('landing')}
-          >
-            <ProjectorView
-              gameState={gameState}
-              responses={allResponses[gameState.question_id] || currentResponses || {}}
-              allResponses={allResponses}
-              activeCount={activeCount}
-            />
-          </PasswordGate>
-        )}
+            {currentView === 'audience' && (
+              (!user || isOnboardingOpen) ? (
+                <OnboardingModal
+                  isOpen={true}
+                  isInline={true}
+                  onComplete={handleUserComplete}
+                  currentUser={user}
+                  isLobbyLocked={Boolean(gameState.lobby_locked)}
+                  isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
+                  onExit={() => {
+                    if (user && isOnboardingOpen) {
+                      setIsOnboardingOpen(false);
+                    } else {
+                      setCurrentView('landing');
+                    }
+                  }}
+                  onClose={() => {
+                    if (user && isOnboardingOpen) {
+                      setIsOnboardingOpen(false);
+                    } else {
+                      setCurrentView('landing');
+                    }
+                  }}
+                />
+              ) : (
+                <AudienceView
+                  gameState={gameState}
+                  user={user}
+                  responses={allResponses[gameState.question_id] || currentResponses || {}}
+                  allResponses={allResponses}
+                  isHighContrast={isHighContrast}
+                  onToggleHighContrast={handleToggleHighContrast}
+                  onOpenRegister={() => setIsOnboardingOpen(true)}
+                  onOpenProfile={() => {
+                    if (user) {
+                      setIsProfileModalOpen(true);
+                    } else {
+                      setIsOnboardingOpen(true);
+                    }
+                  }}
+                />
+              )
+            )}
+
+            {currentView === 'admin' && (
+              <PasswordGate
+                isAuthenticated={isAuthenticated}
+                onAuthenticated={handleAuthenticate}
+                viewName="Ban Kỹ Thuật (Admin)"
+                isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
+                onExit={() => setCurrentView('landing')}
+              >
+                <AdminPortal
+                  adminUser={adminUser}
+                  onLogout={handleLogout}
+                  gameState={gameState}
+                  activeCount={activeCount}
+                  currentResponses={allResponses[gameState.question_id] || currentResponses || {}}
+                  allResponses={allResponses}
+                  isFirebaseConnected={isFirebaseConnected}
+                  onOpenFirebaseConfig={() => setIsFirebaseConfigOpen(true)}
+                  onViewChange={(view) => setCurrentView(view)}
+                />
+              </PasswordGate>
+            )}
+
+            {currentView === 'projector' && (
+              <PasswordGate
+                isAuthenticated={isAuthenticated}
+                onAuthenticated={handleAuthenticate}
+                viewName="Màn Chiếu (Projector)"
+                onExit={() => setCurrentView('landing')}
+              >
+                <ProjectorView
+                  gameState={gameState}
+                  responses={allResponses[gameState.question_id] || currentResponses || {}}
+                  allResponses={allResponses}
+                  activeCount={activeCount}
+                />
+              </PasswordGate>
+            )}
+          </React.Suspense>
+        </ViewErrorBoundary>
       </main>
 
       {user && (
@@ -1329,7 +1423,7 @@ export default function App() {
       <LoudEnvironmentAlert />
 
       <AntiExitGuard 
-        enabled={currentView === 'audience'} 
+        enabled={currentView === 'audience' && Boolean(user) && !isOnboardingOpen} 
         user={user} 
         gameState={gameState} 
         showStatusPill={false} 
@@ -1337,7 +1431,7 @@ export default function App() {
       />
 
       <SebAntiCheatGuard 
-        enabled={currentView === 'audience'} 
+        enabled={currentView === 'audience' && Boolean(user) && !isOnboardingOpen} 
         user={user} 
         gameState={gameState} 
       />

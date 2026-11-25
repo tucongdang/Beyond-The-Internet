@@ -24,17 +24,21 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const requestIdRef = useRef(0);
 
   const fetchCaptcha = useCallback(async () => {
+    const reqId = ++requestIdRef.current;
     setIsLoading(true);
     try {
       const res = await fetch(apiEndpoint);
       const data = await res.json();
+      if (reqId !== requestIdRef.current) return;
       if (data.captchaId && data.question) {
         setQuestion(data.question);
         onChangeRef.current(data.captchaId, '');
       }
     } catch (err) {
+      if (reqId !== requestIdRef.current) return;
       console.warn('Could not fetch CAPTCHA challenge:', err);
       // Fallback local challenge if offline
       const num1 = Math.floor(Math.random() * 20) + 10;
@@ -43,9 +47,11 @@ export const CaptchaChallenge: React.FC<CaptchaChallengeProps> = ({
       setQuestion(q);
       onChangeRef.current('local_fallback_' + (num1 + num2), '');
     } finally {
-      setIsLoading(false);
+      if (reqId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [apiEndpoint]);
 
   useEffect(() => {
     fetchCaptcha();

@@ -1,20 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useId } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
 import { GameState, UserInfo } from '../types';
-import { Sparkles, Gift, Dices } from 'lucide-react';
+import { Sparkles, Gift, Dices, Volume2, VolumeX, Timer } from 'lucide-react';
 import { getUserDisplayUid } from '../utils/uidUtils';
 import { vibrateGrandCelebration } from '../utils/hapticUtils';
+import { soundFx } from '../services/audioEffects';
 
 export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo: UserInfo | null }> = ({ gameState, currentUserInfo }) => {
   const { localLanguage } = useLanguage();
 
+  const audioOwnerId = useId();
   const luckyDraw = gameState.lucky_draw || { status: 'IDLE', winner: null };
+  const activeAutoStop = Boolean(luckyDraw.auto_stop_on_music_end ?? gameState.lucky_draw_auto_stop_on_music_end);
+  const activeSpinSeed = luckyDraw.seed ?? luckyDraw.draw_timestamp ?? null;
+  const [localMuted, setLocalMuted] = useState(false);
+  const [musicState, setMusicState] = useState(() => soundFx.getLuckyDrawMusicState());
+
   const isWinner = Boolean(
     currentUserInfo &&
     luckyDraw.winner &&
     (luckyDraw.winner.uid === currentUserInfo.uid ||
      (luckyDraw.winner.mssv && luckyDraw.winner.mssv === currentUserInfo.mssv))
   );
+
+  useEffect(() => {
+    return soundFx.subscribeLuckyDrawMusic(setMusicState);
+  }, []);
+
+  useEffect(() => {
+    soundFx.syncLuckyDrawMusic({
+      ownerId: audioOwnerId,
+      drawStatus: luckyDraw.status,
+      isLuckyDrawActive: gameState.active_module === 'LUCKY_DRAW' || luckyDraw.status !== 'IDLE',
+      adminMusicMuted: Boolean(gameState.lucky_draw_music_muted),
+      localMuted,
+      spinSeed: activeSpinSeed,
+      autoStopOnMusicEnd: activeAutoStop,
+    });
+  }, [
+    audioOwnerId,
+    luckyDraw.status,
+    gameState.active_module,
+    gameState.lucky_draw_music_muted,
+    localMuted,
+    activeSpinSeed,
+    activeAutoStop,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      soundFx.stopLuckyDrawMusic(audioOwnerId);
+    };
+  }, [audioOwnerId]);
 
   useEffect(() => {
     if (luckyDraw.status === 'REVEALED' && isWinner) {
@@ -25,7 +62,96 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
   return (
     <div className={`min-h-[calc(100dvh-4rem)] flex flex-col items-center justify-center p-4 sm:p-6 text-white text-center transition-colors duration-1000 ${isWinner && luckyDraw.status === 'REVEALED' ? 'bg-[#3E1D74]/50' : ''}`}>
       <div className={`max-w-md w-full fluent-question-box p-6 sm:p-8 space-y-6 ${isWinner ? 'ring-2 ring-amber-400/80 shadow-2xl' : ''}`}>
-        
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <button
+            type="button"
+            id="btn-audience-lucky-draw-music-mute"
+            onClick={() => {
+              const nextMuted = !localMuted;
+              setLocalMuted(nextMuted);
+              if (!nextMuted) {
+                soundFx.unlockLuckyDrawMusic();
+              }
+            }}
+            className={`px-2.5 py-1 rounded-[2px] font-mono text-[11px] font-bold flex items-center gap-1.5 border transition cursor-pointer ${
+              gameState.lucky_draw_music_muted || localMuted
+                ? 'bg-rose-950/70 text-rose-200 border-rose-400/50 hover:bg-rose-900/80'
+                : musicState.isPlaying
+                ? 'bg-emerald-950/70 text-emerald-200 border-emerald-400/50 hover:bg-emerald-900/80'
+                : 'bg-white/5 text-white/70 border-white/15 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            {gameState.lucky_draw_music_muted || localMuted ? (
+              <VolumeX className="w-3.5 h-3.5" />
+            ) : (
+              <Volume2 className={`w-3.5 h-3.5 ${musicState.isPlaying ? 'animate-pulse text-emerald-300' : ''}`} />
+            )}
+            <span>
+              {gameState.lucky_draw_music_muted
+                ? localLanguage !== 'vi'
+                  ? 'Muted by Host'
+                  : 'Admin đã tắt nhạc'
+                : localMuted
+                ? localLanguage !== 'vi'
+                  ? 'Music Muted'
+                  : 'Đã tắt nhạc'
+                : !musicState.globalSoundEnabled
+                ? localLanguage !== 'vi'
+                  ? 'Sound Off'
+                  : 'Âm thanh đang tắt'
+                : musicState.isPlaying && musicState.activeTrack === 'waiting'
+                ? localLanguage !== 'vi'
+                  ? 'Playing Waiting Music'
+                  : 'Đang phát: Nhạc Chờ Xổ Số'
+                : musicState.isPlaying && musicState.activeTrack === 'spinning'
+                ? localLanguage !== 'vi'
+                  ? 'Playing Spin Music'
+                  : 'Đang phát: Nhạc Quay Nón'
+                : luckyDraw.status === 'REVEALED'
+                ? localLanguage !== 'vi'
+                  ? 'Draw Music Stopped'
+                  : 'Đã dừng nhạc (Công bố)'
+                : localLanguage !== 'vi'
+                ? 'Draw Music Ready'
+                : 'Nhạc quay sẵn sàng'}
+            </span>
+          </button>
+
+          {!gameState.lucky_draw_music_muted && !localMuted && (!musicState.globalSoundEnabled || musicState.volume <= 0.01) && (
+            <button
+              type="button"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-2.5 py-1 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-[11px] font-bold shadow animate-pulse cursor-pointer"
+            >
+              {localLanguage !== 'vi' ? 'Enable Sound' : 'Bật âm thanh'}
+            </button>
+          )}
+
+          {(musicState.autoplayBlocked || musicState.reason === 'awaiting_spin_interaction') &&
+            !gameState.lucky_draw_music_muted &&
+            !localMuted &&
+            musicState.globalSoundEnabled &&
+            musicState.volume > 0.01 && (
+            <button
+              type="button"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-2.5 py-1 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-[11px] font-bold shadow animate-pulse cursor-pointer"
+            >
+              {localLanguage !== 'vi' ? 'Tap for Music' : 'Bấm bật nhạc'}
+            </button>
+          )}
+
+          {musicState.error && !gameState.lucky_draw_music_muted && !localMuted && (
+            <button
+              type="button"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-2.5 py-1 rounded-[2px] bg-rose-500 hover:bg-rose-400 text-white font-mono text-[11px] font-bold shadow cursor-pointer"
+            >
+              {localLanguage !== 'vi' ? 'Retry Audio' : 'Thử phát lại'}
+            </button>
+          )}
+        </div>
+
         {luckyDraw.filter_label && (
           <div className="inline-block px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/35 text-xs font-mono font-bold tracking-wide">
             🎯 {luckyDraw.filter_label}
@@ -56,6 +182,16 @@ export const LuckyDrawAudience: React.FC<{ gameState: GameState; currentUserInfo
             <h2 className="text-sm sm:text-base font-bold text-white/80 tracking-[0.2em] font-mono">
               {localLanguage !== 'vi' ? 'FINDING LUCKY WINNER...' : 'ĐANG TÌM CHỦ NHÂN MAY MẮN...'}
             </h2>
+            {activeAutoStop && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[2px] bg-amber-400/15 border border-amber-400/35 text-amber-200 text-[11px] font-mono font-bold">
+                <Timer className="w-3.5 h-3.5 animate-pulse" />
+                <span>
+                  {localLanguage !== 'vi'
+                    ? 'Auto-reveal when spin music ends'
+                    : 'Tự động công bố khi hết nhạc quay'}
+                </span>
+              </div>
+            )}
           </div>
         )}
 

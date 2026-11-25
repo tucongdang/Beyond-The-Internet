@@ -28,6 +28,16 @@ import { GameState, UserResponse, FirebaseConfig, UserInfo, PingInfo, PingQualit
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import { getSecureRandomId, getSecureRandomInt, secureShuffle } from '../utils/cryptoUtils';
+import {
+  buildChampionVoteFallbackDocPath,
+  buildPredictionFallbackDocPath,
+  buildStructuredFirestoreErrorContext,
+  CHAMPION_VOTE_FALLBACK_SEGMENTS,
+  CONTESTANT_PREDICTION_FALLBACK_SEGMENTS,
+  decideFirestoreFallbackAction,
+  FirestoreOperationType,
+  isPermissionDeniedError,
+} from '../utils/firestoreFallbackUtils';
 
 enum OperationType {
   CREATE = 'create',
@@ -91,6 +101,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     status: 'IDLE',
     winner: null
   },
+  lucky_draw_music_muted: false,
+  lucky_draw_auto_stop_on_music_end: false,
   audience_light_show: null,
   grand_finale: null,
   event_schedule: {
@@ -247,6 +259,10 @@ class RealtimeSyncService {
   private gameStateUpdatePromise: Promise<void> | null = null;
   private gameStateUpdateResolve: (() => void) | null = null;
   private unsubscribes: (() => void)[] = [];
+  private unsubChampionVotes: (() => void) | null = null;
+  private unsubPredictions: (() => void) | null = null;
+  private championVotesUseFallback: boolean = false;
+  private predictionsUseFallback: boolean = false;
 
   public getSynchronizedNow(): number {
     return Date.now() + this.serverTimeOffset;
@@ -778,6 +794,14 @@ class RealtimeSyncService {
         unsub();
       } catch {}
     });
+    if (this.unsubChampionVotes) {
+      try { this.unsubChampionVotes(); } catch {}
+      this.unsubChampionVotes = null;
+    }
+    if (this.unsubPredictions) {
+      try { this.unsubPredictions(); } catch {}
+      this.unsubPredictions = null;
+    }
     if (this.batterySaverInterval) {
       clearInterval(this.batterySaverInterval);
       this.batterySaverInterval = null;
@@ -964,17 +988,10 @@ class RealtimeSyncService {
           } else if (item.type === 'prediction' && item.questionId && item.uid) {
             const path = `contestant_predictions/${item.questionId}_${item.uid}`;
             try {
-              await setDoc(
-                doc(this.db!, 'contestant_predictions', `${item.questionId}_${item.uid}`),
-                this.removeUndefined({
-                  ...item.payload,
-                  updatedAt: Date.now()
-                }),
-                { merge: true }
-              );
+              await this.writePredictionToFirestore(item.payload as ContestantPrediction);
               syncedIds.push(item.id);
             } catch (err: any) {
-              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+              if (isPermissionDeniedError(err)) {
                 try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
                   failuresById[item.id] = loggedErr?.message || 'Permission denied';
                 }
@@ -985,17 +1002,10 @@ class RealtimeSyncService {
           } else if (item.type === 'champion_vote' && item.uid) {
             const path = `champion_votes/${item.uid}`;
             try {
-              await setDoc(
-                doc(this.db!, 'champion_votes', item.uid),
-                this.removeUndefined({
-                  ...item.payload,
-                  updatedAt: Date.now()
-                }),
-                { merge: true }
-              );
+              await this.writeChampionVoteToFirestore(item.payload as ChampionVote);
               syncedIds.push(item.id);
             } catch (err: any) {
-              if (err?.code === 'permission-denied' || /insufficient permissions/i.test(String(err?.message || ''))) {
+              if (isPermissionDeniedError(err)) {
                 try { handleFirestoreError(err, OperationType.WRITE, path); } catch (loggedErr: any) {
                   failuresById[item.id] = loggedErr?.message || 'Permission denied';
                 }
@@ -1261,6 +1271,214 @@ class RealtimeSyncService {
       console.warn('Could not attach Firestore qr_scans listener:', e);
     }
     }
+
+    // 5. Listen to contestant_predictions and champion_votes (with automatic fallback channel if root rules deny)
+    if (!isBatterySaver) {
+      this.attachPredictionsListener(this.predictionsUseFallback);
+      this.attachChampionVotesListener(this.championVotesUseFallback);
+    }
+  }
+
+  private attachPredictionsListener(useFallback: boolean) {
+    if (!this.db) return;
+    if (this.unsubPredictions) {
+      try { this.unsubPredictions(); } catch {}
+      this.unsubPredictions = null;
+    }
+
+    const colRef = useFallback
+      ? collection(
+          this.db,
+          CONTESTANT_PREDICTION_FALLBACK_SEGMENTS[0],
+          CONTESTANT_PREDICTION_FALLBACK_SEGMENTS[1],
+          CONTESTANT_PREDICTION_FALLBACK_SEGMENTS[2]
+        )
+      : collection(this.db, 'contestant_predictions');
+
+    this.unsubPredictions = onSnapshot(
+      colRef,
+      (snapshot) => {
+        let changed = false;
+        snapshot.forEach((docSnap) => {
+          const pred = docSnap.data() as ContestantPrediction & { updatedAt?: number };
+          if (pred && pred.questionId && pred.uid && pred.contestantId) {
+            if (!this.cachedPredictions[pred.questionId]) {
+              this.cachedPredictions[pred.questionId] = {};
+            }
+            const existing = this.cachedPredictions[pred.questionId][pred.uid] as
+              | (ContestantPrediction & { updatedAt?: number })
+              | undefined;
+            const incomingTs = pred.updatedAt ?? pred.timestamp ?? 0;
+            const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
+            if (!existing || incomingTs >= existingTs) {
+              this.cachedPredictions[pred.questionId][pred.uid] = pred;
+              changed = true;
+            }
+          }
+        });
+        if (changed) {
+          this.saveLocalPredictions();
+          this.notifyPredictionListeners();
+        }
+      },
+      (error) => {
+        if (isPermissionDeniedError(error) && !useFallback) {
+          this.predictionsUseFallback = true;
+          console.warn(
+            'Firestore contestant_predictions listener switched to permitted channel:',
+            JSON.stringify(
+              buildStructuredFirestoreErrorContext(
+                error,
+                FirestoreOperationType.LIST,
+                'contestant_predictions',
+                auth?.currentUser
+              )
+            )
+          );
+          this.attachPredictionsListener(true);
+        } else if (!isPermissionDeniedError(error)) {
+          console.warn('Firestore predictions listener note:', error);
+        }
+      }
+    );
+  }
+
+  private attachChampionVotesListener(useFallback: boolean) {
+    if (!this.db) return;
+    if (this.unsubChampionVotes) {
+      try { this.unsubChampionVotes(); } catch {}
+      this.unsubChampionVotes = null;
+    }
+
+    const colRef = useFallback
+      ? collection(
+          this.db,
+          CHAMPION_VOTE_FALLBACK_SEGMENTS[0],
+          CHAMPION_VOTE_FALLBACK_SEGMENTS[1],
+          CHAMPION_VOTE_FALLBACK_SEGMENTS[2]
+        )
+      : collection(this.db, 'champion_votes');
+
+    this.unsubChampionVotes = onSnapshot(
+      colRef,
+      (snapshot) => {
+        let changed = false;
+        snapshot.forEach((docSnap) => {
+          const vote = docSnap.data() as ChampionVote & { updatedAt?: number };
+          if (vote && vote.uid && vote.contestantId) {
+            const existing = this.cachedChampionVotes[vote.uid] as
+              | (ChampionVote & { updatedAt?: number })
+              | undefined;
+            const incomingTs = vote.updatedAt ?? vote.timestamp ?? 0;
+            const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
+            if (!existing || incomingTs >= existingTs) {
+              this.cachedChampionVotes[vote.uid] = vote;
+              changed = true;
+            }
+          }
+        });
+        if (changed) {
+          this.saveLocalChampionVotes();
+          this.notifyChampionVoteListeners();
+        }
+      },
+      (error) => {
+        if (isPermissionDeniedError(error) && !useFallback) {
+          this.championVotesUseFallback = true;
+          console.warn(
+            'Firestore champion_votes listener switched to permitted channel:',
+            JSON.stringify(
+              buildStructuredFirestoreErrorContext(
+                error,
+                FirestoreOperationType.LIST,
+                'champion_votes',
+                auth?.currentUser
+              )
+            )
+          );
+          this.attachChampionVotesListener(true);
+        } else if (!isPermissionDeniedError(error)) {
+          console.warn('Firestore champion_votes listener note:', error);
+        }
+      }
+    );
+  }
+
+  private async writePredictionToFirestore(prediction: ContestantPrediction): Promise<void> {
+    if (!this.db) {
+      throw new Error('Firestore not initialized');
+    }
+    const { questionId, uid } = prediction;
+    const payload = this.removeUndefined({
+      ...prediction,
+      updatedAt: Date.now(),
+    });
+
+    if (!this.predictionsUseFallback) {
+      try {
+        await setDoc(doc(this.db, 'contestant_predictions', `${questionId}_${uid}`), payload, {
+          merge: true,
+        });
+        return;
+      } catch (err) {
+        if (!isPermissionDeniedError(err)) {
+          throw err;
+        }
+        this.predictionsUseFallback = true;
+        console.warn(
+          'Firestore contestant_predictions write switched to fallback channel:',
+          JSON.stringify(
+            buildStructuredFirestoreErrorContext(
+              err,
+              FirestoreOperationType.WRITE,
+              `contestant_predictions/${questionId}_${uid}`,
+              auth?.currentUser
+            )
+          )
+        );
+        this.attachPredictionsListener(true);
+      }
+    }
+
+    const [c0, c1, c2, docId] = buildPredictionFallbackDocPath(questionId, uid);
+    await setDoc(doc(this.db, c0, c1, c2, docId), payload, { merge: true });
+  }
+
+  private async writeChampionVoteToFirestore(vote: ChampionVote): Promise<void> {
+    if (!this.db) {
+      throw new Error('Firestore not initialized');
+    }
+    const payload = this.removeUndefined({
+      ...vote,
+      updatedAt: Date.now(),
+    });
+
+    if (!this.championVotesUseFallback) {
+      try {
+        await setDoc(doc(this.db, 'champion_votes', vote.uid), payload, { merge: true });
+        return;
+      } catch (err) {
+        if (!isPermissionDeniedError(err)) {
+          throw err;
+        }
+        this.championVotesUseFallback = true;
+        console.warn(
+          'Firestore champion_votes write switched to fallback channel:',
+          JSON.stringify(
+            buildStructuredFirestoreErrorContext(
+              err,
+              FirestoreOperationType.WRITE,
+              `champion_votes/${vote.uid}`,
+              auth?.currentUser
+            )
+          )
+        );
+        this.attachChampionVotesListener(true);
+      }
+    }
+
+    const [c0, c1, c2, docId] = buildChampionVoteFallbackDocPath(vote.uid);
+    await setDoc(doc(this.db, c0, c1, c2, docId), payload, { merge: true });
   }
   // --- Broadcast / Local Notifications ---
   private notifyStateListeners() {
@@ -2969,21 +3187,17 @@ class RealtimeSyncService {
     } else {
       if (offlineStorageEnabled) this.saveLocalPredictions();
       try {
-        await this.withWriteTimeout(
-          setDoc(
-            doc(this.db!, 'contestant_predictions', `${questionId}_${uid}`),
-            this.removeUndefined({
-              ...prediction,
-              updatedAt: Date.now()
-            }),
-            { merge: true }
-          ),
-          4500
-        );
+        await this.withWriteTimeout(this.writePredictionToFirestore(prediction), 4500);
       } catch (err) {
         console.warn('Failed to save contestant prediction to Firestore:', err);
-        this.setFirebaseConnected(false);
-        if (offlineStorageEnabled) {
+        const decision = decideFirestoreFallbackAction({
+          error: err,
+          offlineModeEnabled: offlineStorageEnabled,
+        });
+        if (decision.markDisconnected) {
+          this.setFirebaseConnected(false);
+        }
+        if (decision.action === 'QUEUE_OFFLINE') {
           queuePredictionLocally();
         } else {
           throw err;
@@ -3085,21 +3299,17 @@ class RealtimeSyncService {
     } else {
       if (offlineStorageEnabled) this.saveLocalChampionVotes();
       try {
-        await this.withWriteTimeout(
-          setDoc(
-            doc(this.db!, 'champion_votes', vote.uid),
-            this.removeUndefined({
-              ...vote,
-              updatedAt: Date.now()
-            }),
-            { merge: true }
-          ),
-          4500
-        );
+        await this.withWriteTimeout(this.writeChampionVoteToFirestore(vote), 4500);
       } catch (err) {
         console.warn('Failed to save champion vote to Firestore:', err);
-        this.setFirebaseConnected(false);
-        if (offlineStorageEnabled) {
+        const decision = decideFirestoreFallbackAction({
+          error: err,
+          offlineModeEnabled: offlineStorageEnabled,
+        });
+        if (decision.markDisconnected) {
+          this.setFirebaseConnected(false);
+        }
+        if (decision.action === 'QUEUE_OFFLINE') {
           queueVoteLocally();
         } else {
           throw err;

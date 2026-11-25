@@ -1,4 +1,4 @@
-export const SW_CACHE_VERSION = 'v2';
+export const SW_CACHE_VERSION = 'v3';
 
 export const SHELL_CACHE_NAME = `bti-shell-${SW_CACHE_VERSION}`;
 export const FONTS_CACHE_NAME = `bti-fonts-${SW_CACHE_VERSION}`;
@@ -71,6 +71,10 @@ const BG_SYNC_EXCLUDED_PATH_RE =
 export function classifyCacheStrategy(descriptor: SwRequestDescriptor): SwCacheStrategy {
   const method = (descriptor.method || 'GET').toUpperCase();
   if (method !== 'GET') {
+    return 'BYPASS';
+  }
+
+  if (descriptor.headers && (descriptor.headers['range'] || descriptor.headers['Range'])) {
     return 'BYPASS';
   }
 

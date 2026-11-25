@@ -544,7 +544,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 data-tooltip={localLanguage !== 'vi' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
                 data-tooltip-title="Language / Ngôn Ngữ"
                 data-tooltip-placement="bottom"
-                className="has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[1px] text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1 text-[10px] font-mono font-bold cursor-pointer"
+                className="has-tooltip min-w-[40px] sm:min-w-[44px] min-h-[44px] px-1.5 sm:px-2.5 py-1.5 rounded-[1px] text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1 text-[10px] font-mono font-bold cursor-pointer"
               >
                 <Globe className="w-3 h-3 text-sky-300" />
                 <span>{localLanguage.toUpperCase()}</span>
@@ -577,7 +577,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               data-tooltip-title={effectiveLanguage === 'en' ? 'Audio & Voice Settings' : 'Âm Thanh & Cài Đặt Âm Lượng'}
               data-tooltip-hotkey="M"
               data-tooltip-placement="bottom"
-              className={`has-tooltip min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-[2px] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border select-none ${
+              className={`has-tooltip min-w-[40px] sm:min-w-[44px] min-h-[44px] px-1.5 sm:px-2.5 py-1.5 rounded-[2px] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border select-none ${
                 soundEnabled
                   ? 'bg-[#F7CAC9]/15 border-[#F7CAC9]/40 text-[#F7CAC9] hover:bg-[#F7CAC9]/25 hover:border-[#F7CAC9]/60 shadow-[0_0_12px_rgba(247,202,201,0.2)]'
                   : 'bg-rose-950/30 border-rose-500/40 text-rose-300/80 hover:bg-rose-950/50 hover:text-rose-200 shadow-inner'
@@ -601,7 +601,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {soundEnabled ? (effectiveLanguage === 'en' ? 'ON' : 'BẬT') : (effectiveLanguage === 'en' ? 'MUTED' : 'TẮT')}
               </span>
               <span className="hidden sm:inline opacity-35 text-[10px]">•</span>
-              <Sliders className="w-3.5 h-3.5 text-sky-300/90 shrink-0" />
+              <Sliders className="hidden sm:inline w-3.5 h-3.5 text-sky-300/90 shrink-0" />
             </button>
 
             {/* Offline Mode & Sync Settings Button */}
@@ -680,7 +680,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               data-tooltip={effectiveLanguage === 'en' ? 'Privacy Policy & Legal Framework (Law 91/2025 & Decree 356/2025)' : 'Chính Sách Bảo Mật & Pháp Lý (Luật 91/2025 & NĐ 356/2025)'}
               data-tooltip-title={effectiveLanguage === 'en' ? 'Legal & Policy' : 'Chính Sách & Pháp Lý'}
               data-tooltip-placement="bottom"
-              className={`has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer flex items-center justify-center ${
+              className={`hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer items-center justify-center ${
                 currentView === 'policy'
                   ? 'bg-[#F7CAC9] text-[#190839]'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -702,7 +702,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               data-tooltip={effectiveLanguage === 'en' ? 'Manage EU GDPR & ePrivacy Cookie Consent' : 'Quản lý tùy chọn Cookie & lưu trữ cục bộ (GDPR Châu Âu)'}
               data-tooltip-title={effectiveLanguage === 'en' ? 'EU Cookie Settings' : 'Cài Đặt Cookie (EU)'}
               data-tooltip-placement="bottom"
-              className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10"
+              className="hidden sm:flex has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] transition cursor-pointer items-center justify-center text-white/70 hover:text-white hover:bg-white/10"
             >
               <Cookie className="w-3.5 h-3.5 text-[#F7CAC9]" />
             </button>
@@ -740,10 +740,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title={`Ban Kỹ Thuật: ${adminUser ? adminUser.fullName : 'Admin'}`}
                 >
                   <div className="w-5 h-5 rounded-[2px] bg-sky-600 text-white font-black flex items-center justify-center text-[10px]">
-                    {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
+                    {(adminUser?.fullName || adminUser?.name || adminUser?.username || 'A').charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden xl:inline font-mono font-bold text-sky-300 text-[10px] truncate max-w-[100px]">
-                    {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                    {adminUser?.fullName || adminUser?.name || adminUser?.username || 'Ban Kỹ Thuật'}
                   </span>
                 </div>
 
@@ -780,7 +780,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   data-tooltip="Xem thông tin cá nhân"
                   data-tooltip-title="Hồ Sơ Khán Giả"
                   data-tooltip-placement="bottom"
-                  className="has-tooltip min-h-[44px] flex items-center gap-1.5 px-2 py-1 text-xs transition cursor-pointer hover:bg-white/10 rounded-[2px]"
+                  className="has-tooltip min-h-[44px] flex items-center gap-1.5 px-1.5 sm:px-2 py-1 text-xs transition cursor-pointer hover:bg-white/10 rounded-[2px]"
                 >
                   <div className="w-5 h-5 rounded-[2px] fluent-acrylic-surface text-white font-bold flex items-center justify-center text-[10px] border border-blue-400/40">
                     {user.name.slice(0, 1).toUpperCase()}
@@ -803,7 +803,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     data-tooltip-title="Đăng Xuất"
                     data-tooltip-placement="bottom"
                     data-tooltip-variant="danger"
-                    className="has-tooltip min-w-[44px] min-h-[44px] p-2 rounded-[2px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
+                    className="has-tooltip min-w-[40px] sm:min-w-[44px] min-h-[44px] p-1.5 sm:p-2 rounded-[2px] text-rose-300 hover:bg-rose-950/60 transition cursor-pointer flex items-center justify-center"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
@@ -818,7 +818,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               vibrateTap();
               setIsMobileMenuOpen(!isMobileMenuOpen);
             }}
-            className="md:hidden min-w-[44px] min-h-[44px] p-2.5 rounded-[2px] bg-white/5 border border-white/15 text-white/80 hover:text-white flex items-center justify-center"
+            className="md:hidden min-w-[44px] min-h-[44px] p-2 rounded-[2px] bg-white/5 border border-white/15 text-white/80 hover:text-white flex items-center justify-center shrink-0"
             aria-label="Toggle mobile menu"
           >
             {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -1040,14 +1040,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="p-3 bg-sky-950/40 border border-sky-500/30 rounded-[2px] flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold font-mono">
-                        {adminUser ? adminUser.fullName.charAt(0).toUpperCase() : 'A'}
+                        {(adminUser?.fullName || adminUser?.name || adminUser?.username || 'A').charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="text-xs font-bold text-sky-300 font-mono">
-                          {adminUser ? adminUser.fullName : 'Ban Kỹ Thuật'}
+                          {adminUser?.fullName || adminUser?.name || adminUser?.username || 'Ban Kỹ Thuật'}
                         </div>
                         <div className="text-[9px] text-white/50 font-mono uppercase tracking-wider">
-                          {adminUser ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
+                          {adminUser && adminUser.technicalRole ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
                         </div>
                       </div>
                     </div>
@@ -1285,6 +1285,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>{effectiveLanguage === 'en' ? 'Privacy Policy & Terms' : 'Chính Sách & Điều Lệ (Luật 91)'}</span>
                     </div>
                     <span className="text-[10px] font-bold text-sky-300">v2.0</span>
+                  </button>
+
+                  {/* EU GDPR Cookie Settings Button in Mobile Menu */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      vibrateTap();
+                      soundFx.playClick();
+                      window.dispatchEvent(new CustomEvent('bti-open-cookie-settings'));
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-3 py-2.5 bg-blue-950/20 hover:bg-blue-900/30 text-blue-200 border border-blue-500/30 rounded-[2px] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Cookie className="w-4 h-4 text-blue-300" />
+                      <span>{effectiveLanguage === 'en' ? 'EU Cookie Preferences (GDPR)' : 'Cài Đặt Cookie (Chuẩn Châu Âu)'}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-400">🇪🇺 GDPR</span>
                   </button>
                 </div>
               </div>

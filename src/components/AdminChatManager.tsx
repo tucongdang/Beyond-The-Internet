@@ -464,17 +464,17 @@ export const AdminChatManager: React.FC<AdminChatManagerProps> = ({ gameState })
         <div className="fluent-box p-4 flex flex-col gap-3 justify-center">
           <div className="flex items-center justify-between">
             <span className="text-sm text-white/80">Duyệt tiếng hô thủ công (Pre-moderation)</span>
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex items-center w-9 h-5 cursor-pointer shrink-0">
               <input
                 type="checkbox"
-                className="sr-only peer"
+                className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 m-0"
                 checked={settings.require_approval || false}
                 onChange={async (e) => {
                   vibrateTap();
                   await shoutService.updateSettings({ require_approval: e.target.checked });
                 }}
               />
-              <div className="w-9 h-5 bg-black/40 border border-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/60 peer-checked:after:bg-purple-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:border-purple-400/50"></div>
+              <div className="pointer-events-none w-9 h-5 bg-black/40 border border-white/20 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/60 peer-checked:after:bg-purple-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:border-purple-400/50"></div>
             </label>
           </div>
           <button

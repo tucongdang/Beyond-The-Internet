@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useId } from 'react';
 import { Sparkles, Trophy, Gift, Dices, X, Minimize2, Maximize2, Volume2, VolumeX, CheckCircle, Shield, Flame } from 'lucide-react';
 import { GameState, UserInfo, ContestantPrediction } from '../types';
 import { getUserDisplayUid } from '../utils/uidUtils';
@@ -28,11 +28,38 @@ export const LuckOfTheDrawOverlay: React.FC<LuckOfTheDrawOverlayProps> = ({
   const winningContestantName = luckyDraw?.winning_contestant_name || luckyDraw?.filter_contestant_name || 'Thí sinh chiến thắng';
   const eligibleCount = luckyDraw?.eligible_count ?? 0;
 
+  const audioOwnerId = useId();
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [musicState, setMusicState] = useState(() => soundFx.getLuckyDrawMusicState());
   const [internalMinimized, setInternalMinimized] = useState<boolean>(isMinimized);
   const [tickerIndex, setTickerIndex] = useState<number>(0);
   const [revealedAnimationDone, setRevealedAnimationDone] = useState<boolean>(false);
   const hasTriggeredCelebrationRef = useRef<boolean>(false);
+
+  const activeAutoStop = Boolean(luckyDraw?.auto_stop_on_music_end ?? gameState.lucky_draw_auto_stop_on_music_end);
+  const activeSpinSeed = luckyDraw?.seed ?? luckyDraw?.draw_timestamp ?? null;
+
+  useEffect(() => {
+    return soundFx.subscribeLuckyDrawMusic(setMusicState);
+  }, []);
+
+  useEffect(() => {
+    soundFx.syncLuckyDrawMusic({
+      ownerId: audioOwnerId,
+      drawStatus: status,
+      isLuckyDrawActive: status !== 'IDLE',
+      adminMusicMuted: Boolean(gameState.lucky_draw_music_muted),
+      localMuted: !soundEnabled,
+      spinSeed: activeSpinSeed,
+      autoStopOnMusicEnd: activeAutoStop,
+    });
+  }, [audioOwnerId, status, gameState.lucky_draw_music_muted, soundEnabled, activeSpinSeed, activeAutoStop]);
+
+  useEffect(() => {
+    return () => {
+      soundFx.stopLuckyDrawMusic(audioOwnerId);
+    };
+  }, [audioOwnerId]);
 
   // Sync internal minimized state with prop
   useEffect(() => {
@@ -264,13 +291,45 @@ export const LuckOfTheDrawOverlay: React.FC<LuckOfTheDrawOverlayProps> = ({
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-1.5">
+            {((!musicState.globalSoundEnabled || musicState.volume <= 0.01 || musicState.autoplayBlocked || musicState.error) && soundEnabled && !gameState.lucky_draw_music_muted) && (
+              <button
+                type="button"
+                onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+                className="px-2 py-1 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono text-[10px] font-bold animate-pulse cursor-pointer"
+              >
+                {musicState.error ? 'Thử lại nhạc' : 'Bật nhạc'}
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={() => setSoundEnabled((prev) => !prev)}
-              className="p-1.5 rounded-[2px] text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
-              title={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
+              onClick={() => {
+                setSoundEnabled((prev) => {
+                  const next = !prev;
+                  if (next) {
+                    soundFx.unlockLuckyDrawMusic(true);
+                  }
+                  return next;
+                });
+              }}
+              className={`p-1.5 rounded-[2px] transition cursor-pointer ${
+                gameState.lucky_draw_music_muted || !soundEnabled
+                  ? 'text-rose-300 bg-rose-500/15 hover:bg-rose-500/25'
+                  : 'text-white/60 hover:text-white hover:bg-white/10'
+              }`}
+              title={
+                gameState.lucky_draw_music_muted
+                  ? 'Admin đang tắt nhạc quay số'
+                  : soundEnabled
+                  ? 'Tắt âm thanh'
+                  : 'Bật âm thanh'
+              }
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-white/80" /> : <VolumeX className="w-4 h-4 text-white/40" />}
+              {soundEnabled && !gameState.lucky_draw_music_muted ? (
+                <Volume2 className={`w-4 h-4 ${musicState.isPlaying ? 'text-emerald-300 animate-pulse' : 'text-white/80'}`} />
+              ) : (
+                <VolumeX className="w-4 h-4 text-rose-300" />
+              )}
             </button>
 
             <button

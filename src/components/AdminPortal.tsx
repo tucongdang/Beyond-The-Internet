@@ -2172,6 +2172,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 handleLoadQuestion(vcnvQ.id);
               }
             } else if (tabKey === 'LUCKY_DRAW') {
+              soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
               syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
             }
           }
@@ -2950,6 +2951,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <span className="hidden lg:inline">Tập Trung</span>
             </button>
 
+            {gameState.audience_light_show?.active && (
+              <button
+                type="button"
+                id="btn-header-bar-stop-light-show"
+                onClick={() => {
+                  soundFx.playLock();
+                  syncService.updateGameState({ audience_light_show: null });
+                  triggerHudToast('LIGHT SHOW', 'Đã tắt nhanh Biển Ánh Sáng!');
+                }}
+                className="px-2.5 py-1.5 rounded-[2px] bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white text-xs font-mono font-bold transition flex items-center gap-1 cursor-pointer animate-pulse shadow-lg shadow-rose-900/50"
+                title="Tắt khẩn cấp Biển Ánh Sáng trên thiết bị khán giả & màn chiếu"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Tắt Ánh Sáng</span>
+              </button>
+            )}
+
             {/* Dropdown 1: 📺 Sân khấu & Màn chiếu */}
             <div className="relative">
               <button
@@ -3123,6 +3141,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                     <span>Hiệu Ứng Ánh Sáng (Light Show)</span>
                   </button>
+                  {gameState.audience_light_show?.active && (
+                    <button
+                      id="btn-header-stop-light-show"
+                      type="button"
+                      onClick={() => {
+                        soundFx.playLock();
+                        syncService.updateGameState({ audience_light_show: null });
+                        triggerHudToast('LIGHT SHOW', 'Đã tắt nhanh Biển Ánh Sáng!');
+                        setActiveHeaderMenu('NONE');
+                      }}
+                      className="w-full text-left px-2.5 py-1.5 rounded-[2px] bg-rose-600/90 hover:bg-rose-500 flex items-center gap-2 text-white font-bold cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5 text-white" />
+                      <span>Tắt Nhanh Biển Ánh Sáng</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
@@ -3722,12 +3756,48 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              id="btn-admin-banner-lucky-draw-music-mute"
+              onClick={() => {
+                vibrateTap();
+                const nextMuted = !Boolean(gameState.lucky_draw_music_muted);
+                syncService.updateGameState({ lucky_draw_music_muted: nextMuted });
+                triggerHudToast(
+                  'STAGE',
+                  nextMuted
+                    ? '🔇 Đã tắt nhạc Quay Số trên Màn Chiếu & Khán Giả'
+                    : '🔊 Đã bật lại nhạc Quay Số trên Màn Chiếu & Khán Giả'
+                );
+              }}
+              aria-pressed={Boolean(gameState.lucky_draw_music_muted)}
+              className={`fluent-btn px-3 py-2 rounded-[2px] font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md border ${
+                gameState.lucky_draw_music_muted
+                  ? 'bg-rose-950/80 hover:bg-rose-900/90 text-rose-200 border-rose-400/60'
+                  : 'bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-200 border-emerald-400/60'
+              }`}
+              title="Bật hoặc Mute nhanh nhạc Quay Số trên Màn Chiếu & Khán Giả"
+            >
+              {gameState.lucky_draw_music_muted ? (
+                <>
+                  <VolumeX className="w-3.5 h-3.5 text-rose-300" />
+                  <span>Nhạc Quay Số: MUTE</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>Mute Nhạc Quay Số</span>
+                </>
+              )}
+            </button>
+
             {activeAdminTab !== 'LUCKY_DRAW' && (
               <button
                 type="button"
                 onClick={() => {
                   vibrateTap();
+                  soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
                   setActiveAdminTab('LUCKY_DRAW');
                 }}
                 className="fluent-btn px-3 py-2 rounded-[2px] bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
@@ -3890,12 +3960,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   type="button"
                   onClick={() => {
                     vibrateTap();
-                    setActiveAdminTab(sub.id);
                     if (sub.id === 'LUCKY_DRAW') {
+                      soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
                       syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
                     } else if (gameState.active_module === 'LUCKY_DRAW') {
                       syncService.updateGameState({ active_module: 'GAME' });
                     }
+                    setActiveAdminTab(sub.id);
                   }}
                   className={`px-3 py-1 rounded-[2px] text-xs font-mono font-semibold transition flex items-center gap-1.5 cursor-pointer ${
                     activeAdminTab === sub.id
@@ -5612,6 +5683,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         type="button"
                         onClick={() => {
                           soundFx.playClick();
+                          soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
                           setActiveAdminTab('LUCKY_DRAW');
                           triggerHudToast('STAGE', 'Đã chuyển sang tab Quay Số May Mắn • Predictor Draw');
                         }}
@@ -8198,12 +8270,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onOpenShortcuts={() => setShowShortcutsModal(true)}
         onSnapSnapshot={() => handleSnapAudienceInteraction()}
         onSwitchTab={(tab) => {
-          setActiveAdminTab(tab);
           if (tab === 'LUCKY_DRAW') {
+            soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
             syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
           } else if (gameState.active_module === 'LUCKY_DRAW') {
             syncService.updateGameState({ active_module: 'GAME' });
           }
+          setActiveAdminTab(tab);
           if (tab === 'VCNV') {
             const vcnvQ = questionBank.find(q => q.round_name.includes('Vượt Chướng Ngại Vật') || q.id.startsWith('VCNV'));
             if (vcnvQ && gameState.question_id !== vcnvQ.id) {

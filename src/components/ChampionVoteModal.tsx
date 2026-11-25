@@ -105,17 +105,31 @@ export const ChampionVoteModal: React.FC<ChampionVoteModalProps> = ({
       timestamp: Date.now(),
     };
 
-    const ok = await syncService.submitChampionVote(vote);
-    if (ok) {
-      vibrateSuccess();
+    try {
+      const ok = await syncService.submitChampionVote(vote);
+      if (ok) {
+        vibrateSuccess();
+        setNotification(
+          isVi
+            ? isChanging
+              ? `Đã đổi bình chọn sang ${contestant.name} thành công! (Bạn có thể đổi lại bất cứ lúc nào trước khi khóa cổng)`
+              : `Bạn đã bình chọn thành công cho ${contestant.name}! (Có thể đổi trước khi khóa cổng)`
+            : `You selected ${contestant.name} as Champion!`
+        );
+        setTimeout(() => setNotification(null), 3500);
+      }
+    } catch (err: any) {
+      soundFx.playError();
       setNotification(
-        isVi
-          ? isChanging
-            ? `Đã đổi bình chọn sang ${contestant.name} thành công! (Bạn có thể đổi lại bất cứ lúc nào trước khi khóa cổng)`
-            : `Bạn đã bình chọn thành công cho ${contestant.name}! (Có thể đổi trước khi khóa cổng)`
-          : `You selected ${contestant.name} as Champion!`
+        err?.message === 'OFFLINE_MODE_DISABLED'
+          ? isVi
+            ? 'Đang mất kết nối và Chế độ Ngoại tuyến đang tắt. Kiểm tra mạng hoặc bật Chế độ Ngoại tuyến để gửi bình chọn.'
+            : 'Connection lost while Offline Mode is off. Check your network or enable Offline Mode to submit your vote.'
+          : isVi
+          ? 'Không thể lưu bình chọn Quán quân lúc này. Vui lòng thử lại.'
+          : 'Unable to submit champion vote right now. Please try again.'
       );
-      setTimeout(() => setNotification(null), 3500);
+      setTimeout(() => setNotification(null), 4000);
     }
   };
 

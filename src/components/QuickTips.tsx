@@ -22,6 +22,7 @@ interface QuickTipsProps {
   autoHideMs?: number;
   className?: string;
   onOpenRulesModal?: () => void;
+  leftSlot?: React.ReactNode;
 }
 
 const SESSION_SEEN_KEY = 'bti_audience_quick_tips_seen_v1';
@@ -32,7 +33,8 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
   isHighContrast = false,
   autoHideMs = 9500,
   className = '',
-  onOpenRulesModal
+  onOpenRulesModal,
+  leftSlot,
 }) => {
   const { localLanguage } = useLanguage();
   const isVi = localLanguage === 'vi';
@@ -244,10 +246,20 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
   const currentTip = contextualTips[activeIndex] || contextualTips[0];
   if (!currentTip) return null;
 
-  // When collapsed, render a subtle, accessible helper button so users can view tips anytime
-  if (!isVisible) {
-    return (
-      <div className={`w-full max-w-7xl mx-auto px-4 sm:px-6 pt-2 flex justify-end items-center gap-2 ${className}`}>
+  const topInlineBar = (
+    <div
+      id="audience-quick-actions-row"
+      className="w-full flex flex-wrap items-center justify-between gap-2"
+    >
+      {leftSlot ? (
+        <div className="hidden sm:flex items-center min-w-0 max-w-full">
+          {leftSlot}
+        </div>
+      ) : (
+        <div className="hidden sm:block" aria-hidden="true" />
+      )}
+
+      <div className="flex items-center gap-1.5 ml-auto shrink-0">
         {onOpenRulesModal && (
           <button
             id="btn-quick-tips-open-rules"
@@ -258,10 +270,10 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
               onOpenRulesModal();
             }}
             aria-label={isVi ? 'Xem cẩm nang luật chơi BTI 2027' : 'View BTI 2027 game rules'}
-            className={`min-h-[40px] px-3 py-1.5 rounded-[2px] text-xs font-medium flex items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
+            className={`${leftSlot ? 'sm:hidden' : 'flex'} flex min-h-[34px] px-2.5 py-1 rounded-[3px] text-[11px] font-semibold items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
               isHighContrast
                 ? 'bg-black text-white border-white/40 hover:border-white'
-                : 'bg-[#190839]/80 hover:bg-[#24104f] text-white/90 border-white/20 shadow-sm backdrop-blur-md'
+                : 'bg-[#190839]/85 hover:bg-[#24104f] text-white/90 border-white/15 shadow-sm backdrop-blur-md'
             }`}
           >
             <Info className="w-3.5 h-3.5 text-[#F7CAC9] shrink-0" />
@@ -271,30 +283,50 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
         <button
           id="btn-reopen-quick-tips"
           type="button"
-          onClick={handleReopen}
+          onClick={() => {
+            if (isVisible) {
+              handleDismiss();
+            } else {
+              handleReopen();
+            }
+          }}
+          aria-expanded={isVisible}
           aria-label={isVi ? 'Mở mẹo luật chơi (Bạn có biết?)' : 'Open game rules quick tips (Did you know?)'}
-          className={`min-h-[40px] px-3 py-1.5 rounded-[2px] text-xs font-medium flex items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
+          className={`min-h-[34px] px-2.5 py-1 rounded-[3px] text-[11px] font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
             isHighContrast
               ? 'bg-black text-amber-300 border-white/40 hover:border-white'
-              : 'bg-[#190839]/80 hover:bg-[#24104f] text-[#F7CAC9] border-[#F7CAC9]/25 shadow-sm backdrop-blur-md'
+              : isVisible
+              ? 'bg-[#2a125a]/95 text-amber-200 border-amber-300/45 shadow-md backdrop-blur-md'
+              : 'bg-[#190839]/85 hover:bg-[#24104f] text-[#F7CAC9] border-[#F7CAC9]/25 shadow-sm backdrop-blur-md'
           }`}
         >
           <Lightbulb className="w-3.5 h-3.5 text-amber-300 shrink-0" />
           <span>{isVi ? 'Bạn có biết?' : 'Did you know?'}</span>
         </button>
       </div>
+    </div>
+  );
+
+  // When collapsed, render only the unified horizontal row
+  if (!isVisible) {
+    return (
+      <div className={`w-full max-w-7xl mx-auto px-3 sm:px-6 pt-2 ${className}`}>
+        {topInlineBar}
+      </div>
     );
   }
 
   return (
-    <aside
-      id="audience-quick-tips-card"
-      aria-label={isVi ? 'Mẹo nhanh luật chơi' : 'Game rules quick tip'}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      className={`w-full max-w-7xl mx-auto px-4 sm:px-6 pt-2.5 animate-fadeIn ${className}`}
-    >
+    <div className={`w-full max-w-7xl mx-auto px-3 sm:px-6 pt-2 space-y-2 ${className}`}>
+      {topInlineBar}
+      <aside
+        id="audience-quick-tips-card"
+        aria-label={isVi ? 'Mẹo nhanh luật chơi' : 'Game rules quick tip'}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        className="w-full animate-fadeIn"
+      >
       <div
         className={`relative rounded-[2px] p-4 sm:px-5 sm:py-3.5 border transition-all shadow-lg overflow-hidden ${
           isHighContrast
@@ -396,5 +428,6 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
         </div>
       </div>
     </aside>
+    </div>
   );
 };

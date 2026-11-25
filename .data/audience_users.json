@@ -17,5 +17,28 @@
     "lastLoginAt": 1790405763514,
     "isActivated": true,
     "activationCode": "782847"
+  },
+  {
+    "uid": "aud_1794907708738_9995c6f2",
+    "username": "testverify",
+    "name": "Nguyen Test Verification",
+    "mssv": "22998877",
+    "gender": "1",
+    "birthYear": "2004",
+    "anonymizedUid": "8877NV104410",
+    "email": "testverify2299@example.com",
+    "emailVerified": false,
+    "note": "",
+    "authProvider": "local",
+    "passwordHash": "592621fed63b23bac6b1aae7ebe0c65219a68d6b1bd6be9efb503c3fad2f2b5beb4f3a7658728bf3a70fd525d7c47046f60e0cc8e72ba62b86c32251b44d5689",
+    "salt": "67943d35e97be9cb6965d8408d77c87a",
+    "registeredAt": 1794907708739,
+    "lastLoginAt": 1794915768852,
+    "isActivated": false,
+    "activationCode": "570242",
+    "consentGiven": true,
+    "consentTimestamp": 1794907708599,
+    "consentVersion": "2.0-pdpd-2027",
+    "ageConfirmation": true
   }
 ]

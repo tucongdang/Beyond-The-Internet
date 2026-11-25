@@ -503,20 +503,35 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
           Hiệu Ứng Sân Khấu:
         </span>
 
-        {/* Light Show Trigger */}
+        {/* Light Show Trigger + Quick Off */}
         {onOpenLightShow && (
-          <button
-            type="button"
-            onClick={onOpenLightShow}
-            className={`px-2.5 py-1 rounded-[2px] font-mono text-[10px] font-bold border transition flex items-center gap-1.5 cursor-pointer ${
-              gameState.audience_light_show?.active
-                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/30'
-                : 'bg-amber-950/30 text-amber-300 hover:bg-amber-900/40 border-amber-500/30'
-            }`}
-          >
-            <Sparkles className="w-3 h-3 text-amber-300" />
-            <span>Biển Ánh Sáng Khán Phòng</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={onOpenLightShow}
+              className={`px-2.5 py-1 rounded-[2px] font-mono text-[10px] font-bold border transition flex items-center gap-1.5 cursor-pointer ${
+                gameState.audience_light_show?.active
+                  ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/30'
+                  : 'bg-amber-950/30 text-amber-300 hover:bg-amber-900/40 border-amber-500/30'
+              }`}
+            >
+              <Sparkles className={`w-3 h-3 ${gameState.audience_light_show?.active ? 'text-slate-950' : 'text-amber-300'}`} />
+              <span>Biển Ánh Sáng Khán Phòng</span>
+            </button>
+            {gameState.audience_light_show?.active && (
+              <button
+                id="btn-hub-stop-light-show"
+                type="button"
+                onClick={() => {
+                  soundFx.playLock();
+                  syncService.updateGameState({ audience_light_show: null });
+                }}
+                className="px-2.5 py-1 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] font-black border border-rose-300 shadow-md cursor-pointer active:scale-95"
+              >
+                Tắt nhanh
+              </button>
+            )}
+          </div>
         )}
 
         {/* Grand Finale Trigger */}

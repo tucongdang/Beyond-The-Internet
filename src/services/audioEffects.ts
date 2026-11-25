@@ -1,3 +1,32 @@
+import {
+  LUCKY_DRAW_MUSIC_URL,
+  LUCKY_DRAW_WAITING_MUSIC_URL,
+  LUCKY_DRAW_SPIN_MUSIC_URL,
+  LUCKY_DRAW_SPIN_DURATION_SEC,
+  LuckyDrawActiveTrack,
+  LuckyDrawMusicReason,
+  AppMusicPhase,
+  AppSoundView,
+  resolveAppMusicPhase,
+  resolveLuckyDrawMusicPlayback,
+} from '../utils/luckyDrawAudioUtils';
+
+export interface AppSoundContextParams {
+  currentView: AppSoundView;
+  isAdminAuthenticated: boolean;
+  hasAudienceUser: boolean;
+  isOnboardingOpen: boolean;
+  activeModule: 'GAME' | 'LUCKY_DRAW';
+  gameStatus: 'STANDBY' | 'ACTIVE' | 'LOCKED' | 'REVEAL';
+  drawStatus: 'IDLE' | 'SPINNING' | 'REVEALED';
+  spinSeed?: number | null;
+  adminMusicMuted: boolean;
+  autoStopOnMusicEnd?: boolean;
+  isMatchBreakActive?: boolean;
+  eventScheduleEnabled?: boolean;
+  eventScheduleStatus?: 'SCHEDULED' | 'IN_PROGRESS' | 'CONCLUDED';
+}
+
 /**
  * Web Audio API synthesizer for live game show sound effects
  * 100% self-contained, no external audio files required
@@ -169,6 +198,95 @@ class SoundEffectsService {
   private enabledListeners: Set<(enabled: boolean) => void> = new Set();
   private audioActivityListeners: Set<(durationMs: number) => void> = new Set();
 
+  // Lucky Draw & App Phase background music controller (HTMLAudioElements loaded lazily on demand)
+  private luckyDrawAudio: HTMLAudioElement | null = null;
+  private luckyDrawWaitingAudio: HTMLAudioElement | null = null;
+  private luckyDrawSpinAudio: HTMLAudioElement | null = null;
+  private luckyDrawActiveTrack: LuckyDrawActiveTrack = 'none';
+  private hasAppSoundContext: boolean = false;
+  private hasHydratedAppDrawState: boolean = false;
+  private hasHydratedOwnerDrawState: boolean = false;
+  private hasUserInteracted: boolean = false;
+  private spinInteractionAuthorized: boolean = false;
+  private authorizedSpinSeed: number | null = null;
+  private appMusicPhase: AppMusicPhase = 'silent';
+  private appSoundContext: AppSoundContextParams = {
+    currentView: 'landing',
+    isAdminAuthenticated: false,
+    hasAudienceUser: false,
+    isOnboardingOpen: false,
+    activeModule: 'GAME',
+    gameStatus: 'STANDBY',
+    drawStatus: 'IDLE',
+    spinSeed: null,
+    adminMusicMuted: false,
+    autoStopOnMusicEnd: false,
+    isMatchBreakActive: false,
+    eventScheduleEnabled: false,
+    eventScheduleStatus: 'IN_PROGRESS',
+  };
+  private luckyDrawSyncParams: {
+    drawStatus: 'IDLE' | 'SPINNING' | 'REVEALED';
+    isLuckyDrawActive: boolean;
+    isLuckyDrawScreenMounted?: boolean;
+    adminMusicMuted: boolean;
+    localMuted: boolean;
+    spinSeed?: number | null;
+    autoStopOnMusicEnd?: boolean;
+  } = {
+    drawStatus: 'IDLE',
+    isLuckyDrawActive: false,
+    isLuckyDrawScreenMounted: false,
+    adminMusicMuted: false,
+    localMuted: false,
+    spinSeed: null,
+    autoStopOnMusicEnd: false,
+  };
+  private luckyDrawOwners: Map<string, {
+    drawStatus: 'IDLE' | 'SPINNING' | 'REVEALED';
+    isLuckyDrawActive: boolean;
+    isLuckyDrawScreenMounted?: boolean;
+    adminMusicMuted: boolean;
+    localMuted: boolean;
+    spinSeed?: number | null;
+    autoStopOnMusicEnd?: boolean;
+  }> = new Map();
+  private luckyDrawStopTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private luckyDrawPreviewActive: boolean = false;
+  private luckyDrawIsPlaying: boolean = false;
+  private luckyDrawAutoplayBlocked: boolean = false;
+  private luckyDrawError: string | null = null;
+  private luckyDrawReason: LuckyDrawMusicReason = 'inactive_or_revealed';
+  private luckyDrawShouldPlayTarget: boolean = false;
+  private luckyDrawCurrentSpinSeed: number | null = null;
+  private luckyDrawEndedForSeed: number | null = null;
+  private luckyDrawRevealTriggeredForSeed: number | null = null;
+  private luckyDrawTailFinishingSeed: number | null = null;
+  private luckyDrawTailSafetyTimer: ReturnType<typeof setTimeout> | null = null;
+  private waitingFadeInterval: ReturnType<typeof setInterval> | null = null;
+  private waitingFadeMode: 'in' | 'out' | null = null;
+  private pendingWaitingFadeIn: boolean = false;
+  private luckyDrawDurationSec: number = LUCKY_DRAW_SPIN_DURATION_SEC;
+  private luckyDrawCurrentTimeSec: number = 0;
+  private luckyDrawAbortRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  private luckyDrawGestureCleanup: (() => void) | null = null;
+  private luckyDrawListeners: Set<(state: {
+    isPlaying: boolean;
+    activeTrack: LuckyDrawActiveTrack;
+    musicPhase: AppMusicPhase;
+    spinInteractionAuthorized: boolean;
+    hasUserInteracted: boolean;
+    autoplayBlocked: boolean;
+    previewActive: boolean;
+    reason: LuckyDrawMusicReason;
+    error: string | null;
+    globalSoundEnabled: boolean;
+    volume: number;
+    durationSec: number;
+    currentTimeSec: number;
+  }) => void> = new Set();
+  private luckyDrawEndedListeners: Set<(spinSeed: number | null) => void> = new Set();
+
   public getSoundPack(): SoundPackTheme {
     return this.soundPack;
   }
@@ -217,6 +335,7 @@ class SoundEffectsService {
 
   public setVolume(vol: number): void {
     this.volume = Math.max(0, Math.min(1, vol));
+    this.clearWaitingFade();
     if (typeof window !== 'undefined') {
       localStorage.setItem('bti_soundfx_volume', String(this.volume));
     }
@@ -225,11 +344,164 @@ class SoundEffectsService {
         this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
       } catch {}
     }
+    if (this.luckyDrawSpinAudio) {
+      try {
+        this.luckyDrawSpinAudio.volume = this.volume;
+      } catch {}
+    }
+    if (this.luckyDrawWaitingAudio) {
+      try {
+        this.luckyDrawWaitingAudio.volume = this.volume;
+        if (this.luckyDrawActiveTrack === 'spinning' && !this.luckyDrawWaitingAudio.paused) {
+          this.luckyDrawWaitingAudio.pause();
+        }
+      } catch {}
+    }
+    if (this.luckyDrawAudio) {
+      try {
+        this.luckyDrawAudio.volume = this.volume;
+      } catch {}
+    }
     this.volumeListeners.forEach(listener => {
       try {
         listener(this.volume);
       } catch {}
     });
+    this.notifyLuckyDrawListeners();
+  }
+
+  private clearWaitingFade() {
+    if (this.waitingFadeInterval) {
+      clearInterval(this.waitingFadeInterval);
+      this.waitingFadeInterval = null;
+    }
+    this.waitingFadeMode = null;
+  }
+
+  private clearSpinTailSafetyTimer() {
+    if (this.luckyDrawTailSafetyTimer) {
+      clearTimeout(this.luckyDrawTailSafetyTimer);
+      this.luckyDrawTailSafetyTimer = null;
+    }
+  }
+
+  private fadeInWaitingAudio(audio: HTMLAudioElement, durationMs: number = 1500) {
+    this.clearWaitingFade();
+    const targetVolume = this.volume;
+    if (targetVolume <= 0.01) {
+      try {
+        audio.volume = targetVolume;
+      } catch {}
+      return;
+    }
+    try {
+      audio.volume = 0;
+    } catch {}
+    this.waitingFadeMode = 'in';
+    const startedAt = Date.now();
+    this.waitingFadeInterval = setInterval(() => {
+      if (
+        audio.paused ||
+        this.luckyDrawActiveTrack !== 'waiting' ||
+        !this.luckyDrawShouldPlayTarget
+      ) {
+        this.clearWaitingFade();
+        return;
+      }
+      const elapsed = Date.now() - startedAt;
+      const ratio = Math.min(1, elapsed / durationMs);
+      // Smooth ease-in curve so lottery music swells in gently after spin tail ends
+      const nextVol = Math.max(0, Math.min(this.volume, this.volume * ratio));
+      try {
+        audio.volume = nextVol;
+      } catch {}
+      if (ratio >= 1) {
+        this.clearWaitingFade();
+      }
+    }, 50);
+  }
+
+  private fadeOutWaitingAudio(audio: HTMLAudioElement | null, durationMs: number = 650) {
+    if (!audio || audio.paused) {
+      if (this.waitingFadeMode === 'out') {
+        this.clearWaitingFade();
+      }
+      return;
+    }
+    if (this.waitingFadeMode === 'out' && this.waitingFadeInterval) {
+      return;
+    }
+    this.clearWaitingFade();
+    const startVolume =
+      Number.isFinite(audio.volume) && audio.volume > 0 ? audio.volume : this.volume;
+    if (startVolume <= 0.01 || durationMs <= 0) {
+      try {
+        audio.pause();
+        audio.volume = this.volume;
+      } catch {}
+      return;
+    }
+    this.waitingFadeMode = 'out';
+    const startedAt = Date.now();
+    this.waitingFadeInterval = setInterval(() => {
+      if (audio.paused || this.luckyDrawActiveTrack !== 'spinning') {
+        this.clearWaitingFade();
+        try {
+          audio.volume = this.volume;
+        } catch {}
+        return;
+      }
+      const elapsed = Date.now() - startedAt;
+      const ratio = Math.min(1, elapsed / durationMs);
+      // Smooth fade-out curve as the spin wheel kicks in
+      const nextVol = Math.max(0, startVolume * (1 - ratio));
+      try {
+        audio.volume = nextVol;
+      } catch {}
+      if (ratio >= 1) {
+        this.clearWaitingFade();
+        try {
+          audio.pause();
+          audio.volume = this.volume;
+        } catch {}
+      }
+    }, 30);
+  }
+
+  private completeSpinTailAndFadeInWaiting() {
+    this.clearSpinTailSafetyTimer();
+    this.luckyDrawTailFinishingSeed = null;
+    this.luckyDrawCurrentTimeSec = 0;
+    if (this.luckyDrawSpinAudio) {
+      try {
+        this.luckyDrawSpinAudio.pause();
+        this.luckyDrawSpinAudio.currentTime = 0;
+      } catch {}
+    }
+    this.pendingWaitingFadeIn = true;
+    this.reconcileLuckyDrawMusic();
+  }
+
+  private activateSpinTailFinishing(seed: number) {
+    const spinAudio = this.luckyDrawSpinAudio;
+    if (!spinAudio || spinAudio.paused || spinAudio.ended || spinAudio.currentTime <= 0.1) {
+      return;
+    }
+    this.luckyDrawTailFinishingSeed = seed;
+    try {
+      spinAudio.loop = false;
+    } catch {}
+    this.clearSpinTailSafetyTimer();
+    const remainingSec =
+      Number.isFinite(spinAudio.duration) && spinAudio.duration > spinAudio.currentTime
+        ? spinAudio.duration - spinAudio.currentTime
+        : Math.max(0.5, 17.5 - spinAudio.currentTime);
+    const safetyMs = Math.min(5000, Math.max(1200, Math.round(remainingSec * 1000) + 600));
+    this.luckyDrawTailSafetyTimer = setTimeout(() => {
+      if (this.luckyDrawTailFinishingSeed !== null) {
+        this.completeSpinTailAndFadeInWaiting();
+      }
+    }, safetyMs);
   }
 
   public subscribeVolume(listener: (vol: number) => void): () => void {
@@ -259,7 +531,10 @@ class SoundEffectsService {
     this.adminMuted = muted;
     if (muted) {
       this.clearQueue();
+    } else if (this.luckyDrawPreviewActive) {
+      this.luckyDrawPreviewActive = false;
     }
+    this.reconcileLuckyDrawMusic();
   }
 
   public isAdminMuted(): boolean {
@@ -274,6 +549,7 @@ class SoundEffectsService {
     if (active) {
       this.clearQueue();
     }
+    this.reconcileLuckyDrawMusic();
   }
 
   public isTtsSpeaking(): boolean {
@@ -321,6 +597,7 @@ class SoundEffectsService {
         localStorage.setItem('bti_soundfx_enabled', String(enabled));
       } catch {}
     }
+    this.reconcileLuckyDrawMusic();
     this.enabledListeners.forEach(listener => {
       try {
         listener(enabled);
@@ -337,6 +614,1016 @@ class SoundEffectsService {
 
   public isEnabled(): boolean {
     return this.enabled;
+  }
+
+  private getOrCreateLuckyDrawWaitingAudio(): HTMLAudioElement | null {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+    if (!this.luckyDrawWaitingAudio) {
+      const audio = document.createElement('audio');
+      audio.id = 'bti-lucky-draw-waiting-audio';
+      audio.src = LUCKY_DRAW_WAITING_MUSIC_URL;
+      audio.loop = true;
+      audio.preload = 'auto';
+      audio.volume = this.volume;
+      audio.setAttribute('aria-hidden', 'true');
+      audio.style.display = 'none';
+
+      audio.addEventListener('pause', () => {
+        if (this.luckyDrawActiveTrack === 'waiting' || this.luckyDrawActiveTrack === 'none') {
+          this.luckyDrawIsPlaying = false;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('play', () => {
+        if (this.luckyDrawActiveTrack === 'waiting') {
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('playing', () => {
+        if (this.luckyDrawActiveTrack === 'waiting') {
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+          this.detachAutoplayGestureUnlock();
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('error', () => {
+        if (this.luckyDrawActiveTrack === 'waiting') {
+          const code = audio.error?.code;
+          const msg =
+            code === 1
+              ? 'Tải nhạc chờ bị hủy'
+              : code === 2
+              ? 'Lỗi mạng khi tải file nhạc chờ'
+              : code === 3
+              ? 'Lỗi giải mã file nhạc chờ'
+              : code === 4
+              ? 'Không tải được nguồn nhạc xổ số'
+              : 'Không thể phát nhạc chờ xổ số';
+          this.luckyDrawError = msg;
+          this.luckyDrawIsPlaying = false;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+
+      if (document.body) {
+        document.body.appendChild(audio);
+      }
+      this.luckyDrawWaitingAudio = audio;
+    }
+    return this.luckyDrawWaitingAudio;
+  }
+
+  private getOrCreateLuckyDrawSpinAudio(): HTMLAudioElement | null {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+    if (!this.luckyDrawSpinAudio) {
+      const audio = document.createElement('audio');
+      audio.id = 'bti-lucky-draw-audio';
+      audio.src = LUCKY_DRAW_SPIN_MUSIC_URL;
+      audio.loop = true;
+      audio.preload = 'auto';
+      audio.volume = this.volume;
+      audio.setAttribute('aria-hidden', 'true');
+      audio.style.display = 'none';
+
+      const syncAudioMetrics = () => {
+        this.luckyDrawDurationSec = LUCKY_DRAW_SPIN_DURATION_SEC;
+        if (Number.isFinite(audio.currentTime) && audio.currentTime >= 0) {
+          this.luckyDrawCurrentTimeSec = audio.currentTime;
+        }
+      };
+
+      const isEffectiveSpinningAutoStop = () => {
+        const hasOwner = this.luckyDrawOwners.size > 0;
+        const effectiveDrawStatus = hasOwner
+          ? this.luckyDrawSyncParams.drawStatus
+          : this.appSoundContext.drawStatus;
+        const effectiveAutoStop = hasOwner
+          ? Boolean(this.luckyDrawSyncParams.autoStopOnMusicEnd)
+          : Boolean(this.appSoundContext.autoStopOnMusicEnd);
+        return effectiveDrawStatus === 'SPINNING' && effectiveAutoStop && !this.luckyDrawPreviewActive;
+      };
+
+      const triggerRevealWithoutCuttingMusic = () => {
+        const completedSeed =
+          this.luckyDrawCurrentSpinSeed ??
+          this.luckyDrawSyncParams.spinSeed ??
+          this.appSoundContext.spinSeed ??
+          0;
+        if (this.luckyDrawRevealTriggeredForSeed === completedSeed) {
+          return;
+        }
+        this.luckyDrawRevealTriggeredForSeed = completedSeed;
+        // Reveal at 14.35s WITHOUT pausing spin audio; let the 17.35s file finish naturally
+        this.activateSpinTailFinishing(completedSeed);
+        this.notifyLuckyDrawListeners();
+        this.luckyDrawEndedListeners.forEach((listener) => {
+          try {
+            listener(this.luckyDrawCurrentSpinSeed);
+          } catch {}
+        });
+      };
+
+      audio.addEventListener('loadedmetadata', () => {
+        syncAudioMetrics();
+        this.notifyLuckyDrawListeners();
+      });
+      audio.addEventListener('durationchange', () => {
+        syncAudioMetrics();
+        this.notifyLuckyDrawListeners();
+      });
+      audio.addEventListener('timeupdate', () => {
+        syncAudioMetrics();
+        // Trigger winner reveal at 14.35s while keeping the spin track playing through 17.35s
+        if (isEffectiveSpinningAutoStop() && audio.currentTime >= LUCKY_DRAW_SPIN_DURATION_SEC) {
+          triggerRevealWithoutCuttingMusic();
+          return;
+        }
+        this.notifyLuckyDrawListeners();
+      });
+      audio.addEventListener('ended', () => {
+        syncAudioMetrics();
+        this.luckyDrawIsPlaying = false;
+        const completedSeed =
+          this.luckyDrawCurrentSpinSeed ??
+          this.luckyDrawSyncParams.spinSeed ??
+          this.appSoundContext.spinSeed ??
+          0;
+
+        if (isEffectiveSpinningAutoStop()) {
+          if (this.luckyDrawRevealTriggeredForSeed !== completedSeed) {
+            this.luckyDrawEndedForSeed = completedSeed;
+            triggerRevealWithoutCuttingMusic();
+          }
+          this.completeSpinTailAndFadeInWaiting();
+          return;
+        }
+
+        if (
+          this.luckyDrawTailFinishingSeed !== null ||
+          this.luckyDrawSyncParams.drawStatus === 'REVEALED' ||
+          this.appSoundContext.drawStatus === 'REVEALED'
+        ) {
+          this.completeSpinTailAndFadeInWaiting();
+          return;
+        }
+
+        this.notifyLuckyDrawListeners();
+      });
+      audio.addEventListener('pause', () => {
+        syncAudioMetrics();
+        if (this.luckyDrawActiveTrack === 'spinning' || this.luckyDrawActiveTrack === 'none') {
+          this.luckyDrawIsPlaying = false;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('play', () => {
+        syncAudioMetrics();
+        if (this.luckyDrawActiveTrack === 'spinning') {
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('playing', () => {
+        syncAudioMetrics();
+        if (this.luckyDrawActiveTrack === 'spinning') {
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+          this.detachAutoplayGestureUnlock();
+          this.notifyLuckyDrawListeners();
+        }
+      });
+      audio.addEventListener('error', () => {
+        if (this.luckyDrawActiveTrack === 'spinning') {
+          const code = audio.error?.code;
+          const msg =
+            code === 1
+              ? 'Tải nhạc bị hủy'
+              : code === 2
+              ? 'Lỗi mạng khi tải file nhạc'
+              : code === 3
+              ? 'Lỗi giải mã file nhạc'
+              : code === 4
+              ? 'Không tải được nguồn nhạc quay nón'
+              : 'Không thể phát file nhạc quay nón';
+          this.luckyDrawError = msg;
+          this.luckyDrawIsPlaying = false;
+          this.notifyLuckyDrawListeners();
+        }
+      });
+
+      if (document.body) {
+        document.body.appendChild(audio);
+      }
+      this.luckyDrawSpinAudio = audio;
+      this.luckyDrawAudio = audio;
+    }
+    return this.luckyDrawSpinAudio;
+  }
+
+  private getOrCreateLuckyDrawAudio(): HTMLAudioElement | null {
+    return this.getOrCreateLuckyDrawSpinAudio();
+  }
+
+  public getAppMusicPhase(): AppMusicPhase {
+    return this.appMusicPhase;
+  }
+
+  public getLuckyDrawMusicState() {
+    return {
+      isPlaying: this.luckyDrawIsPlaying,
+      activeTrack: this.luckyDrawActiveTrack,
+      musicPhase: this.appMusicPhase,
+      spinInteractionAuthorized: this.spinInteractionAuthorized,
+      hasUserInteracted: this.hasUserInteracted,
+      autoplayBlocked: this.luckyDrawAutoplayBlocked,
+      previewActive: this.luckyDrawPreviewActive,
+      reason: this.luckyDrawReason,
+      error: this.luckyDrawError,
+      globalSoundEnabled: this.enabled,
+      volume: this.volume,
+      durationSec: this.luckyDrawDurationSec,
+      currentTimeSec: this.luckyDrawCurrentTimeSec,
+    };
+  }
+
+  public subscribeLuckyDrawMusic(
+    listener: (state: {
+      isPlaying: boolean;
+      activeTrack: LuckyDrawActiveTrack;
+      musicPhase: AppMusicPhase;
+      spinInteractionAuthorized: boolean;
+      hasUserInteracted: boolean;
+      autoplayBlocked: boolean;
+      previewActive: boolean;
+      reason: LuckyDrawMusicReason;
+      error: string | null;
+      globalSoundEnabled: boolean;
+      volume: number;
+      durationSec: number;
+      currentTimeSec: number;
+    }) => void
+  ): () => void {
+    this.luckyDrawListeners.add(listener);
+    return () => {
+      this.luckyDrawListeners.delete(listener);
+    };
+  }
+
+  public subscribeLuckyDrawMusicEnded(
+    listener: (spinSeed: number | null) => void
+  ): () => void {
+    this.luckyDrawEndedListeners.add(listener);
+    return () => {
+      this.luckyDrawEndedListeners.delete(listener);
+    };
+  }
+
+  private notifyLuckyDrawListeners() {
+    const snapshot = this.getLuckyDrawMusicState();
+    this.luckyDrawListeners.forEach((listener) => {
+      try {
+        listener(snapshot);
+      } catch {}
+    });
+  }
+
+  public preloadLuckyDrawAudio() {
+    this.getOrCreateLuckyDrawWaitingAudio();
+    this.getOrCreateLuckyDrawSpinAudio();
+  }
+
+  private computeCurrentAppMusicPhase(): AppMusicPhase | undefined {
+    if (!this.hasAppSoundContext) return undefined;
+    const owners = Array.from(this.luckyDrawOwners.values());
+    const hasMountedLuckyDrawScreen = owners.some((o) => Boolean(o.isLuckyDrawScreenMounted));
+    const hasOwner = owners.length > 0;
+    const effectiveLuckyDrawStatus = hasOwner
+      ? this.luckyDrawSyncParams.drawStatus
+      : this.appSoundContext.drawStatus;
+
+    return resolveAppMusicPhase({
+      currentView: this.appSoundContext.currentView,
+      isAdminAuthenticated: this.appSoundContext.isAdminAuthenticated,
+      hasAudienceUser: this.appSoundContext.hasAudienceUser,
+      isOnboardingOpen: this.appSoundContext.isOnboardingOpen,
+      activeModule: this.appSoundContext.activeModule,
+      gameStatus: this.appSoundContext.gameStatus,
+      luckyDrawStatus: effectiveLuckyDrawStatus,
+      isLuckyDrawScreenMounted: hasMountedLuckyDrawScreen,
+      isMatchBreakActive: this.appSoundContext.isMatchBreakActive,
+      eventScheduleEnabled: this.appSoundContext.eventScheduleEnabled,
+      eventScheduleStatus: this.appSoundContext.eventScheduleStatus,
+      localPreviewActive: this.luckyDrawPreviewActive,
+      isSpinTailFinishing: this.luckyDrawTailFinishingSeed !== null,
+    });
+  }
+
+  /**
+   * Records a general browser user interaction so lobby/wait music can unlock without
+   * ever triggering or authorizing the spinning wheel sound.
+   */
+  public notifyUserInteraction() {
+    this.hasUserInteracted = true;
+    const effectivePhase = this.computeCurrentAppMusicPhase();
+    if (
+      effectivePhase === 'lobby_wait' &&
+      (this.luckyDrawAutoplayBlocked ||
+        this.luckyDrawActiveTrack === 'none' ||
+        (this.luckyDrawWaitingAudio && this.luckyDrawWaitingAudio.paused))
+    ) {
+      this.luckyDrawAutoplayBlocked = false;
+      this.reconcileLuckyDrawMusic();
+    }
+  }
+
+  /**
+   * Syncs full application view & game phase context from App.tsx so lobby/wait music,
+   * active game music suppression, and lucky draw spin sound are clearly separated.
+   */
+  public syncAppSoundContext(params: AppSoundContextParams) {
+    const prevDrawStatus = this.appSoundContext.drawStatus;
+    const prevSeed = this.appSoundContext.spinSeed ?? null;
+    const nextSeed = params.spinSeed ?? null;
+
+    this.hasAppSoundContext = true;
+    this.appSoundContext = {
+      ...params,
+      spinSeed: nextSeed,
+    };
+
+    if (params.drawStatus === 'SPINNING') {
+      const isFreshLiveTransition =
+        this.hasHydratedAppDrawState &&
+        (prevDrawStatus !== 'SPINNING' || (nextSeed !== null && nextSeed !== prevSeed));
+
+      if (isFreshLiveTransition) {
+        this.luckyDrawEndedForSeed = null;
+        this.luckyDrawRevealTriggeredForSeed = null;
+        this.luckyDrawTailFinishingSeed = null;
+        this.clearSpinTailSafetyTimer();
+        this.pendingWaitingFadeIn = false;
+        this.clearWaitingFade();
+        this.luckyDrawCurrentSpinSeed = nextSeed;
+        this.luckyDrawCurrentTimeSec = 0;
+        if (this.luckyDrawSpinAudio && this.luckyDrawSpinAudio.currentTime !== 0) {
+          try {
+            this.luckyDrawSpinAudio.currentTime = 0;
+          } catch {}
+        }
+        if (params.currentView !== 'admin' && this.hasUserInteracted) {
+          this.spinInteractionAuthorized = true;
+          this.authorizedSpinSeed = nextSeed;
+        } else if (this.authorizedSpinSeed !== nextSeed) {
+          this.spinInteractionAuthorized = false;
+        }
+      } else if (!this.hasHydratedAppDrawState && this.authorizedSpinSeed !== nextSeed) {
+        this.spinInteractionAuthorized = false;
+      }
+    } else if (params.drawStatus === 'REVEALED') {
+      this.spinInteractionAuthorized = false;
+      this.authorizedSpinSeed = null;
+      if (
+        prevDrawStatus === 'SPINNING' &&
+        this.luckyDrawTailFinishingSeed === null &&
+        this.luckyDrawSpinAudio &&
+        !this.luckyDrawSpinAudio.paused &&
+        !this.luckyDrawSpinAudio.ended &&
+        this.luckyDrawSpinAudio.currentTime > 0.1
+      ) {
+        this.activateSpinTailFinishing(prevSeed ?? nextSeed ?? 0);
+      }
+    } else {
+      this.spinInteractionAuthorized = false;
+      this.authorizedSpinSeed = null;
+      this.luckyDrawTailFinishingSeed = null;
+      this.luckyDrawRevealTriggeredForSeed = null;
+      this.clearSpinTailSafetyTimer();
+      if (this.luckyDrawOwners.size === 0) {
+        this.luckyDrawCurrentSpinSeed = null;
+        this.luckyDrawEndedForSeed = null;
+      }
+    }
+
+    this.hasHydratedAppDrawState = true;
+    this.reconcileLuckyDrawMusic();
+  }
+
+  public syncLuckyDrawMusic(params: {
+    ownerId?: string;
+    drawStatus: 'IDLE' | 'SPINNING' | 'REVEALED';
+    isLuckyDrawActive: boolean;
+    isLuckyDrawScreenMounted?: boolean;
+    adminMusicMuted: boolean;
+    localMuted: boolean;
+    spinSeed?: number | null;
+    autoStopOnMusicEnd?: boolean;
+  }) {
+    const ownerKey = params.ownerId || 'default';
+    const pendingStop = this.luckyDrawStopTimers.get(ownerKey);
+    if (pendingStop) {
+      clearTimeout(pendingStop);
+      this.luckyDrawStopTimers.delete(ownerKey);
+    }
+    const { ownerId: _ignored, ...cleanParams } = params;
+    const prevDrawStatus = this.luckyDrawSyncParams.drawStatus;
+    const prevSpinSeed = this.luckyDrawSyncParams.spinSeed ?? null;
+    const normalizedSeed = cleanParams.spinSeed ?? null;
+    if (cleanParams.drawStatus === 'SPINNING') {
+      const isFreshSpin =
+        prevDrawStatus !== 'SPINNING' ||
+        (normalizedSeed !== null && normalizedSeed !== this.luckyDrawCurrentSpinSeed);
+      if (isFreshSpin) {
+        this.luckyDrawEndedForSeed = null;
+        this.luckyDrawRevealTriggeredForSeed = null;
+        this.luckyDrawTailFinishingSeed = null;
+        this.clearSpinTailSafetyTimer();
+        this.pendingWaitingFadeIn = false;
+        this.clearWaitingFade();
+        this.luckyDrawCurrentSpinSeed = normalizedSeed;
+        this.luckyDrawCurrentTimeSec = 0;
+        if (this.luckyDrawSpinAudio && this.luckyDrawSpinAudio.currentTime !== 0) {
+          try {
+            this.luckyDrawSpinAudio.currentTime = 0;
+          } catch {}
+        }
+        if (
+          this.hasHydratedOwnerDrawState &&
+          !this.adminMuted &&
+          this.hasUserInteracted
+        ) {
+          this.spinInteractionAuthorized = true;
+          this.authorizedSpinSeed = normalizedSeed;
+        } else if (this.authorizedSpinSeed !== normalizedSeed) {
+          this.spinInteractionAuthorized = false;
+        }
+      } else if (!this.hasHydratedOwnerDrawState && this.authorizedSpinSeed !== normalizedSeed) {
+        this.spinInteractionAuthorized = false;
+      }
+    } else if (cleanParams.drawStatus === 'REVEALED') {
+      this.spinInteractionAuthorized = false;
+      this.authorizedSpinSeed = null;
+      if (
+        prevDrawStatus === 'SPINNING' &&
+        this.luckyDrawTailFinishingSeed === null &&
+        this.luckyDrawSpinAudio &&
+        !this.luckyDrawSpinAudio.paused &&
+        !this.luckyDrawSpinAudio.ended &&
+        this.luckyDrawSpinAudio.currentTime > 0.1
+      ) {
+        this.activateSpinTailFinishing(prevSpinSeed ?? normalizedSeed ?? 0);
+      }
+    } else {
+      this.spinInteractionAuthorized = false;
+      this.authorizedSpinSeed = null;
+      this.luckyDrawCurrentSpinSeed = null;
+      this.luckyDrawEndedForSeed = null;
+      this.luckyDrawRevealTriggeredForSeed = null;
+      this.luckyDrawTailFinishingSeed = null;
+      this.clearSpinTailSafetyTimer();
+    }
+
+    this.hasHydratedOwnerDrawState = true;
+    this.luckyDrawOwners.set(ownerKey, cleanParams);
+    this.luckyDrawOwners.delete('__prime__');
+    this.luckyDrawSyncParams = cleanParams;
+    this.reconcileLuckyDrawMusic();
+  }
+
+  public setLuckyDrawMusicPreview(active: boolean) {
+    this.luckyDrawPreviewActive = active;
+    if (active) {
+      this.hasUserInteracted = true;
+      this.spinInteractionAuthorized = true;
+      this.luckyDrawAutoplayBlocked = false;
+      this.luckyDrawError = null;
+    } else if (this.luckyDrawSyncParams.drawStatus !== 'SPINNING') {
+      this.spinInteractionAuthorized = false;
+    }
+    this.reconcileLuckyDrawMusic();
+  }
+
+  public stopLuckyDrawMusic(ownerId?: string) {
+    const ownerKey = ownerId || 'default';
+    if (ownerId) {
+      const existing = this.luckyDrawStopTimers.get(ownerKey);
+      if (existing) clearTimeout(existing);
+      const timer = setTimeout(() => {
+        this.luckyDrawStopTimers.delete(ownerKey);
+        this.luckyDrawOwners.delete(ownerKey);
+        const remaining = Array.from(this.luckyDrawOwners.values());
+        if (remaining.length > 0) {
+          this.luckyDrawSyncParams = remaining[remaining.length - 1];
+          this.reconcileLuckyDrawMusic();
+          return;
+        }
+        this.performStopLuckyDrawMusic();
+      }, 60);
+      this.luckyDrawStopTimers.set(ownerKey, timer);
+      return;
+    }
+    this.luckyDrawOwners.clear();
+    this.performStopLuckyDrawMusic();
+  }
+
+  private performStopLuckyDrawMusic() {
+    this.luckyDrawPreviewActive = false;
+    this.spinInteractionAuthorized = false;
+    this.authorizedSpinSeed = null;
+    this.luckyDrawCurrentSpinSeed = null;
+    this.luckyDrawEndedForSeed = null;
+    this.luckyDrawRevealTriggeredForSeed = null;
+    this.luckyDrawTailFinishingSeed = null;
+    this.pendingWaitingFadeIn = false;
+    this.clearSpinTailSafetyTimer();
+    this.clearWaitingFade();
+    this.luckyDrawCurrentTimeSec = 0;
+    if (this.luckyDrawAbortRetryTimer) {
+      clearTimeout(this.luckyDrawAbortRetryTimer);
+      this.luckyDrawAbortRetryTimer = null;
+    }
+    this.detachAutoplayGestureUnlock();
+    if (this.luckyDrawSpinAudio) {
+      try {
+        this.luckyDrawSpinAudio.pause();
+        this.luckyDrawSpinAudio.currentTime = 0;
+      } catch {}
+    }
+    this.luckyDrawSyncParams = {
+      ...this.luckyDrawSyncParams,
+      drawStatus: 'IDLE',
+      isLuckyDrawActive: false,
+      isLuckyDrawScreenMounted: false,
+      spinSeed: null,
+    };
+    const nextPhase = this.computeCurrentAppMusicPhase();
+    if (nextPhase !== 'lobby_wait' && this.luckyDrawWaitingAudio) {
+      try {
+        this.luckyDrawWaitingAudio.pause();
+      } catch {}
+    }
+    this.reconcileLuckyDrawMusic();
+  }
+
+  /**
+   * Preloads the Lucky Draw waiting and spin tracks when entering Lucky Draw controls.
+   */
+  public primeLuckyDrawAudio(_adminMusicMuted: boolean = false) {
+    this.preloadLuckyDrawAudio();
+  }
+
+  /**
+   * Synchronously primes and starts the Lucky Draw spin track inside the Spin button click handler
+   * so browser autoplay policies allow immediate playback from 0:00.
+   */
+  public primeLuckyDrawSpinAudio(
+    adminMusicMuted: boolean = false,
+    spinSeed: number | null = Date.now(),
+    autoStopOnMusicEnd: boolean = false
+  ) {
+    this.clearSpinTailSafetyTimer();
+    this.pendingWaitingFadeIn = false;
+    const shouldSilenceImmediately =
+      !this.enabled || adminMusicMuted || this.luckyDrawSyncParams.localMuted || this.isTtsSpeaking();
+    if (shouldSilenceImmediately) {
+      this.clearWaitingFade();
+      if (this.luckyDrawWaitingAudio && !this.luckyDrawWaitingAudio.paused) {
+        try {
+          this.luckyDrawWaitingAudio.pause();
+          this.luckyDrawWaitingAudio.volume = this.volume;
+        } catch {}
+      }
+    } else if (this.luckyDrawWaitingAudio && !this.luckyDrawWaitingAudio.paused) {
+      this.luckyDrawActiveTrack = 'spinning';
+      this.fadeOutWaitingAudio(this.luckyDrawWaitingAudio, 650);
+    }
+    const audio = this.getOrCreateLuckyDrawSpinAudio();
+    this.hasUserInteracted = true;
+    this.spinInteractionAuthorized = true;
+    this.authorizedSpinSeed = spinSeed;
+    this.luckyDrawPreviewActive = false;
+    this.luckyDrawEndedForSeed = null;
+    this.luckyDrawRevealTriggeredForSeed = null;
+    this.luckyDrawTailFinishingSeed = null;
+    this.luckyDrawCurrentSpinSeed = spinSeed;
+    this.luckyDrawCurrentTimeSec = 0;
+    this.luckyDrawDurationSec = LUCKY_DRAW_SPIN_DURATION_SEC;
+    if (audio) {
+      try {
+        audio.loop = !autoStopOnMusicEnd;
+        audio.currentTime = 0;
+      } catch {}
+    }
+    const primeParams = {
+      ...this.luckyDrawSyncParams,
+      drawStatus: 'SPINNING' as const,
+      isLuckyDrawActive: true,
+      isLuckyDrawScreenMounted: true,
+      adminMusicMuted,
+      spinSeed,
+      autoStopOnMusicEnd,
+    };
+    this.luckyDrawOwners.set('__prime__', primeParams);
+    this.luckyDrawSyncParams = primeParams;
+    if (!this.enabled || adminMusicMuted || this.luckyDrawSyncParams.localMuted || this.isTtsSpeaking()) {
+      this.reconcileLuckyDrawMusic();
+      return;
+    }
+    this.luckyDrawAutoplayBlocked = false;
+    this.luckyDrawError = null;
+    this.reconcileLuckyDrawMusic();
+  }
+
+  public unlockLuckyDrawMusic(forceEnableGlobalSound: boolean = false) {
+    this.hasUserInteracted = true;
+    this.spinInteractionAuthorized = true;
+    this.authorizedSpinSeed =
+      this.luckyDrawCurrentSpinSeed ??
+      this.luckyDrawSyncParams.spinSeed ??
+      this.appSoundContext.spinSeed ??
+      null;
+    if (forceEnableGlobalSound) {
+      if (!this.enabled) {
+        this.setEnabled(true);
+      }
+      if (this.volume <= 0.01) {
+        this.setVolume(0.8);
+      }
+    }
+    if (this.luckyDrawError) {
+      if (this.luckyDrawSpinAudio) {
+        try {
+          this.luckyDrawSpinAudio.load();
+        } catch {}
+      }
+      if (this.luckyDrawWaitingAudio) {
+        try {
+          this.luckyDrawWaitingAudio.load();
+        } catch {}
+      }
+    }
+    this.luckyDrawAutoplayBlocked = false;
+    this.luckyDrawError = null;
+    this.detachAutoplayGestureUnlock();
+    this.reconcileLuckyDrawMusic();
+  }
+
+  private detachAutoplayGestureUnlock() {
+    if (this.luckyDrawGestureCleanup) {
+      this.luckyDrawGestureCleanup();
+      this.luckyDrawGestureCleanup = null;
+    }
+  }
+
+  private attachAutoplayGestureUnlock() {
+    if (typeof window === 'undefined' || this.luckyDrawGestureCleanup) return;
+    if (this.luckyDrawActiveTrack !== 'waiting') return;
+    const onGesture = () => {
+      if (!this.luckyDrawShouldPlayTarget || this.luckyDrawActiveTrack !== 'waiting') {
+        this.detachAutoplayGestureUnlock();
+        return;
+      }
+      this.hasUserInteracted = true;
+      this.luckyDrawAutoplayBlocked = false;
+      this.reconcileLuckyDrawMusic();
+    };
+    // Use click/touchend/pointerup/keydown because pointerdown alone often does not count as media user activation
+    window.addEventListener('click', onGesture, { capture: true });
+    window.addEventListener('touchend', onGesture, { capture: true });
+    window.addEventListener('pointerup', onGesture, { capture: true });
+    window.addEventListener('keydown', onGesture, { capture: true });
+    this.luckyDrawGestureCleanup = () => {
+      window.removeEventListener('click', onGesture, true);
+      window.removeEventListener('touchend', onGesture, true);
+      window.removeEventListener('pointerup', onGesture, true);
+      window.removeEventListener('keydown', onGesture, true);
+    };
+  }
+
+  private attemptPlayLuckyDrawAudio(
+    audio: HTMLAudioElement,
+    expectedTrack: 'waiting' | 'spinning',
+    fadeInOnStart: boolean = false
+  ) {
+    const isStillTargetTrack = () =>
+      this.luckyDrawActiveTrack === expectedTrack && this.luckyDrawShouldPlayTarget;
+
+    try {
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(() => {
+            if (!isStillTargetTrack()) {
+              try {
+                audio.pause();
+              } catch {}
+              if (this.luckyDrawActiveTrack === 'none' || !this.luckyDrawShouldPlayTarget) {
+                this.luckyDrawIsPlaying = false;
+              }
+              this.notifyLuckyDrawListeners();
+              return;
+            }
+            if (fadeInOnStart && expectedTrack === 'waiting') {
+              this.fadeInWaitingAudio(audio, 1500);
+            }
+            this.luckyDrawIsPlaying = true;
+            this.luckyDrawAutoplayBlocked = false;
+            this.luckyDrawError = null;
+            this.detachAutoplayGestureUnlock();
+            this.notifyLuckyDrawListeners();
+          })
+          .catch((err: unknown) => {
+            const errName = err instanceof Error ? err.name : '';
+            const errMsg = err instanceof Error ? err.message : '';
+            if (!isStillTargetTrack()) {
+              if (this.luckyDrawActiveTrack === 'none' || !this.luckyDrawShouldPlayTarget) {
+                this.luckyDrawIsPlaying = false;
+              }
+              this.notifyLuckyDrawListeners();
+              return;
+            }
+            if (errName === 'NotAllowedError') {
+              this.luckyDrawAutoplayBlocked = true;
+              this.luckyDrawError = null;
+              if (this.luckyDrawActiveTrack === 'waiting') {
+                this.attachAutoplayGestureUnlock();
+              } else {
+                this.detachAutoplayGestureUnlock();
+              }
+            } else if (errName === 'AbortError') {
+              if (isStillTargetTrack() && audio.paused && !this.luckyDrawAbortRetryTimer) {
+                this.luckyDrawAbortRetryTimer = setTimeout(() => {
+                  this.luckyDrawAbortRetryTimer = null;
+                  if (isStillTargetTrack() && audio.paused) {
+                    this.attemptPlayLuckyDrawAudio(audio, expectedTrack, fadeInOnStart);
+                  }
+                }, 150);
+              }
+            } else {
+              this.luckyDrawError = errMsg || 'Không thể phát nhạc quay số';
+            }
+            this.luckyDrawIsPlaying = false;
+            this.notifyLuckyDrawListeners();
+          });
+      } else {
+        if (!isStillTargetTrack()) {
+          try {
+            audio.pause();
+          } catch {}
+          if (this.luckyDrawActiveTrack === 'none' || !this.luckyDrawShouldPlayTarget) {
+            this.luckyDrawIsPlaying = false;
+          }
+          this.notifyLuckyDrawListeners();
+          return;
+        }
+        if (fadeInOnStart && expectedTrack === 'waiting') {
+          this.fadeInWaitingAudio(audio, 1500);
+        }
+        this.luckyDrawIsPlaying = true;
+        this.luckyDrawAutoplayBlocked = false;
+        this.luckyDrawError = null;
+        this.detachAutoplayGestureUnlock();
+        this.notifyLuckyDrawListeners();
+      }
+    } catch (err: unknown) {
+      if (!isStillTargetTrack()) {
+        if (this.luckyDrawActiveTrack === 'none' || !this.luckyDrawShouldPlayTarget) {
+          this.luckyDrawIsPlaying = false;
+        }
+        this.notifyLuckyDrawListeners();
+        return;
+      }
+      const errName = err instanceof Error ? err.name : '';
+      if (errName === 'NotAllowedError') {
+        this.luckyDrawAutoplayBlocked = true;
+        if (this.luckyDrawActiveTrack === 'waiting') {
+          this.attachAutoplayGestureUnlock();
+        } else {
+          this.detachAutoplayGestureUnlock();
+        }
+      } else {
+        this.luckyDrawError = err instanceof Error ? err.message : 'Không thể phát nhạc quay số';
+      }
+      this.luckyDrawIsPlaying = false;
+      this.notifyLuckyDrawListeners();
+    }
+  }
+
+  private reconcileLuckyDrawMusic() {
+    const owners = Array.from(this.luckyDrawOwners.values());
+    const hasOwner = owners.length > 0;
+    const isLuckyDrawScreenMounted = owners.some((o) => Boolean(o.isLuckyDrawScreenMounted));
+    const effectiveDrawStatus = hasOwner
+      ? this.luckyDrawSyncParams.drawStatus
+      : this.appSoundContext.drawStatus;
+    const effectiveAdminMuted = hasOwner
+      ? this.luckyDrawSyncParams.adminMusicMuted
+      : this.appSoundContext.adminMusicMuted;
+    const effectiveLocalMuted = hasOwner ? this.luckyDrawSyncParams.localMuted : false;
+    const effectiveAutoStop = hasOwner
+      ? Boolean(this.luckyDrawSyncParams.autoStopOnMusicEnd)
+      : Boolean(this.appSoundContext.autoStopOnMusicEnd);
+    const effectiveSeed = hasOwner
+      ? this.luckyDrawSyncParams.spinSeed
+      : this.appSoundContext.spinSeed;
+
+    const activeSeedKey = this.luckyDrawCurrentSpinSeed ?? effectiveSeed ?? 0;
+    const hasEndedForCurrentSpin = Boolean(
+      effectiveAutoStop &&
+        this.luckyDrawEndedForSeed !== null &&
+        this.luckyDrawEndedForSeed === activeSeedKey
+    );
+    const isSpinTailFinishing = this.luckyDrawTailFinishingSeed !== null;
+
+    const computedPhase = this.computeCurrentAppMusicPhase();
+    this.appMusicPhase =
+      computedPhase ??
+      (this.luckyDrawPreviewActive
+        ? 'lucky_draw_spin'
+        : this.adminMuted && !isLuckyDrawScreenMounted
+        ? 'silent'
+        : effectiveDrawStatus === 'SPINNING' || (effectiveDrawStatus === 'REVEALED' && isSpinTailFinishing)
+        ? 'lucky_draw_spin'
+        : (effectiveDrawStatus === 'IDLE' || (effectiveDrawStatus === 'REVEALED' && !isSpinTailFinishing)) &&
+          this.luckyDrawSyncParams.isLuckyDrawActive
+        ? 'lobby_wait'
+        : 'silent');
+
+    const decision = resolveLuckyDrawMusicPlayback({
+      drawStatus: effectiveDrawStatus,
+      isLuckyDrawActive: hasOwner
+        ? this.luckyDrawSyncParams.isLuckyDrawActive
+        : computedPhase === 'lobby_wait' || computedPhase === 'lucky_draw_spin',
+      isLuckyDrawScreenMounted,
+      isAdminView: this.hasAppSoundContext
+        ? this.appSoundContext.currentView === 'admin'
+        : this.adminMuted,
+      adminMusicMuted: effectiveAdminMuted,
+      localMuted: effectiveLocalMuted,
+      globalSoundEnabled: this.enabled,
+      localPreviewActive: this.luckyDrawPreviewActive,
+      isTtsSpeaking: this.isTtsSpeaking(),
+      autoStopOnMusicEnd: effectiveAutoStop,
+      hasEndedForCurrentSpin,
+      appMusicPhase: computedPhase,
+      spinInteractionAuthorized: this.spinInteractionAuthorized,
+      isSpinTailFinishing,
+    });
+
+    this.luckyDrawReason = decision.reason;
+    this.luckyDrawShouldPlayTarget = decision.shouldPlay;
+    this.luckyDrawActiveTrack = decision.activeTrack;
+
+    if (decision.activeTrack === 'spinning') {
+      if (decision.shouldPlay) {
+        if (this.luckyDrawWaitingAudio && !this.luckyDrawWaitingAudio.paused) {
+          this.fadeOutWaitingAudio(this.luckyDrawWaitingAudio, 650);
+        }
+      } else {
+        this.clearWaitingFade();
+        if (this.luckyDrawWaitingAudio && !this.luckyDrawWaitingAudio.paused) {
+          try {
+            this.luckyDrawWaitingAudio.pause();
+            this.luckyDrawWaitingAudio.volume = this.volume;
+          } catch {}
+        }
+      }
+
+      if (decision.shouldPlay) {
+        const spinAudio = this.getOrCreateLuckyDrawSpinAudio();
+        if (!spinAudio) {
+          this.notifyLuckyDrawListeners();
+          return;
+        }
+        spinAudio.loop = decision.shouldLoop;
+        spinAudio.volume = this.volume;
+        spinAudio.muted = false;
+        if (spinAudio.paused) {
+          this.attemptPlayLuckyDrawAudio(spinAudio, 'spinning');
+        } else {
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawError = null;
+          this.detachAutoplayGestureUnlock();
+          this.notifyLuckyDrawListeners();
+        }
+      } else {
+        if (this.luckyDrawAbortRetryTimer) {
+          clearTimeout(this.luckyDrawAbortRetryTimer);
+          this.luckyDrawAbortRetryTimer = null;
+        }
+        this.detachAutoplayGestureUnlock();
+        if (this.luckyDrawSpinAudio) {
+          try {
+            this.luckyDrawSpinAudio.pause();
+            if (decision.resetPosition && this.luckyDrawSpinAudio.currentTime !== 0) {
+              this.luckyDrawSpinAudio.currentTime = 0;
+              this.luckyDrawCurrentTimeSec = 0;
+            }
+          } catch {}
+        }
+        this.luckyDrawIsPlaying = false;
+        if (decision.resetPosition) {
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+        }
+        this.notifyLuckyDrawListeners();
+      }
+      return;
+    }
+
+    if (decision.activeTrack === 'waiting') {
+      if (this.luckyDrawSpinAudio && !this.luckyDrawSpinAudio.paused) {
+        try {
+          this.luckyDrawSpinAudio.pause();
+          this.luckyDrawSpinAudio.currentTime = 0;
+        } catch {}
+      }
+
+      if (decision.shouldPlay) {
+        const waitingAudio = this.getOrCreateLuckyDrawWaitingAudio();
+        if (!waitingAudio) {
+          this.notifyLuckyDrawListeners();
+          return;
+        }
+        waitingAudio.loop = decision.shouldLoop;
+        waitingAudio.muted = false;
+        if (waitingAudio.paused) {
+          if (this.pendingWaitingFadeIn) {
+            this.pendingWaitingFadeIn = false;
+            waitingAudio.volume = 0;
+            this.attemptPlayLuckyDrawAudio(waitingAudio, 'waiting', true);
+          } else {
+            this.clearWaitingFade();
+            waitingAudio.volume = this.volume;
+            this.attemptPlayLuckyDrawAudio(waitingAudio, 'waiting', false);
+          }
+        } else {
+          if (this.waitingFadeMode === 'out') {
+            this.clearWaitingFade();
+            waitingAudio.volume = this.volume;
+          } else if (!this.waitingFadeInterval) {
+            waitingAudio.volume = this.volume;
+          }
+          this.luckyDrawIsPlaying = true;
+          this.luckyDrawError = null;
+          this.detachAutoplayGestureUnlock();
+          this.notifyLuckyDrawListeners();
+        }
+      } else {
+        this.clearWaitingFade();
+        if (this.luckyDrawAbortRetryTimer) {
+          clearTimeout(this.luckyDrawAbortRetryTimer);
+          this.luckyDrawAbortRetryTimer = null;
+        }
+        this.detachAutoplayGestureUnlock();
+        if (this.luckyDrawWaitingAudio) {
+          try {
+            this.luckyDrawWaitingAudio.pause();
+          } catch {}
+        }
+        this.luckyDrawIsPlaying = false;
+        if (decision.resetPosition) {
+          this.luckyDrawAutoplayBlocked = false;
+          this.luckyDrawError = null;
+        }
+        this.notifyLuckyDrawListeners();
+      }
+      return;
+    }
+
+    // activeTrack === 'none'
+    if (this.luckyDrawAbortRetryTimer) {
+      clearTimeout(this.luckyDrawAbortRetryTimer);
+      this.luckyDrawAbortRetryTimer = null;
+    }
+    this.detachAutoplayGestureUnlock();
+    if (this.luckyDrawSpinAudio) {
+      try {
+        this.luckyDrawSpinAudio.pause();
+        if (decision.resetPosition && this.luckyDrawSpinAudio.currentTime !== 0) {
+          this.luckyDrawSpinAudio.currentTime = 0;
+          this.luckyDrawCurrentTimeSec = 0;
+        }
+      } catch {}
+    }
+    if (this.luckyDrawWaitingAudio) {
+      try {
+        this.luckyDrawWaitingAudio.pause();
+      } catch {}
+    }
+    this.luckyDrawIsPlaying = false;
+    if (decision.resetPosition) {
+      this.luckyDrawAutoplayBlocked = false;
+      this.luckyDrawError = null;
+    }
+    this.notifyLuckyDrawListeners();
   }
 
   /** Error feedback buzz/tone (routes to active sound pack) */

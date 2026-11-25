@@ -71,5 +71,15 @@ service cloud.firestore {
     match /admin_users/{adminId} {
       allow read, write: if true;
     }
+
+    // 14. Contestant Predictions (Pre-match audience contestant picks)
+    match /contestant_predictions/{predictionId} {
+      allow read, write: if true;
+    }
+
+    // 15. Champion Votes (Audience voting for match champion)
+    match /champion_votes/{voteId} {
+      allow read, write: if true;
+    }
   }
 }

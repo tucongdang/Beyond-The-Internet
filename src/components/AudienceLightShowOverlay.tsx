@@ -28,6 +28,12 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
   // Auto-dismiss countdown
   const [remainingSec, setRemainingSec] = useState<number | null>(null);
 
+  const handleDismiss = useCallback(() => {
+    vibrateTap();
+    setIsDismissed(true);
+    if (onDismiss) onDismiss();
+  }, [onDismiss]);
+
   useEffect(() => {
     if (!lightShow || !lightShow.active) {
       setIsMinimized(false);
@@ -36,19 +42,29 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
       return;
     }
 
-    // Reset minimized state on fresh trigger (new timestamp)
-    setIsMinimized(false);
-    setIsDismissed(false);
-
     if (lightShow.auto_dismiss_seconds && lightShow.auto_dismiss_seconds > 0) {
       const elapsed = Math.floor((Date.now() - lightShow.timestamp) / 1000);
       const left = Math.max(0, lightShow.auto_dismiss_seconds - elapsed);
+
+      // Already expired before mount or immediately at 0 -> dismiss right away
+      if (left <= 0) {
+        setIsMinimized(false);
+        setRemainingSec(0);
+        setIsDismissed(true);
+        if (onDismiss) onDismiss();
+        return;
+      }
+
+      setIsMinimized(false);
+      setIsDismissed(false);
       setRemainingSec(left);
 
       const interval = setInterval(() => {
         setRemainingSec(prev => {
           if (prev === null || prev <= 1) {
             clearInterval(interval);
+            setIsDismissed(true);
+            if (onDismiss) onDismiss();
             return 0;
           }
           return prev - 1;
@@ -57,7 +73,25 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
 
       return () => clearInterval(interval);
     }
-  }, [lightShow?.timestamp, lightShow?.active, lightShow?.auto_dismiss_seconds]);
+
+    // Reset minimized/dismissed state on fresh trigger (new timestamp) without expiry
+    setIsMinimized(false);
+    setIsDismissed(false);
+    setRemainingSec(null);
+  }, [lightShow?.timestamp, lightShow?.active, lightShow?.auto_dismiss_seconds, onDismiss]);
+
+  // Quick-off Escape keyboard shortcut while overlay is visible
+  useEffect(() => {
+    if (!lightShow?.active || isDismissed) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleDismiss();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [lightShow?.active, isDismissed, handleDismiss]);
 
   // Haptic beat synchronization
   useEffect(() => {
@@ -138,17 +172,18 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
 
         {/* Quick Close Button */}
         <button
+          id="btn-light-show-pill-close"
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            vibrateTap();
-            setIsDismissed(true);
-            if (onDismiss) onDismiss();
+            handleDismiss();
           }}
-          className="p-2 sm:p-2.5 rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-[180%] hover:bg-rose-950/80 text-white/70 hover:text-rose-200 border border-purple-400/40 hover:border-rose-400/60 transition cursor-pointer shadow-[0_12px_36px_rgba(0,0,0,0.8)]"
-          title="Đóng hoàn toàn thông báo"
+          aria-label="Tắt nhanh Biển Ánh Sáng"
+          className="min-w-[40px] min-h-[40px] px-2.5 rounded-[3px] bg-[#1a0828]/95 backdrop-blur-[24px] saturate-[180%] hover:bg-rose-950/90 text-white/80 hover:text-rose-200 border border-purple-400/40 hover:border-rose-400/60 transition cursor-pointer shadow-[0_12px_36px_rgba(0,0,0,0.8)] flex items-center justify-center gap-1 text-[11px] font-mono font-bold"
+          title="Tắt nhanh Biển Ánh Sáng"
         >
           <X className="w-4 h-4" />
+          <span className="hidden sm:inline">Tắt</span>
         </button>
       </div>,
       document.body
@@ -205,11 +240,19 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
   return createPortal(
     <div
       id="audience-light-show-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Biển Ánh Sáng Sân Khấu"
       onTouchStart={handleScreenTouch}
       onClick={handleScreenTouch}
-      className={`fixed inset-0 z-[99999] ${styleConfig.bg} text-white flex flex-col justify-between p-4 sm:p-6 select-none overflow-hidden touch-none transition-colors duration-300`}
-      style={styleConfig.animationStyle}
+      onDoubleClick={handleDismiss}
+      className="fixed inset-0 z-[99999] text-white flex flex-col justify-between p-4 sm:p-6 select-none overflow-hidden touch-none"
     >
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 z-0 transition-colors duration-300 ${styleConfig.bg}`}
+        style={styleConfig.animationStyle}
+      />
       <style>{`
         @keyframes lightShowCosmic {
           0% { filter: brightness(1) saturate(1.2); }
@@ -255,15 +298,15 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
         />
       ))}
 
-      {/* Top action header: countdown & minimize/close controls (Fluent UI 2) */}
-      <div className="relative z-10 flex items-center justify-between w-full max-w-4xl mx-auto">
+      {/* Top action header: countdown & minimize/quick-close controls (Fluent UI 2) */}
+      <div className="relative z-10 flex items-center justify-between gap-2 w-full max-w-4xl mx-auto">
         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-[24px] saturate-150 px-3 py-1.5 rounded-[3px] border border-white/20 shadow-lg">
           <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
           <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
             LIVE FLASH MOB
           </span>
           {typeof remainingSec === 'number' && remainingSec > 0 && (
-            <span className="ml-1 text-[11px] font-mono font-black text-amber-300 bg-amber-500/20 border border-amber-400/30 px-1.5 py-0.5 rounded-[2px]">
+            <span className="ml-1 text-[11px] font-mono font-black text-amber-300 bg-amber-500/20 border border-amber-400/30 px-1.5 py-0.5 rounded-[2px] tabular-nums">
               {remainingSec}s
             </span>
           )}
@@ -272,32 +315,34 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
         <div className="flex items-center gap-2">
           {/* Minimize / Tạm ẩn Button */}
           <button
+            id="btn-light-show-minimize"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               vibrateTap();
               setIsMinimized(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-black/60 hover:bg-black/80 backdrop-blur-[24px] saturate-150 text-white border border-white/20 hover:border-amber-400/50 text-xs font-mono font-bold transition shadow-lg cursor-pointer"
+            className="min-h-[40px] flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-black/60 hover:bg-black/80 backdrop-blur-[24px] saturate-150 text-white border border-white/20 hover:border-amber-400/50 text-xs font-mono font-bold transition shadow-lg cursor-pointer active:scale-95"
             title="Tạm ẩn để quay lại giao diện thi"
           >
             <Minimize2 className="w-3.5 h-3.5 text-amber-300" />
             <span className="hidden sm:inline">Tạm Ẩn</span>
           </button>
 
-          {/* Complete Dismiss Button */}
+          {/* Complete Quick-Close Button */}
           <button
+            id="btn-light-show-quick-close"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              vibrateTap();
-              setIsDismissed(true);
-              if (onDismiss) onDismiss();
+              handleDismiss();
             }}
-            className="p-1.5 rounded-[3px] bg-black/60 hover:bg-rose-950/80 backdrop-blur-[24px] saturate-150 text-white/80 hover:text-white border border-white/20 hover:border-rose-400/60 transition cursor-pointer shadow-lg"
-            title="Đóng hoàn toàn"
+            aria-label="Tắt nhanh Biển Ánh Sáng"
+            className="min-h-[40px] flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-rose-950/85 hover:bg-rose-700 backdrop-blur-[24px] saturate-150 text-white border border-rose-300/60 hover:border-white text-xs font-mono font-bold transition cursor-pointer shadow-lg active:scale-95"
+            title="Tắt nhanh Biển Ánh Sáng (Esc)"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 shrink-0" />
+            <span>Tắt nhanh</span>
           </button>
         </div>
       </div>
@@ -326,12 +371,24 @@ export const AudienceLightShowOverlay: React.FC<AudienceLightShowOverlayProps> =
         </div>
 
         <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-[3px] border border-white/20 text-xs font-medium text-white/90 shadow-md">
-          👆 Chạm vào màn hình để tạo sóng ánh sáng
+          Chạm màn hình để tạo sóng ánh sáng · Nhấn đúp để tắt nhanh
         </div>
       </div>
 
-      {/* Bottom status bar */}
-      <div className="relative z-10 text-center pb-2">
+      {/* Bottom quick-dismiss bar */}
+      <div className="relative z-10 flex flex-col items-center gap-2 pb-2">
+        <button
+          id="btn-light-show-bottom-quick-close"
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDismiss();
+          }}
+          className="min-h-[42px] px-4 py-2 rounded-[3px] bg-black/65 hover:bg-rose-950/90 border border-white/30 hover:border-rose-300 text-xs font-mono font-bold text-white flex items-center gap-2 shadow-lg cursor-pointer active:scale-95 transition"
+        >
+          <X className="w-4 h-4 text-rose-300" />
+          <span>Tắt nhanh Biển Ánh Sáng</span>
+        </button>
         <p className="text-[11px] font-mono uppercase tracking-widest text-white/80">
           Beyond The Internet 2027 • Synchronized Crowd Experience
         </p>

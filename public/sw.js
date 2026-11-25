@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const SW_CACHE_VERSION = 'v2';
+const SW_CACHE_VERSION = 'v3';
 const SHELL_CACHE_NAME = `bti-shell-${SW_CACHE_VERSION}`;
 const FONTS_CACHE_NAME = `bti-fonts-${SW_CACHE_VERSION}`;
 const ASSETS_CACHE_NAME = `bti-assets-${SW_CACHE_VERSION}`;
@@ -57,6 +57,7 @@ let lastBgSyncReplayedCount = 0;
 
 function classifyRequest(request) {
   if (!request || request.method !== 'GET') return 'BYPASS';
+  if (request.headers && request.headers.has('range')) return 'BYPASS';
 
   let parsed;
   try {
@@ -649,12 +650,28 @@ async function handleNetworkFirstHtml(request) {
 async function handleNetworkFirstDevModule(request) {
   const assetCache = await caches.open(ASSETS_CACHE_NAME);
   try {
-    const networkRes = await fetch(request);
+    let networkRes = await fetch(request);
+    if (networkRes && (networkRes.status === 502 || networkRes.status === 503 || networkRes.status === 504)) {
+      await new Promise((r) => setTimeout(r, 150));
+      networkRes = await fetch(request, { cache: 'no-store' });
+    }
     if (networkRes && networkRes.ok) {
       assetCache.put(request, networkRes.clone()).catch(() => {});
     }
     return networkRes;
   } catch {
+    try {
+      await new Promise((r) => setTimeout(r, 150));
+      const retryRes = await fetch(request, { cache: 'no-store' });
+      if (retryRes && retryRes.ok) {
+        assetCache.put(request, retryRes.clone()).catch(() => {});
+      }
+      if (retryRes) {
+        return retryRes;
+      }
+    } catch {
+      // Proceed to cache fallback
+    }
     const cached =
       (await assetCache.match(request)) ||
       (await assetCache.match(request, { ignoreSearch: true }));
@@ -678,10 +695,14 @@ async function handleStaleWhileRevalidate(request, event, primaryCacheName, maxE
 
   const networkPromise = fetch(request)
     .then(async (networkRes) => {
-      if (networkRes && networkRes.ok) {
-        await primaryCache.put(request, networkRes.clone());
-        if (maxEntries > 0) {
-          await trimCacheEntries(primaryCache, maxEntries);
+      if (networkRes && networkRes.status === 200) {
+        try {
+          await primaryCache.put(request, networkRes.clone());
+          if (maxEntries > 0) {
+            await trimCacheEntries(primaryCache, maxEntries);
+          }
+        } catch {
+          // Never fail a valid network response if Cache API write fails or quota is exceeded
         }
       }
       return networkRes;

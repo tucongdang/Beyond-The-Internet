@@ -228,6 +228,8 @@ export interface LuckyDrawState {
   sample_uids?: string[];
   seed?: number;
   draw_timestamp?: number;
+  auto_stop_on_music_end?: boolean;
+  spin_duration_ms?: number;
 }
 
 export interface AudienceSurveyConfig {
@@ -302,6 +304,8 @@ export interface GameState {
   language?: 'vi' | 'en';
   active_module?: 'GAME' | 'LUCKY_DRAW';
   lucky_draw?: LuckyDrawState;
+  lucky_draw_music_muted?: boolean;
+  lucky_draw_auto_stop_on_music_end?: boolean;
   match_break?: MatchBreakState | null;
   audience_light_show?: AudienceLightShowState | null;
   grand_finale?: GrandFinaleState | null;

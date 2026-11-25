@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Flame, Heart, Zap, Rainbow, Play, Square, Clock, Gauge } from 'lucide-react';
 import { syncService } from '../services/syncService';
 import { AudienceLightShowState, LightShowPattern, LightShowSpeed, GameState } from '../types';
@@ -23,6 +23,18 @@ export const LightShowControlModal: React.FC<LightShowControlModalProps> = ({
   const [speed, setSpeed] = useState<LightShowSpeed>(currentShow?.speed || 'NORMAL');
   const [message, setMessage] = useState<string>(currentShow?.message || 'GIƠ CAO ĐIỆN THOẠI HƯỚNG VỀ SÂN KHẤU!');
   const [duration, setDuration] = useState<number>(currentShow?.auto_dismiss_seconds ?? 30);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -69,8 +81,17 @@ export const LightShowControlModal: React.FC<LightShowControlModalProps> = ({
   ];
 
   return (
-    <div className="fluent-dialog-overlay animate-fadeIn z-[9999] flex items-center justify-center p-4">
-      <div className="fluent-box border border-white/20 rounded-[4px] p-6 max-w-xl w-full text-white shadow-2xl space-y-6">
+    <div
+      className="fluent-dialog-overlay animate-fadeIn z-[9999] flex items-center justify-center p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Audience Light Show Control"
+    >
+      <div
+        className="fluent-box border border-white/20 rounded-[4px] p-6 max-w-xl w-full text-white shadow-2xl space-y-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">

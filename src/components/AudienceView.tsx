@@ -99,7 +99,6 @@ import { EventWaitingRoom } from './EventWaitingRoom';
 import { EventConcludedView } from './EventConcludedView';
 import { AudienceQuestionSkeleton } from './AudienceQuestionSkeleton';
 import { shouldShowQuestionSkeleton } from '../utils/questionSkeletonUtils';
-import { AudiencePredictionWidget } from './AudiencePredictionWidget';
 import { QuickTips } from './QuickTips';
 import { GameRulesModal } from './GameRulesModal';
 
@@ -2735,8 +2734,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </div>
             </div>
 
-            <div className="mt-6 mb-2 space-y-4">
-              <AudiencePredictionWidget user={user} gameState={gameState} />
+            <div className="mt-6 mb-2 space-y-4 text-left">
+              <ConfidenceStaking user={user} gameState={gameState} />
               <AudienceCheerButton user={user} isHighContrast={isHighContrast} />
             </div>
             <div className="mt-4 text-[11px] text-slate-500">
@@ -2816,6 +2815,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       gameState.round_name?.includes('Tăng tốc') ||
       gameState.question_id?.startsWith('TT');
     const timerProgress = Math.max(0, (timeLeft / (gameState.time_limit || 1)) * 100);
+    const questionRevealKey = `${gameState.question_id || 'q'}-${gameState.question_start_time || 0}`;
 
 
 
@@ -2824,7 +2824,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         id="audience-state-active"
         className="max-w-7xl xl:max-w-[95%] w-full mx-auto p-4 sm:p-6 pb-6 sm:pb-8 text-white space-y-5 relative"
       >
-        <AudiencePredictionWidget user={user} gameState={gameState} />
         {/* Floating Toast Notification for Drag & Drop / Sequencing Warnings */}
         {/* Small Success Toast */}
         {submitToast && (
@@ -3014,8 +3013,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   />
                 ) : !isBlindPoll ? (
                   <div 
+                    key={questionRevealKey}
                     ref={audienceQuestionBoxRef}
-                    className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 flex flex-col justify-center relative group ${
+                    className={`fluent-question-box p-5 sm:p-6 lg:p-7 xl:p-8 flex flex-col justify-center relative group animate-fadeIn ${
                     isLongQuestion 
                       ? 'min-h-[120px] md:min-h-[160px] w-full' 
                       : 'min-h-[160px] md:min-h-[280px] h-full'
@@ -3269,75 +3269,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               {/* RIGHT Column: Input Controls & Choice Confirmation */}
               <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col justify-between gap-4" : "lg:col-span-7 flex flex-col justify-between gap-4"}>
                 <div className="flex-1">
-                  {/* Round 4 (Về đích) Double Down / All-In Risk Mode Toggle & Lock */}
-                  {isVeDichRound && (
-                    <div className={`p-3 sm:p-3.5 rounded-[2px] border transition-all mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isDoubleDownActive
-                        ? 'bg-amber-500/20 border-amber-400 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
-                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-amber-400/30'
-                    }`}>
-                      <div className="flex items-center gap-2.5">
-                        <div className={`p-2 rounded-[2px] shrink-0 ${isDoubleDownActive ? 'bg-amber-400 text-black font-black animate-pulse' : 'bg-white/10 text-amber-400'}`}>
-                          <Flame className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-xs sm:text-sm text-white tracking-wide">
-                              {t("view_bet_title", localLanguage)}
-                            </span>
-                            {isDoubleDownActive && (
-                              <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-amber-400 text-black rounded-[2px] flex items-center gap-1 shadow-sm">
-                                <Lock className="w-3 h-3" />
-                                {t("view_bet_locked_badge", localLanguage)}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-amber-200/90 leading-tight mt-0.5">
-                            {isDoubleDownActive 
-                              ? t("view_bet_desc_locked", localLanguage)
-                              : t("view_bet_desc_default", localLanguage)}
-                          </p>
-                          {isDoubleDownActive && (
-                            <span className="text-[10px] font-mono text-amber-300/80 flex items-center gap-1 mt-1">
-                              <Lock className="w-3 h-3 text-amber-400 shrink-0" />
-                              {t("view_bet_locked_notice", localLanguage)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={isDoubleDownActive || hasVotedThisQuestion}
-                        aria-label={isDoubleDownActive ? t("view_bet_btn_locked", localLanguage) : t("view_bet_btn_action", localLanguage)}
-                        aria-pressed={isDoubleDownActive}
-                        onClick={() => {
-                          if (isDoubleDownActive || hasVotedThisQuestion) return;
-                          setIsDoubleDownActive(true);
-                          soundFx.playAllInActivation();
-                          vibrateLifeline();
-                        }}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && !isDoubleDownActive && !hasVotedThisQuestion) {
-                            e.preventDefault();
-                            setIsDoubleDownActive(true);
-                            soundFx.playAllInActivation();
-                            vibrateLifeline();
-                          }
-                        }}
-                        className={`px-3.5 py-2 rounded-[2px] font-mono font-black text-xs transition border shrink-0 text-center flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                          isDoubleDownActive
-                            ? 'bg-amber-400 text-black border-amber-300 shadow-md cursor-not-allowed opacity-95'
-                            : 'bg-gradient-to-r from-amber-500 to-amber-400 text-black border-amber-300 hover:from-amber-400 hover:to-amber-300 cursor-pointer shadow-lg active:scale-95'
-                        } ${hasVotedThisQuestion && !isDoubleDownActive ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {isDoubleDownActive && <Lock className="w-3.5 h-3.5" />}
-                        {isDoubleDownActive 
-                          ? t("view_bet_btn_locked", localLanguage) 
-                          : t("view_bet_btn_action", localLanguage)}
-                      </button>
-                    </div>
-                  )}
-
                   {/* Input Controls */}
                   {showQuestionSkeleton ? (
                     <AudienceQuestionSkeleton
@@ -3355,13 +3286,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       </div>
 
                       <div className={`grid grid-cols-1 ${isLongQuestion ? 'md:grid-cols-2' : ''} gap-3`}>
-                        {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
+                        {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                           const currentChoice = tfChoices[key]; // no default 'Đ'
 
                         return (
                           <div
-                            key={key}
-                            className="p-3.5 sm:p-4 rounded-[2px] fluent-box-nested space-y-2.5"
+                            key={`${questionRevealKey}-${key}`}
+                            style={{ '--option-index': idx } as React.CSSProperties}
+                            className="p-3.5 sm:p-4 rounded-[2px] fluent-box-nested space-y-2.5 animate-audience-option-in"
                           >
                             <div className="flex items-start gap-2.5">
                               <span className="w-6 h-6 rounded-[2px] bg-[#F7CAC9]/20 text-[#FCEEEC] font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-[#F7CAC9]/30">
@@ -3463,7 +3395,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           const itemText = activeOptions?.[optKey] || gameState.options?.[optKey] || '';
                           return (
                             <div
-                              key={optKey}
+                              key={`${questionRevealKey}-${optKey}`}
                               role="listitem"
                               tabIndex={0}
                               aria-label={`Vị trí ${idx + 1}: ${optKey} - ${itemText}. Nhấn Mũi tên Lên hoặc Xuống để đổi vị trí.`}
@@ -3480,7 +3412,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                                   moveSeqItemDown(idx);
                                 }
                               }}
-                              className={`p-3 fluent-box-nested rounded-[2px] flex items-center justify-between gap-3 shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#F7CAC9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
+                              style={{ '--option-index': idx } as React.CSSProperties}
+                              className={`p-3 fluent-box-nested rounded-[2px] flex items-center justify-between gap-3 shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#F7CAC9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] animate-audience-option-in ${
                                 draggedIdx === idx ? 'border-amber-400 bg-white/15 opacity-60 scale-[0.98]' : 'border-white/10'
                               }`}
                             >
@@ -3706,7 +3639,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isTrueFalse ? (
                   /* Toggle cho Đúng/Sai */
                   <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center" role="group" aria-label="Lựa chọn Đúng hoặc Sai">
-                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -3715,7 +3648,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       
                       return (
                         <button
-                          key={key}
+                          key={`${questionRevealKey}-${key}`}
                           type="button"
                           aria-label={`${label} (${key})${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
                           aria-pressed={isSelected}
@@ -3727,7 +3660,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                             }
                           }}
                           disabled={hasVotedThisQuestion}
-                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[2px] border-2 transition-all overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                          style={{ '--option-index': idx } as React.CSSProperties}
+                          className={`relative flex-1 w-full sm:max-w-xs px-4 py-8 sm:py-10 rounded-[2px] border-2 transition-all overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 animate-audience-option-in ${
                             isSelected 
                               ? isOptionA ? 'border-emerald-400 bg-emerald-500/20' : 'border-rose-400 bg-rose-500/20'
                               : 'border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/5'
@@ -3758,7 +3692,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 ) : isImagePoll ? (
                   /* Grid ảnh cho Poll hình ảnh */
                   <div className={`grid grid-cols-1 sm:grid-cols-2 ${isLongQuestion ? 'lg:grid-cols-4' : ''} gap-4 pt-1`} role="group" aria-label="Danh sách phương án bình chọn">
-                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label]) => {
+                    {Object.entries(activeOptions || gameState.options || {}).map(([key, label], idx) => {
                       const serverCorrectKey = (gameState.correct_key || '').trim().toUpperCase();
                       const isCorrectAnswer = serverCorrectKey && key.toUpperCase() === serverCorrectKey;
                       const isSelected = (selectedChoice || "").toUpperCase() === key.toUpperCase();
@@ -3767,7 +3701,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                       
                       return (
                         <button
-                          key={key}
+                          key={`${questionRevealKey}-${key}`}
                           type="button"
                           aria-label={`${key}: ${label}${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
                           aria-pressed={isSelected}
@@ -3779,7 +3713,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                             }
                           }}
                           disabled={hasVotedThisQuestion || isEliminated}
-                          className={`relative text-left p-3 sm:p-4 rounded-[2px] border-2 transition-all flex flex-col gap-3 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] ${
+                          style={{ '--option-index': idx } as React.CSSProperties}
+                          className={`relative text-left p-3 sm:p-4 rounded-[2px] border-2 transition-all flex flex-col gap-3 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] animate-audience-option-in ${
                             isEliminated
                               ? 'border-rose-500/30 opacity-40 grayscale bg-rose-900/20'
                               : isSelected
@@ -3852,7 +3787,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
                       return (
                         <button
-                          key={key}
+                          key={`${questionRevealKey}-${key}`}
                           id={`btn-option-${key}`}
                           type="button"
                           aria-label={`${t("active_option", localLanguage)} ${key}: ${displayText}${isSelected ? ` - ${t("view_selected", localLanguage)}` : ''}`}
@@ -3865,7 +3800,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               handleOptionSelect(key);
                             }
                           }}
-                          className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[2px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer ${
+                          style={{ '--option-index': idx } as React.CSSProperties}
+                          className={`relative w-full min-h-[64px] sm:min-h-[72px] p-4 sm:p-5 rounded-[2px] text-left flex items-start gap-3.5 select-none overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9] transition-all duration-200 cursor-pointer animate-audience-option-in ${
                             isEliminated
                               ? 'opacity-30 fluent-box-nested line-through cursor-not-allowed border-white/5'
                               : isCorrectAnswer && (gameState.status === 'REVEAL' || timeLeft <= 0)
@@ -3982,8 +3918,21 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 </div>
               )}
 
-              {/* Confidence Staking on Stage Contestants */}
-              <ConfidenceStaking gameState={gameState} user={user} className="mt-3" />
+              {/* Unified Prediction, Betting & Confidence Staking Hub */}
+              <ConfidenceStaking
+                gameState={gameState}
+                user={user}
+                className="mt-3"
+                isVeDichRound={isVeDichRound}
+                isDoubleDownActive={isDoubleDownActive}
+                hasVotedThisQuestion={hasVotedThisQuestion}
+                onActivateDoubleDown={() => {
+                  if (isDoubleDownActive || hasVotedThisQuestion) return;
+                  setIsDoubleDownActive(true);
+                  soundFx.playAllInActivation();
+                  vibrateLifeline();
+                }}
+              />
             </div>
 
           </div>
@@ -4205,7 +4154,6 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         )}
 
         <div className="space-y-6">
-          <AudiencePredictionWidget user={user} gameState={gameState} />
         {/* Result Announcement Hero Card */}
         <div
           className={`fluent-box rounded-[2px] p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden ${
@@ -4673,8 +4621,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
         </div>
 
-        {/* Confidence Staking Outcome in REVEAL State */}
-        <ConfidenceStaking gameState={gameState} user={user} />
+        {/* Unified Prediction, Betting & Confidence Staking Outcome in REVEAL State */}
+        <ConfidenceStaking
+          gameState={gameState}
+          user={user}
+          isVeDichRound={isVeDichRound}
+          isDoubleDownActive={isDoubleDownActive}
+          hasDoubleDownSubmitted={Boolean(responses[user?.uid || '']?.isDoubleDown)}
+          isAnswerCorrectOnReveal={isCorrect}
+        />
 
         {/* Bottom Share Game Callout */}
         <div className="flex justify-center pt-2">
@@ -4879,6 +4834,121 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           user={props.user}
           isHighContrast={isHighContrast}
           onOpenRulesModal={handleOpenRulesModal}
+          leftSlot={
+            <div className="fluent-action-group shadow-[0_6px_24px_rgba(0,0,0,0.32)]">
+              <button
+                id="btn-audience-leaderboard-floating"
+                type="button"
+                aria-label="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  handleOpenLeaderboard();
+                }}
+                className="fluent-action-btn text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 hover:border-amber-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                title="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
+              >
+                <Trophy className="w-3 h-3 text-amber-400 shrink-0" />
+                <span className="font-bold tracking-wide">BXH Live</span>
+              </button>
+
+              <button
+                id="btn-audience-shout-floating"
+                type="button"
+                aria-label={t("view_nav_shout_mq", localLanguage)}
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  setIsShoutModalOpen(true);
+                }}
+                className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                title={t("view_nav_shout_mq", localLanguage)}
+              >
+                <Megaphone className="w-3 h-3 text-pink-400 shrink-0" />
+                <span className="font-bold tracking-wide">{t("view_shout", localLanguage)}</span>
+              </button>
+
+              <button
+                id="btn-audience-cheer-floating"
+                type="button"
+                aria-label={t("view_nav_cheer", localLanguage)}
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  setIsCheerModalOpen(true);
+                }}
+                className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                title={t("view_nav_cheer", localLanguage)}
+              >
+                <Heart className="w-3 h-3 fill-current animate-pulse text-rose-400 shrink-0" />
+                <span className="font-bold tracking-wide">{t("view_cheer", localLanguage)}</span>
+              </button>
+
+              <button
+                id="btn-audience-qa-floating"
+                type="button"
+                aria-label={t("view_nav_qa", localLanguage)}
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  setIsQAModalOpen(true);
+                }}
+                className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                title={t("view_nav_qa", localLanguage)}
+              >
+                <MessageSquare className="w-3 h-3 text-sky-400 shrink-0" />
+                <span className="font-bold tracking-wide">{t("view_qna", localLanguage)}</span>
+              </button>
+
+              <button
+                id="btn-audience-champion-vote-floating"
+                type="button"
+                aria-label={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Quán quân'}
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  setIsChampionVoteModalOpen(true);
+                }}
+                className="fluent-action-btn text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 hover:border-amber-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                title={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Thí sinh Chiến thắng (Quán quân)'}
+              >
+                <Trophy className="w-3 h-3 text-amber-400 shrink-0" />
+                <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Champion' : 'Quán quân'}</span>
+              </button>
+
+              <button
+                id="btn-audience-postmatch-floating"
+                type="button"
+                aria-label="Xuất Thẻ Thành Tích Infographic"
+                onClick={() => {
+                  vibrateSelection();
+                  soundFx.playTing();
+                  handleOpenPostMatchModal();
+                }}
+                className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
+              >
+                <Sparkles className="w-3 h-3 text-amber-300 animate-pulse shrink-0" />
+                <span className="font-bold tracking-wide">Thẻ</span>
+              </button>
+
+              <button
+                id="btn-audience-rules-floating"
+                type="button"
+                aria-label={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  handleOpenRulesModal();
+                }}
+                className="fluent-action-btn text-[#F7CAC9] bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 border-[#F7CAC9]/25 hover:border-[#F7CAC9]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
+                title={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
+              >
+                <Info className="w-3 h-3 text-[#F7CAC9] shrink-0" />
+                <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Rules' : 'Luật Chơi'}</span>
+              </button>
+            </div>
+          }
         />
       )}
 
@@ -4887,7 +4957,8 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           <NextQuestionCountdown gameState={props.gameState} compact={false} />
         </div>
       )}
-      <div className={`flex-1 overflow-x-hidden ${isEventSpecialStage ? 'pb-4' : hasAnnouncer ? 'pb-44 sm:pb-16' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-6'}`}>
+
+      <div className={`flex-1 overflow-x-hidden ${isEventSpecialStage ? 'pb-4' : hasAnnouncer ? 'pb-44 sm:pb-28' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-24'}`}>
         <AudienceViewContent 
           {...props} 
           onOpenLogModal={handleOpenLogModal}
@@ -4901,123 +4972,6 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
           onToggleWakeLock={toggleWakeLock}
         />
       </div>
-
-      {/* Floating Audience Action Group (Desktop / Tablet only) - Hidden in waiting room & conclusion */}
-      {!isEventSpecialStage && (
-        <div className="hidden sm:inline-flex fixed left-4 bottom-6 z-40 fluent-action-group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-          <button
-            id="btn-audience-leaderboard-floating"
-            type="button"
-            aria-label="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              handleOpenLeaderboard();
-            }}
-            className="fluent-action-btn text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 hover:border-amber-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-            title="Bảng Xếp Hạng Khán Giả Thời Gian Thực"
-          >
-            <Trophy className="w-[14px] h-[14px] text-amber-400" />
-            <span className="font-bold tracking-wide">BXH Live</span>
-          </button>
-
-          <button
-            id="btn-audience-shout-floating"
-            type="button"
-            aria-label={t("view_nav_shout_mq", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsShoutModalOpen(true);
-            }}
-            className="fluent-action-btn text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20 hover:border-pink-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-            title={t("view_nav_shout_mq", localLanguage)}
-          >
-            <Megaphone className="w-[14px] h-[14px] text-pink-400" />
-            <span className="font-bold tracking-wide">{t("view_shout", localLanguage)}</span>
-          </button>
-
-          <button
-            id="btn-audience-cheer-floating"
-            type="button"
-            aria-label={t("view_nav_cheer", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsCheerModalOpen(true);
-            }}
-            className="fluent-action-btn text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 hover:border-rose-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-            title={t("view_nav_cheer", localLanguage)}
-          >
-            <Heart className="w-[14px] h-[14px] fill-current animate-pulse text-rose-400" />
-            <span className="font-bold tracking-wide">{t("view_cheer", localLanguage)}</span>
-          </button>
-
-          <button
-            id="btn-audience-qa-floating"
-            type="button"
-            aria-label={t("view_nav_qa", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsQAModalOpen(true);
-            }}
-            className="fluent-action-btn text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border-sky-500/20 hover:border-sky-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
-            title={t("view_nav_qa", localLanguage)}
-          >
-            <MessageSquare className="w-[14px] h-[14px] text-sky-400" />
-            <span className="font-bold tracking-wide">{t("view_qna", localLanguage)}</span>
-          </button>
-
-          <button
-            id="btn-audience-champion-vote-floating"
-            type="button"
-            aria-label={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Quán quân'}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsChampionVoteModalOpen(true);
-            }}
-            className="fluent-action-btn text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 hover:border-amber-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-            title={localLanguage !== 'vi' ? 'Vote for Match Champion' : 'Bình chọn Thí sinh Chiến thắng (Quán quân)'}
-          >
-            <Trophy className="w-[14px] h-[14px] text-amber-400" />
-            <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Champion' : 'Quán quân'}</span>
-          </button>
-
-          <button
-            id="btn-audience-postmatch-floating"
-            type="button"
-            aria-label="Xuất Thẻ Thành Tích Infographic"
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              handleOpenPostMatchModal();
-            }}
-            className="fluent-action-btn text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20 hover:border-purple-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-            title="Xuất Thẻ Thành Tích Infographic (Post-Match Card)"
-          >
-            <Sparkles className="w-[14px] h-[14px] text-amber-300 animate-pulse" />
-            <span className="font-bold tracking-wide">Thẻ</span>
-          </button>
-
-          <button
-            id="btn-audience-rules-floating"
-            type="button"
-            aria-label={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
-            onClick={() => {
-              vibrateTap();
-              soundFx.playClick();
-              handleOpenRulesModal();
-            }}
-            className="fluent-action-btn text-[#F7CAC9] bg-[#F7CAC9]/10 hover:bg-[#F7CAC9]/20 border-[#F7CAC9]/25 hover:border-[#F7CAC9]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F7CAC9]"
-            title={localLanguage !== 'vi' ? 'BTI 2027 Game Rules' : 'Cẩm Nang Luật Chơi BTI 2027'}
-          >
-            <Info className="w-[14px] h-[14px] text-[#F7CAC9]" />
-            <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Rules' : 'Luật Chơi'}</span>
-          </button>
-        </div>
-      )}
 
       {/* Mobile Bottom Navigation Bar - Hidden in waiting room & conclusion */}
       {!isEventSpecialStage && typeof document !== 'undefined' && !!document.body && createPortal(

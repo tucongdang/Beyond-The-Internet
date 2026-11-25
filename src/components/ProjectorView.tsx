@@ -1119,7 +1119,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <span>✕ Thoát Quay Số</span>
               </button>
             </div>
-            <LuckyDrawProjector gameState={gameState} />
+            <LuckyDrawProjector gameState={gameState} isVirtual={isVirtual} />
           </div>
         ) : gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? (
           <EmergencyPollProjector

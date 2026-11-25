@@ -54,6 +54,17 @@ describe('swCachePolicy pure logic', () => {
       }),
       'BYPASS'
     );
+
+    assert.equal(
+      classifyCacheStrategy({
+        url: 'http://localhost:3000/assets/aistudio/truc-tiep-xo-so-mien-bac-ngay-17-02-2020-enhanced_5e05f1f4.mp3',
+        method: 'GET',
+        appOrigin: APP_ORIGIN,
+        destination: 'audio',
+        headers: { range: 'bytes=0-' },
+      }),
+      'BYPASS'
+    );
   });
 
   it('uses CACHE_FIRST_FONT for local fonts and font destinations', () => {
@@ -341,9 +352,10 @@ describe('swCachePolicy pure logic', () => {
     assert.equal(capped[0].id, 'id-15');
   });
 
-  it('identifies obsolete bti- caches including v1 after upgrading to v2', () => {
+  it('identifies obsolete bti- caches including v1 and v2 after upgrading to v3', () => {
     assert.equal(shouldCleanupCacheKey('bti-shell-v1', ACTIVE_CACHE_NAMES), true);
     assert.equal(shouldCleanupCacheKey('bti-assets-v1', ACTIVE_CACHE_NAMES), true);
+    assert.equal(shouldCleanupCacheKey('bti-noncritical-v2', ACTIVE_CACHE_NAMES), true);
     assert.equal(shouldCleanupCacheKey(NON_CRITICAL_CACHE_NAME, ACTIVE_CACHE_NAMES), false);
     assert.equal(shouldCleanupCacheKey(ACTIVE_CACHE_NAMES[0], ACTIVE_CACHE_NAMES), false);
     assert.equal(shouldCleanupCacheKey('third-party-cache', ACTIVE_CACHE_NAMES), false);

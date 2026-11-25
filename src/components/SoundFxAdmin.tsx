@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Volume1, VolumeX, Play, AlertCircle, Bell, Music, Check, X, Clock, Zap, Heart, Flame, RotateCcw, Sparkles, Activity, Sliders, Mic } from 'lucide-react';
+import { Volume2, Volume1, VolumeX, Play, Square, AlertCircle, Bell, Music, Check, X, Clock, Zap, Heart, Flame, RotateCcw, Sparkles, Activity, Sliders, Mic } from 'lucide-react';
 import { soundFx } from '../services/audioEffects';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { cheerService } from '../services/cheerService';
-import { CheerIntensityData } from '../types';
+import { syncService } from '../services/syncService';
+import { CheerIntensityData, GameState } from '../types';
 
 export const SoundFxAdmin: React.FC = () => {
   const [cheerData, setCheerData] = useState<CheerIntensityData>(cheerService.getCurrentIntensityData());
@@ -16,6 +17,8 @@ export const SoundFxAdmin: React.FC = () => {
   const [useGeminiTts, setUseGeminiTts] = useState<boolean>(() => aiExplanationService.isGeminiTtsEnabled());
   const [geminiVoice, setGeminiVoice] = useState<string>(() => aiExplanationService.getGeminiVoice());
   const [speechActive, setSpeechActive] = useState<boolean>(() => aiExplanationService.getActiveSpeechState().active);
+  const [luckyDrawMusicMuted, setLuckyDrawMusicMuted] = useState<boolean>(() => Boolean(syncService.getGameState().lucky_draw_music_muted));
+  const [luckyDrawMusicState, setLuckyDrawMusicState] = useState(() => soundFx.getLuckyDrawMusicState());
 
   useEffect(() => {
     const updateVoices = () => {
@@ -35,6 +38,10 @@ export const SoundFxAdmin: React.FC = () => {
     const unsubGeminiTts = aiExplanationService.subscribeGeminiTts((val) => setUseGeminiTts(val));
     const unsubGeminiVoice = aiExplanationService.subscribeGeminiVoice((v) => setGeminiVoice(v));
     const unsubSpeech = aiExplanationService.subscribeSpeechState((st) => setSpeechActive(st.active));
+    const unsubGameState = syncService.subscribeToState((gs: GameState) => {
+      setLuckyDrawMusicMuted(Boolean(gs.lucky_draw_music_muted));
+    });
+    const unsubLuckyDrawMusic = soundFx.subscribeLuckyDrawMusic(setLuckyDrawMusicState);
     return () => {
       unsub();
       unsubSfx();
@@ -44,6 +51,8 @@ export const SoundFxAdmin: React.FC = () => {
       unsubGeminiTts();
       unsubGeminiVoice();
       unsubSpeech();
+      unsubGameState();
+      unsubLuckyDrawMusic();
     };
   }, []);
 
@@ -285,6 +294,66 @@ export const SoundFxAdmin: React.FC = () => {
               </select>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Lucky Draw Music Control Strip */}
+      <div className="p-4 rounded-[2px] fluent-box-nested border border-amber-400/30 bg-amber-950/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[2px] bg-amber-400/15 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
+            <Music className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs font-mono font-bold uppercase tracking-wider text-amber-200">
+              Nhạc Nền Quay Số May Mắn
+            </div>
+            <div className="text-[11px] font-mono text-white/60">
+              Nhạc Xổ Số phát chờ ở trạng thái chuẩn bị; khi bấm Quay Số chuyển sang Nhạc Quay Nón (~14.4s, cắt khoảng lặng 3s). Hỗ trợ tự chốt kết quả khi hết nhạc hoặc Mute đồng bộ.
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            id="btn-soundfx-lucky-draw-mute"
+            onClick={() => {
+              const nextMuted = !luckyDrawMusicMuted;
+              setLuckyDrawMusicMuted(nextMuted);
+              syncService.updateGameState({ lucky_draw_music_muted: nextMuted });
+            }}
+            aria-pressed={luckyDrawMusicMuted}
+            className={`px-3 py-2 rounded-[2px] font-mono text-xs font-bold flex items-center gap-1.5 border transition cursor-pointer ${
+              luckyDrawMusicMuted
+                ? 'bg-rose-950/80 hover:bg-rose-900/90 text-rose-200 border-rose-400/60'
+                : 'bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-200 border-emerald-400/60'
+            }`}
+          >
+            {luckyDrawMusicMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            <span>{luckyDrawMusicMuted ? 'Đang Mute Nhạc Quay Số' : 'Mute Nhạc Quay Số'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => soundFx.setLuckyDrawMusicPreview(!luckyDrawMusicState.previewActive)}
+            className={`px-3 py-2 rounded-[2px] font-mono text-xs font-bold flex items-center gap-1.5 border transition cursor-pointer ${
+              luckyDrawMusicState.previewActive
+                ? 'bg-amber-400 text-slate-950 border-amber-300'
+                : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+            }`}
+          >
+            {luckyDrawMusicState.previewActive ? (
+              <>
+                <Square className="w-3 h-3 fill-current" />
+                <span>Dừng Nghe Thử</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current text-amber-300" />
+                <span>Nghe Thử Nhạc</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

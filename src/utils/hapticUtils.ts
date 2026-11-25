@@ -82,7 +82,7 @@ export const setHapticPreference = (enabled: boolean): void => {
     );
     if (enabled) {
       // Provide a brief tactile confirmation of enabling haptics
-      if (isVibrationSupported()) {
+      if (isVibrationSupported() && canTriggerVibration()) {
         try {
           const intensity = getHapticIntensity();
           const p = intensity === 'Soft' ? [20, 20, 30] : intensity === 'Strong' ? [60, 30, 90] : [40, 30, 60];
@@ -113,11 +113,26 @@ export const subscribeHapticPreference = (
 
 import { getBatterySaverMode } from './batterySaverUtils';
 
+export const canTriggerVibration = (
+  nav?: { userActivation?: { hasBeenActive?: boolean } } | null
+): boolean => {
+  const resolved =
+    nav === undefined && typeof navigator !== 'undefined'
+      ? (navigator as { userActivation?: { hasBeenActive?: boolean } })
+      : nav;
+  if (!resolved) return false;
+  if ('userActivation' in resolved && resolved.userActivation) {
+    return Boolean(resolved.userActivation.hasBeenActive);
+  }
+  return true;
+};
+
 /**
  * Generic safe vibration trigger with intensity pattern scaling
  */
 const triggerVibration = (pattern: number | number[]): boolean => {
   if (!isVibrationSupported()) return false;
+  if (!canTriggerVibration()) return false;
   if (!getHapticPreference()) return false;
   try {
     // Apply intensity scaling based on user preference ('Soft' | 'Medium' | 'Strong')

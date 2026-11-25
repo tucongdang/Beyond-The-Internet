@@ -433,7 +433,11 @@ export async function initServiceWorker(): Promise<ServiceWorkerRegistration | n
 
   const register = async () => {
     try {
-      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      const reg = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none',
+      });
+      reg.update().catch(() => {});
       currentRegistration = reg;
       syncRegistrationFlags(reg);
 

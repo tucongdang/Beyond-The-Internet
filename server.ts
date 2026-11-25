@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
+import { getMediaContentType, parseCappedByteRange } from "./src/utils/mediaRangeUtils";
 
 dotenv.config({ quiet: true } as any);
 
@@ -2819,6 +2820,86 @@ Nếu khán giả hỏi về vòng thi hiện tại, tiến độ, hoặc thể 
   });
 
   const isProduction = process.env.NODE_ENV === "production";
+
+  // Serve audio/video files under /assets/aistudio with <= 2 MiB Range chunks
+  // so large media never hits reverse-proxy response limits (e.g. Cloud Run 32 MiB cap).
+  const MEDIA_STREAM_EXT_RE = /\.(?:mp3|wav|ogg|m4a|mp4|webm)$/i;
+  app.get('/assets/aistudio/:filename', (req, res, next) => {
+    const rawName = typeof req.params.filename === 'string' ? req.params.filename : '';
+    const safeName = path.basename(rawName);
+    if (!safeName || safeName !== rawName || !MEDIA_STREAM_EXT_RE.test(safeName)) {
+      return next();
+    }
+
+    const candidateDirs = isProduction
+      ? [path.resolve(process.cwd(), 'dist', 'assets', 'aistudio'), path.resolve(process.cwd(), 'public', 'assets', 'aistudio')]
+      : [path.resolve(process.cwd(), 'public', 'assets', 'aistudio')];
+
+    let resolvedFile: string | null = null;
+    for (const baseDir of candidateDirs) {
+      const candidate = path.resolve(baseDir, safeName);
+      if (candidate.startsWith(baseDir + path.sep) && fs.existsSync(candidate)) {
+        resolvedFile = candidate;
+        break;
+      }
+    }
+
+    if (!resolvedFile) {
+      return next();
+    }
+
+    let stat: fs.Stats;
+    try {
+      stat = fs.statSync(resolvedFile);
+      if (!stat.isFile()) return next();
+    } catch {
+      return next();
+    }
+
+    const totalSize = stat.size;
+    const contentType = getMediaContentType(safeName);
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+
+    const rangeHeader = typeof req.headers.range === 'string' ? req.headers.range : undefined;
+    const parsedRange = parseCappedByteRange(rangeHeader, totalSize);
+
+    if (parsedRange && !parsedRange.ok) {
+      res.setHeader('Content-Range', `bytes */${totalSize}`);
+      return res.status(416).end();
+    }
+
+    if (parsedRange && parsedRange.ok) {
+      const { start, end } = parsedRange;
+      const chunkLength = end - start + 1;
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+      res.setHeader('Content-Length', String(chunkLength));
+      if (req.method === 'HEAD') return res.end();
+
+      const stream = fs.createReadStream(resolvedFile, { start, end });
+      req.on('close', () => stream.destroy());
+      stream.on('error', () => {
+        if (!res.headersSent) res.status(500);
+        res.end();
+      });
+      return stream.pipe(res);
+    }
+
+    res.status(200);
+    res.setHeader('Content-Length', String(totalSize));
+    if (req.method === 'HEAD') return res.end();
+
+    const stream = fs.createReadStream(resolvedFile);
+    req.on('close', () => stream.destroy());
+    stream.on('error', () => {
+      if (!res.headersSent) res.status(500);
+      res.end();
+    });
+    return stream.pipe(res);
+  });
 
   let viteInstance: any = null;
   if (!isProduction) {

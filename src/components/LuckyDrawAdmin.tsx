@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useId, useRef } from 'react';
 import { GameState, UserInfo, ContestantPrediction, ChampionVote } from '../types';
 import { syncService } from '../services/syncService';
 import { soundFx } from '../services/audioEffects';
-import { Sparkles, Play, Square, Trophy, AlertCircle, X, Users, Target, Flame, CheckCircle2, Filter, Lock, Unlock, Zap } from 'lucide-react';
+import { Sparkles, Play, Square, Trophy, AlertCircle, X, Users, Target, Flame, CheckCircle2, Filter, Lock, Unlock, Zap, Volume2, VolumeX, Music, Timer } from 'lucide-react';
 import { getUserDisplayUid } from '../utils/uidUtils';
 import { getSecureRandomItem } from '../utils/cryptoUtils';
+import { computeLuckyDrawSpinProgress, LUCKY_DRAW_SPIN_DURATION_MS } from '../utils/luckyDrawAudioUtils';
 
 export interface LuckyDrawAdminProps {
   gameState: GameState;
@@ -27,7 +28,84 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
     setTimeout(() => setNotification(null), 3500);
   };
 
+  const audioOwnerId = useId();
   const luckyDraw = gameState.lucky_draw || { status: 'IDLE', winner: null };
+  const isMusicMuted = Boolean(gameState.lucky_draw_music_muted);
+  const autoStopOnMusicEnd = Boolean(gameState.lucky_draw_auto_stop_on_music_end);
+  const activeAutoStop =
+    luckyDraw.status === 'SPINNING'
+      ? Boolean(luckyDraw.auto_stop_on_music_end ?? autoStopOnMusicEnd)
+      : autoStopOnMusicEnd;
+  const activeSpinSeed = luckyDraw.seed ?? luckyDraw.draw_timestamp ?? null;
+  const [musicState, setMusicState] = useState(() => soundFx.getLuckyDrawMusicState());
+  const [spinProgress, setSpinProgress] = useState<{ progressRatio: number; remainingSec: number; durationSec: number }>({
+    progressRatio: 0,
+    remainingSec: LUCKY_DRAW_SPIN_DURATION_MS / 1000,
+    durationSec: LUCKY_DRAW_SPIN_DURATION_MS / 1000,
+  });
+  const autoTriggeredSeedRef = useRef<number | null>(null);
+  const handleStopSpinRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    const unsub = soundFx.subscribeLuckyDrawMusic(setMusicState);
+    return () => {
+      unsub();
+      soundFx.stopLuckyDrawMusic(audioOwnerId);
+    };
+  }, [audioOwnerId]);
+
+  useEffect(() => {
+    soundFx.syncLuckyDrawMusic({
+      ownerId: audioOwnerId,
+      drawStatus: luckyDraw.status,
+      isLuckyDrawActive: true,
+      isLuckyDrawScreenMounted: true,
+      adminMusicMuted: isMusicMuted,
+      localMuted: false,
+      spinSeed: activeSpinSeed,
+      autoStopOnMusicEnd: activeAutoStop,
+    });
+  }, [audioOwnerId, luckyDraw.status, isMusicMuted, activeSpinSeed, activeAutoStop]);
+
+  const handleToggleMusicMute = () => {
+    const nextMuted = !isMusicMuted;
+    if (!nextMuted) {
+      soundFx.unlockLuckyDrawMusic(true);
+    }
+    syncService.updateGameState({ lucky_draw_music_muted: nextMuted });
+    notify(
+      nextMuted
+        ? '🔇 Đã MUTE nhạc quay số trên Màn Chiếu & Khán Giả!'
+        : '🔊 Đã BẬT lại nhạc quay số trên Màn Chiếu & Khán Giả!'
+    );
+  };
+
+  const handleToggleAutoStopMode = (nextAuto: boolean) => {
+    soundFx.playClick();
+    if (luckyDraw.status === 'SPINNING') {
+      syncService.updateGameState({
+        lucky_draw_auto_stop_on_music_end: nextAuto,
+        lucky_draw: {
+          ...luckyDraw,
+          auto_stop_on_music_end: nextAuto,
+        },
+      });
+    } else {
+      syncService.updateGameState({
+        lucky_draw_auto_stop_on_music_end: nextAuto,
+      });
+    }
+    notify(
+      nextAuto
+        ? '⏱️ Đã bật Mode Tự Động: Khi phát hết nhạc quay số sẽ tự động ra kết quả!'
+        : '🎛️ Đã chuyển sang Mode Thủ Công: Nhạc lặp liên tục tới khi bấm Dừng quay!'
+    );
+  };
+
+  const handleTogglePreviewMusic = () => {
+    const nextPreview = !musicState.previewActive;
+    soundFx.setLuckyDrawMusicPreview(nextPreview);
+  };
 
   // 4 Filter modes:
   // 1. 'ALL' -> Tất cả khán giả
@@ -308,16 +386,22 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
       notify('Không có khán giả nào thỏa điều kiện lọc để quay số!');
       return;
     }
+    const spinSeed = Date.now();
+    autoTriggeredSeedRef.current = null;
     soundFx.playClick();
+    // Synchronously start spin audio right inside click gesture from 0:00
+    soundFx.primeLuckyDrawSpinAudio(isMusicMuted, spinSeed, autoStopOnMusicEnd);
+
     const isPredictor = filterMode === 'CORRECT_PREDICTION';
     const winContestant = contestants.find((c) => c.id === winningContestantId);
     const sampleUids = candidates.slice(0, 25).map((c) => getUserDisplayUid(c));
+    const durationMs = Math.round((musicState.durationSec || LUCKY_DRAW_SPIN_DURATION_MS / 1000) * 1000);
 
     syncService.updateGameState({
       lucky_draw: {
         status: 'SPINNING',
         winner: null,
-        seed: Date.now(),
+        seed: spinSeed,
         filter_mode: filterMode,
         filter_label: currentFilterLabel,
         eligible_count: candidates.length,
@@ -326,7 +410,9 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
         winning_contestant_name: winContestant?.name || (filterMode === 'CHAMPION_VOTE' ? contestants.find(c => c.id === championContestantId)?.name : ''),
         winning_contestant_id: winningContestantId,
         sample_uids: sampleUids,
-        draw_timestamp: Date.now(),
+        draw_timestamp: spinSeed,
+        auto_stop_on_music_end: autoStopOnMusicEnd,
+        spin_duration_ms: durationMs,
       },
     });
   };
@@ -359,6 +445,7 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
       lucky_draw: {
         status: 'REVEALED',
         winner,
+        seed: activeSpinSeed ?? Date.now(),
         filter_mode: filterMode,
         filter_label: currentFilterLabel,
         eligible_count: candidates.length,
@@ -368,6 +455,7 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
         winning_contestant_id: winningContestantId,
         sample_uids: sampleUids,
         draw_timestamp: Date.now(),
+        auto_stop_on_music_end: activeAutoStop,
       },
     });
     const winnerUidDisplay = getUserDisplayUid(winner);
@@ -378,6 +466,61 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
       '🎉 TRÚNG GIẢI LUCKY DRAW'
     );
   };
+
+  handleStopSpinRef.current = handleStopSpin;
+
+  useEffect(() => {
+    if (luckyDraw.status !== 'SPINNING' || !activeAutoStop) {
+      autoTriggeredSeedRef.current = null;
+      const durSec = musicState.durationSec || LUCKY_DRAW_SPIN_DURATION_MS / 1000;
+      setSpinProgress({
+        progressRatio: 0,
+        remainingSec: durSec,
+        durationSec: durSec,
+      });
+      return;
+    }
+
+    const spinKey = activeSpinSeed ?? 0;
+    const durationMs = luckyDraw.spin_duration_ms || Math.round((musicState.durationSec || LUCKY_DRAW_SPIN_DURATION_MS / 1000) * 1000);
+    const spinStartedAt = luckyDraw.draw_timestamp || Date.now();
+
+    const triggerAutoReveal = () => {
+      if (autoTriggeredSeedRef.current === spinKey) return;
+      autoTriggeredSeedRef.current = spinKey;
+      handleStopSpinRef.current();
+    };
+
+    const unsubEnded = soundFx.subscribeLuckyDrawMusicEnded((endedSeed) => {
+      if (endedSeed !== null && spinKey !== 0 && endedSeed !== spinKey) return;
+      triggerAutoReveal();
+    });
+
+    const interval = setInterval(() => {
+      const liveState = soundFx.getLuckyDrawMusicState();
+      const elapsedMs = liveState.isPlaying && liveState.currentTimeSec > 0
+        ? liveState.currentTimeSec * 1000
+        : Date.now() - spinStartedAt;
+      const calc = computeLuckyDrawSpinProgress({
+        elapsedMs,
+        durationMs,
+        isAudioActivelyPlaying: liveState.isPlaying,
+      });
+      setSpinProgress({
+        progressRatio: calc.progressRatio,
+        remainingSec: calc.remainingSec,
+        durationSec: calc.durationMs / 1000,
+      });
+      if (calc.shouldTriggerFallbackReveal) {
+        triggerAutoReveal();
+      }
+    }, 200);
+
+    return () => {
+      unsubEnded();
+      clearInterval(interval);
+    };
+  }, [luckyDraw.status, luckyDraw.draw_timestamp, luckyDraw.spin_duration_ms, activeAutoStop, activeSpinSeed]);
 
   const handleExitLuckyDraw = () => {
     soundFx.playClick();
@@ -453,7 +596,112 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
             {currentFilterLabel}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            id="btn-admin-lucky-draw-music-mute"
+            onClick={handleToggleMusicMute}
+            aria-pressed={isMusicMuted}
+            className={`px-3 py-1.5 rounded-[2px] font-mono font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95 border ${
+              isMusicMuted
+                ? 'bg-rose-950/80 hover:bg-rose-900/90 text-rose-200 border-rose-400/60'
+                : 'bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-200 border-emerald-400/60'
+            }`}
+            title={
+              isMusicMuted
+                ? 'Nhạc quay số đang bị Admin tắt. Nhấn để bật lại cho Màn Chiếu & Khán Giả'
+                : 'Nhấn để Mute nhạc quay số trên Màn Chiếu & Khán Giả'
+            }
+          >
+            {isMusicMuted ? (
+              <>
+                <VolumeX className="w-3.5 h-3.5 text-rose-300" />
+                <span>Nhạc Quay Số: ĐÃ MUTE</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className={`w-3.5 h-3.5 text-emerald-300 ${musicState.isPlaying ? 'animate-pulse' : ''}`} />
+                <span>
+                  {musicState.isPlaying && musicState.activeTrack === 'waiting'
+                    ? 'Nhạc Chờ: Xổ Số (Đang phát)'
+                    : musicState.isPlaying && musicState.activeTrack === 'spinning'
+                    ? 'Nhạc Quay: Chiếc Nón (ĐANG PHÁT)'
+                    : luckyDraw.status === 'REVEALED'
+                    ? 'Nhạc Quay Số: Đã dừng (Công bố)'
+                    : !musicState.globalSoundEnabled
+                    ? 'Nhạc Quay Số: Âm thanh chung TẮT'
+                    : luckyDraw.status === 'SPINNING'
+                    ? 'Nhạc Quay: Sẵn sàng'
+                    : 'Nhạc Chờ: Sẵn sàng'}
+                </span>
+              </>
+            )}
+          </button>
+
+          {!isMusicMuted && (!musicState.globalSoundEnabled || musicState.volume <= 0.01) && (
+            <button
+              type="button"
+              id="btn-admin-lucky-draw-music-enable-global"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-3 py-1.5 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-bold text-xs flex items-center gap-1.5 shadow-md animate-pulse cursor-pointer"
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+              <span>{!musicState.globalSoundEnabled ? 'Bật Âm Thanh Chung' : 'Tăng Âm Lượng Nhạc'}</span>
+            </button>
+          )}
+
+          {(musicState.autoplayBlocked || musicState.reason === 'awaiting_spin_interaction') &&
+            !isMusicMuted &&
+            musicState.globalSoundEnabled &&
+            musicState.volume > 0.01 && (
+            <button
+              type="button"
+              id="btn-admin-lucky-draw-music-unlock"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-3 py-1.5 rounded-[2px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-bold text-xs flex items-center gap-1.5 shadow-md animate-pulse cursor-pointer"
+            >
+              <Music className="w-3.5 h-3.5" />
+              <span>Nhấn Để Phát Nhạc</span>
+            </button>
+          )}
+
+          {musicState.error && !isMusicMuted && (
+            <button
+              type="button"
+              id="btn-admin-lucky-draw-music-retry"
+              onClick={() => soundFx.unlockLuckyDrawMusic(true)}
+              className="px-3 py-1.5 rounded-[2px] bg-rose-500 hover:bg-rose-400 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+              title={musicState.error}
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>{musicState.error} • Thử lại</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            id="btn-admin-lucky-draw-music-preview"
+            onClick={handleTogglePreviewMusic}
+            className={`px-3 py-1.5 rounded-[2px] font-mono font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95 border ${
+              musicState.previewActive
+                ? 'bg-amber-400 text-slate-950 border-amber-300'
+                : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+            }`}
+            title="Nghe thử nhạc Quay Nón trực tiếp trên máy Admin (không phát ra màn chiếu)"
+          >
+            {musicState.previewActive ? (
+              <>
+                <Square className="w-3 h-3 fill-current" />
+                <span>Dừng Nghe Thử</span>
+              </>
+            ) : (
+              <>
+                <Music className="w-3.5 h-3.5 text-amber-300" />
+                <span>Nghe Thử Nhạc</span>
+              </>
+            )}
+          </button>
+
           <div className="text-white/70 text-xs font-mono fluent-box-nested px-3 py-1.5 rounded-[2px] border border-white/10 flex items-center gap-2">
             <span>Ứng viên đủ điều kiện:</span>
             <strong className="text-amber-300 text-sm font-bold">
@@ -789,16 +1037,38 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
         )}
 
         {luckyDraw.status === 'SPINNING' && (
-          <div className="text-center space-y-4 animate-pulse">
-            <div className="text-xs font-mono uppercase tracking-[0.2em] text-amber-300">
+          <div className="text-center space-y-4 w-full max-w-lg">
+            <div className="text-xs font-mono uppercase tracking-[0.2em] text-amber-300 animate-pulse">
               {currentFilterLabel}
             </div>
-            <div className="text-5xl font-bold font-mono text-white/80 blur-[1px] transition-all">
+            <div className="text-5xl font-bold font-mono text-white/80 blur-[1px] transition-all animate-pulse">
               XXXXXXXXXX
             </div>
             <p className="text-[#F7CAC9] uppercase tracking-[0.3em] font-mono mt-4 text-sm">
               Đang quay số trong {candidates.length} ứng viên...
             </p>
+            {activeAutoStop && (
+              <div
+                id="admin-lucky-draw-auto-progress"
+                className="mt-4 p-3 rounded-[2px] bg-amber-950/40 border border-amber-400/40 space-y-2 text-left"
+              >
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-amber-300 font-bold flex items-center gap-1.5">
+                    <Timer className="w-3.5 h-3.5 animate-pulse" />
+                    Tự động chốt khi hết nhạc
+                  </span>
+                  <span className="text-white font-bold">
+                    Còn {spinProgress.remainingSec.toFixed(1)}s / {spinProgress.durationSec.toFixed(1)}s
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-[1px] bg-black/50 overflow-hidden border border-white/10">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-[#F7CAC9] transition-all duration-200"
+                    style={{ width: `${Math.round(spinProgress.progressRatio * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -823,10 +1093,55 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
         )}
       </div>
 
+      {/* Spin Mode Selector (Manual vs Auto-Reveal on Music End) */}
+      <div className="fluent-box-nested rounded-[2px] p-3 border border-white/10 bg-[#190839]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Timer className="w-4 h-4 text-amber-300 shrink-0" />
+          <div className="text-xs font-mono">
+            <div className="font-bold text-white uppercase tracking-wider">Chế độ dừng & công bố kết quả</div>
+            <div className="text-[11px] text-[#B6A6D8]">
+              {autoStopOnMusicEnd
+                ? 'Tự động: Phát nhạc quay nón (~14.4s), vừa dứt nhạc (cắt khoảng lặng 3s) tự động công bố người trúng thưởng.'
+                : 'Thủ công: Lặp nhạc quay nón cho đến khi BTC chủ động bấm nút Dừng Quay.'}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            id="btn-admin-lucky-draw-mode-manual"
+            onClick={() => handleToggleAutoStopMode(false)}
+            aria-pressed={!autoStopOnMusicEnd}
+            className={`px-3 py-1.5 rounded-[2px] font-mono text-xs font-bold border transition cursor-pointer ${
+              !autoStopOnMusicEnd
+                ? 'bg-[#F7CAC9] text-[#190839] border-[#F7CAC9] shadow-md'
+                : 'bg-white/5 text-white/70 border-white/15 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            Thủ công (Bấm dừng)
+          </button>
+          <button
+            type="button"
+            id="btn-admin-lucky-draw-mode-auto"
+            onClick={() => handleToggleAutoStopMode(true)}
+            aria-pressed={autoStopOnMusicEnd}
+            className={`px-3 py-1.5 rounded-[2px] font-mono text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 ${
+              autoStopOnMusicEnd
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md ring-1 ring-amber-300/70'
+                : 'bg-white/5 text-white/70 border-white/15 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Timer className="w-3.5 h-3.5" />
+            <span>Tự động (Hết nhạc → Ra KQ)</span>
+          </button>
+        </div>
+      </div>
+
       {/* Action Buttons */}
-      <div className="flex justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         {luckyDraw.status === 'IDLE' || luckyDraw.status === 'REVEALED' ? (
           <button
+            id="btn-admin-lucky-draw-start"
             onClick={handleStartSpin}
             disabled={candidates.length === 0}
             className={`flex items-center gap-2 px-6 py-3 rounded-[2px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95 ${
@@ -838,16 +1153,34 @@ export const LuckyDrawAdmin: React.FC<LuckyDrawAdminProps> = ({ gameState, allRe
             <Play className="w-4 h-4 fill-current" />{' '}
             {filterMode === 'CORRECT_PREDICTION'
               ? `⚡ BẮT ĐẦU PREDICTOR DRAW (${candidates.length})`
+              : autoStopOnMusicEnd
+              ? `BẮT ĐẦU QUAY TỰ ĐỘNG (${candidates.length})`
               : `BẮT ĐẦU QUAY (${candidates.length})`}
           </button>
         ) : (
           <button
+            id="btn-admin-lucky-draw-stop"
             onClick={handleStopSpin}
             className="flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-[2px] font-bold font-mono text-sm transition cursor-pointer shadow-lg active:scale-95"
           >
-            <Square className="w-4 h-4 fill-current" /> DỪNG QUAY & CHỌN NGƯỜI THẮNG
+            <Square className="w-4 h-4 fill-current" />{' '}
+            {activeAutoStop ? 'DỪNG NGAY & CHỐT KẾT QUẢ' : 'DỪNG QUAY & CHỌN NGƯỜI THẮNG'}
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={handleToggleMusicMute}
+          className={`flex items-center gap-2 px-4 py-3 rounded-[2px] font-bold font-mono text-sm transition border cursor-pointer shadow ${
+            isMusicMuted
+              ? 'bg-rose-950/70 hover:bg-rose-900/80 text-rose-200 border-rose-400/50'
+              : 'bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 border-emerald-400/40'
+          }`}
+          title="Bật hoặc tắt tiếng nhạc Xổ Số trên Màn Chiếu & thiết bị Khán Giả"
+        >
+          {isMusicMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          <span>{isMusicMuted ? 'Bật Lại Nhạc Quay Số' : 'Mute Nhạc Quay Số'}</span>
+        </button>
 
         {luckyDraw.status === 'REVEALED' && (
           <button

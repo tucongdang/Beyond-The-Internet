@@ -16,7 +16,8 @@ import {
   BellOff,
   Sparkles,
   Coffee,
-  ShieldCheck
+  ShieldCheck,
+  Square
 } from 'lucide-react';
 import { GameState } from '../types';
 import { syncService } from '../services/syncService';
@@ -868,49 +869,69 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
             </button>
 
             {/* ACTION 7: Biển Ánh Sáng (Audience Light Show) */}
-            <button
-              type="button"
-              id="btn-quick-action-light-show"
-              onClick={() => setShowLightShowModal(true)}
-              data-tooltip="Bật/Tắt hiệu ứng ánh sáng đồng bộ trên toàn bộ điện thoại của khán giả trong hội trường"
-              data-tooltip-title="Biển Ánh Sáng (Light Show)"
-              data-tooltip-variant="accent"
-              className={`has-tooltip group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
-                gameState.audience_light_show?.active
-                  ? 'border-amber-400 bg-gradient-to-r from-purple-900/80 via-pink-900/80 to-amber-900/80 text-amber-200 shadow-lg shadow-purple-950/60 ring-1 ring-amber-300 animate-pulse'
-                  : 'border-purple-500/40 bg-gradient-to-r from-purple-950/40 to-slate-900/60 hover:from-purple-900/50 hover:to-purple-950/50 text-purple-200 hover:border-purple-400 hover:shadow-lg'
-              }`}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
+            <div className="flex items-stretch gap-1">
+              <button
+                type="button"
+                id="btn-quick-action-light-show"
+                onClick={() => setShowLightShowModal(true)}
+                data-tooltip="Bật/Tắt hiệu ứng ánh sáng đồng bộ trên toàn bộ điện thoại của khán giả trong hội trường"
+                data-tooltip-title="Biển Ánh Sáng (Light Show)"
+                data-tooltip-variant="accent"
+                className={`has-tooltip flex-1 min-w-0 group relative flex items-center justify-between p-2.5 rounded-[2px] border transition-all active:scale-[0.98] cursor-pointer text-left select-none ${
                   gameState.audience_light_show?.active
-                    ? 'bg-amber-400 text-slate-950 shadow-md animate-spin'
-                    : 'bg-purple-500/20 border border-purple-500/40 text-purple-300 group-hover:scale-105'
-                }`}>
-                  <Sparkles className="w-3.5 h-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-white group-hover:text-purple-200 truncate">
-                      Biển Ánh Sáng
-                    </span>
-                    {gameState.audience_light_show?.active && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                    )}
+                    ? 'border-amber-400 bg-gradient-to-r from-purple-900/80 via-pink-900/80 to-amber-900/80 text-amber-200 shadow-lg shadow-purple-950/60 ring-1 ring-amber-300 animate-pulse'
+                    : 'border-purple-500/40 bg-gradient-to-r from-purple-950/40 to-slate-900/60 hover:from-purple-900/50 hover:to-purple-950/50 text-purple-200 hover:border-purple-400 hover:shadow-lg'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`w-7 h-7 rounded-[2px] flex items-center justify-center shrink-0 transition-transform ${
+                    gameState.audience_light_show?.active
+                      ? 'bg-amber-400 text-slate-950 shadow-md animate-spin'
+                      : 'bg-purple-500/20 border border-purple-500/40 text-purple-300 group-hover:scale-105'
+                  }`}>
+                    <Sparkles className="w-3.5 h-3.5" />
                   </div>
-                  <p className="text-[9px] text-white/50 truncate">
-                    {gameState.audience_light_show?.active ? 'Đang phát sáng cả phòng' : 'Hòa nhịp flash mob'}
-                  </p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-white group-hover:text-purple-200 truncate">
+                        Biển Ánh Sáng
+                      </span>
+                      {gameState.audience_light_show?.active && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      )}
+                    </div>
+                    <p className="text-[9px] text-white/50 truncate">
+                      {gameState.audience_light_show?.active ? 'Đang phát sáng cả phòng' : 'Hòa nhịp flash mob'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
-                gameState.audience_light_show?.active
-                  ? 'bg-amber-400 text-slate-950 border-amber-300 font-black'
-                  : 'bg-purple-950/80 text-purple-300 border-purple-500/30'
-              }`}>
-                {gameState.audience_light_show?.active ? 'ACTIVE' : 'SHOW'}
-              </span>
-            </button>
+                <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-[2px] border shrink-0 ${
+                  gameState.audience_light_show?.active
+                    ? 'bg-amber-400 text-slate-950 border-amber-300 font-black'
+                    : 'bg-purple-950/80 text-purple-300 border-purple-500/30'
+                }`}>
+                  {gameState.audience_light_show?.active ? 'ACTIVE' : 'SHOW'}
+                </span>
+              </button>
+
+              {gameState.audience_light_show?.active && (
+                <button
+                  type="button"
+                  id="btn-quick-stop-light-show"
+                  onClick={() => {
+                    soundFx.playLock();
+                    syncService.updateGameState({ audience_light_show: null });
+                    triggerHudToast('LIGHT SHOW', 'Đã tắt nhanh Biển Ánh Sáng trên toàn bộ màn hình khán giả!');
+                  }}
+                  aria-label="Tắt nhanh Biển Ánh Sáng"
+                  title="Tắt ngay Biển Ánh Sáng"
+                  className="px-2.5 rounded-[2px] bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] font-black border border-rose-300 shadow-lg flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+                >
+                  <Square className="w-3 h-3 fill-current" />
+                  <span>TẮT</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

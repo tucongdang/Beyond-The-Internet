@@ -94,7 +94,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
         <div className="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-0 overflow-hidden">
           
           {/* Left Sidebar Tabs (3 items matching design) */}
-          <div className="md:col-span-4 lg:col-span-3.5 p-3 sm:p-4 pr-12 md:pr-4 border-b md:border-b-0 md:border-r border-white/10 flex flex-row md:flex-col gap-2 shrink-0 bg-[#0D0420] overflow-x-auto md:overflow-visible">
+          <div className="md:col-span-4 lg:col-span-4 p-3 sm:p-4 pr-12 md:pr-4 border-b md:border-b-0 md:border-r border-white/10 flex flex-row md:flex-col gap-2 shrink-0 bg-[#0D0420] overflow-x-auto md:overflow-visible">
             
             {/* Header info on desktop */}
             <div className="hidden md:flex flex-col mb-2 pb-3 border-b border-white/10">
@@ -172,7 +172,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
           </div>
 
           {/* Right Scrollable Content Area */}
-          <div className="md:col-span-8 lg:col-span-8.5 p-4 sm:p-6 overflow-y-auto max-h-[50vh] sm:max-h-[56vh] custom-scrollbar text-xs sm:text-sm text-slate-200 leading-relaxed font-sans select-text space-y-5">
+          <div className="md:col-span-8 lg:col-span-8 p-4 sm:p-6 overflow-y-auto max-h-[50vh] sm:max-h-[56vh] custom-scrollbar text-xs sm:text-sm text-slate-200 leading-relaxed font-sans select-text space-y-5">
             
             {/* Preamble / Introduction */}
             <div className="p-3.5 rounded-[2px] bg-black/40 border border-white/10 text-white/90 text-xs leading-relaxed">
@@ -239,7 +239,7 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
               htmlFor="active-consent-checkbox"
               className="flex items-start sm:items-center gap-2.5 cursor-pointer select-none group"
             >
-              <div className="relative flex items-center justify-center mt-0.5 sm:mt-0 shrink-0">
+              <div className="relative w-5 h-5 flex items-center justify-center mt-0.5 sm:mt-0 shrink-0">
                 <input
                   id="active-consent-checkbox"
                   type="checkbox"
@@ -251,14 +251,14 @@ export const FirstVisitConsentModal: React.FC<FirstVisitConsentModalProps> = ({
                       vibrateSelection();
                     }
                   }}
-                  className="sr-only peer"
+                  className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 m-0"
                   aria-required="true"
                 />
                 <div
-                  className={`w-5 h-5 rounded-[2px] border transition-all flex items-center justify-center ${
+                  className={`pointer-events-none w-5 h-5 rounded-[2px] border transition-all flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-[#F7CAC9] ${
                     isAgreed
                       ? 'bg-red-600 border-red-500 text-white shadow-md shadow-red-600/40'
-                      : 'bg-black/50 border-white/30 hover:border-[#F7CAC9] text-transparent'
+                      : 'bg-black/50 border-white/30 group-hover:border-[#F7CAC9] text-transparent'
                   }`}
                 >
                   <Check className={`w-3.5 h-3.5 stroke-[3] ${isAgreed ? 'opacity-100' : 'opacity-0'}`} />

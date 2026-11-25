@@ -154,6 +154,26 @@
         }
       },
       "required": ["uid", "sender_name", "text", "timestamp"]
+    },
+    "ContestantPrediction": {
+      "title": "ContestantPrediction",
+      "description": "Audience member pre-match or live prediction for a contestant",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "contestantId": { "type": "string" },
+        "timestamp": { "type": "number" }
+      }
+    },
+    "ChampionVote": {
+      "title": "ChampionVote",
+      "description": "Audience member vote for match champion",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "candidateId": { "type": "string" },
+        "timestamp": { "type": "number" }
+      }
     }
   },
   "firestore": {
@@ -176,6 +196,14 @@
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
       "description": "User profiles for audience members and contestants"
+    },
+    "/contestant_predictions/{predictionId}": {
+      "schema": { "$ref": "#/entities/ContestantPrediction" },
+      "description": "Audience predictions for contestants"
+    },
+    "/champion_votes/{voteId}": {
+      "schema": { "$ref": "#/entities/ChampionVote" },
+      "description": "Audience votes for match champion"
     }
   }
 }
