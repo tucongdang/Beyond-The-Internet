@@ -25,7 +25,7 @@ import { snapshotService } from '../services/snapshotService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateCopy, vibrateShare, vibrateTap, vibrateGrandCelebration } from '../utils/hapticUtils';
 import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
-import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, BatteryCharging, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal } from 'lucide-react';
+import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, BatteryCharging, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, CloudUpload, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal, Pin, PinOff, X } from 'lucide-react';
 
 interface ProjectorViewProps {
   gameState: GameState;
@@ -176,17 +176,23 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     };
   }, []);
 
-  // Compute effective scale factor (combines auto-fit and manual scale)
+  // Compute effective scale factor
+  // When Auto-Fit is ON: fitScale fills the viewport based on a 1920×1080 reference,
+  // then localScale acts as a *fine-tune multiplier* on top.
+  // When Auto-Fit is OFF: localScale is the sole driver.
   const effectiveScale = useMemo(() => {
-    let scale = localScale;
     if (autoFit && typeof window !== 'undefined') {
       const scaleX = viewportDim.width / 1920;
       const scaleY = viewportDim.height / 1080;
-      const fitScale = Math.min(scaleX, scaleY);
-      const clampedFit = Math.max(0.75, Math.min(fitScale, 1.30));
-      scale = Number((clampedFit * (localScale / 1.0)).toFixed(3));
+      // Use the *larger* axis so content always fills or slightly overflows the viewport,
+      // rather than letterboxing with empty bands.
+      const fitScale = Math.max(scaleX, scaleY);
+      // localScale offsets from the neutral 1.0 baseline, so only the delta matters
+      const userOffset = localScale - 1.0; // e.g. +0.05 when user picks 105%
+      const combined = fitScale + userOffset;
+      return Math.max(0.65, Math.min(Number(combined.toFixed(4)), 1.50));
     }
-    return Math.max(0.65, Math.min(scale, 1.40));
+    return Math.max(0.65, Math.min(localScale, 1.50));
   }, [localScale, autoFit, viewportDim]);
 
   const showToastNotification = (msg: string) => {
@@ -205,7 +211,10 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     } catch (_) {}
     vibrateTap();
     soundFx.playClick();
-    showToastNotification('Tỉ lệ: ' + Math.round(clamped * 100) + '%');
+    const displayPct = autoFit
+      ? Math.round(clamped * 100) + '% (offset ' + (clamped >= 1 ? '+' : '') + Math.round((clamped - 1) * 100) + '%)'
+      : Math.round(clamped * 100) + '%';
+    showToastNotification('Tỉ lệ: ' + displayPct);
   };
 
   const handleZoomIn = () => {
@@ -794,12 +803,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         <div
           id="projector-view-stage"
           style={{
-            transform: effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined,
+            transform: `scale(${effectiveScale})`,
             transformOrigin: 'center center',
-            width: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
-            height: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+            width: `${(100 / effectiveScale).toFixed(3)}%`,
+            height: `${(100 / effectiveScale).toFixed(3)}%`,
             padding: overscanMargin > 0 ? `${overscanMargin * 0.5}vh ${overscanMargin * 0.5}vw` : undefined,
-            transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, height 0.2s ease'
+            willChange: 'transform',
+            transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
           className="h-full w-full relative overflow-hidden"
         >
@@ -843,10 +853,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsControlsPinned(prev => !prev)}
-                    className={`p-1 rounded hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300' : 'text-white/40'}`}
+                    className={`p-1.5 rounded-[2px] hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300 bg-purple-500/20' : 'text-white/50 hover:text-white'}`}
                     title={isControlsPinned ? 'Đang ghim thanh điều khiển' : 'Ghim thanh điều khiển (không tự ẩn)'}
+                    aria-label={isControlsPinned ? 'Bỏ ghim thanh điều khiển' : 'Ghim thanh điều khiển'}
                   >
-                    {isControlsPinned ? '📌' : '📍'}
+                    {isControlsPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     type="button"
@@ -854,10 +865,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       setIsControlsVisible(false);
                       setIsControlsPinned(false);
                     }}
-                    className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition cursor-pointer"
+                    className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/50 hover:text-white transition cursor-pointer"
                     title="Ẩn thanh điều khiển (Phím tắt: T)"
+                    aria-label="Ẩn thanh điều khiển"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -969,8 +981,15 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   className="px-2.5 py-1 rounded-[2px] bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-purple-400/30"
                   title="Lưu tỉ lệ này lên máy chủ để các màn chiếu khác cùng nhận"
                 >
-                  <span>☁️ Lưu đồng bộ</span>
+                  <CloudUpload className="w-3.5 h-3.5" />
+                  <span>Lưu đồng bộ</span>
                 </button>
+              </div>
+
+              {/* Hotkey Legend Footer */}
+              <div className="pt-1 border-t border-white/10 flex items-center justify-between gap-2 text-[10px] font-mono text-white/45">
+                <span>Phím tắt sân khấu:</span>
+                <span>[L] BXH · [B] Biểu đồ · [H] Nhiệt · [W] Từ khóa · [P] Chụp · [T] Ẩn</span>
               </div>
             </div>
           ) : null}
@@ -996,12 +1015,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       <div 
         id="projector-view-stage"
         style={{
-          transform: effectiveScale !== 1 ? `scale(${effectiveScale})` : undefined,
+          transform: `scale(${effectiveScale})`,
           transformOrigin: 'center center',
-          width: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
-          height: effectiveScale > 1 ? `${(100 / effectiveScale).toFixed(3)}%` : '100%',
+          width: `${(100 / effectiveScale).toFixed(3)}%`,
+          height: `${(100 / effectiveScale).toFixed(3)}%`,
           padding: overscanMargin > 0 ? `${overscanMargin * 0.5}vh ${overscanMargin * 0.5}vw` : undefined,
-          transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, height 0.2s ease'
+          willChange: 'transform',
+          transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
         className={`h-full w-full ${theme.bgGradient} text-[#F5EFF9] p-2.5 sm:p-3 md:p-3.5 lg:p-4.5 ${hasAnnouncer ? 'pb-16 sm:pb-20' : ''} flex flex-col justify-between relative overflow-hidden transition-colors duration-700`}>
       {/* Screen flash on capture */}
@@ -2171,10 +2191,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsControlsPinned(prev => !prev)}
-                    className={`p-1 rounded hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300' : 'text-white/40'}`}
+                    className={`p-1.5 rounded-[2px] hover:bg-white/10 transition cursor-pointer ${isControlsPinned ? 'text-purple-300 bg-purple-500/20' : 'text-white/50 hover:text-white'}`}
                     title={isControlsPinned ? 'Đang ghim thanh điều khiển' : 'Ghim thanh điều khiển (không tự ẩn)'}
+                    aria-label={isControlsPinned ? 'Bỏ ghim thanh điều khiển' : 'Ghim thanh điều khiển'}
                   >
-                    {isControlsPinned ? '📌' : '📍'}
+                    {isControlsPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     type="button"
@@ -2182,10 +2203,11 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                       setIsControlsVisible(false);
                       setIsControlsPinned(false);
                     }}
-                    className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition cursor-pointer"
+                    className="p-1.5 rounded-[2px] hover:bg-white/10 text-white/50 hover:text-white transition cursor-pointer"
                     title="Ẩn thanh điều khiển (Phím tắt: T)"
+                    aria-label="Ẩn thanh điều khiển"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -2297,8 +2319,15 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                   className="px-2.5 py-1 rounded-[2px] bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-purple-400/30"
                   title="Lưu tỉ lệ này lên máy chủ để các màn chiếu khác cùng nhận"
                 >
-                  <span>☁️ Lưu đồng bộ</span>
+                  <CloudUpload className="w-3.5 h-3.5" />
+                  <span>Lưu đồng bộ</span>
                 </button>
+              </div>
+
+              {/* Hotkey Legend Footer */}
+              <div className="pt-1 border-t border-white/10 flex items-center justify-between gap-2 text-[10px] font-mono text-white/45">
+                <span>Phím tắt sân khấu:</span>
+                <span>[L] BXH · [B] Biểu đồ · [H] Nhiệt · [W] Từ khóa · [P] Chụp · [T] Ẩn</span>
               </div>
             </div>
           ) : null}

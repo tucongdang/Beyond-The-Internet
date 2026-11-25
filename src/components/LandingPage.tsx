@@ -143,13 +143,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   soundFx.playClick(); 
                   onEnterAudience(); 
                 }}
-                className="group relative flex flex-col items-start text-left p-5 fluent-box rounded-[2px] border-[#F7CAC9]/45 bg-gradient-to-b from-[#2A1052]/90 via-[#200c40]/90 to-[#160834]/95 shadow-[0_14px_40px_-4px_rgba(247,202,201,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/85 hover:shadow-[0_20px_48px_-4px_rgba(247,202,201,0.28)] active:scale-98 cursor-pointer overflow-hidden justify-between"
+                className="group relative flex flex-col items-start text-left p-5 fluent-box rounded-[2px] border-[#F7CAC9]/45 bg-gradient-to-b from-[#2A1052]/90 via-[#200c40]/90 to-[#160834]/95 shadow-[0_14px_40px_-4px_rgba(247,202,201,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/85 hover:shadow-[0_20px_48px_-4px_rgba(247,202,201,0.28)] active:scale-[0.98] cursor-pointer overflow-hidden justify-between"
               >
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-horizon opacity-80 group-hover:opacity-100 transition-opacity" />
                 <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/10 border border-white/15 text-[10px] font-mono text-white/60">
                   [1]
                 </span>
                 <div className="flex items-start gap-4 mb-3.5 pr-8">
-                  <div className="w-12 h-12 shrink-0 bg-[#F7CAC9]/20 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/40">
+                  <div className="w-12 h-12 shrink-0 bg-[#F7CAC9]/20 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-[1.08] transition-transform duration-300 border border-[#F7CAC9]/40">
                     <Users className="w-6 h-6" />
                   </div>
                   <div>
@@ -260,13 +261,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 soundFx.playClick(); 
                 onEnterAudience(); 
               }}
-              className="group relative flex flex-col items-center sm:items-start text-center sm:text-left p-6 sm:p-7 fluent-box rounded-[2px] border-[#F7CAC9]/45 bg-gradient-to-b from-[#2A1052]/90 via-[#200c40]/90 to-[#160834]/95 shadow-[0_14px_40px_-4px_rgba(247,202,201,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/85 hover:shadow-[0_20px_48px_-4px_rgba(247,202,201,0.28)] active:scale-98 cursor-pointer overflow-hidden h-full justify-between"
+              className="group relative flex flex-col items-center sm:items-start text-center sm:text-left p-6 sm:p-7 fluent-box rounded-[2px] border-[#F7CAC9]/45 bg-gradient-to-b from-[#2A1052]/90 via-[#200c40]/90 to-[#160834]/95 shadow-[0_14px_40px_-4px_rgba(247,202,201,0.16)] transition-all duration-300 hover:-translate-y-1 hover:border-[#F7CAC9]/85 hover:shadow-[0_20px_48px_-4px_rgba(247,202,201,0.28)] active:scale-[0.98] cursor-pointer overflow-hidden h-full justify-between"
             >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-horizon opacity-80 group-hover:opacity-100 transition-opacity" />
               <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/10 border border-white/15 text-[10px] font-mono text-white/60">
                 [1]
               </span>
               <div>
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#F7CAC9]/20 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-[#F7CAC9]/40">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#F7CAC9]/20 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#F7CAC9] font-bold mb-4 shadow-md shadow-[#0D0420]/50 group-hover:scale-[1.08] transition-transform duration-300 border border-[#F7CAC9]/40">
                   <Users className="w-7 h-7 sm:w-8 sm:h-8" />
                 </div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-[#F5EFF9] mb-1.5 group-hover:text-[#F7CAC9] transition-colors">
@@ -296,13 +298,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   soundFx.playClick(); 
                   onEnterProjector(); 
                 }}
-                className="group relative flex flex-col text-left p-5 sm:p-6 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-98 cursor-pointer flex-1 justify-between"
+                className="group relative flex flex-col text-left p-5 sm:p-6 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-xl hover:shadow-sky-500/10 active:scale-[0.98] cursor-pointer flex-1 justify-between"
               >
                 <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-[10px] font-mono text-white/45">
                   [2]
                 </span>
                 <div className="flex items-start gap-4 mb-2">
-                  <div className="w-11 h-11 shrink-0 bg-sky-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-sky-300 font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-sky-400/25">
+                  <div className="w-11 h-11 shrink-0 bg-sky-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-sky-300 font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-[1.08] transition-transform duration-300 border border-sky-400/25">
                     <Tv className="w-5 h-5" />
                   </div>
                   <div>
@@ -331,13 +333,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   soundFx.playClick(); 
                   onEnterAdmin(); 
                 }}
-                className="group relative flex flex-col text-left p-5 sm:p-6 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-98 cursor-pointer flex-1 justify-between"
+                className="group relative flex flex-col text-left p-5 sm:p-6 fluent-box rounded-[2px] transition-all duration-300 hover:-translate-y-1 hover:border-[#B6A6D8]/60 hover:shadow-xl hover:shadow-purple-500/10 active:scale-[0.98] cursor-pointer flex-1 justify-between"
               >
                 <span className="hidden sm:inline-flex absolute top-3 right-3 px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-[10px] font-mono text-white/45">
                   [3]
                 </span>
                 <div className="flex items-start gap-4 mb-2">
-                  <div className="w-11 h-11 shrink-0 bg-purple-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#B6A6D8] font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-108 transition-transform duration-300 border border-purple-400/25">
+                  <div className="w-11 h-11 shrink-0 bg-purple-500/15 backdrop-blur-md rounded-[2px] flex items-center justify-center text-[#B6A6D8] font-bold shadow-md shadow-[#0D0420]/50 group-hover:scale-[1.08] transition-transform duration-300 border border-purple-400/25">
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
@@ -365,8 +367,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
       
       {/* Footer */}
-      <div className="mt-4 pb-6 text-center space-y-2">
-        <div className="flex items-center justify-center gap-3 text-xs font-mono text-[#F7CAC9]/80">
+      <div className="mt-4 pb-6 text-center space-y-2.5">
+        <div className="hidden sm:flex items-center justify-center gap-2 text-[11px] font-mono text-white/45">
+          <span>{localLanguage !== 'vi' ? 'Quick shortcuts:' : 'Phím tắt nhanh:'}</span>
+          <span className="px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-white/70">[1] {localLanguage !== 'vi' ? 'Audience' : 'Khán giả'}</span>
+          <span className="px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-white/70">[2] {localLanguage !== 'vi' ? 'Stage LED' : 'Màn chiếu'}</span>
+          <span className="px-1.5 py-0.5 rounded-[2px] bg-white/5 border border-white/10 text-white/70">[3] {localLanguage !== 'vi' ? 'Admin' : 'Điều hành'}</span>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs font-mono text-[#F7CAC9]/80 px-2">
           <button
             type="button"
             onClick={() => {

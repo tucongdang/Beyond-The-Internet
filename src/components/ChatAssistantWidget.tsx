@@ -56,7 +56,7 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
           type="button"
           id="btn-chat-assistant-widget"
           onClick={handleToggle}
-          className={`fixed bottom-20 right-3.5 sm:bottom-6 sm:right-6 z-40 p-3 sm:p-3.5 rounded-[2px] bg-[#190839] hover:bg-[#241148] text-[#F5EFF9] shadow-xl border border-white/18 hover:border-[#F7CAC9]/60 transition-all active:scale-95 cursor-pointer flex items-center gap-2.5 group backdrop-blur-xl ${className}`}
+          className={`fixed bottom-[76px] right-3 sm:bottom-6 sm:right-6 z-40 min-h-[44px] p-3 sm:p-3.5 rounded-[2px] bg-[#190839] hover:bg-[#241148] hover:-translate-y-0.5 text-[#F5EFF9] shadow-xl border border-white/18 hover:border-[#F7CAC9]/60 transition-all active:scale-95 cursor-pointer flex items-center gap-2.5 group backdrop-blur-xl ${className}`}
           title={`Cổng Cố Vấn Khán Giả BTI (${activeRoundName} • ${activeStatus})`}
           aria-label={`Cổng Cố Vấn Khán Giả BTI - Vòng ${activeRoundName}`}
         >

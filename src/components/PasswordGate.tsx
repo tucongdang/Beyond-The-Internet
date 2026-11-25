@@ -704,40 +704,23 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({
             </div>
           </div>
 
-          {/* Right: Actions (Home & Exit) */}
+          {/* Right: Actions (Home) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {onExit && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    onExit();
-                  }}
-                  className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
-                  title="Về Trang Chủ"
-                  aria-label="Về Trang Chủ"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Trang chủ</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    vibrateTap();
-                    soundFx.playClick();
-                    onExit();
-                  }}
-                  className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
-                  title="Thoát đăng nhập"
-                  aria-label="Thoát đăng nhập"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Thoát</span>
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() => {
+                  vibrateTap();
+                  soundFx.playClick();
+                  onExit();
+                }}
+                className="min-h-[36px] px-2.5 py-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition cursor-pointer flex items-center gap-1.5 text-[11px] font-mono border border-white/15"
+                title="Quay lại Trang chủ"
+                aria-label="Quay lại Trang chủ"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Trang chủ</span>
+              </button>
             )}
           </div>
         </div>

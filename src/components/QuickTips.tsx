@@ -260,7 +260,7 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
       )}
 
       <div className="flex items-center gap-1.5 ml-auto shrink-0">
-        {onOpenRulesModal && (
+        {onOpenRulesModal && !leftSlot && (
           <button
             id="btn-quick-tips-open-rules"
             type="button"
@@ -270,7 +270,7 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
               onOpenRulesModal();
             }}
             aria-label={isVi ? 'Xem cẩm nang luật chơi BTI 2027' : 'View BTI 2027 game rules'}
-            className={`${leftSlot ? 'sm:hidden' : 'flex'} flex min-h-[34px] px-2.5 py-1 rounded-[3px] text-[11px] font-semibold items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
+            className={`flex min-h-[34px] px-2.5 py-1 rounded-[3px] text-[11px] font-semibold items-center gap-1.5 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border ${
               isHighContrast
                 ? 'bg-black text-white border-white/40 hover:border-white'
                 : 'bg-[#190839]/85 hover:bg-[#24104f] text-white/90 border-white/15 shadow-sm backdrop-blur-md'

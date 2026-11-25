@@ -170,11 +170,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 }) => {
   // Admin sound FX obeys global sound settings
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ message: string; intent: 'success' | 'warning' | 'error' } | null>(null);
 
   const notify = (message: string, intent: 'success' | 'warning' | 'error' = 'success') => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(null), 3000);
+    setToastMessage({ message, intent });
+    setTimeout(() => {
+      setToastMessage((prev) => (prev?.message === message ? null : prev));
+    }, 3200);
   };
 
 
@@ -2887,7 +2889,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white truncate">
-                  BTI 2026 MASTER
+                  BTI 2027 MASTER
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -3836,11 +3838,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           <div className="fluent-box rounded-[2px] p-1 bg-black/40 border border-white/10 flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
-                { id: 'DASHBOARD', label: '01. TỔNG QUAN', defaultTab: 'DASHBOARD' },
-                { id: 'ARENA', label: '02. ĐẤU TRƯỜNG', defaultTab: 'KDC' },
-                { id: 'INTERACTION', label: '03. TƯƠNG TÁC', defaultTab: 'QA_MANAGER' },
-                { id: 'RESULTS', label: '04. KẾT QUẢ & SPSS', defaultTab: 'STATS' },
-                { id: 'STUDIO', label: '05. NGÂN HÀNG ĐỀ', defaultTab: 'QUESTIONS' },
+                { id: 'DASHBOARD', label: '01. TỔNG QUAN', defaultTab: 'DASHBOARD', hasLiveActivity: false },
+                { id: 'ARENA', label: '02. ĐẤU TRƯỜNG', defaultTab: 'KDC', hasLiveActivity: gameState.status === 'ACTIVE' },
+                { id: 'INTERACTION', label: '03. TƯƠNG TÁC', defaultTab: 'QA_MANAGER', hasLiveActivity: Boolean(gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED') },
+                { id: 'RESULTS', label: '04. KẾT QUẢ & SPSS', defaultTab: 'STATS', hasLiveActivity: false },
+                { id: 'STUDIO', label: '05. NGÂN HÀNG ĐỀ', defaultTab: 'QUESTIONS', hasLiveActivity: false },
               ].map(ws => {
                 const isSelected = getWorkspaceForTab(activeAdminTab) === ws.id;
                 return (
@@ -3862,13 +3864,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         if (!['QUESTIONS', 'GUIDE'].includes(activeAdminTab)) setActiveAdminTab('QUESTIONS');
                       }
                     }}
-                    className={`px-3 sm:px-4 py-1.5 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    className={`min-h-[36px] px-3 sm:px-4 py-1.5 rounded-[2px] text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
                       isSelected
                         ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md border border-purple-300'
                         : 'text-white/60 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <span>{ws.label}</span>
+                    {ws.hasLiveActivity && (
+                      <span
+                        className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -8307,9 +8315,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       />
 
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[350] bg-purple-950/90 border border-purple-500/40 text-purple-200 px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2 animate-fadeIn text-sm">
-          <AlertCircle className="w-4 h-4 text-purple-400 shrink-0" />
-          <span>{toastMessage}</span>
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed bottom-6 right-6 z-[350] px-4 py-3 rounded-[2px] shadow-2xl flex items-center gap-2.5 animate-fadeIn text-sm border backdrop-blur-xl ${
+            toastMessage.intent === 'error'
+              ? 'bg-rose-950/95 border-rose-500/60 text-rose-100'
+              : toastMessage.intent === 'warning'
+              ? 'bg-amber-950/95 border-amber-500/60 text-amber-100'
+              : 'bg-emerald-950/95 border-emerald-500/50 text-emerald-100'
+          }`}
+        >
+          {toastMessage.intent === 'error' ? (
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          ) : toastMessage.intent === 'warning' ? (
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          )}
+          <span className="font-medium">{toastMessage.message}</span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            aria-label="Đóng thông báo"
+            className="ml-1 p-0.5 rounded hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 

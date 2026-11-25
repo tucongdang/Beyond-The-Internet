@@ -1573,40 +1573,24 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </div>
         </div>
 
-        {/* Right: Actions (Home & Exit) */}
+        {/* Right: Actions (Home) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {(onExit || onClose) && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  if (onExit) onExit();
-                  else if (onClose) onClose();
-                }}
-                className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-white/10"
-                title={localLanguage !== 'vi' ? 'Home' : 'Trang chủ'}
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{localLanguage !== 'vi' ? 'Home' : 'Trang chủ'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  vibrateTap();
-                  soundFx.playClick();
-                  if (onExit) onExit();
-                  else if (onClose) onClose();
-                }}
-                className="p-1 sm:p-1.5 px-2 rounded-[2px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 transition cursor-pointer flex items-center gap-1 text-[10px] sm:text-[11px] font-mono border border-rose-500/40 shadow-sm"
-                title={localLanguage !== 'vi' ? 'Exit' : 'Tạm rời'}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>{localLanguage !== 'vi' ? 'Exit' : 'Tạm rời'}</span>
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                if (onExit) onExit();
+                else if (onClose) onClose();
+              }}
+              className="min-h-[36px] px-2.5 py-1.5 rounded-[2px] bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition cursor-pointer flex items-center gap-1.5 text-[11px] font-mono border border-white/15"
+              title={localLanguage !== 'vi' ? 'Back to Home' : 'Quay lại Trang chủ'}
+              aria-label={localLanguage !== 'vi' ? 'Back to Home' : 'Quay lại Trang chủ'}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>{localLanguage !== 'vi' ? 'Home' : 'Trang chủ'}</span>
+            </button>
           )}
         </div>
       </div>
@@ -1686,7 +1670,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         <div className="md:col-span-7 flex flex-col justify-between space-y-3 sm:space-y-4 min-h-0">
           <div>
             {/* Mode Navigation Tabs (Mirrors Admin Portal Structure) */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2 sm:mb-3 select-none">
+            <div className="flex flex-wrap sm:grid sm:grid-cols-5 gap-1 p-1 bg-white/5 border border-white/10 rounded-[2px] text-[10px] sm:text-xs font-mono font-bold mb-2.5 sm:mb-3 select-none [&>button]:flex-1 [&>button]:min-w-[30%] sm:[&>button]:min-w-0">
               <button
                 type="button"
                 onClick={() => handleTabChange('LOGIN')}
@@ -2209,17 +2193,37 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
                       {localLanguage !== 'vi' ? 'Create Password' : 'Tạo mật khẩu'} *
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="text-[10px] font-mono text-white/50 hover:text-sky-300 transition flex items-center gap-1 cursor-pointer"
+                      aria-label={showRegPassword ? (localLanguage !== 'vi' ? 'Hide password' : 'Ẩn mật khẩu') : (localLanguage !== 'vi' ? 'Show password' : 'Hiện mật khẩu')}
+                    >
+                      {showRegPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      <span>{showRegPassword ? (localLanguage !== 'vi' ? 'Hide' : 'Ẩn') : (localLanguage !== 'vi' ? 'Show' : 'Hiện')}</span>
+                    </button>
                   </div>
-                  <input
-                    type={showRegPassword ? 'text' : 'password'}
-                    placeholder="Từ 6 ký tự trở lên"
-                    value={regPassword}
-                    onChange={(e) => {
-                      setRegPassword(e.target.value);
-                      if (errors.password) setErrors({ ...errors, password: undefined });
-                    }}
-                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      placeholder={localLanguage !== 'vi' ? 'At least 6 characters' : 'Từ 6 ký tự trở lên'}
+                      value={regPassword}
+                      onChange={(e) => {
+                        setRegPassword(e.target.value);
+                        if (errors.password) setErrors({ ...errors, password: undefined });
+                      }}
+                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white pl-2.5 sm:pl-3 pr-9 py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition cursor-pointer"
+                      aria-hidden="true"
+                    >
+                      {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-[10px] sm:text-[11px] text-rose-400 mt-1">{errors.password}</p>}
                 </div>
 
@@ -2228,17 +2232,37 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     <label className="block text-[10px] sm:text-[11px] font-mono font-bold text-white/70">
                       {localLanguage !== 'vi' ? 'Confirm Password' : 'Nhập lại mật khẩu'} *
                     </label>
+                    {regConfirmPassword.length > 0 && regPassword.length > 0 && (
+                      <span className={`text-[10px] font-mono flex items-center gap-0.5 ${regPassword === regConfirmPassword ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {regPassword === regConfirmPassword ? (
+                          <><Check className="w-3 h-3" /><span>{localLanguage !== 'vi' ? 'Matched' : 'Khớp'}</span></>
+                        ) : (
+                          <span>{localLanguage !== 'vi' ? 'Mismatch' : 'Chưa khớp'}</span>
+                        )}
+                      </span>
+                    )}
                   </div>
-                  <input
-                    type={showRegPassword ? 'text' : 'password'}
-                    placeholder="Gõ lại mật khẩu vừa tạo"
-                    value={regConfirmPassword}
-                    onChange={(e) => {
-                      setRegConfirmPassword(e.target.value);
-                      if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
-                    }}
-                    className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      placeholder={localLanguage !== 'vi' ? 'Re-enter password' : 'Gõ lại mật khẩu vừa tạo'}
+                      value={regConfirmPassword}
+                      onChange={(e) => {
+                        setRegConfirmPassword(e.target.value);
+                        if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+                      }}
+                      className="w-full bg-[#0D0420]/60 border border-white/10 hover:border-white/20 focus:border-sky-400 font-mono text-xs text-white pl-2.5 sm:pl-3 pr-9 py-2 rounded-[2px] outline-none transition placeholder:font-normal placeholder:text-white/30 placeholder:text-xs"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition cursor-pointer"
+                      aria-hidden="true"
+                    >
+                      {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                   {errors.confirmPassword && <p className="text-[10px] sm:text-[11px] text-rose-400 mt-1">{errors.confirmPassword}</p>}
                 </div>
               </div>

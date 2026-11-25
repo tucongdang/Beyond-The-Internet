@@ -341,7 +341,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
               aria-label={isExpanded ? 'Thu gọn bảng điểm' : 'Mở rộng bảng điểm'}
               className="p-2 rounded-[2px] fluent-box-nested hover:bg-white/15 transition flex items-center hover-effect cursor-pointer"
             >
-              {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
         </div>

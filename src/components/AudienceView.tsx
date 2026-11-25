@@ -72,7 +72,7 @@ import {
   MessageSquare,
   Megaphone,
   RefreshCw, Globe, ChevronDown,
-  Volume2, VolumeX, Bot, Info
+  Volume2, VolumeX, Bot, Info, MoreHorizontal
 } from 'lucide-react';
 import { aiExplanationService } from '../services/aiExplanationService';
 import { calculateSurvivalStats } from '../utils/leaderboardUtils';
@@ -2925,25 +2925,29 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="font-bold text-sm text-rose-300 font-mono uppercase tracking-wider">
-                    CẢNH BÁO CHUYỂN MÀN HÌNH
+                    {localLanguage !== 'vi' ? 'TAB SWITCH DETECTED' : 'CẢNH BÁO CHUYỂN MÀN HÌNH'}
                   </h4>
                   <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-rose-500/30 text-rose-200 rounded-[2px] shrink-0 border border-rose-400/30">
-                    LẦN {tabSwitchCount}
+                    {localLanguage !== 'vi' ? `#${tabSwitchCount}` : `LẦN ${tabSwitchCount}`}
                   </span>
                 </div>
                 <p className="text-xs text-rose-100 font-medium mt-1 leading-relaxed">
-                  Hãy duy trì màn hình này để giữ kết nối ổn định và không bỏ lỡ điểm số câu hỏi!
+                  {localLanguage !== 'vi'
+                    ? 'Please stay on this screen to keep your connection stable and avoid missing points!'
+                    : 'Hãy duy trì màn hình này để giữ kết nối ổn định và không bỏ lỡ điểm số câu hỏi!'}
                 </p>
                 <p className="text-[11px] text-rose-300/80 mt-1 leading-relaxed">
-                  Hệ thống phát hiện bạn đã chuyển tab hoặc rời màn hình khi câu hỏi đang diễn ra. Thông số này được ghi nhận vào hệ thống.
+                  {localLanguage !== 'vi'
+                    ? 'Leaving or switching tabs during an active question has been logged by the arena system.'
+                    : 'Hệ thống phát hiện bạn đã chuyển tab hoặc rời màn hình khi câu hỏi đang diễn ra. Thông số này được ghi nhận vào hệ thống.'}
                 </p>
               </div>
               <button 
                 type="button"
                 onClick={() => setShowTabSwitchWarning(false)} 
-                aria-label="Đóng cảnh báo chuyển màn hình"
+                aria-label={localLanguage !== 'vi' ? 'Dismiss tab switch warning' : 'Đóng cảnh báo chuyển màn hình'}
                 className="p-1.5 text-rose-400 hover:text-white rounded hover:bg-rose-900/50 cursor-pointer shrink-0 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                title="Đóng cảnh báo"
+                title={localLanguage !== 'vi' ? 'Dismiss' : 'Đóng cảnh báo'}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -3195,18 +3199,28 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         <button
                           type="button"
                           onClick={handleToggleAutoSpeakAnswer}
-                          aria-label={autoSpeakAnswer ? 'Tắt AI tự đọc đáp án đúng' : 'Bật AI tự đọc đáp án đúng'}
+                          aria-label={
+                            localLanguage !== 'vi'
+                              ? (autoSpeakAnswer ? 'Disable AI answer voiceover' : 'Enable AI answer voiceover')
+                              : (autoSpeakAnswer ? 'Tắt AI tự đọc đáp án đúng' : 'Bật AI tự đọc đáp án đúng')
+                          }
                           aria-pressed={autoSpeakAnswer}
                           className={`p-1.5 rounded-[2px] border transition shadow-sm cursor-pointer flex items-center gap-1 text-[10px] font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                             autoSpeakAnswer
                               ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
                               : 'bg-white/5 hover:bg-white/10 text-white/40 border-white/10'
                           }`}
-                          title={autoSpeakAnswer ? 'AI tự đọc đáp án đúng: Đang BẬT (bấm để Tắt)' : 'AI tự đọc đáp án đúng: Đang TẮT (bấm để Bật)'}
+                          title={
+                            localLanguage !== 'vi'
+                              ? (autoSpeakAnswer ? 'AI Answer Voiceover: ON (click to disable)' : 'AI Answer Voiceover: OFF (click to enable)')
+                              : (autoSpeakAnswer ? 'AI tự đọc đáp án đúng: Đang BẬT (bấm để Tắt)' : 'AI tự đọc đáp án đúng: Đang TẮT (bấm để Bật)')
+                          }
                         >
                           <Bot className={`w-3.5 h-3.5 ${autoSpeakAnswer ? 'text-emerald-400' : 'text-white/30'}`} />
                           <span className="hidden xl:inline font-bold">
-                            {autoSpeakAnswer ? 'AI Đáp án: BẬT' : 'AI Đáp án: TẮT'}
+                            {localLanguage !== 'vi'
+                              ? (autoSpeakAnswer ? 'AI Answer: ON' : 'AI Answer: OFF')
+                              : (autoSpeakAnswer ? 'AI Đáp án: BẬT' : 'AI Đáp án: TẮT')}
                           </span>
                         </button>
                       </div>
@@ -3758,8 +3772,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           </div>
                           
                           {isSelected && (
-                            <div className="absolute top-3 right-3 text-[#F7CAC9] flex items-center gap-1.5 relative z-10">
-                              <span className="text-[10px] font-mono font-black bg-[#F7CAC9] text-[#0D0420] px-2 py-0.5 rounded-[2px] shadow-[0_0_10px_rgba(247,202,201,0.6)] animate-pulse flex items-center gap-1">
+                            <div className="absolute top-2.5 right-2.5 text-[#F7CAC9] flex items-center gap-1.5 z-10">
+                              <span className="text-[10px] font-mono font-black bg-[#F7CAC9] text-[#0D0420] px-2 py-0.5 rounded-[2px] shadow-[0_0_10px_rgba(247,202,201,0.6)] flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3" />{t("view_selected", localLanguage)}</span>
                             </div>
                           )}
@@ -3815,37 +3829,9 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                               : 'fluent-option-btn hover:border-white/30'
                           }`}
                         >
-                          {/* Network LED */}
-                          <div 
-                            className={`absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full z-20 shadow-[0_0_8px_currentColor] ${
-                              networkStatus === 'OFFLINE' ? 'bg-rose-500 text-rose-500 animate-pulse' :
-                              networkStatus === 'DELAYED' ? 'bg-amber-400 text-amber-400' :
-                              'bg-emerald-500 text-emerald-500'
-                            }`}
-                            title={
-                              networkStatus === 'OFFLINE' ? t("view_net_offline", localLanguage) :
-                              networkStatus === 'DELAYED' ? t("view_net_slow", localLanguage) :
-                              t("view_net_stable", localLanguage)
-                            }
-                          />
-
-                          {/* Subtle Progress Bar at the top of the button */}
-                          {gameState.status === 'ACTIVE' && (
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-black/20 z-0">
-                              <div 
-                                className="h-full"
-                                style={{ 
-                                  width: `${timerProgress}%`, 
-                                  backgroundColor: interpolateTimerColor(timerProgress),
-                                  transition: 'width 1s linear, background-color 1s linear' 
-                                }}
-                              />
-                            </div>
-                          )}
-
-                          {/* Glow Overlay when selected */}
+                          {/* Subtle Selection Highlight */}
                           {isSelected && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#F7CAC9]/20 via-white/10 to-transparent animate-pulse pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#F7CAC9]/18 via-white/8 to-transparent pointer-events-none" />
                           )}
 
                           {/* Option Key Badge with keyboard hint */}
@@ -3879,11 +3865,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                           </div>
 
                           {isSelected && (
-                            <div className="absolute top-3 right-3 flex items-center gap-1.5 relative z-10">
+                            <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
                               <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-[2px] flex items-center gap-1 ${
                                 isPendingSync
                                   ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50'
-                                  : 'bg-[#F7CAC9] text-[#0D0420] shadow-[0_0_10px_rgba(247,202,201,0.6)] animate-pulse'
+                                  : 'bg-[#F7CAC9] text-[#0D0420] shadow-[0_0_10px_rgba(247,202,201,0.6)]'
                               }`}>
                                 {isPendingSync ? <RefreshCw className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
                                 {isPendingSync ? (t("view_syncing", localLanguage)) : (t("view_you_chose_final", localLanguage))}
@@ -4345,12 +4331,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   key={key}
                   className={`relative w-full p-4 sm:p-5 rounded-[2px] text-left flex items-start gap-3.5 select-none overflow-hidden transition-all duration-300 ${
                     isCorrectAnswer
-                      ? 'fluent-option-btn border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] bg-emerald-500/20 z-10 scale-[1.01] animate-pulse'
+                      ? 'fluent-option-btn border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.45)] bg-emerald-500/20 z-10 scale-[1.01] ring-1 ring-emerald-400/40'
                       : isUserIncorrect
                       ? 'fluent-option-btn border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.4)] bg-rose-500/20 z-10 scale-[1.01]'
                       : isSelected
                       ? 'fluent-option-btn selected shadow-[0_0_20px_rgba(247,202,201,0.2)] z-10 scale-[1.01]'
-                      : 'fluent-option-btn opacity-40 hover:opacity-70 scale-[0.98]'
+                      : 'fluent-option-btn opacity-45 hover:opacity-75 scale-[0.98]'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-[2px] flex items-center justify-center shrink-0 font-black font-mono text-base sm:text-lg border ${
@@ -4364,6 +4350,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   <span className={`text-sm sm:text-base font-medium flex-1 ${isSelected || isCorrectAnswer ? 'text-white' : 'text-slate-300'} ${isCjk(label, localLanguage) ? 'cjk-text tracking-wide leading-loose' : 'leading-snug'}`}>
                     {label}
                   </span>
+                  {isCorrectAnswer && (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                  )}
+                  {isUserIncorrect && (
+                    <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                  )}
                 </div>
               );
             })}
@@ -4437,14 +4429,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <Sparkles className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                  <span>Hội Đồng Cố Vấn BTI</span>
+                <h4 className="font-bold text-sm text-white flex items-center gap-1.5 flex-wrap">
+                  <span>{localLanguage !== 'vi' ? 'BTI Academic Advisory' : 'Hội Đồng Cố Vấn BTI'}</span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[2px] bg-purple-500/30 text-purple-200 border border-purple-400/40">
-                    CĂN CỨ ĐÁP ÁN
+                    {localLanguage !== 'vi' ? 'ANSWER BASIS' : 'CĂN CỨ ĐÁP ÁN'}
                   </span>
                 </h4>
                 <p className="text-xs text-purple-200/80 mt-0.5">
-                  Chưa rõ căn cứ kiến thức của câu hỏi này? Bấm để xem phân tích chuyên môn chi tiết từ Hội đồng Học thuật.
+                  {localLanguage !== 'vi'
+                    ? 'Want the reasoning behind this answer? Tap to view the detailed explanation from our Academic Council.'
+                    : 'Chưa rõ căn cứ kiến thức của câu hỏi này? Bấm để xem phân tích chuyên môn chi tiết từ Hội đồng Học thuật.'}
                 </p>
               </div>
             </div>
@@ -4452,18 +4446,26 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               type="button"
               onClick={handleRequestAiExplanation}
               disabled={isAiExplaining}
-              aria-label={aiExplanation ? 'Xem lại phân tích chuyên môn' : 'Xem giải thích đáp án'}
+              aria-label={
+                localLanguage !== 'vi'
+                  ? (aiExplanation ? 'Regenerate answer explanation' : 'View answer explanation')
+                  : (aiExplanation ? 'Xem lại phân tích chuyên môn' : 'Xem giải thích đáp án')
+              }
               className="px-3.5 py-2 rounded-[2px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             >
               {isAiExplaining ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
-                  <span>Đang tổng hợp...</span>
+                  <span>{localLanguage !== 'vi' ? 'Synthesizing...' : 'Đang tổng hợp...'}</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-purple-200" />
-                  <span>{aiExplanation ? 'Phân tích lại' : 'Xem giải thích'}</span>
+                  <span>
+                    {localLanguage !== 'vi'
+                      ? (aiExplanation ? 'Re-analyze' : 'View Explanation')
+                      : (aiExplanation ? 'Phân tích lại' : 'Xem giải thích')}
+                  </span>
                 </>
               )}
             </button>
@@ -4716,7 +4718,17 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   const [isPostMatchModalOpen, setIsPostMatchModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isChampionVoteModalOpen, setIsChampionVoteModalOpen] = useState(false);
+  const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
   const [isPredictorOverlayMinimized, setIsPredictorOverlayMinimized] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileMoreOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMoreOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isMobileMoreOpen]);
   const lastDrawSeedRef = useRef<number | undefined>(props.gameState.lucky_draw?.seed);
 
   useEffect(() => {
@@ -4975,131 +4987,194 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
 
       {/* Mobile Bottom Navigation Bar - Hidden in waiting room & conclusion */}
       {!isEventSpecialStage && typeof document !== 'undefined' && !!document.body && createPortal(
-        <nav 
-          id="audience-mobile-bottom-nav"
-          aria-label={t("view_nav_audience", localLanguage)}
-          className={`sm:hidden fixed bottom-0 left-0 right-0 min-h-[62px] h-[calc(58px+env(safe-area-inset-bottom,0px))] ${
-          isHighContrast 
-            ? 'bg-black/95 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
-            : 'bg-[#140628]/95 backdrop-blur-xl border-t border-[#3E1D74]/70 shadow-[0_-10px_35px_rgba(0,0,0,0.6)]'
-        } z-50 flex items-center justify-around px-1 pb-[env(safe-area-inset-bottom,6px)] pt-1`}
-        >
-          <button
-            type="button"
-            aria-label={t("view_nav_contest", localLanguage)}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-white font-bold' : 'text-[#F7CAC9]'
-            }`}
+        <>
+          {isMobileMoreOpen && (
+            <>
+              <div
+                className="sm:hidden fixed inset-0 z-[54] bg-black/50 backdrop-blur-[2px]"
+                onClick={() => setIsMobileMoreOpen(false)}
+                aria-hidden="true"
+              />
+              <div
+                id="audience-mobile-more-sheet"
+                role="menu"
+                aria-label={localLanguage !== 'vi' ? 'More options' : 'Tính năng mở rộng'}
+                className={`sm:hidden fixed bottom-[calc(66px+env(safe-area-inset-bottom,0px))] right-2.5 z-[55] w-56 rounded-[4px] border p-1.5 shadow-2xl animate-slideUp ${
+                  isHighContrast
+                    ? 'bg-black border-white/50 text-white'
+                    : 'bg-[#190839]/98 border-[#F7CAC9]/30 text-[#F5EFF9] backdrop-blur-2xl'
+                }`}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    vibrateSelection();
+                    soundFx.playTing();
+                    setIsMobileMoreOpen(false);
+                    setIsShoutModalOpen(true);
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[2px] flex items-center gap-2.5 text-xs font-bold hover:bg-white/10 active:scale-[0.98] transition text-pink-300 cursor-pointer"
+                >
+                  <Megaphone className="w-4 h-4 shrink-0" />
+                  <span>{t("view_shout", localLanguage)}</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    setIsMobileMoreOpen(false);
+                    handleOpenShareModal();
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[2px] flex items-center gap-2.5 text-xs font-bold hover:bg-white/10 active:scale-[0.98] transition text-[#FCEEEC] cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4 text-[#F7CAC9] shrink-0" />
+                  <span>{t("view_invite", localLanguage)}</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    setIsMobileMoreOpen(false);
+                    handleOpenLogModal();
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[2px] flex items-center gap-2.5 text-xs font-bold hover:bg-white/10 active:scale-[0.98] transition text-[#FCEEEC] cursor-pointer"
+                >
+                  <History className="w-4 h-4 text-[#F7CAC9] shrink-0" />
+                  <span>{t("view_log", localLanguage)}</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    vibrateTap();
+                    soundFx.playClick();
+                    setIsMobileMoreOpen(false);
+                    handleOpenRulesModal();
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[2px] flex items-center gap-2.5 text-xs font-bold hover:bg-white/10 active:scale-[0.98] transition text-sky-200 cursor-pointer"
+                >
+                  <Info className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>{localLanguage !== 'vi' ? 'Game Rules' : 'Luật chơi'}</span>
+                </button>
+                <div className="my-1 border-t border-white/10" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    vibrateTap();
+                    setIsMobileMoreOpen(false);
+                    props.onOpenProfile();
+                  }}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-[2px] flex items-center gap-2.5 text-xs font-bold hover:bg-white/10 active:scale-[0.98] transition text-white/90 cursor-pointer"
+                >
+                  <User className="w-4 h-4 text-[#92A8D1] shrink-0" />
+                  <span>{t("view_profile", localLanguage)}</span>
+                </button>
+              </div>
+            </>
+          )}
+          <nav 
+            id="audience-mobile-bottom-nav"
+            aria-label={t("view_nav_audience", localLanguage)}
+            className={`sm:hidden fixed bottom-0 left-0 right-0 min-h-[62px] h-[calc(58px+env(safe-area-inset-bottom,0px))] ${
+            isHighContrast 
+              ? 'bg-black/95 backdrop-blur-[24px] saturate-150 border-t-2 border-white/40 text-white' 
+              : 'bg-[#140628]/95 backdrop-blur-xl border-t border-[#3E1D74]/70 shadow-[0_-10px_35px_rgba(0,0,0,0.6)]'
+          } z-50 grid grid-cols-5 items-center px-1 pb-[env(safe-area-inset-bottom,6px)] pt-1`}
           >
-            <Home className="w-5 h-5 drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_contest", localLanguage)}</span>
-            <span className="w-1 h-1 rounded-full bg-[#F7CAC9] mt-0.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Bảng Xếp Hạng Live"
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsRealtimeLeaderboardOpen(true);
-            }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-amber-300 font-bold' : 'text-amber-400 hover:text-amber-300'
-            }`}
-          >
-            <Trophy className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-            <span className="text-[9px] font-bold tracking-tight">BXH Live</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_shout", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsShoutModalOpen(true);
-            }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-pink-400 font-bold' : 'text-pink-400 hover:text-pink-300'
-            }`}
-          >
-            <Megaphone className="w-5 h-5 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_shout", localLanguage)}</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_cheering", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsCheerModalOpen(true);
-            }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-rose-400 font-bold' : 'text-rose-400 hover:text-rose-300'
-            }`}
-          >
-            <Heart className="w-5 h-5 fill-current text-rose-400 animate-pulse drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_cheer", localLanguage)}</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_qna", localLanguage)}
-            onClick={() => {
-              vibrateSelection();
-              soundFx.playTing();
-              setIsQAModalOpen(true);
-            }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-sky-400 font-bold' : 'text-sky-300 hover:text-sky-200'
-            }`}
-          >
-            <MessageSquare className="w-5 h-5 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_qna", localLanguage)}</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_invite", localLanguage)}
-            onClick={() => {
-              vibrateTap();
-              soundFx.playClick();
-              handleOpenShareModal();
-            }}
-            className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
-            }`}
-          >
-            <QrCode className="w-5 h-5 text-[#F7CAC9]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_invite", localLanguage)}</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_log", localLanguage)}
-            onClick={() => {
-              vibrateTap();
-              soundFx.playClick();
-              handleOpenLogModal();
-            }}
-            className={`hidden min-[420px]:flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-white/90 hover:text-white' : 'text-[#FCEEEC]/80 hover:text-white'
-            }`}
-          >
-            <History className="w-5 h-5 text-[#F7CAC9]" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_log", localLanguage)}</span>
-          </button>
-          <button
-            type="button"
-            aria-label={t("view_nav_profile", localLanguage)}
-            onClick={() => {
-              vibrateTap();
-              props.onOpenProfile();
-            }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform ${
-              isHighContrast ? 'text-white/90 hover:text-white' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <User className="w-5 h-5" />
-            <span className="text-[9px] font-bold tracking-tight">{t("view_profile", localLanguage)}</span>
-          </button>
-        </nav>,
+            <button
+              type="button"
+              aria-label={t("view_nav_contest", localLanguage)}
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setIsMobileMoreOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform cursor-pointer ${
+                isHighContrast ? 'text-white font-bold' : 'text-[#F7CAC9]'
+              }`}
+            >
+              <Home className="w-5 h-5 drop-shadow-[0_0_8px_rgba(247,202,201,0.5)]" />
+              <span className="text-[10px] font-bold tracking-tight">{t("view_contest", localLanguage)}</span>
+              <span className="w-1 h-1 rounded-full bg-[#F7CAC9] mt-0.5" />
+            </button>
+            <button
+              type="button"
+              aria-label={localLanguage !== 'vi' ? 'Live Leaderboard' : 'Bảng Xếp Hạng Live'}
+              onClick={() => {
+                vibrateSelection();
+                soundFx.playTing();
+                setIsMobileMoreOpen(false);
+                setIsRealtimeLeaderboardOpen(true);
+              }}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform cursor-pointer ${
+                isHighContrast ? 'text-amber-300 font-bold' : 'text-amber-400 hover:text-amber-300'
+              }`}
+            >
+              <Trophy className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+              <span className="text-[10px] font-bold tracking-tight">{localLanguage !== 'vi' ? 'Ranks' : 'BXH Live'}</span>
+            </button>
+            <button
+              type="button"
+              aria-label={t("view_nav_cheering", localLanguage)}
+              onClick={() => {
+                vibrateSelection();
+                soundFx.playTing();
+                setIsMobileMoreOpen(false);
+                setIsCheerModalOpen(true);
+              }}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform cursor-pointer ${
+                isHighContrast ? 'text-rose-400 font-bold' : 'text-rose-400 hover:text-rose-300'
+              }`}
+            >
+              <Heart className="w-5 h-5 fill-current text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.5)]" />
+              <span className="text-[10px] font-bold tracking-tight">{t("view_cheer", localLanguage)}</span>
+            </button>
+            <button
+              type="button"
+              aria-label={t("view_nav_qna", localLanguage)}
+              onClick={() => {
+                vibrateSelection();
+                soundFx.playTing();
+                setIsMobileMoreOpen(false);
+                setIsQAModalOpen(true);
+              }}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform cursor-pointer ${
+                isHighContrast ? 'text-sky-400 font-bold' : 'text-sky-300 hover:text-sky-200'
+              }`}
+            >
+              <MessageSquare className="w-5 h-5 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+              <span className="text-[10px] font-bold tracking-tight">{t("view_qna", localLanguage)}</span>
+            </button>
+            <button
+              type="button"
+              aria-expanded={isMobileMoreOpen}
+              aria-controls="audience-mobile-more-sheet"
+              aria-label={localLanguage !== 'vi' ? 'More features' : 'Thêm tính năng'}
+              onClick={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setIsMobileMoreOpen((prev) => !prev);
+              }}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[48px] min-h-[48px] w-full h-full active:scale-95 transition-transform cursor-pointer ${
+                isMobileMoreOpen
+                  ? 'text-[#F7CAC9] font-bold'
+                  : isHighContrast
+                  ? 'text-white/90 hover:text-white'
+                  : 'text-white/75 hover:text-white'
+              }`}
+            >
+              {isMobileMoreOpen ? <X className="w-5 h-5" /> : <MoreHorizontal className="w-5 h-5" />}
+              <span className="text-[10px] font-bold tracking-tight">{localLanguage !== 'vi' ? 'More' : 'Thêm'}</span>
+            </button>
+          </nav>
+        </>,
         document.body
       )}
 
