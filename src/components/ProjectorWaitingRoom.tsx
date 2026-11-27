@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import QRCode from 'qrcode';
+import { workerComputeService } from '../services/workerComputeService';
 import {
   Clock,
   Calendar,
@@ -33,7 +33,7 @@ interface ProjectorWaitingRoomProps {
   isPanic?: boolean;
 }
 
-export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
+export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = React.memo(({
   gameState,
   activeCount,
   qrDataUrl: parentQrDataUrl,
@@ -61,35 +61,41 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Generate QR locally to guarantee it is NEVER empty
+  // Generate QR off the main thread to guarantee it is NEVER empty
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      let audienceUrl = parentAudienceJoinUrl;
-      if (!audienceUrl) {
-        audienceUrl = window.location.origin + window.location.pathname;
-        if (audienceUrl.includes('ais-dev-')) {
-          audienceUrl = audienceUrl.replace('ais-dev-', 'ais-pre-');
-        }
+    if (typeof window === 'undefined') return;
+    let cancelled = false;
+    let audienceUrl = parentAudienceJoinUrl;
+    if (!audienceUrl) {
+      audienceUrl = window.location.origin + window.location.pathname;
+      if (audienceUrl.includes('ais-dev-')) {
+        audienceUrl = audienceUrl.replace('ais-dev-', 'ais-pre-');
       }
-      setInternalAudienceUrl(audienceUrl);
+    }
+    setInternalAudienceUrl(audienceUrl);
 
-      const activePaletteId = (gameState.qr_color_palette as QrPaletteId) || 'purple_gold';
-      const palette = QR_PALETTES[activePaletteId] || QR_PALETTES.purple_gold;
-      const isTransparent = Boolean(gameState.qr_transparent_bg);
-      const targetQrUrl = audienceUrl + (audienceUrl.includes('?') ? '&' : '?') + 'src=qr';
-      
-      QRCode.toDataURL(targetQrUrl, { 
-        width: 480, 
-        margin: 2, 
-        color: { 
-          dark: palette.dark, 
-          light: isTransparent ? '#00000000' : palette.light 
-        },
+    const activePaletteId = (gameState.qr_color_palette as QrPaletteId) || 'purple_gold';
+    const palette = QR_PALETTES[activePaletteId] || QR_PALETTES.purple_gold;
+    const isTransparent = Boolean(gameState.qr_transparent_bg);
+    const targetQrUrl = audienceUrl + (audienceUrl.includes('?') ? '&' : '?') + 'src=qr';
+
+    workerComputeService
+      .generateQrDataUrl({
+        text: targetQrUrl,
+        width: 480,
+        margin: 2,
+        dark: palette.dark,
+        light: isTransparent ? '#00000000' : palette.light,
         errorCorrectionLevel: 'H'
       })
-        .then(url => setInternalQrDataUrl(url))
-        .catch(err => console.error('ProjectorWaitingRoom QR generation error:', err));
-    }
+      .then(url => {
+        if (!cancelled) setInternalQrDataUrl(url);
+      })
+      .catch(err => console.error('ProjectorWaitingRoom QR generation error:', err));
+
+    return () => {
+      cancelled = true;
+    };
   }, [gameState.qr_color_palette, gameState.qr_transparent_bg, parentAudienceJoinUrl]);
 
   const activeQrDataUrl = parentQrDataUrl || internalQrDataUrl;
@@ -527,4 +533,4 @@ export const ProjectorWaitingRoom: React.FC<ProjectorWaitingRoomProps> = ({
       <AnnouncerOverlay overlay={gameState.announcer_overlay} mode="waiting" />
     </div>
   );
-};
+});

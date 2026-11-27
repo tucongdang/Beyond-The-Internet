@@ -1,4 +1,3 @@
-import html2canvas from 'html2canvas-pro';
 import { GameState, UserResponse, StageSnapshotRecord } from '../types';
 import { soundFx } from './audioEffects';
 import { syncService } from './syncService';
@@ -54,7 +53,8 @@ export class SnapshotService {
       // Shutter sound effect
       soundFx.playCameraShutter();
 
-      // High-quality canvas render using html2canvas-pro
+      // Dynamically load html2canvas-pro only when capturing a snapshot
+      const html2canvas = (await import('html2canvas-pro')).default;
       const canvas = await html2canvas(targetElement, {
         scale: 1.5,
         useCORS: true,

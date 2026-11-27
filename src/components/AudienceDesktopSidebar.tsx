@@ -71,7 +71,7 @@ interface AudienceDesktopSidebarProps {
 
 type TabType = 'PROFILE' | 'HOTKEYS' | 'TOOLS' | 'COMMUNITY';
 
-export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
+export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = React.memo(({
   user,
   gameState,
   userPerformance,
@@ -814,4 +814,4 @@ export const AudienceDesktopSidebar: React.FC<AudienceDesktopSidebarProps> = ({
 
   if (typeof document === 'undefined' || !document.body) return null;
   return createPortal(sidebarContent, document.body);
-};
+});

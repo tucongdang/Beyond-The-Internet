@@ -73,7 +73,7 @@ const EMERGENCY_PRESETS = [
   }
 ];
 
-export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
+export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = React.memo(({
   gameState,
   activeCount,
   openConfirm,
@@ -1145,4 +1145,4 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       />
     </>
   );
-};
+});

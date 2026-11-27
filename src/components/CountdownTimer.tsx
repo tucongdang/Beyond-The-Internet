@@ -14,7 +14,7 @@ export interface SlantedCountdownBarProps {
   className?: string;
 }
 
-export const SlantedCountdownBar: React.FC<SlantedCountdownBarProps> = ({
+export const SlantedCountdownBar: React.FC<SlantedCountdownBarProps> = React.memo(({
   progressPercent,
   timerColor,
   heightClass = 'h-3.5 sm:h-4',
@@ -68,7 +68,7 @@ export const SlantedCountdownBar: React.FC<SlantedCountdownBarProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export interface CountdownProgressRingProps {
   seconds: number;
@@ -82,7 +82,7 @@ export interface CountdownProgressRingProps {
   className?: string;
 }
 
-export const CountdownProgressRing: React.FC<CountdownProgressRingProps> = ({
+export const CountdownProgressRing: React.FC<CountdownProgressRingProps> = React.memo(({
   seconds,
   progressPercent,
   timerColor,
@@ -241,7 +241,7 @@ export const CountdownProgressRing: React.FC<CountdownProgressRingProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export type CountdownTimerVariant = 'full' | 'compact' | 'badge' | 'bar' | 'circular';
 
@@ -274,7 +274,7 @@ export interface CountdownTimerProps {
   children?: React.ReactNode;
 }
 
-export const CountdownTimer: React.FC<CountdownTimerProps> = ({
+export const CountdownTimer: React.FC<CountdownTimerProps> = React.memo(({
   timeLeft: propTimeLeft,
   totalTime: propTotalTime,
   gameState,
@@ -648,4 +648,4 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       />
     </div>
   );
-};
+});

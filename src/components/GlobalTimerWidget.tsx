@@ -49,7 +49,7 @@ interface GlobalTimerWidgetProps {
   totalAudience?: number;
 }
 
-export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
+export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = React.memo(({
   gameState,
   onStartQuestion,
   onLockVoting,
@@ -890,4 +890,4 @@ export const GlobalTimerWidget: React.FC<GlobalTimerWidgetProps> = ({
       )}
     </div>
   );
-};
+});

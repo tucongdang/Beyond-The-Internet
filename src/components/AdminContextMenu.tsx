@@ -54,7 +54,7 @@ export interface AdminContextMenuProps {
   onPlaySoundEffect?: (type: 'correct' | 'wrong' | 'start' | 'reveal' | 'pacing' | 'applause') => void;
 }
 
-export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
+export const AdminContextMenu: React.FC<AdminContextMenuProps> = React.memo(({
   isOpen,
   position,
   onClose,
@@ -682,4 +682,4 @@ export const AdminContextMenu: React.FC<AdminContextMenuProps> = ({
       </div>
     </div>
   );
-};
+});

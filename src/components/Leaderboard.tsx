@@ -2,10 +2,11 @@ import { useLanguage } from '../hooks/useLanguage';
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameState, UserResponse, QuestionItem, GrandFinaleWinner } from '../types';
-import { calculateLeaderboard, UserScoreSummary, calculateRankChanges, calculateUserTrends } from '../utils/leaderboardUtils';
+import type { UserScoreSummary, RankChangeInfo, TrendInfo } from '../utils/leaderboardUtils';
 import { RankMovementIndicator } from './RankMovementIndicator';
 import { TrendIndicator } from './TrendIndicator';
 import { syncService } from '../services/syncService';
+import { workerComputeService } from '../services/workerComputeService';
 import { exportLeaderboardToCSV } from '../utils/exportUtils';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSuccess, vibrateSelection, vibrateCopy, vibrateGrandCelebration } from '../utils/hapticUtils';
@@ -45,7 +46,7 @@ interface LeaderboardProps {
   isStageDisplay?: boolean;
 }
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({
+export const Leaderboard: React.FC<LeaderboardProps> = React.memo(({
   allResponses = {},
   gameState,
   customQuestionBank,
@@ -113,31 +114,55 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     return list.sort((a, b) => b.average - a.average).map((t, idx) => ({ ...t, rank: idx + 1 }));
   }, [allResponses, gameState, tabFilter]);
 
-  const allRankedUsers = useMemo(() => {
-    return calculateLeaderboard(allResponses, customQuestionBank, gameState, roundFilter);
-  }, [allResponses, customQuestionBank, gameState, roundFilter]);
+  const [leaderboardBundle, setLeaderboardBundle] = useState<{
+    allRankedUsers: UserScoreSummary[];
+    rankChangesMap: Map<string, RankChangeInfo>;
+    trendsMap: Map<string, TrendInfo>;
+  }>({
+    allRankedUsers: [],
+    rankChangesMap: new Map<string, RankChangeInfo>(),
+    trendsMap: new Map<string, TrendInfo>()
+  });
 
-  // Track rank delta (up/down/same) compared to previous question
-  const rankChangesMap = useMemo(() => {
-    return calculateRankChanges(
-      allResponses,
-      allRankedUsers,
-      gameState.question_id,
-      customQuestionBank,
-      gameState,
-      roundFilter
-    );
-  }, [allResponses, allRankedUsers, gameState.question_id, customQuestionBank, gameState, roundFilter]);
+  useEffect(() => {
+    if (tabFilter === 'TEAM' || !allResponses || Object.keys(allResponses).length === 0) {
+      setLeaderboardBundle({
+        allRankedUsers: [],
+        rankChangesMap: new Map<string, RankChangeInfo>(),
+        trendsMap: new Map<string, TrendInfo>()
+      });
+      return;
+    }
 
-  // Track multi-round performance trends (rising, falling, stable, streak)
-  const trendsMap = useMemo(() => {
-    return calculateUserTrends(
-      allResponses,
-      allRankedUsers,
-      customQuestionBank,
-      gameState
-    );
-  }, [allResponses, allRankedUsers, customQuestionBank, gameState]);
+    let cancelled = false;
+    workerComputeService
+      .computeLeaderboardBundleAsync({
+        allResponses,
+        customQuestionBank,
+        gameState,
+        filterRound: roundFilter,
+        includeRankChanges: true,
+        includeTrends: true
+      })
+      .then(result => {
+        if (!cancelled) {
+          setLeaderboardBundle({
+            allRankedUsers: result.leaderboard,
+            rankChangesMap: result.rankChangesMap,
+            trendsMap: result.trendsMap
+          });
+        }
+      })
+      .catch(err => {
+        console.warn('Leaderboard worker computation failed:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allResponses, customQuestionBank, gameState, roundFilter, tabFilter]);
+
+  const { allRankedUsers, rankChangesMap, trendsMap } = leaderboardBundle;
 
   // Auto-scroll hook for table list view
   const {
@@ -1268,4 +1293,4 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
     </div>
   );
-};
+});

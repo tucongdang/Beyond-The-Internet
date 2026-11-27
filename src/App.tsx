@@ -3,47 +3,75 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, UserInfo, UserResponse, QR_PALETTES, QrPaletteId, AdminUser } from './types';
+import { GameState, UserInfo, QR_PALETTES, QrPaletteId, AdminUser } from './types';
 import { syncService, DEFAULT_GAME_STATE } from './services/syncService';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { workerComputeService } from './services/workerComputeService';
+import { signOut } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 import { auth, db, removeUndefined } from './firebase';
-import QRCode from 'qrcode';
 import { soundFx } from './services/audioEffects';
 import { vibrateTap, vibrateCopy } from './utils/hapticUtils';
 import { Copy, Check, Share2, X, QrCode as QrIcon, RotateCcw, AlertTriangle, Sparkles, ScanLine } from 'lucide-react';
 import { Navbar } from './components/Navbar';
-import { AudienceView } from './components/AudienceView';
-import { OnboardingModal } from './components/OnboardingModal';
-import { ProfileModal } from './components/ProfileModal';
 import { generate12DigitUID } from './utils/uidUtils';
 import { getSecureItem, setSecureItem, removeSecureItem } from './utils/secureStorage';
-import { FirebaseConfigModal } from './components/FirebaseConfigModal';
-import { PasswordGate } from './components/PasswordGate';
-import { ClientLandingPage } from './components/ClientLandingPage';
-import { FirstVisitConsentModal } from './components/FirstVisitConsentModal';
-import { CookieConsentBanner } from './components/CookieConsentBanner';
-import { PolicyPage } from './components/PolicyPage';
 import { NotificationToast } from './components/NotificationToast';
 import { OfflineBanner } from './components/OfflineBanner';
-import { InstallAppModal } from './components/InstallAppModal';
 import { FluentTooltip } from './components/FluentTooltip';
 import { CrossFadeQrCode } from './components/CrossFadeQrCode';
-import { LiveSubtitleOverlay } from './components/LiveSubtitleOverlay';
-import { LoudEnvironmentAlert } from './components/LoudEnvironmentAlert';
-import { FloatingDebugPanel } from './components/FloatingDebugPanel';
-import { AntiExitGuard } from './components/AntiExitGuard';
-import { SebAntiCheatGuard } from './components/SebAntiCheatGuard';
-import { ChatAssistantWidget } from './components/ChatAssistantWidget';
 import { useAnimationControl } from './contexts/AnimationControlContext';
 import { applyBatterySaverClasses, getBatterySaverMode, setBatterySaverMode } from './utils/batterySaverUtils';
 import { useLanguage } from './hooks/useLanguage';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { ViewErrorBoundary } from './components/ViewErrorBoundary';
+import {
+  getStoredAdminAuth,
+  getStoredAdminUser,
+  persistAdminSession,
+  clearAdminSession,
+  ADMIN_INACTIVITY_LIMIT_MS,
+} from './utils/adminSession';
 
+const FirstVisitConsentModal = lazyWithRetry(
+  () => import('./components/FirstVisitConsentModal').then(m => ({ default: m.FirstVisitConsentModal })),
+  'FirstVisitConsentModal'
+);
+const CookieConsentBanner = lazyWithRetry(
+  () => import('./components/CookieConsentBanner').then(m => ({ default: m.CookieConsentBanner })),
+  'CookieConsentBanner'
+);
+const LiveSubtitleOverlay = lazyWithRetry(
+  () => import('./components/LiveSubtitleOverlay').then(m => ({ default: m.LiveSubtitleOverlay })),
+  'LiveSubtitleOverlay'
+);
+const LoudEnvironmentAlert = lazyWithRetry(
+  () => import('./components/LoudEnvironmentAlert').then(m => ({ default: m.LoudEnvironmentAlert })),
+  'LoudEnvironmentAlert'
+);
+const FloatingDebugPanel = lazyWithRetry(
+  () => import('./components/FloatingDebugPanel').then(m => ({ default: m.FloatingDebugPanel })),
+  'FloatingDebugPanel'
+);
+const AntiExitGuard = lazyWithRetry(
+  () => import('./components/AntiExitGuard').then(m => ({ default: m.AntiExitGuard })),
+  'AntiExitGuard'
+);
+const SebAntiCheatGuard = lazyWithRetry(
+  () => import('./components/SebAntiCheatGuard').then(m => ({ default: m.SebAntiCheatGuard })),
+  'SebAntiCheatGuard'
+);
+const ChatAssistantWidget = lazyWithRetry(
+  () => import('./components/ChatAssistantWidget').then(m => ({ default: m.ChatAssistantWidget })),
+  'ChatAssistantWidget'
+);
+
+const AudienceView = lazyWithRetry(
+  () => import('./components/AudienceView').then(m => ({ default: m.AudienceView })),
+  'AudienceView'
+);
 const AdminPortal = lazyWithRetry(
   () => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })),
   'AdminPortal'
@@ -55,6 +83,34 @@ const ProjectorView = lazyWithRetry(
 const LandingPage = lazyWithRetry(
   () => import('./components/LandingPage').then(m => ({ default: m.LandingPage })),
   'LandingPage'
+);
+const ClientLandingPage = lazyWithRetry(
+  () => import('./components/ClientLandingPage').then(m => ({ default: m.ClientLandingPage })),
+  'ClientLandingPage'
+);
+const PolicyPage = lazyWithRetry(
+  () => import('./components/PolicyPage').then(m => ({ default: m.PolicyPage })),
+  'PolicyPage'
+);
+const OnboardingModal = lazyWithRetry(
+  () => import('./components/OnboardingModal').then(m => ({ default: m.OnboardingModal })),
+  'OnboardingModal'
+);
+const ProfileModal = lazyWithRetry(
+  () => import('./components/ProfileModal').then(m => ({ default: m.ProfileModal })),
+  'ProfileModal'
+);
+const FirebaseConfigModal = lazyWithRetry(
+  () => import('./components/FirebaseConfigModal').then(m => ({ default: m.FirebaseConfigModal })),
+  'FirebaseConfigModal'
+);
+const PasswordGate = lazyWithRetry(
+  () => import('./components/PasswordGate').then(m => ({ default: m.PasswordGate })),
+  'PasswordGate'
+);
+const InstallAppModal = lazyWithRetry(
+  () => import('./components/InstallAppModal').then(m => ({ default: m.InstallAppModal })),
+  'InstallAppModal'
 );
 
 export default function App() {
@@ -115,7 +171,7 @@ export default function App() {
     setIsLocalAudienceQrOpen(false);
   }, []);
 
-  const generateQrCode = useCallback((urlToEncode: string, paletteId?: string, transparentBg?: boolean) => {
+  const generateQrCode = useCallback(async (urlToEncode: string, paletteId?: string, transparentBg?: boolean) => {
     if (!urlToEncode) return;
     setQrError(null);
     const activePaletteId = (paletteId || gameState.qr_color_palette || 'purple_gold') as QrPaletteId;
@@ -123,23 +179,21 @@ export default function App() {
     const isTransparent = transparentBg !== undefined ? transparentBg : Boolean(gameState.qr_transparent_bg);
 
     const qrTargetUrl = urlToEncode + (urlToEncode.includes('?') ? '&' : '?') + 'src=qr';
-    QRCode.toDataURL(qrTargetUrl, {
-      width: 320,
-      margin: 2,
-      color: { 
-        dark: palette.dark, 
-        light: isTransparent ? '#00000000' : palette.light 
-      },
-      errorCorrectionLevel: 'H'
-    })
-      .then(url => {
-        setQrDataUrl(url);
-        setQrError(null);
-      })
-      .catch(err => {
-        console.error('QR code generation error:', err);
-        setQrError(localLanguage !== 'vi' ? 'Could not create the QR code yet. Tap below to try again!' : 'Chưa tạo được mã QR rồi. Bạn bấm thử lại chút nhé!');
+    try {
+      const url = await workerComputeService.generateQrDataUrl({
+        text: qrTargetUrl,
+        width: 320,
+        margin: 2,
+        dark: palette.dark,
+        light: isTransparent ? '#00000000' : palette.light,
+        errorCorrectionLevel: 'H'
       });
+      setQrDataUrl(url);
+      setQrError(null);
+    } catch (err) {
+      console.error('QR code generation error:', err);
+      setQrError(localLanguage !== 'vi' ? 'Could not create the QR code yet. Tap below to try again!' : 'Chưa tạo được mã QR rồi. Bạn bấm thử lại chút nhé!');
+    }
   }, [gameState.qr_color_palette, gameState.qr_transparent_bg, localLanguage]);
 
   useEffect(() => {
@@ -167,12 +221,6 @@ export default function App() {
       setAudienceJoinUrl(fullUrl);
     }
   }, []);
-
-  useEffect(() => {
-    if (audienceJoinUrl) {
-      generateQrCode(audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg);
-    }
-  }, [audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg, generateQrCode]);
 
   const handleRetryQr = useCallback(() => {
     const targetUrl = audienceJoinUrl || (typeof window !== 'undefined' ? window.location.href : 'https://bti2027.app');
@@ -238,6 +286,17 @@ export default function App() {
     }
     return 'audience';
   });
+
+  const isAudienceQrVisible =
+    ((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) &&
+    currentView !== 'admin' &&
+    currentView !== 'projector';
+
+  useEffect(() => {
+    if (audienceJoinUrl && isAudienceQrVisible) {
+      generateQrCode(audienceJoinUrl, gameState.qr_color_palette, gameState.qr_transparent_bg);
+    }
+  }, [audienceJoinUrl, isAudienceQrVisible, gameState.qr_color_palette, gameState.qr_transparent_bg, generateQrCode]);
 
   const [previousView, setPreviousView] = useState<'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy' | null>(() => {
     if (typeof window !== 'undefined') {
@@ -357,84 +416,26 @@ export default function App() {
     }
   }, [currentView]);
 
-  const [currentResponses, setCurrentResponses] = useState<Record<string, UserResponse>>({});
   const [lastRouteTs, setLastRouteTs] = useState<number>(0);
-  const [allResponses, setAllResponses] = useState<Record<string, Record<string, UserResponse>>>({});
-  const [activeCount, setActiveCount] = useState<number>(1);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      if (sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
-        return true;
-      }
-      if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true' && localStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
-        sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
-        const token = localStorage.getItem('BTI2026_ADMIN_TOKEN');
-        if (token) sessionStorage.setItem('BTI2026_ADMIN_TOKEN', token);
-        const user = localStorage.getItem('BTI2026_TECH_USER');
-        if (user) sessionStorage.setItem('BTI2026_TECH_USER', user);
-        return true;
-      }
-    }
-    return false;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => getStoredAdminAuth());
 
-  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storedSess = sessionStorage.getItem('BTI2026_TECH_USER');
-        if (storedSess) return JSON.parse(storedSess);
-        if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true') {
-          const storedLoc = localStorage.getItem('BTI2026_TECH_USER');
-          if (storedLoc) return JSON.parse(storedLoc);
-        }
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => getStoredAdminUser());
 
-  const handleAuthenticate = (techUser?: AdminUser, keepLoggedIn: boolean = true) => {
+  const handleAuthenticate = useCallback((techUser?: AdminUser, keepLoggedIn: boolean = true) => {
     setIsAuthenticated(true);
     if (techUser) {
       setAdminUser(techUser);
     }
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
-      if (techUser) {
-        sessionStorage.setItem('BTI2026_TECH_USER', JSON.stringify(techUser));
-      }
-      if (keepLoggedIn) {
-        localStorage.setItem('BTI2026_KEEP_LOGGED_IN', 'true');
-        localStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
-        if (techUser) {
-          localStorage.setItem('BTI2026_TECH_USER', JSON.stringify(techUser));
-        }
-      } else {
-        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-        localStorage.removeItem('BTI2026_ADMIN_AUTH');
-        localStorage.removeItem('BTI2026_TECH_USER');
-        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-      }
-    }
-  };
+    persistAdminSession(techUser || null, undefined, keepLoggedIn);
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
     setAdminUser(null);
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
-      sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
-      sessionStorage.removeItem('BTI2026_TECH_USER');
-
-      localStorage.removeItem('BTI2026_ADMIN_AUTH');
-      localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-      localStorage.removeItem('BTI2026_TECH_USER');
-      localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-    }
+    clearAdminSession();
     setCurrentView('landing');
-  };
+  }, []);
 
   const [systemNotice, setSystemNotice] = useState<string | null>(null);
 
@@ -463,20 +464,10 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
-    let timerId: NodeJS.Timeout | null = null;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
 
     const logoutDueToInactivity = () => {
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
-        sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
-        sessionStorage.removeItem('BTI2026_TECH_USER');
-
-        localStorage.removeItem('BTI2026_ADMIN_AUTH');
-        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-        localStorage.removeItem('BTI2026_TECH_USER');
-        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-      }
+      clearAdminSession();
       setIsAuthenticated(false);
       setAdminUser(null);
       setCurrentView('landing');
@@ -489,10 +480,10 @@ export default function App() {
 
     const resetTimer = () => {
       if (timerId) clearTimeout(timerId);
-      timerId = setTimeout(logoutDueToInactivity, INACTIVITY_TIMEOUT_MS);
+      timerId = setTimeout(logoutDueToInactivity, ADMIN_INACTIVITY_LIMIT_MS);
     };
 
-    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'touchmove', 'pointerdown', 'wheel'];
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'pointerdown'];
 
     resetTimer();
 
@@ -508,7 +499,7 @@ export default function App() {
     };
   }, [isAuthenticated, localLanguage]);
 
-  const handleAudienceLogout = () => {
+  const handleAudienceLogout = useCallback(() => {
     try {
       if (auth) {
         signOut(auth);
@@ -523,7 +514,7 @@ export default function App() {
     setUser(null);
     removeSecureItem('BTI2026_USER_PROFILE');
     setCurrentView('landing');
-  };
+  }, []);
 
   const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
     return getBatterySaverMode();
@@ -599,67 +590,13 @@ export default function App() {
   useEffect(() => soundFx.subscribeEnabled(setSoundEnabled), []);
   const [isOfflineBannerDismissed, setIsOfflineBannerDismissed] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!auth) return;
-    let unsubsDoc: (() => void) | null = null;
-    let unsubscribeAuth: (() => void) | null = null;
-    try {
-      unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (unsubsDoc) {
-          unsubsDoc();
-          unsubsDoc = null;
-        }
-        if (firebaseUser) {
-          const saved = getSecureItem<UserInfo>('BTI2026_USER_PROFILE');
-          let shouldListen = false;
-          
-          if (saved) {
-            const localProfile: UserInfo = saved;
-            if (localProfile.uid === firebaseUser.uid) {
-              if (!localProfile.anonymizedUid || localProfile.anonymizedUid.length !== 12) {
-                localProfile.anonymizedUid = generate12DigitUID(
-                  localProfile.name || '',
-                  localProfile.mssv || '',
-                  localProfile.gender || '1',
-                  localProfile.birthYear || '2004'
-                );
-                setSecureItem('BTI2026_USER_PROFILE', localProfile);
-                try {
-                  await setDoc(doc(db, 'users', localProfile.uid), removeUndefined(localProfile), { merge: true });
-                } catch (e) {
-                  console.error("Failed to update user 12-digit UID in firestore", e);
-                }
-              }
-              setUser(localProfile);
-              shouldListen = true;
-            }
-          }
-          
-          if (shouldListen) {
-            unsubsDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
-              if (docSnap.exists()) {
-                const profile = docSnap.data() as UserInfo;
-                setUser(prev => {
-                  if (prev && JSON.stringify(prev) !== JSON.stringify(profile)) {
-                    setSecureItem('BTI2026_USER_PROFILE', profile);
-                    return profile;
-                  }
-                  return prev || profile;
-                });
-              }
-            }, (err) => {
-              console.warn('Firestore user profile listener error:', err);
-            });
-          }
-        }
-      });
-    } catch (err) {
-      console.warn('[App] onAuthStateChanged initialization error:', err);
-    }
-    return () => {
-      if (unsubscribeAuth) unsubscribeAuth();
-      if (unsubsDoc) unsubsDoc();
-    };
+  const handleUserSynced = useCallback((profile: UserInfo) => {
+    setUser(prev => {
+      if (prev && JSON.stringify(prev) === JSON.stringify(profile)) {
+        return prev;
+      }
+      return profile;
+    });
   }, []);
 
   useEffect(() => {
@@ -693,20 +630,9 @@ export default function App() {
   }, [isFirebaseConnected, prevConnected]);
 
   useEffect(() => {
-    const unsubState = syncService.subscribeToState((state) => {
+    const unsubState = syncService.subscribeToState((state, changedKeys) => {
+      if (changedKeys && changedKeys.length === 0) return;
       setGameState(state);
-    });
-
-    const unsubResponses = syncService.subscribeToResponses((resps) => {
-      setCurrentResponses(resps);
-    });
-
-    const unsubAllResponses = syncService.subscribeToAllResponses((all) => {
-      setAllResponses(all);
-    });
-
-    const unsubPresence = syncService.subscribeToPresence((count) => {
-      setActiveCount(count);
     });
 
     const unsubConnection = syncService.subscribeToConnection((connected) => {
@@ -715,34 +641,111 @@ export default function App() {
 
     return () => {
       unsubState();
-      unsubResponses();
-      unsubAllResponses();
-      unsubPresence();
       unsubConnection();
     };
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
+  const handleToggleSound = useCallback(() => {
+    setSoundEnabled(prev => {
+      const next = !prev;
+      soundFx.setEnabled(next);
+      if (next) {
+        soundFx.notifyUserInteraction();
+        soundFx.playClick();
+      }
+      return next;
+    });
+  }, []);
 
-    syncService.sendPresencePing(user);
+  const handleNavbarViewChange = useCallback((view: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy') => {
+    if (view === 'policy') {
+      handleNavigateToPolicy();
+      return;
+    }
+    setCurrentView(view);
+    if (typeof window !== 'undefined' && window.history) {
+      const url = new URL(window.location.href);
+      if (view === 'audience') {
+        url.searchParams.delete('view');
+      } else {
+        url.searchParams.set('view', view);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [handleNavigateToPolicy]);
 
-    const interval = setInterval(() => {
-      syncService.sendPresencePing(user);
-    }, 15000);
-
-    return () => clearInterval(interval);
+  const handleNavbarOpenProfile = useCallback(() => {
+    if (user) {
+      setIsProfileModalOpen(true);
+    } else {
+      setIsOnboardingOpen(true);
+    }
   }, [user]);
 
-  const handleToggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    soundFx.setEnabled(next);
-    if (next) {
-      soundFx.notifyUserInteraction();
-      soundFx.playClick();
+  const handleNavbarOpenFirebaseConfig = useCallback(() => setIsFirebaseConfigOpen(true), []);
+  const handleNavbarOpenInstallModal = useCallback(() => setIsInstallModalOpen(true), []);
+  const handleNavbarOpenQrCode = useCallback(() => {
+    if (currentView === 'admin') {
+      syncService.updateGameState({ show_qr: true });
+    } else {
+      setIsAudienceQrDismissed(false);
+      setIsLocalAudienceQrOpen(true);
     }
-  };
+  }, [currentView]);
+
+  const handleOpenOnboarding = useCallback(() => setIsOnboardingOpen(true), []);
+  const handleEnterAudience = useCallback(() => {
+    if (gameState.force_route === 'client_landing') {
+      setCurrentView('client_landing');
+      return;
+    }
+    setCurrentView('audience');
+  }, [gameState.force_route]);
+  const handleEnterAdmin = useCallback(() => setCurrentView('admin'), []);
+  const handleEnterProjector = useCallback(() => setCurrentView('projector'), []);
+  const handleGoHome = useCallback(() => setCurrentView('landing'), []);
+  const handleAdminViewChange = useCallback((view: 'landing' | 'audience' | 'admin' | 'projector') => {
+    setCurrentView(view);
+  }, []);
+  const handleExitOnboarding = useCallback(() => {
+    if (user && isOnboardingOpen) {
+      setIsOnboardingOpen(false);
+    } else {
+      setCurrentView('landing');
+    }
+  }, [user, isOnboardingOpen]);
+  const handleCloseProfileModal = useCallback(() => setIsProfileModalOpen(false), []);
+  const handleUpdateUser = useCallback((updatedUser: UserInfo) => {
+    setUser(updatedUser);
+    setSecureItem('BTI2026_USER_PROFILE', updatedUser);
+  }, []);
+  const handleCloseFirebaseConfigModal = useCallback(() => {
+    setIsFirebaseConfigOpen(false);
+    setIsFirebaseConnected(syncService.getIsFirebaseConnected());
+  }, []);
+  const handleCloseInstallModal = useCallback(() => setIsInstallModalOpen(false), []);
+  const handleDismissOfflineBanner = useCallback(() => {
+    setIsOfflineBannerDismissed(true);
+    setTimeout(() => {
+      setIsOfflineBannerDismissed(false);
+    }, 60000);
+  }, []);
+  const handleRequestDataDeletion = useCallback(() => {
+    if (user) {
+      setIsProfileModalOpen(true);
+    } else {
+      setIsOnboardingOpen(true);
+    }
+  }, [user]);
+  const handleOpenLandingPolicy = useCallback(() => handleNavigateToPolicy(), [handleNavigateToPolicy]);
+  const handleOpenPolicyTab = useCallback((tab?: 'PRIVACY' | 'TERMS_AI' | 'SUBJECT_RIGHTS') => {
+    handleNavigateToPolicy(tab);
+  }, [handleNavigateToPolicy]);
+
+  const activeQrPalette = useMemo(
+    () => QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold,
+    [gameState.qr_color_palette]
+  );
 
   useEffect(() => {
     soundFx.setAdminMuted(currentView === 'admin');
@@ -921,56 +924,29 @@ export default function App() {
       {currentView !== 'projector' && currentView !== 'policy' && (
       <Navbar
         currentView={currentView}
-        onViewChange={(view) => {
-          if (view === 'policy') {
-            handleNavigateToPolicy();
-            return;
-          }
-          setCurrentView(view);
-          if (typeof window !== 'undefined' && window.history) {
-            const url = new URL(window.location.href);
-            if (view === 'audience') {
-              url.searchParams.delete('view');
-            } else {
-              url.searchParams.set('view', view);
-            }
-            window.history.replaceState({}, '', url.toString());
-          }
-        }}
+        onViewChange={handleNavbarViewChange}
         gameState={gameState}
-        activeCount={activeCount}
         user={user}
         adminUser={adminUser}
         isAdminAuthenticated={isAuthenticated}
         isOnboardingOpen={isOnboardingOpen}
-        onOpenProfile={() => {
-          if (user) {
-            setIsProfileModalOpen(true);
-          } else {
-            setIsOnboardingOpen(true);
-          }
-        }}
+        onOpenProfile={handleNavbarOpenProfile}
         onLogout={user ? handleAudienceLogout : undefined}
-        onOpenFirebaseConfig={() => setIsFirebaseConfigOpen(true)}
+        onOpenFirebaseConfig={handleNavbarOpenFirebaseConfig}
         isFirebaseConnected={isFirebaseConnected}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         onAdminLogout={handleLogout}
-        onOpenQrCode={() => {
-          if (currentView === 'admin') {
-            syncService.updateGameState({ show_qr: true });
-          } else {
-            setIsAudienceQrDismissed(false);
-            setIsLocalAudienceQrOpen(true);
-          }
-        }}
-        onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        onOpenQrCode={handleNavbarOpenQrCode}
+        onOpenInstallModal={handleNavbarOpenInstallModal}
       />
       )}
       <main className={`flex-1 flex flex-col relative overflow-x-hidden overflow-y-auto ${currentView === 'policy' ? 'bg-[#0D0420] min-h-full h-full' : ''}`}>
 
         {currentView === 'client_landing' && (
-          <ClientLandingPage gameState={gameState} />
+          <React.Suspense fallback={null}>
+            <ClientLandingPage gameState={gameState} />
+          </React.Suspense>
         )}
 
       {batteryToast.show && (
@@ -997,18 +973,14 @@ export default function App() {
       )}
 
         {currentView === 'policy' && (
-          <PolicyPage
-            onBack={handleBackFromPolicy}
-            previousViewName={getPreviousViewDisplayName(previousView)}
-            currentUser={user}
-            onRequestDataDeletion={() => {
-              if (user) {
-                setIsProfileModalOpen(true);
-              } else {
-                setIsOnboardingOpen(true);
-              }
-            }}
-          />
+          <React.Suspense fallback={null}>
+            <PolicyPage
+              onBack={handleBackFromPolicy}
+              previousViewName={getPreviousViewDisplayName(previousView)}
+              currentUser={user}
+              onRequestDataDeletion={handleRequestDataDeletion}
+            />
+          </React.Suspense>
         )}
 
         <ViewErrorBoundary
@@ -1021,7 +993,7 @@ export default function App() {
               : 'Beyond The Internet 2027'
           }
           language={localLanguage}
-          onGoHome={() => setCurrentView('landing')}
+          onGoHome={handleGoHome}
         >
           <React.Suspense
             fallback={
@@ -1036,16 +1008,10 @@ export default function App() {
             {currentView === 'landing' && (
               <LandingPage
                 gameState={gameState}
-                onEnterAudience={() => {
-                  if (gameState.force_route === 'client_landing') {
-                    setCurrentView('client_landing');
-                    return;
-                  }
-                  setCurrentView('audience');
-                }}
-                onEnterAdmin={() => setCurrentView('admin')}
-                onEnterProjector={() => setCurrentView('projector')}
-                onEnterPolicy={() => handleNavigateToPolicy()}
+                onEnterAudience={handleEnterAudience}
+                onEnterAdmin={handleEnterAdmin}
+                onEnterProjector={handleEnterProjector}
+                onEnterPolicy={handleOpenLandingPolicy}
               />
             )}
 
@@ -1058,37 +1024,18 @@ export default function App() {
                   currentUser={user}
                   isLobbyLocked={Boolean(gameState.lobby_locked)}
                   isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
-                  onExit={() => {
-                    if (user && isOnboardingOpen) {
-                      setIsOnboardingOpen(false);
-                    } else {
-                      setCurrentView('landing');
-                    }
-                  }}
-                  onClose={() => {
-                    if (user && isOnboardingOpen) {
-                      setIsOnboardingOpen(false);
-                    } else {
-                      setCurrentView('landing');
-                    }
-                  }}
+                  onExit={handleExitOnboarding}
+                  onClose={handleExitOnboarding}
                 />
               ) : (
                 <AudienceView
                   gameState={gameState}
                   user={user}
-                  responses={allResponses[gameState.question_id] || currentResponses || {}}
-                  allResponses={allResponses}
+                  onUserSynced={handleUserSynced}
                   isHighContrast={isHighContrast}
                   onToggleHighContrast={handleToggleHighContrast}
-                  onOpenRegister={() => setIsOnboardingOpen(true)}
-                  onOpenProfile={() => {
-                    if (user) {
-                      setIsProfileModalOpen(true);
-                    } else {
-                      setIsOnboardingOpen(true);
-                    }
-                  }}
+                  onOpenRegister={handleOpenOnboarding}
+                  onOpenProfile={handleNavbarOpenProfile}
                 />
               )
             )}
@@ -1099,18 +1046,13 @@ export default function App() {
                 onAuthenticated={handleAuthenticate}
                 viewName="Ban Kỹ Thuật (Admin)"
                 isLookupLocked={Boolean(gameState.lookup_locked || gameState.anti_lookup_protection)}
-                onExit={() => setCurrentView('landing')}
+                onExit={handleGoHome}
               >
                 <AdminPortal
                   adminUser={adminUser}
                   onLogout={handleLogout}
-                  gameState={gameState}
-                  activeCount={activeCount}
-                  currentResponses={allResponses[gameState.question_id] || currentResponses || {}}
-                  allResponses={allResponses}
-                  isFirebaseConnected={isFirebaseConnected}
-                  onOpenFirebaseConfig={() => setIsFirebaseConfigOpen(true)}
-                  onViewChange={(view) => setCurrentView(view)}
+                  onOpenFirebaseConfig={handleNavbarOpenFirebaseConfig}
+                  onViewChange={handleAdminViewChange}
                 />
               </PasswordGate>
             )}
@@ -1120,52 +1062,50 @@ export default function App() {
                 isAuthenticated={isAuthenticated}
                 onAuthenticated={handleAuthenticate}
                 viewName="Màn Chiếu (Projector)"
-                onExit={() => setCurrentView('landing')}
+                onExit={handleGoHome}
               >
-                <ProjectorView
-                  gameState={gameState}
-                  responses={allResponses[gameState.question_id] || currentResponses || {}}
-                  allResponses={allResponses}
-                  activeCount={activeCount}
-                />
+                <ProjectorView />
               </PasswordGate>
             )}
           </React.Suspense>
         </ViewErrorBoundary>
       </main>
 
-      {user && (
-        <ProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-          user={user}
-          onUpdateUser={(updatedUser) => {
-            setUser(updatedUser);
-            setSecureItem('BTI2026_USER_PROFILE', updatedUser);
-          }}
-          allResponses={allResponses}
-          gameState={gameState}
-          initialTab={
-            gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
-              ? 'edit'
-              : undefined
-          }
-        />
+      {user && isProfileModalOpen && (
+        <React.Suspense fallback={null}>
+          <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={handleCloseProfileModal}
+            user={user}
+            onUpdateUser={handleUpdateUser}
+            gameState={gameState}
+            initialTab={
+              gameState.event_schedule?.enabled && gameState.event_schedule.status === 'SCHEDULED'
+                ? 'edit'
+                : undefined
+            }
+          />
+        </React.Suspense>
       )}
 
-      <FirebaseConfigModal
-        isOpen={isFirebaseConfigOpen}
-        onClose={() => {
-          setIsFirebaseConfigOpen(false);
-          setIsFirebaseConnected(syncService.getIsFirebaseConnected());
-        }}
-        isConnected={isFirebaseConnected}
-      />
+      {isFirebaseConfigOpen && (
+        <React.Suspense fallback={null}>
+          <FirebaseConfigModal
+            isOpen={isFirebaseConfigOpen}
+            onClose={handleCloseFirebaseConfigModal}
+            isConnected={isFirebaseConnected}
+          />
+        </React.Suspense>
+      )}
 
-      <InstallAppModal
-        isOpen={isInstallModalOpen}
-        onClose={() => setIsInstallModalOpen(false)}
-      />
+      {isInstallModalOpen && (
+        <React.Suspense fallback={null}>
+          <InstallAppModal
+            isOpen={isInstallModalOpen}
+            onClose={handleCloseInstallModal}
+          />
+        </React.Suspense>
+      )}
 
       {((gameState.show_qr && !isAudienceQrDismissed) || isLocalAudienceQrOpen) && currentView !== 'admin' && currentView !== 'projector' && typeof document !== 'undefined' && !!document.body && createPortal(
         <div 
@@ -1323,19 +1263,17 @@ export default function App() {
                 id="badge-qr-palette"
                 tabIndex={0}
                 role="note"
-                aria-label={localLanguage !== 'vi' ? `QR palette theme: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).name}` : `Bảng màu mã QR: ${(QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).labelVi}`}
+                aria-label={localLanguage !== 'vi' ? `QR palette theme: ${activeQrPalette.name}` : `Bảng màu mã QR: ${activeQrPalette.labelVi}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] text-[10px] font-mono font-semibold bg-white/10 text-white/80 border border-white/15"
                 title={localLanguage !== 'vi' ? 'QR color theme synced with the stage' : 'Màu mã QR đang đồng bộ cùng sân khấu'}
               >
                 <span 
                   className="w-2 h-2 rounded-full shrink-0" 
                   aria-hidden="true"
-                  style={{ backgroundColor: (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).dotColor }} 
+                  style={{ backgroundColor: activeQrPalette.dotColor }} 
                 />
                 <span>
-                  {localLanguage !== 'vi'
-                    ? (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).name
-                    : (QR_PALETTES[(gameState.qr_color_palette as QrPaletteId) || 'purple_gold'] || QR_PALETTES.purple_gold).labelVi}
+                  {localLanguage !== 'vi' ? activeQrPalette.name : activeQrPalette.labelVi}
                 </span>
               </div>
             </div>
@@ -1410,45 +1348,50 @@ export default function App() {
       <OfflineBanner
         isFirebaseConnected={isFirebaseConnected}
         isDismissed={isOfflineBannerDismissed}
-        onDismiss={() => {
-          setIsOfflineBannerDismissed(true);
-          setTimeout(() => {
-            setIsOfflineBannerDismissed(false);
-          }, 60000);
-        }}
+        onDismiss={handleDismissOfflineBanner}
       />
 
       <FluentTooltip />
-      <LiveSubtitleOverlay />
-      <LoudEnvironmentAlert />
 
-      <AntiExitGuard 
-        enabled={currentView === 'audience' && Boolean(user) && !isOnboardingOpen} 
-        user={user} 
-        gameState={gameState} 
-        showStatusPill={false} 
-        onConfirmExit={() => setCurrentView('landing')} 
-      />
+      <React.Suspense fallback={null}>
+        <LiveSubtitleOverlay />
+        <LoudEnvironmentAlert />
 
-      <SebAntiCheatGuard 
-        enabled={currentView === 'audience' && Boolean(user) && !isOnboardingOpen} 
-        user={user} 
-        gameState={gameState} 
-      />
+        {currentView === 'audience' && Boolean(user) && !isOnboardingOpen && (
+          <>
+            <AntiExitGuard
+              enabled={true}
+              user={user}
+              gameState={gameState}
+              showStatusPill={false}
+              onConfirmExit={handleGoHome}
+            />
+            <SebAntiCheatGuard
+              enabled={true}
+              user={user}
+              gameState={gameState}
+            />
+          </>
+        )}
 
-      <FloatingDebugPanel gameState={gameState} />
+        {typeof window !== 'undefined' && window.location.search.includes('splitDebug=1') && (
+          <FloatingDebugPanel gameState={gameState} />
+        )}
 
-      <ChatAssistantWidget
-        gameState={gameState}
-        user={user}
-        currentView={currentView}
-      />
+        {currentView !== 'projector' && currentView !== 'policy' && (
+          <ChatAssistantWidget
+            gameState={gameState}
+            user={user}
+            currentView={currentView}
+          />
+        )}
 
-      <CookieConsentBanner onOpenPolicy={(tab) => handleNavigateToPolicy(tab)} />
+        <CookieConsentBanner onOpenPolicy={handleOpenPolicyTab} />
 
-      {currentView !== 'policy' && (
-        <FirstVisitConsentModal onOpenFullPolicy={() => handleNavigateToPolicy()} />
-      )}
+        {currentView !== 'policy' && (
+          <FirstVisitConsentModal onOpenFullPolicy={handleOpenLandingPolicy} />
+        )}
+      </React.Suspense>
     </div>
   );
 }

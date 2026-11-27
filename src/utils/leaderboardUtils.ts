@@ -35,14 +35,71 @@ export interface UserScoreSummary {
  * Aggregate all responses across all questions and compute user rankings
  * Uses computeAudienceScoreFromResponses as the unified single source of truth.
  */
-interface LeaderboardCache {
-  responsesRef: Record<string, Record<string, UserResponse>> | null;
-  filterRound: string;
-  timestamp: number;
-  result: UserScoreSummary[];
+const _lbWeakCache = new WeakMap<Record<string, Record<string, UserResponse>>, Map<string, UserScoreSummary[]>>();
+const _rankChangeWeakCache = new WeakMap<Record<string, Record<string, UserResponse>>, Map<string, Map<string, RankChangeInfo>>>();
+const _trendsWeakCache = new WeakMap<Record<string, Record<string, UserResponse>>, Map<string, Map<string, TrendInfo>>>();
+
+function buildLeaderboardCacheKey(
+  filterRound: string,
+  customQuestionBank?: QuestionItem[],
+  gameState?: GameState
+): string {
+  return [
+    filterRound,
+    gameState?.question_id || '',
+    gameState?.status || '',
+    gameState?.vcnv_risk_status || '',
+    gameState?.vcnv_status || '',
+    gameState?.vcnv_risk_branch || '',
+    gameState?.vcnv_keyword || '',
+    gameState?.vcnv_risk_answer || '',
+    customQuestionBank && customQuestionBank !== INITIAL_QUESTION_BANK ? customQuestionBank.length : 0,
+  ].join('|');
 }
 
-let _lbCache: LeaderboardCache | null = null;
+function buildPrecomputedRound3SpeedRanks(
+  allResponses: Record<string, Record<string, UserResponse>>,
+  customQuestionBank?: QuestionItem[],
+  gameState?: GameState
+): Map<string, Map<string, number>> {
+  const rankByQuestion = new Map<string, Map<string, number>>();
+  const qMap = new Map<string, QuestionItem>();
+  INITIAL_QUESTION_BANK.forEach((q) => qMap.set(q.id, q));
+  if (customQuestionBank && customQuestionBank !== INITIAL_QUESTION_BANK) {
+    customQuestionBank.forEach((q) => qMap.set(q.id, q));
+  }
+
+  for (const [qId, qResponses] of Object.entries(allResponses)) {
+    if (!qResponses || qId.startsWith('VCNV')) continue;
+    if (gameState?.question_id === qId && gameState?.status !== 'REVEAL') continue;
+
+    const qData = qMap.get(qId);
+    let roundId = qData?.round_name || qData?.round_type || 'round1';
+    if (qId.startsWith('KD_')) roundId = 'round1';
+    else if (qId.startsWith('TT_')) roundId = 'round3';
+    else if (qId.startsWith('VD_')) roundId = 'round4';
+    if (roundId !== 'round3' && !qId.startsWith('TT_')) continue;
+
+    const correctKey = qData?.correct_key || (gameState?.question_id === qId ? gameState?.correct_key || '' : '');
+    if (!correctKey) continue;
+
+    const roundType = qData?.round_type || 'MULTIPLE_CHOICE';
+    const correctResps = Object.entries(qResponses)
+      .filter(([_, r]) => evaluateUserChoice(r.choice, correctKey, roundType, qId).isCorrect)
+      .sort((a, b) => (a[1].latency_sec || 0) - (b[1].latency_sec || 0));
+
+    const userRankMap = new Map<string, number>();
+    correctResps.forEach(([key, r], idx) => {
+      const rank = idx + 1;
+      if (key) userRankMap.set(key, rank);
+      if (r.user_info?.uid) userRankMap.set(r.user_info.uid, rank);
+      if (r.user_info?.anonymizedUid) userRankMap.set(r.user_info.anonymizedUid, rank);
+      if (r.user_info?.mssv) userRankMap.set(`mssv:${r.user_info.mssv}`, rank);
+    });
+    rankByQuestion.set(qId, userRankMap);
+  }
+  return rankByQuestion;
+}
 
 export function calculateLeaderboard(
   allResponses: Record<string, Record<string, UserResponse>>,
@@ -54,15 +111,12 @@ export function calculateLeaderboard(
     return [];
   }
 
-  // Fast memoization cache to prevent CPU starvation on rapid response streams
-  const now = Date.now();
-  if (
-    _lbCache &&
-    _lbCache.responsesRef === allResponses &&
-    _lbCache.filterRound === filterRound &&
-    now - _lbCache.timestamp < 350
-  ) {
-    return _lbCache.result;
+  // Fast WeakMap memoization cache keyed by object identity + game phase/round
+  const cacheKey = buildLeaderboardCacheKey(filterRound, customQuestionBank, gameState);
+  let perRefCache = _lbWeakCache.get(allResponses);
+  const cachedHit = perRefCache?.get(cacheKey);
+  if (cachedHit) {
+    return cachedHit;
   }
 
   // 1. Identify all unique users across all questions
@@ -114,6 +168,7 @@ export function calculateLeaderboard(
   });
 
   // 2. Compute authoritative scores for each user using computeAudienceScoreFromResponses
+  const precomputedSpeedRanks = buildPrecomputedRound3SpeedRanks(allResponses, customQuestionBank, gameState);
   const summaries: UserScoreSummary[] = [];
 
   userMetadataMap.forEach(meta => {
@@ -122,7 +177,8 @@ export function calculateLeaderboard(
       meta.uid,
       meta.mssv,
       customQuestionBank || INITIAL_QUESTION_BANK,
-      gameState
+      gameState,
+      precomputedSpeedRanks
     );
 
     const totalLatency = meta.latencies.reduce((acc, cur) => acc + cur, 0);
@@ -182,12 +238,11 @@ export function calculateLeaderboard(
     s.rank = idx + 1;
   });
 
-  _lbCache = {
-    responsesRef: allResponses,
-    filterRound,
-    timestamp: now,
-    result: summaries
-  };
+  if (!perRefCache) {
+    perRefCache = new Map();
+    _lbWeakCache.set(allResponses, perRefCache);
+  }
+  perRefCache.set(cacheKey, summaries);
   return summaries;
 }
 
@@ -268,6 +323,13 @@ export function calculateRankChanges(
     return result;
   }
 
+  const rankCacheKey = `${buildLeaderboardCacheKey(filterRound, customQuestionBank, gameState)}|${currentQuestionId || ''}|${currentRankedList.length}`;
+  let perRefRankCache = _rankChangeWeakCache.get(allResponses);
+  const cachedRankChanges = perRefRankCache?.get(rankCacheKey);
+  if (cachedRankChanges) {
+    return cachedRankChanges;
+  }
+
   const questionKeys = Object.keys(allResponses).filter(k => allResponses[k] && Object.keys(allResponses[k]).length > 0);
   
   // If there's only 1 question or no prior question history
@@ -275,6 +337,11 @@ export function calculateRankChanges(
     currentRankedList.forEach(user => {
       result.set(user.uid, { delta: null, prevRank: null });
     });
+    if (!perRefRankCache) {
+      perRefRankCache = new Map();
+      _rankChangeWeakCache.set(allResponses, perRefRankCache);
+    }
+    perRefRankCache.set(rankCacheKey, result);
     return result;
   }
 
@@ -308,6 +375,11 @@ export function calculateRankChanges(
     }
   });
 
+  if (!perRefRankCache) {
+    perRefRankCache = new Map();
+    _rankChangeWeakCache.set(allResponses, perRefRankCache);
+  }
+  perRefRankCache.set(rankCacheKey, result);
   return result;
 }
 
@@ -333,6 +405,13 @@ export function calculateUserTrends(
   const result = new Map<string, TrendInfo>();
   if (!allResponses || Object.keys(allResponses).length === 0 || rankedUsers.length === 0) {
     return result;
+  }
+
+  const trendCacheKey = `${buildLeaderboardCacheKey('TRENDS', customQuestionBank, gameState)}|${rankedUsers.length}`;
+  let perRefTrendCache = _trendsWeakCache.get(allResponses);
+  const cachedTrends = perRefTrendCache?.get(trendCacheKey);
+  if (cachedTrends) {
+    return cachedTrends;
   }
 
   // Pre-index question items for quick lookup
@@ -465,6 +544,11 @@ export function calculateUserTrends(
     });
   });
 
+  if (!perRefTrendCache) {
+    perRefTrendCache = new Map();
+    _trendsWeakCache.set(allResponses, perRefTrendCache);
+  }
+  perRefTrendCache.set(trendCacheKey, result);
   return result;
 }
 

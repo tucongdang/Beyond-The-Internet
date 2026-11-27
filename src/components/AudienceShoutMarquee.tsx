@@ -26,7 +26,7 @@ interface AudienceShoutMarqueeProps {
   isHighContrast?: boolean;
 }
 
-export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
+export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = React.memo(({
   user,
   onOpenShoutModal,
   variant = 'audience',
@@ -210,13 +210,13 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                 {variant === 'projector' ? (
                   <div
                     className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold ${
-                      (shout.likes_count || 0) > 0
+                      (shout.likes ?? shout.likes_count ?? 0) > 0
                         ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                         : 'bg-white/5 text-white/40'
                     }`}
                   >
-                    <Heart className={`w-3 h-3 ${(shout.likes_count || 0) > 0 ? 'fill-rose-400 text-rose-400' : ''}`} />
-                    <span>{shout.likes_count || 0}</span>
+                    <Heart className={`w-3 h-3 ${(shout.likes ?? shout.likes_count ?? 0) > 0 ? 'fill-rose-400 text-rose-400' : ''}`} />
+                    <span>{shout.likes ?? shout.likes_count ?? 0}</span>
                   </div>
                 ) : (
                   <button
@@ -229,7 +229,7 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
                     } ${activeLikeAnimId === shout.id ? 'scale-125' : ''}`}
                   >
                     <Heart className={`w-3 h-3 ${isUserLiked ? 'fill-rose-400 text-rose-400' : ''}`} />
-                    <span>{shout.likes_count || 0}</span>
+                    <span>{shout.likes ?? shout.likes_count ?? 0}</span>
                   </button>
                 )}
               </div>
@@ -268,4 +268,4 @@ export const AudienceShoutMarquee: React.FC<AudienceShoutMarqueeProps> = ({
       )}
     </div>
   );
-};
+});

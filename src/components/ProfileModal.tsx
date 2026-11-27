@@ -88,7 +88,7 @@ interface ProfileModalProps {
   onClose: () => void;
   user: UserInfo;
   onUpdateUser: (user: UserInfo) => void;
-  allResponses: Record<string, Record<string, UserResponse>>;
+  allResponses?: Record<string, Record<string, UserResponse>>;
   gameState: GameState;
   initialTab?: 'stats' | 'edit' | 'settings' | 'history';
 }
@@ -98,10 +98,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   user,
   onUpdateUser,
-  allResponses,
+  allResponses: propAllResponses,
   gameState,
   initialTab
 }) => {
+  const allResponses = useMemo(
+    () => propAllResponses ?? syncService.getAllResponses(),
+    [propAllResponses, isOpen]
+  );
   const { localLanguage, toggleLanguage, selectLanguage } = useLanguage();
   
   const isWaitingRoom = Boolean(
@@ -464,7 +468,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       Object.entries(allResponses).forEach(([qId, qResponses]) => {
         if (qResponses) {
           const resp = qResponses[user.uid] ||
-            Object.values(qResponses).find(r => r.uid === user.uid || (user.mssv && r.mssv && r.mssv.trim().toLowerCase() === user.mssv.trim().toLowerCase()));
+            Object.values(qResponses).find(r =>
+              r?.user_info?.uid === user.uid ||
+              r?.user_info?.anonymizedUid === user.uid ||
+              (user.mssv && r?.user_info?.mssv && r.user_info.mssv.trim().toLowerCase() === user.mssv.trim().toLowerCase())
+            );
           if (resp) {
             mergedUserResponses[qId] = {
               ...(mergedUserResponses[qId] || {}),

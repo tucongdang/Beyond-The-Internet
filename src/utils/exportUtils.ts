@@ -87,7 +87,9 @@ export function generateSPSSData(
           questionId,
           latencySec,
           speedRank,
-          timeLimit
+          timeLimit,
+          resp.confidenceMultiplier,
+          resp.isDoubleDown
         );
         if (evalRes.partialPoints !== undefined) {
           isCorrect = evalRes.partialPoints === 40 ? 'ĐÚNG (4/4)' : evalRes.partialPoints > 0 ? `ĐÚNG TỪNG PHẦN (${evalRes.partialPoints}đ)` : 'SAI (0đ)';
@@ -97,7 +99,7 @@ export function generateSPSSData(
           scoreEarned = evalRes.pointsEarned;
         } else {
           isCorrect = 'SAI';
-          scoreEarned = 0;
+          scoreEarned = evalRes.pointsEarned;
         }
       }
 

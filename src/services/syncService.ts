@@ -110,23 +110,23 @@ export const DEFAULT_GAME_STATE: GameState = {
     status: 'IN_PROGRESS',
     scheduled_start_time: Date.now() + 3600000,
     auto_start_on_time: false,
-    title: 'Beyond The Internet 2026',
+    title: 'Beyond The Internet 2027',
     location: 'Hội trường Trực tiếp & Trực tuyến BTI',
     briefing_note: 'Chào mừng các bạn khán giả! Vui lòng ổn định chỗ ngồi, kiểm tra kết nối mạng và sẵn sàng thi đấu.',
-    concluding_message: 'Cảm ơn toàn thể quý thầy cô và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2026!',
+    concluding_message: 'Cảm ơn toàn thể quý thầy cô và các bạn khán giả đã tham gia và cổ vũ nhiệt tình cho Beyond The Internet 2027!',
     allow_early_registration: true
   },
   audience_survey: {
     enabled: false,
     form_url: 'https://docs.google.com/forms/d/e/1FAIpQLSc_ExampleFormKey/viewform',
     sample_rate: 10,
-    title: 'Khảo Sát Khán Giả BTI 2026',
+    title: 'Khảo Sát Khán Giả BTI 2027',
     description: 'Bạn là 1 trong 10% khán giả đại diện được chọn ngẫu nhiên tham gia khảo sát nhanh nhận quà tri ân từ Ban Tổ Chức!',
     gift_note: 'Hoàn tất khảo sát để nhận phần quà lưu niệm tại bàn Lễ tân.',
     auto_show_on_summary: true,
     force_active: false,
     allow_embedded_view: true,
-    target_seed: 'BTI2026_FINALE_SURVEY'
+    target_seed: 'BTI2027_FINALE_SURVEY'
   },
   round_name: INITIAL_QUESTION_BANK[0].round_name,
   round_type: INITIAL_QUESTION_BANK[0].round_type,
@@ -193,10 +193,62 @@ export const DEFAULT_GAME_STATE: GameState = {
   confidence_staking_cutoff_notice: ''
 };
 
-type StateListener = (state: GameState) => void;
+export interface StateDiffResult {
+  hasChanges: boolean;
+  changedKeys: (keyof GameState)[];
+  deltas: Partial<GameState>;
+  previousState: GameState;
+  nextState: GameState;
+}
+
+export type StateListener = (
+  state: GameState,
+  changedKeys?: (keyof GameState)[],
+  deltas?: Partial<GameState>
+) => void;
+
+export type StateDeltaListener = (
+  deltas: Partial<GameState>,
+  changedKeys: (keyof GameState)[],
+  fullState: GameState
+) => void;
+
 type ResponseListener = (responses: Record<string, UserResponse>) => void;
 type AllResponsesListener = (allResponses: Record<string, Record<string, UserResponse>>) => void;
 type PresenceListener = (count: number, users: Record<string, { online: boolean; last_active: number; name?: string; mssv?: string }>) => void;
+
+/**
+ * Fast deep-equality check tailored for GameState properties.
+ * Handles primitives, objects with toMillis(), arrays, and plain key-value objects.
+ */
+export function isStateValueEqual(a: any, b: any): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+    return false;
+  }
+  // Check for Firestore Timestamp objects or objects with toMillis()
+  if (typeof (a as any)?.toMillis === 'function' && typeof (b as any)?.toMillis === 'function') {
+    return (a as any).toMillis() === (b as any).toMillis();
+  }
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b) || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!isStateValueEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  if (Array.isArray(b)) return false;
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (let i = 0; i < keysA.length; i++) {
+    const key = keysA[i];
+    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+    if (!isStateValueEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
 
 class RealtimeSyncService {
   private firebaseApp: any = null;
@@ -209,6 +261,19 @@ class RealtimeSyncService {
   private currentConfig: FirebaseConfig | null = null;
   private connectionListeners: Set<(connected: boolean) => void> = new Set();
   private clientRole: 'AUDIENCE' | 'ADMIN' | 'PROJECTOR' = 'AUDIENCE';
+  private audienceUid: string | null = null;
+  private fullLeaderboardSyncCount: number = 0;
+  private bootConnectionVerified: boolean = false;
+  private pendingLocalSaveKinds: Set<'state' | 'responses' | 'predictions' | 'champion_votes' | 'presence' | 'scan_events' | 'audit_logs'> = new Set();
+  private localSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private shouldSyncFullCollections(): boolean {
+    if (this.clientRole !== 'AUDIENCE') return true;
+    if (this.fullLeaderboardSyncCount > 0) return true;
+    if (this.cachedGameState.show_summary) return true;
+    if (this.cachedGameState.event_schedule?.enabled && this.cachedGameState.event_schedule.status === 'CONCLUDED') return true;
+    return false;
+  }
 
   public setClientRole(role: 'AUDIENCE' | 'ADMIN' | 'PROJECTOR') {
     if (this.clientRole !== role) {
@@ -219,11 +284,39 @@ class RealtimeSyncService {
     }
   }
 
+  public setAudienceUserId(uid: string | null) {
+    const normalized = uid ? String(uid) : null;
+    if (this.audienceUid !== normalized) {
+      this.audienceUid = normalized;
+      if (this.db && this.clientRole === 'AUDIENCE' && !this.shouldSyncFullCollections()) {
+        this.attachFirebaseListeners();
+      }
+    }
+  }
+
+  public acquireFullLeaderboardSync(): () => void {
+    const wasFull = this.shouldSyncFullCollections();
+    this.fullLeaderboardSyncCount += 1;
+    if (this.db && !wasFull && this.shouldSyncFullCollections()) {
+      this.attachFirebaseListeners();
+    }
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.fullLeaderboardSyncCount = Math.max(0, this.fullLeaderboardSyncCount - 1);
+      if (this.db && this.clientRole === 'AUDIENCE' && !this.shouldSyncFullCollections()) {
+        this.attachFirebaseListeners();
+      }
+    };
+  }
+
   public getClientRole(): 'AUDIENCE' | 'ADMIN' | 'PROJECTOR' {
     return this.clientRole;
   }
 
   private stateListeners: Set<StateListener> = new Set();
+  private stateDeltaListeners: Set<StateDeltaListener> = new Set();
   private responseListeners: Set<ResponseListener> = new Set();
   private allResponsesListeners: Set<AllResponsesListener> = new Set();
   private presenceListeners: Set<PresenceListener> = new Set();
@@ -328,22 +421,24 @@ class RealtimeSyncService {
         this.broadcastChannel.onmessage = (event) => {
           const { type, payload } = event.data || {};
           if (type === 'GAME_STATE_UPDATE') {
-            if (
-              payload &&
-              (payload.question_id !== this.cachedGameState.question_id ||
-                (payload.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE'))
-            ) {
-              this.triggerQuestionSyncPulse(380);
+            if (payload) {
+              this.applyIncrementalGameStateUpdate(payload, {
+                notifyListeners: true,
+                persistLocal: false,
+                postBroadcast: false,
+                syncPulse: true,
+                source: 'broadcast'
+              });
             }
-            this.cachedGameState = payload;
-            this.notifyStateListeners();
-            this.notifyResponseListeners();
           } else if (type === 'RESPONSE_ADDED') {
             const { questionId, uid, response } = payload;
-            if (!this.cachedResponses[questionId]) {
-              this.cachedResponses[questionId] = {};
-            }
-            this.cachedResponses[questionId][uid] = response;
+            this.cachedResponses = {
+              ...this.cachedResponses,
+              [questionId]: {
+                ...(this.cachedResponses[questionId] || {}),
+                [uid]: response
+              }
+            };
             this.saveLocalResponses();
             this.notifyResponseListeners();
           } else if (type === 'CONTESTANT_PREDICTION') {
@@ -385,13 +480,16 @@ class RealtimeSyncService {
           } else if (type === 'QUESTION_LIKES_UPDATED') {
             const { likes, likesUids } = payload || {};
             if (likes && likesUids) {
-              this.cachedGameState = {
-                ...this.cachedGameState,
+              this.applyIncrementalGameStateUpdate({
                 question_likes: likes,
                 question_likes_uids: likesUids
-              };
-              this.saveLocalState();
-              this.notifyStateListeners();
+              }, {
+                notifyListeners: true,
+                persistLocal: true,
+                postBroadcast: false,
+                syncPulse: false,
+                source: 'broadcast'
+              });
             }
           } else if (type === 'ADMIN_ALERT') {
             this.adminAlertListeners.forEach(cb => cb(payload));
@@ -438,17 +536,28 @@ class RealtimeSyncService {
       this.initializeFirebase();
     }
 
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', () => this.flushLocalSaves());
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.flushLocalSaves();
+        }
+      });
+    }
+
     // Setup local presence heartbeat cleaner
     setInterval(() => {
-      this.cleanStalePresence();
+      if (typeof document === 'undefined' || !document.hidden) {
+        this.cleanStalePresence();
+      }
     }, 10000);
 
-    // Periodic ping measurement (every 6 seconds when tab is active)
+    // Periodic ping measurement (every 8 seconds when tab is active)
     setInterval(() => {
       if (typeof document !== 'undefined' && !document.hidden && this.getIsFirebaseConnected()) {
         this.measurePing();
       }
-    }, 6000);
+    }, 8000);
   }
 
   private initLatencyHistorySeed() {
@@ -518,53 +627,77 @@ class RealtimeSyncService {
     }
   }
 
-  private saveLocalAuditLogs() {
+  private scheduleLocalSave(kind: 'state' | 'responses' | 'predictions' | 'champion_votes' | 'presence' | 'scan_events' | 'audit_logs') {
     if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_LOCAL_AUDIT_LOGS, JSON.stringify(this.cachedAuditLogs.slice(0, 300)));
-    } catch {}
+    this.pendingLocalSaveKinds.add(kind);
+    if (this.localSaveTimer) return;
+    this.localSaveTimer = setTimeout(() => {
+      this.localSaveTimer = null;
+      const runFlush = () => this.flushLocalSaves();
+      if (typeof (window as any).requestIdleCallback === 'function') {
+        (window as any).requestIdleCallback(runFlush, { timeout: 1200 });
+      } else {
+        runFlush();
+      }
+    }, 800);
+  }
+
+  public flushLocalSaves() {
+    if (typeof window === 'undefined') return;
+    if (this.localSaveTimer) {
+      clearTimeout(this.localSaveTimer);
+      this.localSaveTimer = null;
+    }
+    if (this.pendingLocalSaveKinds.size === 0) return;
+    const kinds = Array.from(this.pendingLocalSaveKinds);
+    this.pendingLocalSaveKinds.clear();
+    for (const kind of kinds) {
+      try {
+        if (kind === 'state') {
+          localStorage.setItem(STORAGE_KEY_GAME_STATE, JSON.stringify(this.cachedGameState));
+        } else if (kind === 'responses') {
+          localStorage.setItem(STORAGE_KEY_RESPONSES, JSON.stringify(this.cachedResponses));
+        } else if (kind === 'predictions') {
+          localStorage.setItem(STORAGE_KEY_PREDICTIONS, JSON.stringify(this.cachedPredictions));
+        } else if (kind === 'champion_votes') {
+          localStorage.setItem(STORAGE_KEY_CHAMPION_VOTES, JSON.stringify(this.cachedChampionVotes));
+        } else if (kind === 'presence') {
+          localStorage.setItem(STORAGE_KEY_PRESENCE, JSON.stringify(this.cachedPresence));
+        } else if (kind === 'scan_events') {
+          localStorage.setItem(STORAGE_KEY_QR_SCAN_EVENTS, JSON.stringify(this.cachedScanEvents));
+        } else if (kind === 'audit_logs') {
+          localStorage.setItem(STORAGE_KEY_LOCAL_AUDIT_LOGS, JSON.stringify(this.cachedAuditLogs.slice(0, 300)));
+        }
+      } catch {}
+    }
+  }
+
+  private saveLocalAuditLogs() {
+    this.scheduleLocalSave('audit_logs');
   }
 
   private saveLocalState() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_GAME_STATE, JSON.stringify(this.cachedGameState));
-    } catch {}
+    this.scheduleLocalSave('state');
   }
 
   private saveLocalResponses() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_RESPONSES, JSON.stringify(this.cachedResponses));
-    } catch {}
+    this.scheduleLocalSave('responses');
   }
 
   private saveLocalPredictions() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_PREDICTIONS, JSON.stringify(this.cachedPredictions));
-    } catch {}
+    this.scheduleLocalSave('predictions');
   }
 
   private saveLocalChampionVotes() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_CHAMPION_VOTES, JSON.stringify(this.cachedChampionVotes));
-    } catch {}
+    this.scheduleLocalSave('champion_votes');
   }
 
   private saveLocalPresence() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_PRESENCE, JSON.stringify(this.cachedPresence));
-    } catch {}
+    this.scheduleLocalSave('presence');
   }
 
   private saveLocalScanEvents() {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_QR_SCAN_EVENTS, JSON.stringify(this.cachedScanEvents));
-    } catch {}
+    this.scheduleLocalSave('scan_events');
   }
 
   public getFirebaseConfig(): FirebaseConfig | null {
@@ -775,6 +908,14 @@ class RealtimeSyncService {
       this.db = db;
       this.setFirebaseConnected(true);
       this.attachFirebaseListeners();
+      if (!this.bootConnectionVerified) {
+        this.bootConnectionVerified = true;
+        this.verifyFirebaseServerConnection().then((ok) => {
+          if (!ok && typeof navigator !== 'undefined' && !navigator.onLine) {
+            this.setFirebaseConnected(false);
+          }
+        }).catch(() => {});
+      }
       setTimeout(() => {
         this.measurePing();
       }, 500);
@@ -1102,11 +1243,13 @@ class RealtimeSyncService {
     this.clearFirestoreListeners();
 
     const isBatterySaver = getBatterySaverMode();
+    const syncFullCollections = this.shouldSyncFullCollections();
 
     if (isBatterySaver) {
       // BẬT CHẾ ĐỘ TIẾT KIỆM PIN: POLLING 10s một lần thay vì onSnapshot realtime
       this.batterySaverInterval = setInterval(async () => {
         if (!this.db) return;
+        if (typeof document !== 'undefined' && document.hidden) return;
 
         // Skip network polling if client is offline
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -1120,33 +1263,36 @@ class RealtimeSyncService {
           if (stateSnap.exists()) {
             this.setFirebaseConnected(true);
             const data = stateSnap.data() as GameState;
-            if (
-              data.question_id !== this.cachedGameState.question_id ||
-              (data.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE')
-            ) {
-              this.triggerQuestionSyncPulse(380);
-            }
-            this.cachedGameState = { ...DEFAULT_GAME_STATE, ...data };
-            this.saveLocalState();
-            this.notifyStateListeners();
-            this.notifyResponseListeners();
+            const fullIncoming: GameState = { ...DEFAULT_GAME_STATE, ...data };
+            this.applyIncrementalGameStateUpdate(fullIncoming, {
+              notifyListeners: true,
+              persistLocal: true,
+              postBroadcast: false,
+              syncPulse: true,
+              source: 'polling'
+            });
           }
 
-          // Poll responses
-          const respsSnap = await getDocs(collection(this.db, 'responses'));
-          const rData: Record<string, Record<string, UserResponse>> = {};
-          respsSnap.forEach(docSnap => {
-            const docData = docSnap.data();
-            const qId = docData.questionId;
-            const uid = docData.uid;
-            if (qId && uid) {
-              if (!rData[qId]) rData[qId] = {};
-              rData[qId][uid] = docData.response;
-            }
-          });
-          this.cachedResponses = rData;
-          this.saveLocalResponses();
-          this.notifyResponseListeners();
+          // Poll responses (full for Admin/Projector/leaderboard, user-scoped for Audience)
+          if (syncFullCollections || this.audienceUid) {
+            const respQuery = syncFullCollections
+              ? collection(this.db, 'responses')
+              : query(collection(this.db, 'responses'), where('uid', '==', this.audienceUid!));
+            const respsSnap = await getDocs(respQuery);
+            const rData: Record<string, Record<string, UserResponse>> = syncFullCollections ? {} : { ...this.cachedResponses };
+            respsSnap.forEach(docSnap => {
+              const docData = docSnap.data();
+              const qId = docData.questionId;
+              const uid = docData.uid;
+              if (qId && uid) {
+                if (!rData[qId]) rData[qId] = {};
+                rData[qId] = { ...rData[qId], [uid]: docData.response };
+              }
+            });
+            this.cachedResponses = rData;
+            this.saveLocalResponses();
+            this.notifyResponseListeners();
+          }
 
         } catch (err: any) {
           const isOffline =
@@ -1156,14 +1302,13 @@ class RealtimeSyncService {
             err?.message?.includes('offline');
 
           if (isOffline) {
-            // Silently mark disconnected without throwing critical console errors
             this.setFirebaseConnected(false);
           } else {
             console.warn('Polling warning in Battery Saver mode:', err?.message || err);
             this.setFirebaseConnected(false);
           }
         }
-      }, 10000); // 10 seconds polling interval
+      }, 10000);
 
     } else {
       // CHẾ ĐỘ BÌNH THƯỜNG: REALTIME ONSNAPSHOT
@@ -1172,68 +1317,122 @@ class RealtimeSyncService {
         this.setFirebaseConnected(true);
         if (snapshot.exists()) {
           const data = snapshot.data() as GameState;
-          if (
-            data.question_id !== this.cachedGameState.question_id ||
-            (data.status === 'ACTIVE' && this.cachedGameState.status !== 'ACTIVE')
-          ) {
-            this.triggerQuestionSyncPulse(380);
+          const prevShouldFull = this.shouldSyncFullCollections();
+          const fullIncoming: GameState = { ...DEFAULT_GAME_STATE, ...data };
+          const diff = this.applyIncrementalGameStateUpdate(fullIncoming, {
+            notifyListeners: true,
+            persistLocal: true,
+            postBroadcast: false,
+            syncPulse: true,
+            source: 'firestore'
+          });
+          if (diff.hasChanges && !prevShouldFull && this.shouldSyncFullCollections()) {
+            this.attachFirebaseListeners();
           }
-          this.cachedGameState = { ...DEFAULT_GAME_STATE, ...data };
-          this.saveLocalState();
-          this.notifyStateListeners();
-          this.notifyResponseListeners();
         }
       }, (error) => {
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
           console.warn('Firestore game_state listener paused (device offline)');
         } else {
-          console.error('Firestore game_state listener error:', error);
+          console.error('Firestore game_state listener error:', JSON.stringify(buildStructuredFirestoreErrorContext(error, FirestoreOperationType.GET, 'game_state/current', auth?.currentUser)));
         }
         this.setFirebaseConnected(false);
       }));
 
-      // 2. Listen to responses
-      this.unsubscribes.push(onSnapshot(collection(this.db, 'responses'), (snapshot) => {
-        this.setFirebaseConnected(true);
-        const data: Record<string, Record<string, UserResponse>> = {};
-        snapshot.forEach(docSnap => {
-          const docData = docSnap.data();
-          const qId = docData.questionId;
-          const uid = docData.uid;
-          if (qId && uid) {
-            if (!data[qId]) data[qId] = {};
-            data[qId][uid] = docData.response;
+      // 2. Listen to responses (incremental docChanges deltas; user-scoped for active Audience)
+      if (syncFullCollections || this.audienceUid) {
+        const responsesTarget = syncFullCollections
+          ? collection(this.db, 'responses')
+          : query(collection(this.db, 'responses'), where('uid', '==', this.audienceUid!));
+
+        let isInitialFullSync = syncFullCollections;
+        this.unsubscribes.push(onSnapshot(responsesTarget, (snapshot) => {
+          this.setFirebaseConnected(true);
+          const changes = snapshot.docChanges();
+          if (changes.length === 0 && !isInitialFullSync) {
+            return;
           }
-        });
-        this.cachedResponses = data;
-        this.saveLocalResponses();
-        this.notifyResponseListeners();
-      }, (error) => {
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
-          console.warn('Firestore responses listener paused (device offline)');
-        } else {
-          console.error('Firestore responses listener error:', error);
-        }
-        this.setFirebaseConnected(false);
-      }));
+
+          if (isInitialFullSync) {
+            isInitialFullSync = false;
+            const nextData: Record<string, Record<string, UserResponse>> = {};
+            snapshot.forEach(docSnap => {
+              const docData = docSnap.data();
+              const qId = docData.questionId;
+              const uid = docData.uid;
+              if (qId && uid) {
+                if (!nextData[qId]) nextData[qId] = {};
+                nextData[qId][uid] = docData.response;
+              }
+            });
+            this.cachedResponses = nextData;
+          } else {
+            let nextData = { ...this.cachedResponses };
+            const touchedQuestions = new Set<string>();
+            let mutated = false;
+            for (const change of changes) {
+              const docData = change.doc.data();
+              const qId = docData?.questionId;
+              const uid = docData?.uid;
+              if (!qId || !uid) continue;
+
+              if (!touchedQuestions.has(qId)) {
+                nextData[qId] = nextData[qId] ? { ...nextData[qId] } : {};
+                touchedQuestions.add(qId);
+              }
+
+              if (change.type === 'removed') {
+                if (nextData[qId][uid] !== undefined) {
+                  delete nextData[qId][uid];
+                  if (Object.keys(nextData[qId]).length === 0) {
+                    delete nextData[qId];
+                  }
+                  mutated = true;
+                }
+              } else {
+                nextData[qId][uid] = docData.response;
+                mutated = true;
+              }
+            }
+            if (!mutated) return;
+            this.cachedResponses = nextData;
+          }
+
+          this.saveLocalResponses();
+          this.notifyResponseListeners();
+        }, (error) => {
+          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            console.warn('Firestore responses listener paused (device offline)');
+          } else {
+            console.error('Firestore responses listener error:', JSON.stringify(buildStructuredFirestoreErrorContext(error, FirestoreOperationType.LIST, 'responses', auth?.currentUser)));
+          }
+          this.setFirebaseConnected(false);
+        }));
+      }
     }
 
     // 3. Listen to presence (Only ADMIN & PROJECTOR need full contestant presence list)
     if (!isBatterySaver && this.clientRole !== 'AUDIENCE') {
       this.unsubscribes.push(onSnapshot(collection(this.db, 'presence'), (snapshot) => {
         this.setFirebaseConnected(true);
-        const data: Record<string, any> = {};
-        snapshot.forEach(docSnap => {
-          data[docSnap.id] = docSnap.data();
+        const changes = snapshot.docChanges();
+        if (changes.length === 0) return;
+        const nextPresence: Record<string, any> = { ...this.cachedPresence };
+        changes.forEach(change => {
+          if (change.type === 'removed') {
+            delete nextPresence[change.doc.id];
+          } else {
+            nextPresence[change.doc.id] = change.doc.data();
+          }
         });
-        this.cachedPresence = data;
+        this.cachedPresence = nextPresence;
         this.saveLocalPresence();
         this.notifyPresenceListeners();
       }, (error) => {
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
           console.warn('Firestore presence listener paused (device offline)');
         } else {
-          console.error('Firestore presence listener error:', error);
+          console.error('Firestore presence listener error:', JSON.stringify(buildStructuredFirestoreErrorContext(error, FirestoreOperationType.LIST, 'presence', auth?.currentUser)));
         }
         this.setFirebaseConnected(false);
       }));
@@ -1272,7 +1471,7 @@ class RealtimeSyncService {
     }
     }
 
-    // 5. Listen to contestant_predictions and champion_votes (with automatic fallback channel if root rules deny)
+    // 5. Listen to contestant_predictions and champion_votes (role-scoped for Audience, full for Admin/Projector/Leaderboard)
     if (!isBatterySaver) {
       this.attachPredictionsListener(this.predictionsUseFallback);
       this.attachChampionVotesListener(this.championVotesUseFallback);
@@ -1286,7 +1485,10 @@ class RealtimeSyncService {
       this.unsubPredictions = null;
     }
 
-    const colRef = useFallback
+    const syncFull = this.shouldSyncFullCollections();
+    if (!syncFull && !this.audienceUid) return;
+
+    const baseCol = useFallback
       ? collection(
           this.db,
           CONTESTANT_PREDICTION_FALLBACK_SEGMENTS[0],
@@ -1295,28 +1497,46 @@ class RealtimeSyncService {
         )
       : collection(this.db, 'contestant_predictions');
 
+    const targetQuery = syncFull
+      ? baseCol
+      : query(baseCol, where('uid', '==', this.audienceUid!));
+
     this.unsubPredictions = onSnapshot(
-      colRef,
+      targetQuery,
       (snapshot) => {
         let changed = false;
-        snapshot.forEach((docSnap) => {
-          const pred = docSnap.data() as ContestantPrediction & { updatedAt?: number };
+        const changes = snapshot.docChanges();
+        if (changes.length === 0) return;
+
+        const nextPredictions = { ...this.cachedPredictions };
+        for (const change of changes) {
+          const pred = change.doc.data() as ContestantPrediction & { updatedAt?: number };
           if (pred && pred.questionId && pred.uid && pred.contestantId) {
-            if (!this.cachedPredictions[pred.questionId]) {
-              this.cachedPredictions[pred.questionId] = {};
+            if (!nextPredictions[pred.questionId]) {
+              nextPredictions[pred.questionId] = {};
+            } else {
+              nextPredictions[pred.questionId] = { ...nextPredictions[pred.questionId] };
             }
-            const existing = this.cachedPredictions[pred.questionId][pred.uid] as
-              | (ContestantPrediction & { updatedAt?: number })
-              | undefined;
-            const incomingTs = pred.updatedAt ?? pred.timestamp ?? 0;
-            const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
-            if (!existing || incomingTs >= existingTs) {
-              this.cachedPredictions[pred.questionId][pred.uid] = pred;
-              changed = true;
+            if (change.type === 'removed') {
+              if (nextPredictions[pred.questionId][pred.uid]) {
+                delete nextPredictions[pred.questionId][pred.uid];
+                changed = true;
+              }
+            } else {
+              const existing = nextPredictions[pred.questionId][pred.uid] as
+                | (ContestantPrediction & { updatedAt?: number })
+                | undefined;
+              const incomingTs = pred.updatedAt ?? pred.timestamp ?? 0;
+              const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
+              if (!existing || incomingTs >= existingTs) {
+                nextPredictions[pred.questionId][pred.uid] = pred;
+                changed = true;
+              }
             }
           }
-        });
+        }
         if (changed) {
+          this.cachedPredictions = nextPredictions;
           this.saveLocalPredictions();
           this.notifyPredictionListeners();
         }
@@ -1350,7 +1570,10 @@ class RealtimeSyncService {
       this.unsubChampionVotes = null;
     }
 
-    const colRef = useFallback
+    const syncFull = this.shouldSyncFullCollections();
+    if (!syncFull && !this.audienceUid) return;
+
+    const baseCol = useFallback
       ? collection(
           this.db,
           CHAMPION_VOTE_FALLBACK_SEGMENTS[0],
@@ -1359,11 +1582,18 @@ class RealtimeSyncService {
         )
       : collection(this.db, 'champion_votes');
 
-    this.unsubChampionVotes = onSnapshot(
-      colRef,
-      (snapshot) => {
-        let changed = false;
-        snapshot.forEach((docSnap) => {
+    if (!syncFull && this.audienceUid) {
+      const userDocRef = useFallback
+        ? (() => {
+            const [c0, c1, c2, docId] = buildChampionVoteFallbackDocPath(this.audienceUid!);
+            return doc(this.db!, c0, c1, c2, docId);
+          })()
+        : doc(this.db, 'champion_votes', this.audienceUid);
+
+      this.unsubChampionVotes = onSnapshot(
+        userDocRef,
+        (docSnap) => {
+          if (!docSnap.exists()) return;
           const vote = docSnap.data() as ChampionVote & { updatedAt?: number };
           if (vote && vote.uid && vote.contestantId) {
             const existing = this.cachedChampionVotes[vote.uid] as
@@ -1372,12 +1602,55 @@ class RealtimeSyncService {
             const incomingTs = vote.updatedAt ?? vote.timestamp ?? 0;
             const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
             if (!existing || incomingTs >= existingTs) {
-              this.cachedChampionVotes[vote.uid] = vote;
-              changed = true;
+              this.cachedChampionVotes = { ...this.cachedChampionVotes, [vote.uid]: vote };
+              this.saveLocalChampionVotes();
+              this.notifyChampionVoteListeners();
             }
           }
-        });
+        },
+        (error) => {
+          if (isPermissionDeniedError(error) && !useFallback) {
+            this.championVotesUseFallback = true;
+            this.attachChampionVotesListener(true);
+          } else if (!isPermissionDeniedError(error)) {
+            console.warn('Firestore champion_votes user doc listener note:', error);
+          }
+        }
+      );
+      return;
+    }
+
+    this.unsubChampionVotes = onSnapshot(
+      baseCol,
+      (snapshot) => {
+        let changed = false;
+        const changes = snapshot.docChanges();
+        if (changes.length === 0) return;
+
+        const nextVotes = { ...this.cachedChampionVotes };
+        for (const change of changes) {
+          const vote = change.doc.data() as ChampionVote & { updatedAt?: number };
+          if (vote && vote.uid && vote.contestantId) {
+            if (change.type === 'removed') {
+              if (nextVotes[vote.uid]) {
+                delete nextVotes[vote.uid];
+                changed = true;
+              }
+            } else {
+              const existing = nextVotes[vote.uid] as
+                | (ChampionVote & { updatedAt?: number })
+                | undefined;
+              const incomingTs = vote.updatedAt ?? vote.timestamp ?? 0;
+              const existingTs = existing?.updatedAt ?? existing?.timestamp ?? 0;
+              if (!existing || incomingTs >= existingTs) {
+                nextVotes[vote.uid] = vote;
+                changed = true;
+              }
+            }
+          }
+        }
         if (changed) {
+          this.cachedChampionVotes = nextVotes;
           this.saveLocalChampionVotes();
           this.notifyChampionVoteListeners();
         }
@@ -1481,8 +1754,121 @@ class RealtimeSyncService {
     await setDoc(doc(this.db, c0, c1, c2, docId), payload, { merge: true });
   }
   // --- Broadcast / Local Notifications ---
-  private notifyStateListeners() {
-    this.stateListeners.forEach(listener => listener(this.cachedGameState));
+  private notifyStateListeners(changedKeys?: (keyof GameState)[], deltas?: Partial<GameState>) {
+    this.stateListeners.forEach(listener => {
+      try {
+        listener(this.cachedGameState, changedKeys, deltas);
+      } catch (err) {
+        console.error('Error in state listener:', err);
+      }
+    });
+
+    if (changedKeys && changedKeys.length > 0 && deltas) {
+      this.stateDeltaListeners.forEach(listener => {
+        try {
+          listener(deltas, changedKeys, this.cachedGameState);
+        } catch (err) {
+          console.error('Error in state delta listener:', err);
+        }
+      });
+    }
+  }
+
+  /**
+   * Applies an incremental diffing strategy for GameState updates.
+   * Compares incoming values against cachedGameState using structural deep equality.
+   * - If no keys actually changed: returns { hasChanges: false } and avoids reference re-creation,
+   *   localStorage disk I/O, and triggering React listener re-renders.
+   * - If keys changed: merges ONLY changed fields so all unchanged sub-objects (options, teams,
+   *   event_schedule, etc.) preserve identical memory references.
+   * - Emits deltas and changed keys to subscribers, minimizing React reconciliation cycles.
+   */
+  public applyIncrementalGameStateUpdate(
+    incoming: Partial<GameState> | GameState,
+    options?: {
+      notifyListeners?: boolean;
+      persistLocal?: boolean;
+      postBroadcast?: boolean;
+      syncPulse?: boolean;
+      source?: 'firestore' | 'polling' | 'broadcast' | 'local';
+    }
+  ): StateDiffResult {
+    const notify = options?.notifyListeners ?? true;
+    const persist = options?.persistLocal ?? true;
+    const postBroadcast = options?.postBroadcast ?? false;
+    const syncPulse = options?.syncPulse ?? true;
+
+    const prev = this.cachedGameState;
+    const changedKeys: (keyof GameState)[] = [];
+    const deltas: Partial<GameState> = {};
+
+    const incomingKeys = Object.keys(incoming) as (keyof GameState)[];
+    for (let i = 0; i < incomingKeys.length; i++) {
+      const key = incomingKeys[i];
+      const incomingVal = (incoming as any)[key];
+      if (incomingVal === undefined) continue;
+
+      const prevVal = prev[key];
+      if (!isStateValueEqual(prevVal, incomingVal)) {
+        changedKeys.push(key);
+        (deltas as any)[key] = incomingVal;
+      }
+    }
+
+    if (changedKeys.length === 0) {
+      return {
+        hasChanges: false,
+        changedKeys: [],
+        deltas: {},
+        previousState: prev,
+        nextState: prev,
+      };
+    }
+
+    // Retain exact memory reference for all unchanged properties
+    const next: GameState = {
+      ...prev,
+      ...deltas,
+    };
+
+    const questionIdChanged = deltas.question_id !== undefined && deltas.question_id !== prev.question_id;
+    const statusBecameActive = deltas.status === 'ACTIVE' && prev.status !== 'ACTIVE';
+
+    if (syncPulse && (questionIdChanged || statusBecameActive)) {
+      this.triggerQuestionSyncPulse(380);
+    }
+
+    this.cachedGameState = next;
+
+    if (persist) {
+      this.saveLocalState();
+    }
+
+    if (notify) {
+      this.notifyStateListeners(changedKeys, deltas);
+      if (questionIdChanged) {
+        this.notifyResponseListeners();
+      }
+    }
+
+    if (postBroadcast && this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({
+          type: 'GAME_STATE_UPDATE',
+          payload: next,
+          changedKeys,
+          deltas,
+        });
+      } catch (err) {}
+    }
+
+    return {
+      hasChanges: true,
+      changedKeys,
+      deltas,
+      previousState: prev,
+      nextState: next,
+    };
   }
 
   private notifyResponseListeners() {
@@ -1539,6 +1925,13 @@ class RealtimeSyncService {
     callback(this.cachedGameState);
     return () => {
       this.stateListeners.delete(callback);
+    };
+  }
+
+  public subscribeToStateDeltas(callback: StateDeltaListener): () => void {
+    this.stateDeltaListeners.add(callback);
+    return () => {
+      this.stateDeltaListeners.delete(callback);
     };
   }
 
@@ -1975,11 +2368,16 @@ class RealtimeSyncService {
       this.triggerQuestionSyncPulse(340);
     }
 
-    this.cachedGameState = updated;
-    this.saveLocalState();
-    this.notifyStateListeners();
-    this.notifyResponseListeners();
-    if (this.broadcastChannel) this.broadcastChannel.postMessage({ type: 'GAME_STATE_UPDATE', payload: updated });
+    this.applyIncrementalGameStateUpdate({
+      ...newState,
+      last_updated: Date.now()
+    }, {
+      notifyListeners: true,
+      persistLocal: true,
+      postBroadcast: true,
+      syncPulse: true,
+      source: 'local'
+    });
     
     if (this.db && this.isFirebaseConnected) {
       if (!this.gameStateUpdatePromise) {
@@ -2080,7 +2478,13 @@ class RealtimeSyncService {
     const isDisconnected = !this.db || !this.getIsFirebaseConnected() || isNetworkOffline;
 
     const backupAndQueueLocally = () => {
-      this.cachedResponses[questionId][uid] = processedResponse;
+      this.cachedResponses = {
+        ...this.cachedResponses,
+        [questionId]: {
+          ...(this.cachedResponses[questionId] || {}),
+          [uid]: processedResponse
+        }
+      };
       this.saveLocalResponses();
       recordLocalQuizProgress({
         uid,
@@ -2121,8 +2525,14 @@ class RealtimeSyncService {
     }
 
     // Optimistically update in-memory UI & local backup snapshot if Offline Mode is ON
-    const isNewResponse = !this.cachedResponses[questionId][uid];
-    this.cachedResponses[questionId][uid] = processedResponse;
+    const isNewResponse = !this.cachedResponses[questionId]?.[uid];
+    this.cachedResponses = {
+      ...this.cachedResponses,
+      [questionId]: {
+        ...(this.cachedResponses[questionId] || {}),
+        [uid]: processedResponse
+      }
+    };
     this.notifyResponseListeners();
     if (this.broadcastChannel) {
       this.broadcastChannel.postMessage({ type: 'RESPONSE_ADDED', payload: { questionId, uid, response: processedResponse } });
@@ -2466,7 +2876,7 @@ class RealtimeSyncService {
       day_str: dayStr,
       source: source || 'mobile_qr',
       device_type: deviceType || (typeof navigator !== 'undefined' && /mobile/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'),
-      round_context: this.cachedGameState.round_name || 'BTI 2026'
+      round_context: this.cachedGameState.round_name || 'BTI 2027'
     };
 
     this.cachedScanEvents = [...this.cachedScanEvents, newScanEvent];
@@ -2552,7 +2962,7 @@ class RealtimeSyncService {
           day_str: dayStr,
           source: 'admin_test',
           device_type: 'Simulator',
-          round_context: this.cachedGameState.round_name || 'BTI 2026'
+          round_context: this.cachedGameState.round_name || 'BTI 2027'
         };
         addedEvents.push(evt);
 
@@ -2657,20 +3067,30 @@ class RealtimeSyncService {
   }
 
   public async clearResponses(questionId?: string): Promise<void> {
-    if (questionId) delete this.cachedResponses[questionId];
-    else this.cachedResponses = {};
+    if (questionId) {
+      const next = { ...this.cachedResponses };
+      delete next[questionId];
+      this.cachedResponses = next;
+    } else {
+      this.cachedResponses = {};
+    }
     this.saveLocalResponses();
     this.notifyResponseListeners();
     if (this.broadcastChannel) this.broadcastChannel.postMessage({ type: 'RESPONSES_CLEARED', payload: { questionId } });
     
     if (this.db && this.isFirebaseConnected) {
       try {
-        const querySnapshot = await getDocs(collection(this.db, 'responses'));
-        querySnapshot.forEach(async (docSnap) => {
-          if (!questionId || docSnap.data().questionId === questionId) {
-            await deleteDoc(docSnap.ref);
-          }
-        });
+        const targetQuery = questionId
+          ? query(collection(this.db, 'responses'), where('questionId', '==', questionId))
+          : collection(this.db, 'responses');
+        const querySnapshot = await getDocs(targetQuery);
+        const docs = querySnapshot.docs;
+        for (let i = 0; i < docs.length; i += 400) {
+          const batch = writeBatch(this.db);
+          const chunk = docs.slice(i, i + 400);
+          chunk.forEach(docSnap => batch.delete(docSnap.ref));
+          await batch.commit();
+        }
       } catch (err) { console.error('Failed to clear responses in Firestore:', err); }
     }
   }
@@ -3085,10 +3505,17 @@ class RealtimeSyncService {
     currentUidsMap[questionId] = uidsList;
     currentLikesMap[questionId] = uidsList.length;
 
-    // Update state locally and sync to listeners without modifying game_state/current
-    this.cachedGameState.question_likes = currentLikesMap;
-    this.cachedGameState.question_likes_uids = currentUidsMap;
-    this.notifyStateListeners();
+    // Update state locally and sync to listeners with incremental diffing
+    this.applyIncrementalGameStateUpdate({
+      question_likes: currentLikesMap,
+      question_likes_uids: currentUidsMap
+    }, {
+      notifyListeners: true,
+      persistLocal: false,
+      postBroadcast: false,
+      syncPulse: false,
+      source: 'local'
+    });
 
     if (this.broadcastChannel) {
       try {

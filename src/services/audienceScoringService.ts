@@ -4,6 +4,9 @@ import { normalizeVcnvAnswer } from '../utils/exportUtils';
 
 export { normalizeVcnvAnswer };
 
+const DEFAULT_QUESTION_MAP = new Map<string, QuestionItem>();
+INITIAL_QUESTION_BANK.forEach(q => DEFAULT_QUESTION_MAP.set(q.id, q));
+
 /**
  * Fuzzy match helper that handles Vietnamese diacritics, whitespace, punctuation,
  * and multiple acceptable alternate answers delimited by '/', '|', ';', or newlines.
@@ -96,20 +99,126 @@ export function normalizeRoundKey(roundId: string): keyof ScoreBreakdown {
  *     * Đúng / Sai 4 ý: 10 points per correct sub-item (4/4 = 40đ, 3/4 = 30đ, 2/4 = 20đ, 1/4 = 10đ).
  *     * Cược Nhân Đôi All-In (Double Down): Đúng +80 points, Sai trừ 100% (-40 points).
  */
+export const MIN_CONFIDENCE_MULTIPLIER = 1.0;
+export const MAX_CONFIDENCE_MULTIPLIER = 3.0;
+export const CONFIDENCE_MULTIPLIER_STEP = 0.25;
+
+export function normalizeConfidenceMultiplier(raw?: number): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 1.0;
+  const clamped = Math.max(MIN_CONFIDENCE_MULTIPLIER, Math.min(MAX_CONFIDENCE_MULTIPLIER, raw));
+  return Math.round(clamped * 100) / 100;
+}
+
+function getRoundRiskBase(category: keyof ScoreBreakdown, result?: Pick<ScoringResult, 'isRiskBox' | 'subType'>): number {
+  switch (category) {
+    case 'round1':
+      return 10;
+    case 'round2':
+      return result?.isRiskBox || result?.subType === 'RISK_BOX' ? 120 : 80;
+    case 'round3':
+      return 20;
+    case 'round4':
+      return 40;
+    default:
+      return 10;
+  }
+}
+
+export function getConfidenceMultiplierPreview(
+  roundId: string,
+  multiplier: number,
+  options?: { isRiskBox?: boolean; isDoubleDown?: boolean; timeLimit?: number }
+): {
+  effectiveMultiplier: number;
+  basePoints: number;
+  minGain: number;
+  maxGain: number;
+  lossOnWrong: number;
+} {
+  const category = normalizeRoundKey(roundId);
+  const normMult = normalizeConfidenceMultiplier(multiplier);
+  const effectiveMultiplier =
+    category === 'round4' && options?.isDoubleDown ? Math.max(normMult, 2.0) : normMult;
+
+  let baseMin = 10;
+  let baseMax = 10;
+  const riskBase = getRoundRiskBase(category, { isRiskBox: options?.isRiskBox });
+
+  if (category === 'round1') {
+    baseMin = 10;
+    baseMax = 15;
+  } else if (category === 'round2') {
+    baseMin = options?.isRiskBox ? 120 : 80;
+    baseMax = baseMin;
+  } else if (category === 'round3') {
+    baseMin = 10;
+    baseMax = 40;
+  } else if (category === 'round4') {
+    baseMin = 40;
+    baseMax = 40;
+  }
+
+  return {
+    effectiveMultiplier,
+    basePoints: baseMin,
+    minGain: Math.round(baseMin * effectiveMultiplier),
+    maxGain: Math.round(baseMax * effectiveMultiplier),
+    lossOnWrong: effectiveMultiplier > 1.0 ? -Math.round(riskBase * (effectiveMultiplier - 1.0)) : 0,
+  };
+}
+
 export function calculatePointsForRound(
   roundId: string,
   result: ScoringResult
 ): { pointsEarned: number; category: keyof ScoreBreakdown; notice: string } {
   const category = normalizeRoundKey(roundId);
+  const normMult = normalizeConfidenceMultiplier(result.confidenceMultiplier);
+  const effectiveMultiplier =
+    category === 'round4' && result.isDoubleDown ? Math.max(normMult, 2.0) : normMult;
 
   // If explicit partialPoints is provided (e.g. for TRUE_FALSE_4)
   if (result.partialPoints !== undefined) {
     if (category === 'round4' && result.isDoubleDown) {
       if (result.partialPoints === 40) {
-        return { pointsEarned: 80, category, notice: '⚡ XUẤT SẮC: ĐÚNG 4/4 Ý CƯỢC ALL-IN VỀ ĐÍCH (+80đ)' };
+        const pts = Math.round(40 * effectiveMultiplier);
+        return {
+          pointsEarned: pts,
+          category,
+          notice:
+            effectiveMultiplier > 2.0
+              ? `⚡ XUẤT SẮC: ĐÚNG 4/4 Ý CƯỢC ALL-IN x${effectiveMultiplier} (+${pts}đ)`
+              : '⚡ XUẤT SẮC: ĐÚNG 4/4 Ý CƯỢC ALL-IN VỀ ĐÍCH (+80đ)',
+        };
       } else {
-        return { pointsEarned: -40, category, notice: '⚠️ RỦI RO: KHÔNG ĐẠT 4/4 Ý ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)' };
+        const loss = -Math.round(40 * (effectiveMultiplier - 1.0));
+        return {
+          pointsEarned: loss,
+          category,
+          notice:
+            effectiveMultiplier > 2.0
+              ? `⚠️ RỦI RO: KHÔNG ĐẠT 4/4 Ý ALL-IN x${effectiveMultiplier} (${loss}đ)`
+              : '⚠️ RỦI RO: KHÔNG ĐẠT 4/4 Ý ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)',
+        };
       }
+    }
+    if (effectiveMultiplier > 1.0) {
+      if (result.partialPoints === 40) {
+        const pts = Math.round(40 * effectiveMultiplier);
+        return {
+          pointsEarned: pts,
+          category,
+          notice: `Chính xác hoàn hảo 4/4 ý • Hệ số tự tin x${effectiveMultiplier} (+${pts}đ)`,
+        };
+      }
+      const scaled = Math.round(result.partialPoints - (40 - result.partialPoints) * (effectiveMultiplier - 1.0));
+      return {
+        pointsEarned: scaled,
+        category,
+        notice:
+          scaled >= 0
+            ? `Đúng từng phần (${result.partialPoints}đ) • Hệ số tự tin x${effectiveMultiplier} (+${scaled}đ)`
+            : `⚠️ Rủi ro hệ số tự tin x${effectiveMultiplier}: Chưa đạt 4/4 ý (${scaled}đ)`,
+      };
     }
     const pts = Math.max(0, result.partialPoints);
     let notice = pts > 0 ? `Đạt ${pts}đ (Đúng từng phần)` : 'Chưa chính xác (0 điểm)';
@@ -119,7 +228,24 @@ export function calculatePointsForRound(
 
   if (!result.isCorrect) {
     if (category === 'round4' && result.isDoubleDown) {
-      return { pointsEarned: -40, category, notice: '⚠️ RỦI RO: SAI CƯỢC ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)' };
+      const loss = -Math.round(40 * (effectiveMultiplier - 1.0));
+      return {
+        pointsEarned: loss,
+        category,
+        notice:
+          effectiveMultiplier > 2.0
+            ? `⚠️ RỦI RO: SAI CƯỢC ALL-IN x${effectiveMultiplier} (${loss}đ)`
+            : '⚠️ RỦI RO: SAI CƯỢC ALL-IN VỀ ĐÍCH (-40đ / Trừ 100%)',
+      };
+    }
+    if (effectiveMultiplier > 1.0) {
+      const riskBase = getRoundRiskBase(category, result);
+      const loss = -Math.round(riskBase * (effectiveMultiplier - 1.0));
+      return {
+        pointsEarned: loss,
+        category,
+        notice: `⚠️ Rủi ro hệ số tự tin x${effectiveMultiplier}: Chưa chính xác (${loss}đ)`,
+      };
     }
     return { pointsEarned: 0, category, notice: 'Chưa chính xác (0 điểm)' };
   }
@@ -197,14 +323,11 @@ export function calculatePointsForRound(
     }
 
     case 'round4': {
-      // Round 4 (Về đích - Kịch tương tác / Câu hỏi thực hành / Trắc nghiệm): +40 points (hoặc +80 nếu All-In)
-      if (result.isDoubleDown) {
-        pointsEarned = 80;
-        notice = '⚡ XUẤT SẮC: ĐÚNG CƯỢC ALL-IN VỀ ĐÍCH (+80đ)';
-      } else {
-        pointsEarned = 40;
-        notice = 'Đúng Về Đích - Kịch Tương Tác / Thực Hành (+40đ)';
-      }
+      // Round 4 (Về đích - Kịch tương tác / Câu hỏi thực hành / Trắc nghiệm): +40 points (hoặc nhân theo hệ số / All-In)
+      pointsEarned = 40;
+      notice = result.isDoubleDown
+        ? '⚡ XUẤT SẮC: ĐÚNG CƯỢC ALL-IN VỀ ĐÍCH (+80đ)'
+        : 'Đúng Về Đích - Kịch Tương Tác / Thực Hành (+40đ)';
       break;
     }
 
@@ -212,6 +335,15 @@ export function calculatePointsForRound(
       pointsEarned = 10;
       notice = 'Đúng câu hỏi (+10đ)';
       break;
+    }
+  }
+
+  if (effectiveMultiplier !== 1.0) {
+    pointsEarned = Math.round(pointsEarned * effectiveMultiplier);
+    if (category === 'round4' && result.isDoubleDown && effectiveMultiplier === 2.0) {
+      notice = '⚡ XUẤT SẮC: ĐÚNG CƯỢC ALL-IN VỀ ĐÍCH (+80đ)';
+    } else {
+      notice = `${notice} • Hệ số tự tin x${effectiveMultiplier} (= +${pointsEarned}đ)`;
     }
   }
 
@@ -228,7 +360,9 @@ export function evaluateUserChoice(
   questionId?: string,
   latencySec?: number,
   speedRank?: number,
-  timeLimit?: number
+  timeLimit?: number,
+  confidenceMultiplier?: number,
+  isDoubleDown?: boolean
 ): { isCorrect: boolean; pointsEarned: number; partialPoints?: number; notice?: string } {
   if (!choice || !correctKey) {
     return { isCorrect: false, pointsEarned: 0, notice: 'Chưa có đáp án' };
@@ -327,6 +461,8 @@ export function evaluateUserChoice(
     timeLimit: derivedTimeLimit,
     isRiskBox: isRisk,
     isCnvKeyword: isCnv,
+    isDoubleDown,
+    confidenceMultiplier,
     subType: isRisk ? 'RISK_BOX' : isCnv ? 'CNV_KEYWORD' : 'STANDARD'
   });
 
@@ -361,6 +497,7 @@ export function updateAudienceScore(
     pointsEarned,
     isCorrect: result.isCorrect || Boolean(result.partialPoints && result.partialPoints > 0),
     latencySec: result.latencySec,
+    confidenceMultiplier: result.confidenceMultiplier,
     timestamp: Date.now()
   };
 
@@ -403,7 +540,8 @@ export function computeAudienceScoreFromResponses(
   userUid: string,
   userMssv?: string,
   questionBank: QuestionItem[] = INITIAL_QUESTION_BANK,
-  gameState?: GameState
+  gameState?: GameState,
+  precomputedSpeedRanks?: Map<string, Map<string, number>>
 ): AudienceScoreState {
   let audienceState = createInitialAudienceScoreState();
 
@@ -411,10 +549,10 @@ export function computeAudienceScoreFromResponses(
     return audienceState;
   }
 
-  // 1. Build lookup map for questions
-  const qMap = new Map<string, QuestionItem>();
-  INITIAL_QUESTION_BANK.forEach(q => qMap.set(q.id, q));
-  if (questionBank && questionBank.length > 0) {
+  // 1. Build lookup map for questions (reuse module-level map when default bank is used)
+  let qMap = DEFAULT_QUESTION_MAP;
+  if (questionBank && questionBank.length > 0 && questionBank !== INITIAL_QUESTION_BANK) {
+    qMap = new Map<string, QuestionItem>(DEFAULT_QUESTION_MAP);
     questionBank.forEach(q => qMap.set(q.id, q));
   }
 
@@ -457,35 +595,44 @@ export function computeAudienceScoreFromResponses(
 
     const roundType = qData?.round_type || 'MULTIPLE_CHOICE';
 
-    // Compute speed rank for Round 3 if applicable
+    // Compute speed rank for Round 3 if applicable (use precomputed map when available)
     let speedRank: number | undefined;
     if (roundId === 'round3' && correctKey) {
-      const correctResps = Object.entries(qResponses)
-        .filter(([_, r]) => {
-          const evalRes = evaluateUserChoice(r.choice, correctKey, roundType, qId);
-          return evalRes.isCorrect;
-        })
-        .sort((a, b) => (a[1].latency_sec || 0) - (b[1].latency_sec || 0));
+      const cachedRankMap = precomputedSpeedRanks?.get(qId);
+      if (cachedRankMap) {
+        speedRank =
+          (userUid ? cachedRankMap.get(userUid) : undefined) ??
+          (userMssv ? cachedRankMap.get(`mssv:${userMssv}`) : undefined);
+      } else {
+        const correctResps = Object.entries(qResponses)
+          .filter(([_, r]) => {
+            const evalRes = evaluateUserChoice(r.choice, correctKey, roundType, qId);
+            return evalRes.isCorrect;
+          })
+          .sort((a, b) => (a[1].latency_sec || 0) - (b[1].latency_sec || 0));
 
-      const rankIndex = correctResps.findIndex(([key, r]) => 
-        (userUid && (key === userUid || r.user_info?.uid === userUid || r.user_info?.anonymizedUid === userUid)) ||
-        (userMssv && r.user_info?.mssv === userMssv)
-      );
-      if (rankIndex >= 0) {
-        speedRank = rankIndex + 1;
+        const rankIndex = correctResps.findIndex(([key, r]) => 
+          (userUid && (key === userUid || r.user_info?.uid === userUid || r.user_info?.anonymizedUid === userUid)) ||
+          (userMssv && r.user_info?.mssv === userMssv)
+        );
+        if (rankIndex >= 0) {
+          speedRank = rankIndex + 1;
+        }
       }
     }
 
     const timeLimit = qData?.time_limit || (qId.startsWith('TT_03') || qId.startsWith('TT_04') ? 30 : 20);
 
-    const { isCorrect, pointsEarned, partialPoints } = evaluateUserChoice(
+    const { isCorrect, partialPoints } = evaluateUserChoice(
       userResp.choice,
       correctKey,
       roundType,
       qId,
       userResp.latency_sec,
       speedRank,
-      timeLimit
+      timeLimit,
+      userResp.confidenceMultiplier,
+      userResp.isDoubleDown
     );
 
     const scoringResult: ScoringResult = {
@@ -495,6 +642,7 @@ export function computeAudienceScoreFromResponses(
       speedRank,
       timeLimit,
       isDoubleDown: userResp.isDoubleDown,
+      confidenceMultiplier: userResp.confidenceMultiplier,
       subType: 'STANDARD'
     };
 
@@ -529,23 +677,37 @@ export function computeAudienceScoreFromResponses(
 
   let vcnvPoints = 0;
   const branch = gameState?.vcnv_risk_branch;
+  const riskMult = normalizeConfidenceMultiplier(userRiskResp?.confidenceMultiplier);
+  const cnvMult = normalizeConfidenceMultiplier(userCnvResp?.confidenceMultiplier);
 
   if (branch === 'BRANCH_1') {
     // Branch 1: Contestant answered Risk Box correctly & guessed CNV right away.
-    if (isRiskCorrect && isRiskRevealed) {
-      vcnvPoints = 120;
+    if (userRiskResp && isRiskRevealed) {
+      if (isRiskCorrect) {
+        vcnvPoints += Math.round(120 * riskMult);
+      } else if (riskMult > 1.0) {
+        vcnvPoints -= Math.round(120 * (riskMult - 1.0));
+      }
     }
   } else {
     // Branch 2 or default fallback:
-    if (isRiskCorrect && isRiskRevealed) {
-      vcnvPoints += 120;
+    if (userRiskResp && isRiskRevealed) {
+      if (isRiskCorrect) {
+        vcnvPoints += Math.round(120 * riskMult);
+      } else if (riskMult > 1.0) {
+        vcnvPoints -= Math.round(120 * (riskMult - 1.0));
+      }
     }
-    if (isCnvCorrect && isCnvRevealed) {
-      vcnvPoints += 80;
+    if (userCnvResp && isCnvRevealed) {
+      if (isCnvCorrect) {
+        vcnvPoints += Math.round(80 * cnvMult);
+      } else if (cnvMult > 1.0) {
+        vcnvPoints -= Math.round(80 * (cnvMult - 1.0));
+      }
     }
   }
 
-  if (vcnvPoints > 0) {
+  if (vcnvPoints !== 0) {
     audienceState.totalScore += vcnvPoints;
     audienceState.scoreBreakdown.round2 = (audienceState.scoreBreakdown.round2 || 0) + vcnvPoints;
     audienceState.correctAnswersCount += (isRiskCorrect ? 1 : 0) + (isCnvCorrect ? 1 : 0);
@@ -556,8 +718,9 @@ export function computeAudienceScoreFromResponses(
         questionId: 'VCNV_ROUND',
         roundId: 'round2',
         pointsEarned: vcnvPoints,
-        isCorrect: true,
+        isCorrect: vcnvPoints > 0,
         latencySec: userCnvResp?.latency_sec || userRiskResp?.latency_sec || 1.0,
+        confidenceMultiplier: userCnvResp?.confidenceMultiplier || userRiskResp?.confidenceMultiplier,
         timestamp: Date.now()
       }
     ];

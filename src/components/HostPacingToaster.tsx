@@ -52,7 +52,7 @@ interface HostPacingToasterProps {
 /**
  * Floating Toaster Container for Host Pacing Alerts
  */
-export const HostPacingToaster: React.FC<HostPacingToasterProps> = ({
+export const HostPacingToaster: React.FC<HostPacingToasterProps> = React.memo(({
   toasts,
   onDismiss,
   onQuickLock,
@@ -76,7 +76,7 @@ export const HostPacingToaster: React.FC<HostPacingToasterProps> = ({
       ))}
     </div>
   );
-};
+});
 
 interface ToastCardProps {
   toast: PacingToastItem;
@@ -255,7 +255,7 @@ interface HostPacingWidgetProps {
   onQuickLock?: () => void;
 }
 
-export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
+export const HostPacingWidget: React.FC<HostPacingWidgetProps> = React.memo(({
   submittedCount,
   totalCount,
   percent,
@@ -607,4 +607,4 @@ export const HostPacingWidget: React.FC<HostPacingWidgetProps> = ({
       )}
     </div>
   );
-};
+});

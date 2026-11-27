@@ -18,7 +18,7 @@ interface QuestionLikeButtonProps {
   onLikeChange?: (isLiked: boolean, count: number) => void;
 }
 
-export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
+export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = React.memo(({
   questionId,
   user,
   gameState,
@@ -235,4 +235,4 @@ export const QuestionLikeButton: React.FC<QuestionLikeButtonProps> = ({
       ))}
     </button>
   );
-};
+});

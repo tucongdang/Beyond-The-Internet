@@ -18,7 +18,7 @@ interface ActivityToast {
   pollName: string;
 }
 
-export const AudienceActivityFeed: React.FC<AudienceActivityFeedProps> = ({ gameState, allResponses }) => {
+export const AudienceActivityFeed: React.FC<AudienceActivityFeedProps> = React.memo(({ gameState, allResponses }) => {
   const { localLanguage } = useLanguage();
 
   const [toasts, setToasts] = useState<ActivityToast[]>([]);
@@ -124,4 +124,4 @@ export const AudienceActivityFeed: React.FC<AudienceActivityFeedProps> = ({ game
       </AnimatePresence>
     </div>
   );
-};
+});

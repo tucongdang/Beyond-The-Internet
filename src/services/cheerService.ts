@@ -40,12 +40,21 @@ class RealtimeCheerService {
   private batchFlushTimer: any = null;
   private loopInterval: any = null;
   private lastLoggedLevel: CheerLevel = 'RESTING';
+  private firestoreInitialized: boolean = false;
+  private firestoreUnsubscribes: (() => void)[] = [];
 
   constructor() {
     this.loadInitialData();
     this.setupBroadcastChannel();
-    this.setupFirestoreListener();
-    this.startDecayLoop();
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.stopDecayLoop();
+        } else if (this.listeners.size > 0 && (this.currentIntensity > 0 || this.recentEvents.length > 0)) {
+          this.startDecayLoop();
+        }
+      });
+    }
   }
 
   private loadInitialData() {
@@ -87,22 +96,25 @@ class RealtimeCheerService {
     }
   }
 
-  private setupFirestoreListener() {
-    if (!db) return;
+  private ensureFirestoreListener() {
+    if (this.firestoreInitialized || !db) return;
+    this.firestoreInitialized = true;
     try {
       // 1. Listen to cumulative cheer counter
-      onSnapshot(doc(db, 'game_cheer', 'summary'), (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          if (typeof data?.totalCheers === 'number' && data.totalCheers > this.totalCheers) {
-            this.totalCheers = data.totalCheers;
-            this.saveTotalCheers();
-            this.notifyListeners();
+      this.firestoreUnsubscribes.push(
+        onSnapshot(doc(db, 'game_cheer', 'summary'), (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (typeof data?.totalCheers === 'number' && data.totalCheers > this.totalCheers) {
+              this.totalCheers = data.totalCheers;
+              this.saveTotalCheers();
+              this.notifyListeners();
+            }
           }
-        }
-      }, (err) => {
-        // Silently ignore permission/offline errors in preview
-      });
+        }, () => {
+          // Silently ignore permission/offline errors in preview
+        })
+      );
 
       // 2. Listen to live cheer stream
       const cheerStreamQuery = query(
@@ -111,47 +123,65 @@ class RealtimeCheerService {
         limit(15)
       );
 
-      onSnapshot(cheerStreamQuery, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            const data = change.doc.data();
-            const now = Date.now();
-            // Only process events that happened within the last 6 seconds
-            if (data?.timestamp && now - data.timestamp < 6000) {
-              const event: CheerEvent = {
-                id: change.doc.id,
-                type: data.type || 'HEART',
-                uid: data.uid || 'anon',
-                name: data.name,
-                mssv: data.mssv,
-                count: data.count || 1,
-                combo: data.combo || 1,
-                timestamp: data.timestamp
-              };
-              this.handleIncomingCheer(event, false);
+      this.firestoreUnsubscribes.push(
+        onSnapshot(cheerStreamQuery, (snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+              const data = change.doc.data();
+              const now = Date.now();
+              // Only process events that happened within the last 6 seconds
+              if (data?.timestamp && now - data.timestamp < 6000) {
+                const event: CheerEvent = {
+                  id: change.doc.id,
+                  type: data.type || 'HEART',
+                  uid: data.uid || 'anon',
+                  name: data.name,
+                  mssv: data.mssv,
+                  count: data.count || 1,
+                  combo: data.combo || 1,
+                  timestamp: data.timestamp
+                };
+                this.handleIncomingCheer(event, false);
+              }
             }
-          }
-        });
-      }, () => {});
+          });
+        }, () => {})
+      );
     } catch (err) {
+      this.firestoreInitialized = false;
       console.warn('Firestore cheer listener error', err);
+    }
+  }
+
+  private stopDecayLoop() {
+    if (this.loopInterval) {
+      clearInterval(this.loopInterval);
+      this.loopInterval = null;
     }
   }
 
   private startDecayLoop() {
     if (this.loopInterval) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (this.listeners.size === 0) return;
+    if (this.currentIntensity <= 0 && this.recentEvents.length === 0) return;
+
     this.loopInterval = setInterval(() => {
       this.tick();
     }, 150);
   }
 
   private tick() {
+    if (this.listeners.size === 0 || (typeof document !== 'undefined' && document.hidden)) {
+      this.stopDecayLoop();
+      return;
+    }
+
     const now = Date.now();
     // Prune events outside rolling window
     this.recentEvents = this.recentEvents.filter(e => now - e.timestamp < ROLLING_WINDOW_MS);
 
     // Calculate energy boost from recent events
-    // Each recent cheer adds weight based on recency
     let energySum = 0;
     const activeUids = new Set<string>();
 
@@ -178,6 +208,11 @@ class RealtimeCheerService {
     if (this.currentIntensity < 0.2) this.currentIntensity = 0;
 
     this.notifyListeners();
+
+    // Automatically suspend timer ticks once intensity settles back to resting state
+    if (this.currentIntensity === 0 && this.recentEvents.length === 0) {
+      this.stopDecayLoop();
+    }
   }
 
   private handleIncomingCheer(event: CheerEvent, isLocal: boolean) {
@@ -214,6 +249,7 @@ class RealtimeCheerService {
     // Immediate excitement kick
     this.currentIntensity = Math.min(100, this.currentIntensity + (event.count * 8) + (event.combo > 5 ? 4 : 0));
     this.notifyListeners();
+    this.startDecayLoop();
   }
 
   private scheduleBatchFlush(sampleEvent: CheerEvent) {
@@ -361,9 +397,16 @@ class RealtimeCheerService {
 
   public subscribe(callback: CheerListener): () => void {
     this.listeners.add(callback);
+    this.ensureFirestoreListener();
+    if (this.currentIntensity > 0 || this.recentEvents.length > 0) {
+      this.startDecayLoop();
+    }
     callback(this.getCurrentIntensityData());
     return () => {
       this.listeners.delete(callback);
+      if (this.listeners.size === 0) {
+        this.stopDecayLoop();
+      }
     };
   }
 

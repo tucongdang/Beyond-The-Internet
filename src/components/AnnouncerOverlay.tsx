@@ -22,7 +22,7 @@ interface AnnouncerOverlayProps {
   isHighContrast?: boolean;
 }
 
-export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
+export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = React.memo(({
   overlay,
   mode = 'projector',
   className = '',
@@ -257,6 +257,6 @@ export const AnnouncerOverlay: React.FC<AnnouncerOverlayProps> = ({
       </div>
     </div>
   );
-};
+});
 
 

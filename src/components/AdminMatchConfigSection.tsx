@@ -103,7 +103,7 @@ interface AdminMatchConfigSectionProps {
   compact?: boolean;
 }
 
-export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = ({
+export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = React.memo(({
   gameState,
   onOpenFullScheduleModal,
   onOpenContestantsModal,
@@ -421,4 +421,4 @@ export const AdminMatchConfigSection: React.FC<AdminMatchConfigSectionProps> = (
       </div>
     </section>
   );
-};
+});

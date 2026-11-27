@@ -152,11 +152,30 @@ export const AudienceQuestionLogModal: React.FC<AudienceQuestionLogModalProps> =
       let notice = localLanguage !== 'vi' ? 'Not answered yet' : 'Chưa tham gia trả lời';
 
       if (hasAnswered && correctKey) {
-        const evalRes = evaluateUserChoice(userChoice, correctKey, roundType, qId, latencySec);
+        const evalRes = evaluateUserChoice(
+          userChoice,
+          correctKey,
+          roundType,
+          qId,
+          latencySec,
+          undefined,
+          undefined,
+          userResp?.confidenceMultiplier,
+          userResp?.isDoubleDown
+        );
         isCorrect = evalRes.isCorrect;
         pointsEarned = evalRes.pointsEarned;
         partialPoints = evalRes.partialPoints;
-        notice = evalRes.notice || (isCorrect ? (localLanguage !== 'vi' ? `Correct (+${pointsEarned}pts)` : `Đúng (+${pointsEarned}đ)`) : (localLanguage !== 'vi' ? 'Incorrect (0pts)' : 'Chưa chính xác (0đ)'));
+        const ptsText = pointsEarned > 0 ? `+${pointsEarned}` : `${pointsEarned}`;
+        notice =
+          evalRes.notice ||
+          (isCorrect
+            ? localLanguage !== 'vi'
+              ? `Correct (${ptsText}pts)`
+              : `Đúng (${ptsText}đ)`
+            : localLanguage !== 'vi'
+            ? `Incorrect (${ptsText}pts)`
+            : `Chưa chính xác (${ptsText}đ)`);
       } else if (hasAnswered) {
         notice = localLanguage !== 'vi' ? `Selected: ${userChoice} (Pending answer reveal)` : `Đã chọn: ${userChoice} (Đang chờ công bố đáp án)`;
       }

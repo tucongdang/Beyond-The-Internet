@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
 import { createPortal } from 'react-dom';
-import QRCode from 'qrcode';
+import { workerComputeService } from '../services/workerComputeService';
 import {
   Share2,
   Copy,
@@ -31,7 +31,7 @@ interface ShareGameModalProps {
   roundName?: string;
 }
 
-export const ShareGameModal: React.FC<ShareGameModalProps> = ({
+export const ShareGameModal: React.FC<ShareGameModalProps> = React.memo(({
   isOpen,
   onClose,
   gameTitle = 'Beyond The Internet 2027',
@@ -52,6 +52,7 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
   const [displayMode, setDisplayMode] = useState<'compact' | 'fullscreen'>('compact');
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
   const [previewRecentQr, setPreviewRecentQr] = useState<{ caption?: string; roundName?: string; url?: string } | null>(null);
+  const qrPassReqIdRef = useRef(0);
 
   const diagnosticData = {
     status: isFirebaseConnected ? 'ok' : 'error'
@@ -128,20 +129,24 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
       return;
     }
 
-    QRCode.toDataURL(targetQrUrl, {
-      width: qrWidth,
-      margin: 2,
-      color: {
+    const passId = ++qrPassReqIdRef.current;
+
+    workerComputeService
+      .generateQrDataUrl({
+        text: targetQrUrl,
+        width: qrWidth,
+        margin: 2,
         dark: palette.dark,
-        light: isTransparentBg ? '#00000000' : palette.light
-      },
-      errorCorrectionLevel: 'H'
-    })
+        light: isTransparentBg ? '#00000000' : palette.light,
+        errorCorrectionLevel: 'H'
+      })
       .then((dataUrl) => {
+        if (passId !== qrPassReqIdRef.current) return;
         setQrDataUrl(dataUrl);
         setIsGenerating(false);
       })
       .catch((err: any) => {
+        if (passId !== qrPassReqIdRef.current) return;
         console.error('Failed to generate QR code:', err);
         setIsGenerating(false);
       });
@@ -599,4 +604,4 @@ export const ShareGameModal: React.FC<ShareGameModalProps> = ({
 
   if (typeof document === 'undefined' || !document.body) return null;
   return createPortal(modalContent, document.body);
-};
+});

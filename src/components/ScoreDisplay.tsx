@@ -1,16 +1,20 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { GameState, UserInfo, UserResponse } from '../types';
+import { GameState, SurvivalStats, UserInfo, UserResponse } from '../types';
 import { Trophy, Zap, Shield, Target, Flame, Star, ChevronDown, ChevronUp, Contrast, Sun, SunMedium, History, Sparkles, Info } from 'lucide-react';
-import { computeAudienceScoreFromResponses, getAudienceTotalScore, getAudienceScoreBreakdown } from '../services/audienceScoringService';
 import { t } from '../utils/i18n';
-import { calculateLeaderboard, calculateSurvivalStats } from '../utils/leaderboardUtils';
+import { workerComputeService, type AudienceStatsWorkerResult } from '../services/workerComputeService';
 import { vibrateTap } from '../utils/hapticUtils';
 import { soundFx } from '../services/audioEffects';
 import { BatteryIndicator } from './BatteryIndicator';
-import { BatterySaverModal } from './BatterySaverModal';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { getBatterySaverMode, setBatterySaverMode, useBatterySaver } from '../utils/batterySaverUtils';
 import { useLanguage } from '../hooks/useLanguage';
 import { getSecureRandomInt } from '../utils/cryptoUtils';
+
+const BatterySaverModal = lazyWithRetry(
+  () => import('./BatterySaverModal').then(m => ({ default: m.BatterySaverModal })),
+  'BatterySaverModal'
+);
 
 interface ScoreDisplayProps {
   user: UserInfo | null;
@@ -62,7 +66,7 @@ const getRoundDetails = (lang: 'vi' | 'en') => [
   }
 ];
 
-export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
+export const ScoreDisplay: React.FC<ScoreDisplayProps> = React.memo(({
   user,
   allResponses,
   gameState,
@@ -77,7 +81,10 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   onOpenRulesModal
 }) => {
   const { localLanguage } = useLanguage();
-  const ROUND_DETAILS = getRoundDetails(localLanguage);
+  const ROUND_DETAILS = useMemo(
+    () => getRoundDetails(localLanguage === 'en' ? 'en' : 'vi'),
+    [localLanguage]
+  );
 
   const [isExpanded, setIsExpanded] = useState(false);
   const { isBatterySaver } = useBatterySaver();
@@ -87,26 +94,45 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   const [displayScore, setDisplayScore] = useState(0);
   const [popups, setPopups] = useState<{ id: number, diff: number }[]>([]);
 
-  const stats = useMemo(() => {
-    if (!user?.uid || !allResponses) return null;
-    const board = calculateLeaderboard(allResponses, undefined, gameState);
-    const myData = board.find(p => p.uid === user.uid || (user.mssv && p.mssv === user.mssv));
-    const audienceScoreState = computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
+  const [workerStats, setWorkerStats] = useState<AudienceStatsWorkerResult | null>(null);
 
-    return {
-      totalScore: getAudienceTotalScore(audienceScoreState),
-      scoreBreakdown: getAudienceScoreBreakdown(audienceScoreState),
-      rank: myData?.rank || '-',
-      accuracyRate: myData?.accuracyRate || 0,
-      correctCount: audienceScoreState.correctAnswersCount,
-      totalAnswered: audienceScoreState.totalAnswered,
-      totalPlayers: board.length
+  useEffect(() => {
+    if (!user?.uid || !allResponses) {
+      setWorkerStats(null);
+      return;
+    }
+
+    let cancelled = false;
+    const hasResponses = Object.keys(allResponses).length > 0;
+    workerComputeService
+      .computeAudienceStatsAsync({
+        allResponses,
+        uid: user.uid,
+        mssv: user.mssv,
+        gameState,
+        includeLeaderboard: hasResponses
+      })
+      .then(result => {
+        if (!cancelled) {
+          setWorkerStats(result);
+        }
+      })
+      .catch(err => {
+        console.warn('ScoreDisplay worker stats error:', err);
+      });
+
+    return () => {
+      cancelled = true;
     };
-  }, [allResponses, user, gameState]);
+  }, [allResponses, user?.uid, user?.mssv, gameState]);
 
-  const survivalStats = useMemo(() => {
-    return calculateSurvivalStats(allResponses, undefined, gameState, user?.uid, user?.mssv);
-  }, [allResponses, gameState, user]);
+  const stats = workerStats;
+  const survivalStats: SurvivalStats = workerStats?.survivalStats || {
+    survivorsCount: 0,
+    totalContestants: 0,
+    isUserAlive: true,
+    survivalRate: 100
+  };
 
 
 
@@ -431,12 +457,16 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
       </div>
 
       {/* Battery Saver Settings Modal */}
-      <BatterySaverModal
-        isOpen={isBatteryModalOpen}
-        onClose={() => setIsBatteryModalOpen(false)}
-      />
+      {isBatteryModalOpen && (
+        <React.Suspense fallback={null}>
+          <BatterySaverModal
+            isOpen={isBatteryModalOpen}
+            onClose={() => setIsBatteryModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
-};
+});
 
 export default ScoreDisplay;

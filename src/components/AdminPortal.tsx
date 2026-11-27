@@ -4,63 +4,88 @@ import {
   TabList, 
   Tab 
 } from './FluentTabs';
-import { GameState, QuestionItem, UserResponse, RoundType, OptionKey, StageSnapshotRecord, QR_PALETTES, QrPaletteId, QrPaletteConfig, QrHistoryItem, AdminUser } from '../types';
+import { GameState, QuestionItem, UserResponse, RoundType, OptionKey, StageSnapshotRecord, QR_PALETTES, QrPaletteId, QrPaletteConfig, QrHistoryItem, AdminUser, SPSSRow } from '../types';
 
 const fluentDarkTransparentTheme = {};
 
 import { INITIAL_QUESTION_BANK } from '../data/questionBank';
 import { syncService, DEFAULT_GAME_STATE } from '../services/syncService';
+import { workerComputeService } from '../services/workerComputeService';
 import { soundFx } from '../services/audioEffects';
-import { generateSPSSData, exportToCSV, exportToJSON, exportLeaderboardToCSV, normalizeVcnvAnswer } from '../utils/exportUtils';
-import { calculateLeaderboard } from '../utils/leaderboardUtils';
+import { exportToCSV, exportToJSON, exportLeaderboardToCSV, normalizeVcnvAnswer } from '../utils/exportUtils';
 import { getSecureRandomId, secureShuffle } from '../utils/cryptoUtils';
-import QRCode from 'qrcode';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
+import { useAdminSync } from '../hooks/useAdminSync';
+import {
+  getStoredAdminAuth,
+  clearAdminSession,
+} from '../utils/adminSession';
 import { HostPacingToaster,
   HostPacingWidget,
   PacingToastItem,
   HostPacingSettings
 } from './HostPacingToaster';
 import { GlobalTimerWidget } from './GlobalTimerWidget';
-import { Leaderboard } from './Leaderboard';
-import { NetworkStabilityChart } from './NetworkStabilityChart';
-import { EmergencyPollControl } from './EmergencyPollControl';
-import { AdminPollManager } from './AdminPollManager';
-import { AnnouncerControlModal } from './AnnouncerControlModal';
-import { AiMcCoPilotModal } from './AiMcCoPilotModal';
-import { PollHistoryTab } from './PollHistoryTab';
-import { LuckyDrawAdmin } from './LuckyDrawAdmin';
-import { LivePollDashboard } from './LivePollDashboard';
 import { AudienceActivityFeed } from './AudienceActivityFeed';
-import { AdminQAManager } from './AdminQAManager';
-import { AdminChatManager } from './AdminChatManager';
-import { ProjectorWordCloud } from './ProjectorWordCloud';
-import { BroadcastSnapshotHistoryTab } from './BroadcastSnapshotHistoryTab';
-import { AdminActivityLog } from './AdminActivityLog';
 import { AdminContextMenu } from './AdminContextMenu';
-import { AdminDashboard } from './AdminDashboard';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { ProjectorControlHub } from './ProjectorControlHub';
-import { LightShowControlModal } from './LightShowControlModal';
-import { AdminSurveyControlModal } from './AdminSurveyControlModal';
-import { AdminEventScheduleModal } from './AdminEventScheduleModal';
-import { MatchBreakModal } from './MatchBreakModal';
 import { AdminMatchConfigSection } from './AdminMatchConfigSection';
-import { AdminContestantsModal } from './AdminContestantsModal';
-import { AudioSettingsModal } from './AudioSettingsModal';
 import { aiExplanationService } from '../services/aiExplanationService';
-import { ShortcutMappingModal } from './ShortcutMappingModal';
-import { AiTranslationModal } from './AiTranslationModal';
-import { AdminApprovalModal } from './AdminApprovalModal';
 import { SessionExpiringModal } from './SessionExpiringModal';
 import { shortcutService } from '../services/shortcutService';
-import { AudienceAnswerDistributionChart } from './AudienceAnswerDistributionChart';
 import { FluentSearchBar } from './FluentSearchBar';
-import { AdminGuide } from './AdminGuide';
 import { snapshotService } from '../services/snapshotService';
-import { ProjectorView } from './ProjectorView';
-import { QrScanTrendsChart } from './QrScanTrendsChart';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { QrDiagnosticOverlay, QrDiagnosticData } from './QrDiagnosticOverlay';
+
+// Lazy-loaded secondary tabs, heavy charts & on-demand modals (eliminates initial Admin chunk bloat)
+const AdminDashboard = lazyWithRetry(() => import('./AdminDashboard').then(m => ({ default: m.AdminDashboard })), 'AdminDashboard');
+const PollHistoryTab = lazyWithRetry(() => import('./PollHistoryTab').then(m => ({ default: m.PollHistoryTab })), 'PollHistoryTab');
+const BroadcastSnapshotHistoryTab = lazyWithRetry(() => import('./BroadcastSnapshotHistoryTab').then(m => ({ default: m.BroadcastSnapshotHistoryTab })), 'BroadcastSnapshotHistoryTab');
+const AdminActivityLog = lazyWithRetry(() => import('./AdminActivityLog').then(m => ({ default: m.AdminActivityLog })), 'AdminActivityLog');
+const AdminGuide = lazyWithRetry(() => import('./AdminGuide').then(m => ({ default: m.AdminGuide })), 'AdminGuide');
+const LuckyDrawAdmin = lazyWithRetry(() => import('./LuckyDrawAdmin').then(m => ({ default: m.LuckyDrawAdmin })), 'LuckyDrawAdmin');
+const AdminQAManager = lazyWithRetry(() => import('./AdminQAManager').then(m => ({ default: m.AdminQAManager })), 'AdminQAManager');
+const AdminChatManager = lazyWithRetry(() => import('./AdminChatManager').then(m => ({ default: m.AdminChatManager })), 'AdminChatManager');
+const AdminPollManager = lazyWithRetry(() => import('./AdminPollManager').then(m => ({ default: m.AdminPollManager })), 'AdminPollManager');
+const ProjectorWordCloud = lazyWithRetry(() => import('./ProjectorWordCloud').then(m => ({ default: m.ProjectorWordCloud })), 'ProjectorWordCloud');
+const ProjectorView = lazyWithRetry(() => import('./ProjectorView').then(m => ({ default: m.ProjectorView })), 'ProjectorView');
+const Leaderboard = lazyWithRetry(() => import('./Leaderboard').then(m => ({ default: m.Leaderboard })), 'Leaderboard');
+const NetworkStabilityChart = lazyWithRetry(() => import('./NetworkStabilityChart').then(m => ({ default: m.NetworkStabilityChart })), 'NetworkStabilityChart');
+const QrScanTrendsChart = lazyWithRetry(() => import('./QrScanTrendsChart').then(m => ({ default: m.QrScanTrendsChart })), 'QrScanTrendsChart');
+const EmergencyPollControl = lazyWithRetry(() => import('./EmergencyPollControl').then(m => ({ default: m.EmergencyPollControl })), 'EmergencyPollControl');
+const AudioSettingsModal = lazyWithRetry(() => import('./AudioSettingsModal').then(m => ({ default: m.AudioSettingsModal })), 'AudioSettingsModal');
+const AnnouncerControlModal = lazyWithRetry(() => import('./AnnouncerControlModal').then(m => ({ default: m.AnnouncerControlModal })), 'AnnouncerControlModal');
+const LightShowControlModal = lazyWithRetry(() => import('./LightShowControlModal').then(m => ({ default: m.LightShowControlModal })), 'LightShowControlModal');
+const AdminSurveyControlModal = lazyWithRetry(() => import('./AdminSurveyControlModal').then(m => ({ default: m.AdminSurveyControlModal })), 'AdminSurveyControlModal');
+const AdminEventScheduleModal = lazyWithRetry(() => import('./AdminEventScheduleModal').then(m => ({ default: m.AdminEventScheduleModal })), 'AdminEventScheduleModal');
+const AdminContestantsModal = lazyWithRetry(() => import('./AdminContestantsModal').then(m => ({ default: m.AdminContestantsModal })), 'AdminContestantsModal');
+const MatchBreakModal = lazyWithRetry(() => import('./MatchBreakModal').then(m => ({ default: m.MatchBreakModal })), 'MatchBreakModal');
+const AiMcCoPilotModal = lazyWithRetry(() => import('./AiMcCoPilotModal').then(m => ({ default: m.AiMcCoPilotModal })), 'AiMcCoPilotModal');
+const ShortcutMappingModal = lazyWithRetry(() => import('./ShortcutMappingModal').then(m => ({ default: m.ShortcutMappingModal })), 'ShortcutMappingModal');
+const AiTranslationModal = lazyWithRetry(() => import('./AiTranslationModal').then(m => ({ default: m.AiTranslationModal })), 'AiTranslationModal');
+const AdminApprovalModal = lazyWithRetry(() => import('./AdminApprovalModal').then(m => ({ default: m.AdminApprovalModal })), 'AdminApprovalModal');
+const LivePollDashboard = lazyWithRetry(() => import('./LivePollDashboard').then(m => ({ default: m.LivePollDashboard })), 'LivePollDashboard');
+const AudienceAnswerDistributionChart = lazyWithRetry(() => import('./AudienceAnswerDistributionChart').then(m => ({ default: m.AudienceAnswerDistributionChart })), 'AudienceAnswerDistributionChart');
+
+type AdminTabId =
+  | 'DASHBOARD'
+  | 'KDC'
+  | 'VCNV'
+  | 'TT'
+  | 'VD'
+  | 'QUESTIONS'
+  | 'STATS'
+  | 'POLL_HISTORY'
+  | 'LUCKY_DRAW'
+  | 'POLL_MANAGER'
+  | 'QA_MANAGER'
+  | 'CHAT_MANAGER'
+  | 'WORD_CLOUD'
+  | 'SNAPSHOTS'
+  | 'ACTIVITY_LOG'
+  | 'GUIDE';
 import { Timer, Shield, Printer, Scaling, EyeOff, ShieldAlert, Unlock,
   Activity,
   AlertOctagon,
@@ -144,11 +169,11 @@ import {
 } from '../utils/hapticUtils';
 
 interface AdminPortalProps {
-  gameState: GameState;
-  activeCount: number;
-  currentResponses: Record<string, UserResponse>;
-  allResponses: Record<string, Record<string, UserResponse>>;
-  isFirebaseConnected: boolean;
+  gameState?: GameState;
+  activeCount?: number;
+  currentResponses?: Record<string, UserResponse>;
+  allResponses?: Record<string, Record<string, UserResponse>>;
+  isFirebaseConnected?: boolean;
   onOpenFirebaseConfig: () => void;
   onViewChange?: (view: 'landing' | 'audience' | 'admin' | 'projector') => void;
   onLogout?: () => void;
@@ -157,39 +182,48 @@ interface AdminPortalProps {
 
 const DEFAULT_ADMIN_PASSCODE = 'BTI2026Admin';
 
-export const AdminPortal: React.FC<AdminPortalProps> = ({
-  gameState,
-  activeCount,
-  currentResponses,
-  allResponses,
-  isFirebaseConnected,
+export const AdminPortal: React.FC<AdminPortalProps> = React.memo(({
+  gameState: propGameState,
+  activeCount: propActiveCount,
+  currentResponses: propCurrentResponses,
+  allResponses: propAllResponses,
+  isFirebaseConnected: propIsFirebaseConnected,
   onOpenFirebaseConfig,
   onViewChange,
   onLogout,
   adminUser
 }) => {
+  const hasExternalSync =
+    propGameState !== undefined &&
+    propActiveCount !== undefined &&
+    propCurrentResponses !== undefined &&
+    propAllResponses !== undefined &&
+    propIsFirebaseConnected !== undefined;
+
+  const adminSync = useAdminSync({
+    enabled: !hasExternalSync,
+    role: 'ADMIN',
+    initialGameState: propGameState
+  });
+
+  const gameState = propGameState ?? adminSync.gameState;
+  const activeCount = propActiveCount ?? adminSync.activeCount;
+  const allResponses = propAllResponses ?? adminSync.allResponses;
+  const currentResponses = propCurrentResponses ?? (allResponses[gameState.question_id] || adminSync.currentResponses);
+  const isFirebaseConnected = propIsFirebaseConnected ?? adminSync.isFirebaseConnected;
   // Admin sound FX obeys global sound settings
 
   const [toastMessage, setToastMessage] = useState<{ message: string; intent: 'success' | 'warning' | 'error' } | null>(null);
 
-  const notify = (message: string, intent: 'success' | 'warning' | 'error' = 'success') => {
+  const notify = useCallback((message: string, intent: 'success' | 'warning' | 'error' = 'success') => {
     setToastMessage({ message, intent });
     setTimeout(() => {
       setToastMessage((prev) => (prev?.message === message ? null : prev));
     }, 3200);
-  };
+  }, []);
 
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      if (sessionStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') return true;
-      if (localStorage.getItem('BTI2026_KEEP_LOGGED_IN') === 'true' && localStorage.getItem('BTI2026_ADMIN_AUTH') === 'true') {
-        sessionStorage.setItem('BTI2026_ADMIN_AUTH', 'true');
-        return true;
-      }
-    }
-    return false;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => getStoredAdminAuth());
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState('');
 
@@ -214,17 +248,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const WARNING_THRESHOLD_SECONDS = 28 * 60; // 1680s (28 minutes)
 
     const performInactivityLogout = () => {
-      try {
-        sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
-        sessionStorage.removeItem('BTI2026_TECH_USER');
-        sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
-
-        localStorage.removeItem('BTI2026_ADMIN_AUTH');
-        localStorage.removeItem('BTI2026_TECH_USER');
-        localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-        localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-      } catch {}
-
+      clearAdminSession();
       setIsAuthenticated(false);
       setShowSessionWarningModal(false);
       if (onLogout) {
@@ -279,15 +303,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, [isAuthenticated, onLogout, showSessionWarningModal]);
 
   const handleLogout = useCallback(() => {
-    try {
-      sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
-      sessionStorage.removeItem('BTI2026_TECH_USER');
-      sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
-      localStorage.removeItem('BTI2026_ADMIN_AUTH');
-      localStorage.removeItem('BTI2026_TECH_USER');
-      localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-      localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-    } catch {}
+    clearAdminSession();
     setIsAuthenticated(false);
     setShowSessionWarningModal(false);
     if (onLogout) {
@@ -309,7 +325,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     const fetchPendingCount = async () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       try {
         const token = sessionStorage.getItem('BTI2026_ADMIN_TOKEN') || '';
         const res = await fetch('/api/admin/users', {
@@ -323,10 +341,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       } catch {}
     };
 
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        fetchPendingCount();
+      }
+    };
+
     fetchPendingCount();
     const interval = setInterval(fetchPendingCount, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [isAuthenticated]);
 
   // Question selection & editing state
   const [questionBank, setQuestionBank] = useState<QuestionItem[]>(() => {
@@ -885,7 +913,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   // Search in data logs table
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [activeAdminTab, setActiveAdminTab] = useState<'DASHBOARD' | 'KDC' | 'VCNV' | 'TT' | 'VD' | 'QUESTIONS' | 'STATS' | 'POLL_HISTORY' | 'LUCKY_DRAW' | 'POLL_MANAGER' | 'QA_MANAGER' | 'CHAT_MANAGER' | 'WORD_CLOUD' | 'SNAPSHOTS' | 'ACTIVITY_LOG' | 'GUIDE'>('DASHBOARD');
+  const [activeAdminTab, setActiveAdminTab] = useState<AdminTabId>('DASHBOARD');
   const [statsSubTab, setStatsSubTab] = useState<'LEADERBOARD' | 'SPSS' | 'NETWORK' | 'QR_TRENDS'>('LEADERBOARD');
   const [relaunchDraft, setRelaunchDraft] = useState<any>(null);
   const [showQuickNetworkMonitor, setShowQuickNetworkMonitor] = useState(false);
@@ -897,21 +925,45 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Stage Snapshot & Broadcast Records
   const projectorCaptureRef = useRef<HTMLDivElement>(null);
+  const [shouldMountVirtualStage, setShouldMountVirtualStage] = useState(false);
   const [isSnapping, setIsSnapping] = useState(false);
   const [snapshotFlash, setSnapshotFlash] = useState(false);
   const [snapshotCount, setSnapshotCount] = useState<number>(() => snapshotService.getSnapshots().length);
 
+  // Idle-mount the offscreen virtual capture stage after initial Admin render to keep boot fast
+  useEffect(() => {
+    if (shouldMountVirtualStage) return;
+    const win = window as unknown as {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (typeof win.requestIdleCallback === 'function') {
+      const id = win.requestIdleCallback(() => setShouldMountVirtualStage(true), { timeout: 2500 });
+      return () => win.cancelIdleCallback?.(id);
+    }
+    const timer = window.setTimeout(() => setShouldMountVirtualStage(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [shouldMountVirtualStage]);
+
   const handleSnapAudienceInteraction = useCallback(async (customNote?: string, tag?: StageSnapshotRecord['broadcast_tag']) => {
     if (isSnapping) return null;
     setIsSnapping(true);
+    setShouldMountVirtualStage(true);
     vibrateImpact();
     soundFx.playCameraShutter();
     setSnapshotFlash(true);
     setTimeout(() => setSnapshotFlash(false), 300);
 
     try {
-      const stageEl = projectorCaptureRef.current;
-      if (stageEl) {
+      // Wait briefly if lazy virtual ProjectorView is still hydrating
+      let stageEl = projectorCaptureRef.current;
+      let attempts = 0;
+      while ((!stageEl || !stageEl.firstElementChild) && attempts < 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        stageEl = projectorCaptureRef.current;
+        attempts++;
+      }
+      if (stageEl && stageEl.firstElementChild) {
         const record = await snapshotService.captureAndSave(
           stageEl,
           gameState,
@@ -1298,15 +1350,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       return;
     }
 
-    QRCode.toDataURL(qrTargetUrl, { 
-      width: targetResolution, 
-      margin: 2, 
-      color: { 
-        dark: palette.dark, 
-        light: isTransparent ? '#00000000' : palette.light 
-      },
-      errorCorrectionLevel: 'H'
-    })
+    workerComputeService
+      .generateQrDataUrl({
+        text: qrTargetUrl,
+        width: targetResolution,
+        margin: 2,
+        dark: palette.dark,
+        light: isTransparent ? '#00000000' : palette.light,
+        errorCorrectionLevel: 'H'
+      })
       .then(url => {
         const renderTime = Math.round(performance.now() - startTime);
         setQrDataUrl(url);
@@ -2670,9 +2722,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     handleLoadQuestion(newQ.id);
   };
 
-  // SPSS tabular rows
-  const spssRows = useMemo(() => {
-    return generateSPSSData(allResponses, questionBank, gameState);
+  // SPSS tabular rows computed off the main thread via Web Worker
+  const [spssRows, setSpssRows] = useState<SPSSRow[]>([]);
+
+  useEffect(() => {
+    if (!allResponses || Object.keys(allResponses).length === 0) {
+      setSpssRows([]);
+      return;
+    }
+
+    let cancelled = false;
+    workerComputeService
+      .computeSpssDataAsync({
+        allResponses,
+        questionBank,
+        gameState
+      })
+      .then(result => {
+        if (!cancelled) {
+          setSpssRows(result.rows);
+        }
+      })
+      .catch(err => {
+        console.warn('AdminPortal SPSS worker error:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [allResponses, questionBank, gameState]);
 
   const filteredSpssRows = useMemo(() => {
@@ -2704,10 +2781,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   // Export aggregated audience leaderboard summary to CSV
-  const handleExportLeaderboardCSV = () => {
+  const handleExportLeaderboardCSV = async () => {
     vibrateCopy();
     soundFx.playClick();
-    const ranked = calculateLeaderboard(allResponses, questionBank, gameState, 'ALL');
+    const { leaderboard: ranked } = await workerComputeService.computeLeaderboardBundleAsync({
+      allResponses,
+      customQuestionBank: questionBank,
+      gameState,
+      filterRound: 'ALL'
+    });
     if (ranked.length === 0) {
       notify('Chưa có dữ liệu thí sinh nào để xuất bảng xếp hạng CSV!');
       return;
@@ -2821,7 +2903,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     return counts;
   }, [currentResponses]);
 
-  const totalCurrentVotes = Object.keys(currentResponses).length;
+  const totalCurrentVotes = useMemo(() => Object.keys(currentResponses).length, [currentResponses]);
+  const totalAudienceForTimer = useMemo(
+    () => Math.max(activeCount, totalCurrentVotes, 1),
+    [activeCount, totalCurrentVotes]
+  );
+
+  const handleOpenShortcutsModal = useCallback(() => setShowShortcutsModal(true), []);
+  const handleToggleAutoEliminate = useCallback(() => setAutoEliminateEvery10s(prev => !prev), []);
+  const contextMenuPosition = useMemo(
+    () => ({ x: contextMenuState.x, y: contextMenuState.y }),
+    [contextMenuState.x, contextMenuState.y]
+  );
+  const handleCloseContextMenu = useCallback(
+    () => setContextMenuState(prev => ({ ...prev, isOpen: false })),
+    []
+  );
+  const handleContextToggleLiveQr = useCallback(() => handleToggleLiveQrModal(), [handleToggleLiveQrModal]);
+  const handleContextOpenAnnouncer = useCallback(() => setShowAnnouncerModal(true), []);
+  const handleContextOpenEmergencyPoll = useCallback(() => setShowEmergencyPollModal(true), []);
+  const handleContextSnapSnapshot = useCallback(
+    () => handleSnapAudienceInteraction(),
+    [handleSnapAudienceInteraction]
+  );
+  const handleContextSwitchTab = useCallback(
+    (tab: typeof activeAdminTab) => {
+      if (tab === 'LUCKY_DRAW') {
+        soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
+        syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
+      } else if (gameState.active_module === 'LUCKY_DRAW') {
+        syncService.updateGameState({ active_module: 'GAME' });
+      }
+      setActiveAdminTab(tab);
+      if (tab === 'VCNV') {
+        const vcnvQ = questionBank.find(
+          q => q.round_name.includes('Vượt Chướng Ngại Vật') || q.id.startsWith('VCNV')
+        );
+        if (vcnvQ && gameState.question_id !== vcnvQ.id) {
+          handleLoadQuestion(vcnvQ.id);
+        }
+      }
+      triggerHudToast('TAB', `Đã chuyển sang tab: ${tab}`);
+    },
+    [gameState.lucky_draw_music_muted, gameState.active_module, gameState.question_id, questionBank, handleLoadQuestion, triggerHudToast]
+  );
+  const handleContextCopyQuestionText = useCallback(() => {
+    if (gameState.question_text) {
+      navigator.clipboard.writeText(gameState.question_text).then(() => {
+        triggerHudToast('COPY', 'Đã sao chép nội dung câu hỏi!');
+      }).catch(() => {});
+    }
+  }, [gameState.question_text, triggerHudToast]);
+  const handleContextForceResync = useCallback(() => {
+    syncService.updateGameState({ last_updated: Date.now() });
+    triggerHudToast('SYNC', 'Đã gửi tín hiệu đồng bộ toàn hệ thống!');
+  }, [triggerHudToast]);
+  const handleContextExportCsv = useCallback(async () => {
+    const { rows: spssData } = await workerComputeService.computeSpssDataAsync({
+      allResponses,
+      questionBank,
+      gameState
+    });
+    exportToCSV(spssData, `BTI2026_SPSS_Data_${new Date().toISOString().slice(0, 10)}`);
+    triggerHudToast('EXPORT', 'Đã xuất file dữ liệu SPSS CSV!');
+  }, [allResponses, questionBank, gameState, triggerHudToast]);
 
   // Unauthenticated Lock Screen
   if (!isAuthenticated) {
@@ -3648,7 +3793,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       {/* Quick Collapsible Network Latency Visualizer */}
       {showQuickNetworkMonitor && (
         <div className="animate-fadeIn">
-          <NetworkStabilityChart compact className="border-emerald-500/30 shadow-2xl shadow-emerald-950/30" />
+          <React.Suspense fallback={null}>
+            <NetworkStabilityChart compact className="border-emerald-500/30 shadow-2xl shadow-emerald-950/30" />
+          </React.Suspense>
         </div>
       )}
 
@@ -3924,12 +4071,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </div>
             )}
             {getWorkspaceForTab(activeAdminTab) === 'ARENA' && (
-              [
+              ([
                 { id: 'KDC', label: '1. Khởi Động', icon: Zap },
                 { id: 'VCNV', label: '2. Chướng Ngại Vật', icon: LayoutGrid },
                 { id: 'TT', label: '3. Tăng Tốc', icon: Flame },
                 { id: 'VD', label: '4. Về Đích', icon: Target },
-              ].map(sub => (
+              ] satisfies Array<{ id: AdminTabId; label: string; icon: React.ComponentType<{ className?: string }> }>).map(sub => (
                 <button
                   key={sub.id}
                   type="button"
@@ -3956,13 +4103,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             )}
 
             {getWorkspaceForTab(activeAdminTab) === 'INTERACTION' && (
-              [
+              ([
                 { id: 'QA_MANAGER', label: 'Hỏi Đáp (Q&A)', icon: MessageSquare },
                 { id: 'CHAT_MANAGER', label: 'Chat Khán Giả', icon: Megaphone },
                 { id: 'POLL_MANAGER', label: 'Khảo Sát Live', icon: BarChart3 },
                 { id: 'WORD_CLOUD', label: 'Mây Từ Khóa', icon: Cloud },
                 { id: 'LUCKY_DRAW', label: 'Quay Số May Mắn', icon: Sparkles },
-              ].map(sub => (
+              ] satisfies Array<{ id: AdminTabId; label: string; icon: React.ComponentType<{ className?: string }> }>).map(sub => (
                 <button
                   key={sub.id}
                   type="button"
@@ -3989,12 +4136,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             )}
 
             {getWorkspaceForTab(activeAdminTab) === 'RESULTS' && (
-              [
+              ([
                 { id: 'STATS', label: 'Bảng Xếp Hạng & SPSS', icon: Trophy },
                 { id: 'POLL_HISTORY', label: 'Lịch Sử Khảo Sát', icon: History },
                 { id: 'SNAPSHOTS', label: 'Khoảnh Khắc Phát Sóng', icon: Camera },
                 { id: 'ACTIVITY_LOG', label: 'Nhật Ký Điều Hành', icon: Clock },
-              ].map(sub => (
+              ] satisfies Array<{ id: AdminTabId; label: string; icon: React.ComponentType<{ className?: string }> }>).map(sub => (
                 <button
                   key={sub.id}
                   type="button"
@@ -4015,10 +4162,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             )}
 
             {getWorkspaceForTab(activeAdminTab) === 'STUDIO' && (
-              [
+              ([
                 { id: 'QUESTIONS', label: 'Soạn & Quản Lý Đề', icon: ListPlus },
                 { id: 'GUIDE', label: 'Hướng Dẫn Vận Hành', icon: BookOpen },
-              ].map(sub => (
+              ] satisfies Array<{ id: AdminTabId; label: string; icon: React.ComponentType<{ className?: string }> }>).map(sub => (
                 <button
                   key={sub.id}
                   type="button"
@@ -4043,11 +4190,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Live Poll Results Dashboard Overlay */}
       {gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' && (
-        <LivePollDashboard 
-          gameState={gameState} 
-          allResponses={allResponses} 
-          activeAudienceCount={activeCount} 
-        />
+        <React.Suspense fallback={null}>
+          <LivePollDashboard 
+            gameState={gameState} 
+            allResponses={allResponses} 
+            activeAudienceCount={activeCount} 
+          />
+        </React.Suspense>
       )}
 
 
@@ -4055,68 +4204,71 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 {/* Main Content Area with Fluent UI v2 Transition */}
       <div key={activeAdminTab} className="fluent-tab-panel">
         {activeAdminTab === 'DASHBOARD' ? (
-          <AdminDashboard 
-            onNavigate={setActiveAdminTab} 
-            gameState={gameState} 
-            snapshotCount={snapshotCount} 
-            activeCount={activeCount} 
-            onOpenContestantsModal={() => {
-              vibrateTap();
-              soundFx.playClick();
-              setShowContestantsModal(true);
-            }}
-            onOpenEventSchedule={() => {
-              vibrateTap();
-              soundFx.playClick();
-              setShowEventScheduleModal(true);
-            }}
-            onStartEvent={() => {
-              vibrateTap();
-              soundFx.playClick();
-              openConfirm(
-                'Bắt Đầu Sự Kiện BTI 2026?',
-                'Hành động này sẽ mở khóa toàn bộ khán giả trong Phòng Chờ Khai Mạc và đưa vào sàn đấu trực tiếp ngay lập tức! Bạn có chắc chắn?',
-                async () => {
-                  const updatedSchedule = {
-                    ...(gameState.event_schedule || {}),
-                    enabled: true,
-                    status: 'IN_PROGRESS' as const,
-                    scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
-                    started_at: Date.now()
-                  };
-                  await syncService.updateGameState({
-                    event_schedule: updatedSchedule,
-                    status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
-                  });
-                  triggerHudToast('EVENT', '🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Khán giả đã vào sàn đấu.');
-                },
-                'Bắt Đầu Ngay'
-              );
-            }}
-            onEndEvent={() => {
-              vibrateTap();
-              soundFx.playClick();
-              openConfirm(
-                'Kết Thúc Sự Kiện BTI 2026?',
-                'Hành động này sẽ bế mạc sự kiện, đóng lượt thi và chuyển toàn bộ khán giả sang màn hình Bế Mạc & Tổng Kết thành tích chung cuộc! Bạn có chắc chắn?',
-                async () => {
-                  const updatedSchedule = {
-                    ...(gameState.event_schedule || {}),
-                    enabled: true,
-                    status: 'CONCLUDED' as const,
-                    ended_at: Date.now()
-                  };
-                  await syncService.updateGameState({
-                    event_schedule: updatedSchedule,
-                    show_qr: false
-                  });
-                  triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
-                },
-                'Đồng Ý Kết Thúc'
-              );
-            }}
-            triggerToast={(msg) => triggerHudToast('EVENT', msg)}
-          />
+          <React.Suspense fallback={<div className="p-8 text-center text-white/50 font-mono text-xs">Đang tải Trung tâm Chỉ huy...</div>}>
+            <AdminDashboard 
+              onNavigate={setActiveAdminTab} 
+              gameState={gameState} 
+              snapshotCount={snapshotCount} 
+              activeCount={activeCount} 
+              onOpenContestantsModal={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowContestantsModal(true);
+              }}
+              onOpenEventSchedule={() => {
+                vibrateTap();
+                soundFx.playClick();
+                setShowEventScheduleModal(true);
+              }}
+              onStartEvent={() => {
+                vibrateTap();
+                soundFx.playClick();
+                openConfirm(
+                  'Bắt Đầu Sự Kiện BTI 2027?',
+                  'Hành động này sẽ mở khóa toàn bộ khán giả trong Phòng Chờ Khai Mạc và đưa vào sàn đấu trực tiếp ngay lập tức! Bạn có chắc chắn?',
+                  async () => {
+                    const updatedSchedule = {
+                      ...(gameState.event_schedule || {}),
+                      enabled: true,
+                      status: 'IN_PROGRESS' as const,
+                      scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
+                      started_at: Date.now()
+                    };
+                    await syncService.updateGameState({
+                      event_schedule: updatedSchedule,
+                      status: gameState.status === 'STANDBY' ? 'STANDBY' : gameState.status
+                    });
+                    triggerHudToast('EVENT', '🚀 ĐÃ BẮT ĐẦU SỰ KIỆN! Khán giả đã vào sàn đấu.');
+                  },
+                  'Bắt Đầu Ngay'
+                );
+              }}
+              onEndEvent={() => {
+                vibrateTap();
+                soundFx.playClick();
+                openConfirm(
+                  'Kết Thúc Sự Kiện BTI 2027?',
+                  'Hành động này sẽ bế mạc sự kiện, đóng lượt thi và chuyển toàn bộ khán giả sang màn hình Bế Mạc & Tổng Kết thành tích chung cuộc! Bạn có chắc chắn?',
+                  async () => {
+                    const updatedSchedule = {
+                      ...(gameState.event_schedule || {}),
+                      enabled: true,
+                      status: 'CONCLUDED' as const,
+                      scheduled_start_time: gameState.event_schedule?.scheduled_start_time || Date.now(),
+                      ended_at: Date.now()
+                    };
+                    await syncService.updateGameState({
+                      event_schedule: updatedSchedule,
+                      show_qr: false
+                    });
+                    triggerHudToast('EVENT', '🏁 ĐÃ KẾT THÚC SỰ KIỆN! Khán giả đã chuyển sang màn hình Bế Mạc.');
+                  },
+                  'Đồng Ý Kết Thúc'
+                );
+              }}
+              triggerToast={(msg) => triggerHudToast('EVENT', msg)}
+            />
+          </React.Suspense>
         ) : activeAdminTab === 'QUESTIONS' ? (
         /* ================= TAB 5: NHẬP & QUẢN LÝ NGÂN HÀNG CÂU HỎI STUDIO ================= */
         <div className="space-y-6">
@@ -4751,12 +4903,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {/* Sub-view 1: Leaderboard */}
             {statsSubTab === 'LEADERBOARD' && (
               <div className="space-y-4">
-                <Leaderboard 
-                  allResponses={allResponses} 
-                  gameState={gameState} 
-                  customQuestionBank={questionBank} 
-                  activeCount={activeCount} 
-                />
+                <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Bảng xếp hạng...</div>}>
+                  <Leaderboard 
+                    allResponses={allResponses} 
+                    gameState={gameState} 
+                    customQuestionBank={questionBank} 
+                    activeCount={activeCount} 
+                  />
+                </React.Suspense>
               </div>
             )}
 
@@ -4912,7 +5066,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {/* Sub-view 3: Network Stability & Infrastructure Health */}
             {statsSubTab === 'NETWORK' && (
               <div className="space-y-6">
-                <NetworkStabilityChart />
+                <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải biểu đồ mạng...</div>}>
+                  <NetworkStabilityChart />
+                </React.Suspense>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 fluent-box-nested border border-white/10 rounded-[2px] space-y-2">
@@ -4975,7 +5131,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </p>
                     </div>
                   </div>
-                  <QrScanTrendsChart gameState={gameState} />
+                  <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải biểu đồ QR...</div>}>
+                    <QrScanTrendsChart gameState={gameState} />
+                  </React.Suspense>
                 </section>
               </div>
             )}
@@ -4983,57 +5141,67 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       ) : activeAdminTab === 'POLL_MANAGER' ? (
         <div className="space-y-6">
-          <AdminPollManager
-            gameState={gameState}
-            allResponses={allResponses}
-            activeAudienceCount={activeCount}
-            onOpenHistoryTab={() => setActiveAdminTab('POLL_HISTORY')}
-            onViewChange={onViewChange}
-            onOpenAudienceSurvey={() => setShowSurveyModal(true)}
-          />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Khảo sát Live...</div>}>
+            <AdminPollManager
+              gameState={gameState}
+              allResponses={allResponses}
+              activeAudienceCount={activeCount}
+              onOpenHistoryTab={() => setActiveAdminTab('POLL_HISTORY')}
+              onViewChange={onViewChange}
+              onOpenAudienceSurvey={() => setShowSurveyModal(true)}
+            />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'LUCKY_DRAW' ? (
         <div className="space-y-6">
-          <LuckyDrawAdmin
-            gameState={gameState}
-            allResponses={allResponses}
-            onExit={() => {
-              setActiveAdminTab('DASHBOARD');
-              triggerHudToast('STAGE', 'Đã thoát quay số, trở về Đấu Trường câu hỏi');
-            }}
-          />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Quay số May mắn...</div>}>
+            <LuckyDrawAdmin
+              gameState={gameState}
+              allResponses={allResponses}
+              onExit={() => {
+                setActiveAdminTab('DASHBOARD');
+                triggerHudToast('STAGE', 'Đã thoát quay số, trở về Đấu Trường câu hỏi');
+              }}
+            />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'POLL_HISTORY' ? (
         /* ================= TAB 9: LỊCH SỬ KHẢO SÁT KHẨN CẤP (EMERGENCY POLL HISTORY) ================= */
         <div className="space-y-6">
-          <PollHistoryTab
-            gameState={gameState}
-            allResponses={allResponses}
-            activeCount={activeCount}
-            onRelaunchPoll={(pollData) => {
-              setRelaunchDraft({
-                id: `RELAUNCH_${Date.now()}`,
-                question: pollData.question,
-                type: pollData.type,
-                options: pollData.options,
-                time_limit: pollData.time_limit,
-                source_type: pollData.source_type || 'HOST',
-                source_name: pollData.source_name || '',
-                context_note: pollData.context_note || '',
-                created_at: Date.now()
-              });
-              setShowEmergencyPollModal(true);
-            }}
-          />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Lịch sử Khảo sát...</div>}>
+            <PollHistoryTab
+              gameState={gameState}
+              allResponses={allResponses}
+              activeCount={activeCount}
+              onRelaunchPoll={(pollData) => {
+                setRelaunchDraft({
+                  id: `RELAUNCH_${Date.now()}`,
+                  question: pollData.question,
+                  type: pollData.type,
+                  options: pollData.options,
+                  time_limit: pollData.time_limit,
+                  source_type: pollData.source_type || 'HOST',
+                  source_name: pollData.source_name || '',
+                  context_note: pollData.context_note || '',
+                  created_at: Date.now()
+                });
+                setShowEmergencyPollModal(true);
+              }}
+            />
+          </React.Suspense>
         </div>
 
       ) : activeAdminTab === 'QA_MANAGER' ? (
         <div className="space-y-6">
-          <AdminQAManager gameState={gameState} />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Hỏi Đáp Q&A...</div>}>
+            <AdminQAManager gameState={gameState} />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'CHAT_MANAGER' ? (
         <div className="space-y-6">
-          <AdminChatManager gameState={gameState} />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Chat Khán Giả...</div>}>
+            <AdminChatManager gameState={gameState} />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'WORD_CLOUD' ? (
         <div className="space-y-6">
@@ -5057,30 +5225,38 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               </span>
             </div>
           </div>
-          <ProjectorWordCloud
-            gameState={gameState}
-            responses={currentResponses}
-            allResponses={allResponses}
-          />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Đám mây Từ khóa...</div>}>
+            <ProjectorWordCloud
+              gameState={gameState}
+              responses={currentResponses}
+              allResponses={allResponses}
+            />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'ACTIVITY_LOG' ? (
         <div className="space-y-6">
-          <AdminActivityLog />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Nhật ký Điều hành...</div>}>
+            <AdminActivityLog />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'SNAPSHOTS' ? (
         <div className="space-y-6">
-          <BroadcastSnapshotHistoryTab
-            gameState={gameState}
-            responses={currentResponses}
-            allResponses={allResponses}
-            activeCount={activeCount}
-            onTriggerSnap={handleSnapAudienceInteraction}
-            isSnapping={isSnapping}
-          />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Khoảnh khắc Phát sóng...</div>}>
+            <BroadcastSnapshotHistoryTab
+              gameState={gameState}
+              responses={currentResponses}
+              allResponses={allResponses}
+              activeCount={activeCount}
+              onTriggerSnap={handleSnapAudienceInteraction}
+              isSnapping={isSnapping}
+            />
+          </React.Suspense>
         </div>
       ) : activeAdminTab === 'GUIDE' ? (
         <div className="space-y-6">
-          <AdminGuide />
+          <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải Hướng dẫn Vận hành...</div>}>
+            <AdminGuide />
+          </React.Suspense>
         </div>
       ) : (
         /* ================= DEFAULT 12-COLUMN DASHBOARD ================= */
@@ -5813,12 +5989,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   onReturnToStandby={handleReturnToStandby}
                   onNavigateNext={handleNavigateNextQuestion}
                   onCycleMasterState={handleCycleMasterState}
-                  onOpenShortcuts={() => setShowShortcutsModal(true)}
+                  onOpenShortcuts={handleOpenShortcutsModal}
                   totalVotes={totalCurrentVotes}
-                  totalAudience={Math.max(activeCount, totalCurrentVotes, 1)}
+                  totalAudience={totalAudienceForTimer}
                   onEliminateRandom2={handleEliminateRandom2Options}
                   autoEliminateEvery10s={autoEliminateEvery10s}
-                  onToggleAutoEliminate={() => setAutoEliminateEvery10s(!autoEliminateEvery10s)}
+                  onToggleAutoEliminate={handleToggleAutoEliminate}
                   onTriggerHudToast={triggerHudToast}
                 />
               </div>
@@ -6095,11 +6271,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
           {/* Realtime Live Audience Answer Distribution Chart (Recharts Interactive Pie/Donut Chart) */}
           {activeAdminTab !== 'VCNV' && (
-            <AudienceAnswerDistributionChart
-              gameState={gameState}
-              responses={currentResponses}
-              totalAudienceCount={activeCount}
-            />
+            <React.Suspense fallback={null}>
+              <AudienceAnswerDistributionChart
+                gameState={gameState}
+                responses={currentResponses}
+                totalAudienceCount={activeCount}
+              />
+            </React.Suspense>
           )}
         </div>
       </div>
@@ -6270,17 +6448,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {/* TAB CONTENT: TRENDS VIEW vs HISTORY VIEW vs ACTIVE QR VIEW */}
             {qrModalTab === 'trends' ? (
               <div className="animate-fadeIn">
-                <QrScanTrendsChart
-                  gameState={gameState}
-                  onBackToCurrentQr={() => {
-                    setQrModalTab('active');
-                    setShowQrHistoryTab(false);
-                  }}
-                  onBackToHistory={() => {
-                    setQrModalTab('history');
-                    setShowQrHistoryTab(true);
-                  }}
-                />
+                <React.Suspense fallback={<div className="p-6 text-center text-white/50 font-mono text-xs">Đang tải biểu đồ QR...</div>}>
+                  <QrScanTrendsChart
+                    gameState={gameState}
+                    onBackToCurrentQr={() => {
+                      setQrModalTab('active');
+                      setShowQrHistoryTab(false);
+                    }}
+                    onBackToHistory={() => {
+                      setQrModalTab('history');
+                      setShowQrHistoryTab(true);
+                    }}
+                  />
+                </React.Suspense>
               </div>
             ) : (showQrHistoryTab || qrModalTab === 'history') ? (
               <div className="animate-fadeIn space-y-3">
@@ -8013,11 +8193,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       )}
 
       {/* MODAL: Keyboard Shortcuts Mapping Center & Customizer */}
-      <ShortcutMappingModal
-        isOpen={showShortcutsModal}
-        onClose={() => setShowShortcutsModal(false)}
-        onTriggerHudToast={triggerHudToast}
-      />
+      {showShortcutsModal && (
+        <React.Suspense fallback={null}>
+          <ShortcutMappingModal
+            isOpen={showShortcutsModal}
+            onClose={() => setShowShortcutsModal(false)}
+            onTriggerHudToast={triggerHudToast}
+          />
+        </React.Suspense>
+      )}
 
       {/* Floating HUD Notification Toast */}
       {shortcutHudToast && (
@@ -8105,82 +8289,117 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       )}
 
       {/* Emergency Poll Control Modal */}
-      <EmergencyPollControl
-        gameState={gameState}
-        allResponses={allResponses}
-        activeAudienceCount={activeCount}
-        isOpen={showEmergencyPollModal}
-        onClose={() => setShowEmergencyPollModal(false)}
-        onOpenHistoryTab={() => {
-          setActiveAdminTab('POLL_HISTORY');
-        }}
-        initialDraft={relaunchDraft}
-        onClearInitialDraft={() => setRelaunchDraft(null)}
-      />
+      {showEmergencyPollModal && (
+        <React.Suspense fallback={null}>
+          <EmergencyPollControl
+            gameState={gameState}
+            allResponses={allResponses}
+            activeAudienceCount={activeCount}
+            isOpen={showEmergencyPollModal}
+            onClose={() => setShowEmergencyPollModal(false)}
+            onOpenHistoryTab={() => {
+              setActiveAdminTab('POLL_HISTORY');
+            }}
+            initialDraft={relaunchDraft}
+            onClearInitialDraft={() => setRelaunchDraft(null)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Audio Settings & Gemini TTS Control Modal */}
-      <AudioSettingsModal
-        isOpen={showAudioSettingsModal}
-        onClose={() => setShowAudioSettingsModal(false)}
-      />
+      {showAudioSettingsModal && (
+        <React.Suspense fallback={null}>
+          <AudioSettingsModal
+            isOpen={showAudioSettingsModal}
+            onClose={() => setShowAudioSettingsModal(false)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Announcer Overlay Control Modal */}
-      <AnnouncerControlModal
-        isOpen={showAnnouncerModal}
-        onClose={() => setShowAnnouncerModal(false)}
-        gameState={gameState}
-      />
+      {showAnnouncerModal && (
+        <React.Suspense fallback={null}>
+          <AnnouncerControlModal
+            isOpen={showAnnouncerModal}
+            onClose={() => setShowAnnouncerModal(false)}
+            gameState={gameState}
+          />
+        </React.Suspense>
+      )}
 
       {/* Audience Light Show Control Modal */}
-      <LightShowControlModal
-        isOpen={showLightShowModal}
-        onClose={() => setShowLightShowModal(false)}
-        gameState={gameState}
-        activeCount={activeCount}
-      />
+      {showLightShowModal && (
+        <React.Suspense fallback={null}>
+          <LightShowControlModal
+            isOpen={showLightShowModal}
+            onClose={() => setShowLightShowModal(false)}
+            gameState={gameState}
+          />
+        </React.Suspense>
+      )}
 
       {/* Audience 10% Google Forms Survey Control Modal */}
-      <AdminSurveyControlModal
-        isOpen={showSurveyModal}
-        onClose={() => setShowSurveyModal(false)}
-        gameState={gameState}
-        activeAudienceCount={activeCount}
-      />
+      {showSurveyModal && (
+        <React.Suspense fallback={null}>
+          <AdminSurveyControlModal
+            isOpen={showSurveyModal}
+            onClose={() => setShowSurveyModal(false)}
+            gameState={gameState}
+            activeAudienceCount={activeCount}
+          />
+        </React.Suspense>
+      )}
 
       {/* Event Schedule & Anti-Leak Stage Control Modal */}
-      <AdminEventScheduleModal
-        isOpen={showEventScheduleModal}
-        onClose={() => setShowEventScheduleModal(false)}
-        gameState={gameState}
-        activeAudienceCount={activeCount}
-        triggerToast={(msg) => triggerHudToast('EVENT', msg)}
-      />
+      {showEventScheduleModal && (
+        <React.Suspense fallback={null}>
+          <AdminEventScheduleModal
+            isOpen={showEventScheduleModal}
+            onClose={() => setShowEventScheduleModal(false)}
+            gameState={gameState}
+            activeAudienceCount={activeCount}
+            triggerToast={(msg) => triggerHudToast('EVENT', msg)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Stage Contestants Management Modal */}
-      <AdminContestantsModal
-        isOpen={showContestantsModal}
-        onClose={() => setShowContestantsModal(false)}
-        gameState={gameState}
-        triggerToast={(msg) => triggerHudToast('CONTESTANT', msg)}
-      />
+      {showContestantsModal && (
+        <React.Suspense fallback={null}>
+          <AdminContestantsModal
+            isOpen={showContestantsModal}
+            onClose={() => setShowContestantsModal(false)}
+            gameState={gameState}
+            triggerToast={(msg) => triggerHudToast('CONTESTANT', msg)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Match Break & Intermission Countdown Modal */}
-      <MatchBreakModal
-        isOpen={showMatchBreakModal}
-        onClose={() => setShowMatchBreakModal(false)}
-        gameState={gameState}
-        activeCount={activeCount}
-        triggerHudToast={(title, msg) => triggerHudToast(title, msg)}
-        openConfirm={openConfirm}
-      />
+      {showMatchBreakModal && (
+        <React.Suspense fallback={null}>
+          <MatchBreakModal
+            isOpen={showMatchBreakModal}
+            onClose={() => setShowMatchBreakModal(false)}
+            gameState={gameState}
+            activeCount={activeCount}
+            triggerHudToast={(title, msg) => triggerHudToast(title, msg)}
+            openConfirm={openConfirm}
+          />
+        </React.Suspense>
+      )}
 
       {/* AI MC Co-pilot Live Advice Modal */}
-      <AiMcCoPilotModal
-        isOpen={showMcCoPilotModal}
-        onClose={() => setShowMcCoPilotModal(false)}
-        gameState={gameState}
-        responses={currentResponses || allResponses[gameState.question_id] || {}}
-      />
+      {showMcCoPilotModal && (
+        <React.Suspense fallback={null}>
+          <AiMcCoPilotModal
+            isOpen={showMcCoPilotModal}
+            onClose={() => setShowMcCoPilotModal(false)}
+            gameState={gameState}
+            responses={currentResponses || allResponses[gameState.question_id] || {}}
+          />
+        </React.Suspense>
+      )}
 
       {/* Floating Host Pacing Toaster Notifications */}
       <HostPacingToaster
@@ -8251,19 +8470,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           contain: 'paint layout'
         }}
       >
-        <ProjectorView
-          gameState={gameState}
-          responses={currentResponses}
-          allResponses={allResponses}
-          activeCount={activeCount}
-          isVirtual={true}
-        />
+        {shouldMountVirtualStage && (
+          <React.Suspense fallback={null}>
+            <ProjectorView
+              gameState={gameState}
+              responses={currentResponses}
+              allResponses={allResponses}
+              activeCount={activeCount}
+              isVirtual={true}
+            />
+          </React.Suspense>
+        )}
       </div>
 
       <AdminContextMenu
         isOpen={contextMenuState.isOpen}
-        position={{ x: contextMenuState.x, y: contextMenuState.y }}
-        onClose={() => setContextMenuState(prev => ({ ...prev, isOpen: false }))}
+        position={contextMenuPosition}
+        onClose={handleCloseContextMenu}
         gameState={gameState}
         activeAdminTab={activeAdminTab}
         onStartQuestion={handleStartQuestion}
@@ -8272,45 +8495,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         onReturnToStandby={handleReturnToStandby}
         onNavigateNext={handleNavigateNextQuestion}
         onNavigatePrev={handleNavigatePrevQuestion}
-        onToggleLiveQr={() => handleToggleLiveQrModal()}
-        onOpenAnnouncer={() => setShowAnnouncerModal(true)}
-        onOpenEmergencyPoll={() => setShowEmergencyPollModal(true)}
-        onOpenShortcuts={() => setShowShortcutsModal(true)}
-        onSnapSnapshot={() => handleSnapAudienceInteraction()}
-        onSwitchTab={(tab) => {
-          if (tab === 'LUCKY_DRAW') {
-            soundFx.primeLuckyDrawAudio(Boolean(gameState.lucky_draw_music_muted));
-            syncService.updateGameState({ active_module: 'LUCKY_DRAW' });
-          } else if (gameState.active_module === 'LUCKY_DRAW') {
-            syncService.updateGameState({ active_module: 'GAME' });
-          }
-          setActiveAdminTab(tab);
-          if (tab === 'VCNV') {
-            const vcnvQ = questionBank.find(q => q.round_name.includes('Vượt Chướng Ngại Vật') || q.id.startsWith('VCNV'));
-            if (vcnvQ && gameState.question_id !== vcnvQ.id) {
-              handleLoadQuestion(vcnvQ.id);
-            }
-          }
-          triggerHudToast('TAB', `Đã chuyển sang tab: ${tab}`);
-        }}
+        onToggleLiveQr={handleContextToggleLiveQr}
+        onOpenAnnouncer={handleContextOpenAnnouncer}
+        onOpenEmergencyPoll={handleContextOpenEmergencyPoll}
+        onOpenShortcuts={handleOpenShortcutsModal}
+        onSnapSnapshot={handleContextSnapSnapshot}
+        onSwitchTab={handleContextSwitchTab}
         onViewChange={onViewChange}
-        onCopyQuestionText={() => {
-          if (gameState.question_text) {
-            navigator.clipboard.writeText(gameState.question_text).then(() => {
-              triggerHudToast('COPY', 'Đã sao chép nội dung câu hỏi!');
-            }).catch(() => {});
-          }
-        }}
+        onCopyQuestionText={handleContextCopyQuestionText}
         onCopyAudienceLink={handleCopyAudienceLink}
-        onForceResync={() => {
-          syncService.updateGameState({ last_updated: Date.now() });
-          triggerHudToast('SYNC', 'Đã gửi tín hiệu đồng bộ toàn hệ thống!');
-        }}
-        onExportCsv={() => {
-          const spssData = generateSPSSData(allResponses, questionBank);
-          exportToCSV(spssData, `BTI2026_SPSS_Data_${new Date().toISOString().slice(0, 10)}`);
-          triggerHudToast('EXPORT', 'Đã xuất file dữ liệu SPSS CSV!');
-        }}
+        onForceResync={handleContextForceResync}
+        onExportCsv={handleContextExportCsv}
         onPlaySoundEffect={handlePlaySoundEffect}
       />
 
@@ -8345,32 +8540,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         </div>
       )}
 
-      <AiTranslationModal
-        isOpen={isAiTranslateModalOpen}
-        onClose={() => setIsAiTranslateModalOpen(false)}
-        gameState={gameState}
-      />
+      {isAiTranslateModalOpen && (
+        <React.Suspense fallback={null}>
+          <AiTranslationModal
+            isOpen={isAiTranslateModalOpen}
+            onClose={() => setIsAiTranslateModalOpen(false)}
+            gameState={gameState}
+          />
+        </React.Suspense>
+      )}
 
-      <AdminApprovalModal
-        isOpen={isApprovalModalOpen}
-        onClose={() => setIsApprovalModalOpen(false)}
-        currentUser={adminUser}
-      />
+      {isApprovalModalOpen && (
+        <React.Suspense fallback={null}>
+          <AdminApprovalModal
+            isOpen={isApprovalModalOpen}
+            onClose={() => setIsApprovalModalOpen(false)}
+            currentUser={adminUser}
+          />
+        </React.Suspense>
+      )}
 
       <SessionExpiringModal
         isOpen={showSessionWarningModal}
         secondsRemaining={sessionSecondsRemaining}
         onStayLoggedIn={handleExtendSession}
         onLogoutNow={() => {
-          try {
-            sessionStorage.removeItem('BTI2026_ADMIN_AUTH');
-            sessionStorage.removeItem('BTI2026_TECH_USER');
-            sessionStorage.removeItem('BTI2026_ADMIN_TOKEN');
-            localStorage.removeItem('BTI2026_ADMIN_AUTH');
-            localStorage.removeItem('BTI2026_TECH_USER');
-            localStorage.removeItem('BTI2026_ADMIN_TOKEN');
-            localStorage.removeItem('BTI2026_KEEP_LOGGED_IN');
-          } catch {}
+          clearAdminSession();
           setIsAuthenticated(false);
           setShowSessionWarningModal(false);
           if (onLogout) onLogout();
@@ -8379,5 +8574,5 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       </div>
     </FluentProvider>
   );
-};
+});
 

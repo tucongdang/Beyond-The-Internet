@@ -1,4 +1,4 @@
-import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, getDocs, Firestore } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, getDocs, query, orderBy, limit, Firestore } from 'firebase/firestore';
 import { db, removeUndefined } from '../firebase';
 import { AudienceQAQuestion, QASettings, QAQuestionStatus, QAQuestionCategory, UserInfo } from '../types';
 import { syncService } from './syncService';
@@ -75,11 +75,11 @@ class RealtimeQAService {
   private settingsListeners: Set<(settings: QASettings) => void> = new Set();
   private broadcastChannel: BroadcastChannel | null = null;
   private unsubscribeFirestore: (() => void) | null = null;
+  private saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.loadLocalData();
     this.initBroadcastChannel();
-    this.initFirestoreListener();
   }
 
   private loadLocalData() {
@@ -100,12 +100,18 @@ class RealtimeQAService {
 
   private saveLocalData() {
     if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_QA_ITEMS, JSON.stringify(this.questions));
-      localStorage.setItem(STORAGE_KEY_QA_SETTINGS, JSON.stringify(this.settings));
-    } catch (e) {
-      console.warn('Error saving QA to localStorage:', e);
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
     }
+    this.saveDebounceTimer = setTimeout(() => {
+      this.saveDebounceTimer = null;
+      try {
+        localStorage.setItem(STORAGE_KEY_QA_ITEMS, JSON.stringify(this.questions.slice(0, 120)));
+        localStorage.setItem(STORAGE_KEY_QA_SETTINGS, JSON.stringify(this.settings));
+      } catch (e) {
+        console.warn('Error saving QA to localStorage:', e);
+      }
+    }, 350);
   }
 
   private initBroadcastChannel() {
@@ -127,6 +133,12 @@ class RealtimeQAService {
     }
   }
 
+  private ensureFirestoreListener() {
+    if (!this.unsubscribeFirestore) {
+      this.initFirestoreListener();
+    }
+  }
+
   public initFirestoreListener() {
     if (this.unsubscribeFirestore) {
       this.unsubscribeFirestore();
@@ -137,8 +149,8 @@ class RealtimeQAService {
       const firestoreDb = db as Firestore;
       if (!firestoreDb) return;
 
-      const qaCol = collection(firestoreDb, 'audience_qa');
-      this.unsubscribeFirestore = onSnapshot(qaCol, (snapshot) => {
+      const qaQuery = query(collection(firestoreDb, 'audience_qa'), orderBy('created_at', 'desc'), limit(120));
+      this.unsubscribeFirestore = onSnapshot(qaQuery, (snapshot) => {
         if (!snapshot.empty) {
           const items: AudienceQAQuestion[] = [];
           snapshot.forEach((docSnap) => {
@@ -161,7 +173,6 @@ class RealtimeQAService {
             });
           });
 
-          // Sort by creation time (descending)
           items.sort((a, b) => b.created_at - a.created_at);
           this.questions = items;
           this.saveLocalData();
@@ -196,6 +207,7 @@ class RealtimeQAService {
   }
 
   public subscribe(callback: (questions: AudienceQAQuestion[]) => void): () => void {
+    this.ensureFirestoreListener();
     this.listeners.add(callback);
     callback([...this.questions]);
     return () => {
@@ -212,6 +224,7 @@ class RealtimeQAService {
   }
 
   public getQuestions(): AudienceQAQuestion[] {
+    this.ensureFirestoreListener();
     return [...this.questions];
   }
 

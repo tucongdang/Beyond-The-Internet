@@ -505,7 +505,13 @@ body:has([aria-modal="true"]) {
   .animate-qr-entrance,
   .animate-fluent-toast-enter,
   .animate-fluent-toast-exit,
-  .fluent-tab-panel {
+  .fluent-tab-panel,
+  .animate-confidence-nudge-a,
+  .animate-confidence-nudge-b,
+  .animate-confidence-shimmer,
+  .animate-confidence-badge-pop-a,
+  .animate-confidence-badge-pop-b,
+  .animate-confidence-sparkle {
     animation: none !important;
     transition: none !important;
   }
@@ -682,7 +688,19 @@ body:has([aria-modal="true"]) {
 .battery-saver-active .animate-float-particle,
 .battery-saver-active .animate-mesh-wave,
 .battery-saver-active .animate-marquee,
-.battery-saver-active .animate-marquee-continuous {
+.battery-saver-active .animate-marquee-continuous,
+.animations-paused .animate-confidence-nudge-a,
+.animations-paused .animate-confidence-nudge-b,
+.animations-paused .animate-confidence-shimmer,
+.animations-paused .animate-confidence-badge-pop-a,
+.animations-paused .animate-confidence-badge-pop-b,
+.animations-paused .animate-confidence-sparkle,
+.battery-saver-active .animate-confidence-nudge-a,
+.battery-saver-active .animate-confidence-nudge-b,
+.battery-saver-active .animate-confidence-shimmer,
+.battery-saver-active .animate-confidence-badge-pop-a,
+.battery-saver-active .animate-confidence-badge-pop-b,
+.battery-saver-active .animate-confidence-sparkle {
   animation: none !important;
 }
 
@@ -944,6 +962,120 @@ body.battery-saver-active,
 }
 .animate-shimmer {
   animation: shimmer 2.5s infinite linear;
+}
+
+/* Confidence Multiplier change confirmation: subtle vibration + sparkle shimmer */
+@keyframes confidenceNudgeA {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  20% {
+    transform: translate3d(-2px, -1px, 0) scale(1.008);
+  }
+  45% {
+    transform: translate3d(2px, 0, 0) scale(1.01);
+  }
+  70% {
+    transform: translate3d(-1px, 0, 0) scale(1.004);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes confidenceNudgeB {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  20% {
+    transform: translate3d(-2px, -1px, 0) scale(1.008);
+  }
+  45% {
+    transform: translate3d(2px, 0, 0) scale(1.01);
+  }
+  70% {
+    transform: translate3d(-1px, 0, 0) scale(1.004);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes confidenceShimmerSweep {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confidenceBadgePopA {
+  0% {
+    transform: scale(0.92);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes confidenceBadgePopB {
+  0% {
+    transform: scale(0.92);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes confidenceSparkleTwinkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15) rotate(10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.75) rotate(35deg) translateY(-4px);
+  }
+}
+
+.animate-confidence-nudge-a {
+  animation: confidenceNudgeA 0.32s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-confidence-nudge-b {
+  animation: confidenceNudgeB 0.32s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-confidence-shimmer {
+  animation: confidenceShimmerSweep 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-confidence-badge-pop-a {
+  animation: confidenceBadgePopA 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.animate-confidence-badge-pop-b {
+  animation: confidenceBadgePopB 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.animate-confidence-sparkle {
+  animation: confidenceSparkleTwinkle 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Hide Mica layers in high contrast / battery saver mode */

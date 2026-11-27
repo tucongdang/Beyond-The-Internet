@@ -127,7 +127,7 @@ function saveStakingState(state: StakingStorageState) {
   }
 }
 
-export const ConfidenceStaking: React.FC<ConfidenceStakingProps> = ({
+export const ConfidenceStaking: React.FC<ConfidenceStakingProps> = React.memo(({
   gameState,
   user,
   className = '',
@@ -1255,4 +1255,4 @@ export const ConfidenceStaking: React.FC<ConfidenceStakingProps> = ({
       )}
     </section>
   );
-};
+});

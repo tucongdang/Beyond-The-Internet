@@ -1,47 +1,64 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import QRCode from 'qrcode';
 import confetti from '../utils/confetti';
-import { GameState, UserResponse, QR_PALETTES, QrPaletteId } from '../types';
+import { GameState, UserResponse, QR_PALETTES, QrPaletteId, SurvivalStats } from '../types';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
-import { calculateSurvivalStats } from '../utils/leaderboardUtils';
 import { getProjectorTheme } from '../utils/themeUtils';
-import { Leaderboard } from './Leaderboard';
-import { LuckyDrawProjector } from './LuckyDrawProjector';
-import { GrandFinaleProjectorOverlay } from './GrandFinaleProjectorOverlay';
-import { MatchBreakProjectorOverlay } from './MatchBreakProjectorOverlay';
-import { EmergencyPollProjector } from './EmergencyPollProjector';
-import { ProjectorResponseList } from './ProjectorResponseList';
-import { ProjectorWordCloud } from './ProjectorWordCloud';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
 import { NextQuestionCountdown } from './NextQuestionCountdown';
 import { ProjectorCheerMeter } from './ProjectorCheerMeter';
-import { ProjectorQAOverlay } from './ProjectorQAOverlay';
-import { ProjectorResponseBarChart } from './ProjectorResponseBarChart';
 import { CrossFadeQrCode } from './CrossFadeQrCode';
 import { AudienceShoutMarquee } from './AudienceShoutMarquee';
-import { ProjectorWaitingRoom } from './ProjectorWaitingRoom';
 import { syncService } from '../services/syncService';
 import { snapshotService } from '../services/snapshotService';
+import { workerComputeService } from '../services/workerComputeService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateCopy, vibrateShare, vibrateTap, vibrateGrandCelebration } from '../utils/hapticUtils';
 import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
+import { useAdminSync } from '../hooks/useAdminSync';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { Radio, Clock, Award, CheckCircle2, BarChart3, BarChart2, Users, Sparkles, Shield, LayoutGrid, Trophy, XCircle, Flame, Zap, BatteryCharging, Timer, QrCode, ListFilter, Heart, MessageSquare, Megaphone, Cloud, CloudUpload, Camera, Copy, Check, Share2, ZoomIn, ZoomOut, Maximize2, Minimize2, Scaling, RotateCcw, Eye, EyeOff, SlidersHorizontal, Pin, PinOff, X } from 'lucide-react';
 
+const Leaderboard = lazyWithRetry(() => import('./Leaderboard').then(m => ({ default: m.Leaderboard })), 'Leaderboard');
+const LuckyDrawProjector = lazyWithRetry(() => import('./LuckyDrawProjector').then(m => ({ default: m.LuckyDrawProjector })), 'LuckyDrawProjector');
+const GrandFinaleProjectorOverlay = lazyWithRetry(() => import('./GrandFinaleProjectorOverlay').then(m => ({ default: m.GrandFinaleProjectorOverlay })), 'GrandFinaleProjectorOverlay');
+const MatchBreakProjectorOverlay = lazyWithRetry(() => import('./MatchBreakProjectorOverlay').then(m => ({ default: m.MatchBreakProjectorOverlay })), 'MatchBreakProjectorOverlay');
+const EmergencyPollProjector = lazyWithRetry(() => import('./EmergencyPollProjector').then(m => ({ default: m.EmergencyPollProjector })), 'EmergencyPollProjector');
+const ProjectorResponseList = lazyWithRetry(() => import('./ProjectorResponseList').then(m => ({ default: m.ProjectorResponseList })), 'ProjectorResponseList');
+const ProjectorWordCloud = lazyWithRetry(() => import('./ProjectorWordCloud').then(m => ({ default: m.ProjectorWordCloud })), 'ProjectorWordCloud');
+const ProjectorQAOverlay = lazyWithRetry(() => import('./ProjectorQAOverlay').then(m => ({ default: m.ProjectorQAOverlay })), 'ProjectorQAOverlay');
+const ProjectorResponseBarChart = lazyWithRetry(() => import('./ProjectorResponseBarChart').then(m => ({ default: m.ProjectorResponseBarChart })), 'ProjectorResponseBarChart');
+const ProjectorWaitingRoom = lazyWithRetry(() => import('./ProjectorWaitingRoom').then(m => ({ default: m.ProjectorWaitingRoom })), 'ProjectorWaitingRoom');
+
 interface ProjectorViewProps {
-  gameState: GameState;
-  responses: Record<string, UserResponse>;
+  gameState?: GameState;
+  responses?: Record<string, UserResponse>;
   allResponses?: Record<string, Record<string, UserResponse>>;
-  activeCount: number;
+  activeCount?: number;
   isVirtual?: boolean;
 }
 
-export const ProjectorView: React.FC<ProjectorViewProps> = ({
-  gameState,
-  responses,
-  allResponses,
-  activeCount,
+export const ProjectorView: React.FC<ProjectorViewProps> = React.memo(({
+  gameState: propGameState,
+  responses: propResponses,
+  allResponses: propAllResponses,
+  activeCount: propActiveCount,
   isVirtual = false
 }) => {
+  const hasExternalSync =
+    propGameState !== undefined &&
+    propResponses !== undefined &&
+    propActiveCount !== undefined;
+
+  const stageSync = useAdminSync({
+    enabled: !isVirtual && !hasExternalSync,
+    role: 'PROJECTOR',
+    initialGameState: propGameState
+  });
+
+  const gameState = propGameState ?? stageSync.gameState;
+  const allResponses = propAllResponses ?? stageSync.allResponses;
+  const responses = propResponses ?? (allResponses[gameState.question_id] || stageSync.currentResponses);
+  const activeCount = propActiveCount ?? stageSync.activeCount;
   const [timeLeft, setTimeLeft] = useState<number>(gameState.time_limit);
   const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
   const [showResponseList, setShowResponseList] = useState<boolean>(false);
@@ -437,47 +454,130 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     }
   }, [gameState.projector_effect]);
 
+  const shouldGenerateQr = !isVirtual && Boolean(
+    gameState.show_qr ||
+    gameState.match_break?.active ||
+    (gameState.event_schedule?.enabled && (
+      gameState.event_schedule.status === 'SCHEDULED' ||
+      gameState.event_schedule.status === 'CONCLUDED'
+    )) ||
+    gameState.force_route === 'client_landing' ||
+    gameState.panic_mode
+  );
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      let audienceUrl = window.location.origin + window.location.pathname;
-      if (audienceUrl.includes('ais-dev-')) {
-        audienceUrl = audienceUrl.replace('ais-dev-', 'ais-pre-');
-      }
-      setAudienceJoinUrl(audienceUrl);
-      const activePaletteId = (gameState.qr_color_palette as QrPaletteId) || 'purple_gold';
-      const palette = QR_PALETTES[activePaletteId] || QR_PALETTES.purple_gold;
-      const isTransparent = Boolean(gameState.qr_transparent_bg);
-      const targetQrUrl = audienceUrl + (audienceUrl.includes('?') ? '&' : '?') + 'src=qr';
-      QRCode.toDataURL(targetQrUrl, { 
-        width: 400, 
-        margin: 2, 
-        color: { 
-          dark: palette.dark, 
-          light: isTransparent ? '#00000000' : palette.light 
-        },
+    if (typeof window === 'undefined') return;
+    let audienceUrl = window.location.origin + window.location.pathname;
+    if (audienceUrl.includes('ais-dev-')) {
+      audienceUrl = audienceUrl.replace('ais-dev-', 'ais-pre-');
+    }
+    setAudienceJoinUrl(audienceUrl);
+
+    if (!shouldGenerateQr) return;
+
+    let cancelled = false;
+    const activePaletteId = (gameState.qr_color_palette as QrPaletteId) || 'purple_gold';
+    const palette = QR_PALETTES[activePaletteId] || QR_PALETTES.purple_gold;
+    const isTransparent = Boolean(gameState.qr_transparent_bg);
+    const targetQrUrl = audienceUrl + (audienceUrl.includes('?') ? '&' : '?') + 'src=qr';
+
+    workerComputeService
+      .generateQrDataUrl({
+        text: targetQrUrl,
+        width: 400,
+        margin: 2,
+        dark: palette.dark,
+        light: isTransparent ? '#00000000' : palette.light,
         errorCorrectionLevel: 'H'
       })
-        .then(url => setQrDataUrl(url))
-        .catch(err => console.error('QR code generation error:', err));
-    }
-  }, [gameState.qr_color_palette, gameState.qr_transparent_bg]);
+      .then(url => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(err => console.error('QR code generation error:', err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldGenerateQr, gameState.qr_color_palette, gameState.qr_transparent_bg]);
 
   const riskSubmissionsCount = useMemo(() => {
     return Object.keys(allResponses?.['VCNV_RISK'] || {}).length;
   }, [allResponses]);
 
-  const survivalStats = useMemo(() => {
-    return calculateSurvivalStats(allResponses, undefined, gameState);
+  const [survivalStats, setSurvivalStats] = useState<SurvivalStats>({
+    survivorsCount: 0,
+    totalContestants: 0,
+    isUserAlive: true,
+    survivalRate: 100
+  });
+
+  useEffect(() => {
+    if (!allResponses || Object.keys(allResponses).length === 0) {
+      setSurvivalStats({
+        survivorsCount: 0,
+        totalContestants: 0,
+        isUserAlive: true,
+        survivalRate: 100
+      });
+      return;
+    }
+
+    let cancelled = false;
+    workerComputeService
+      .computeLeaderboardBundleAsync({
+        allResponses,
+        gameState,
+        includeSurvivalStats: true
+      })
+      .then(result => {
+        if (!cancelled && result.survivalStats) {
+          setSurvivalStats(result.survivalStats);
+        }
+      })
+      .catch(err => {
+        console.warn('ProjectorView survivalStats worker error:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [allResponses, gameState]);
+
+  const keydownLatestRef = useRef({
+    gameState,
+    handleCaptureProjectorSnapshot,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetZoom,
+    handleToggleAutoFit
+  });
+  keydownLatestRef.current = {
+    gameState,
+    handleCaptureProjectorSnapshot,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetZoom,
+    handleToggleAutoFit
+  };
 
   // Keyboard shortcut: 'L' for Leaderboard, 'B' for Bar Chart, 'H' for Heatmap, 'R'/'S' for Response List, 'W' for Word Cloud
   useEffect(() => {
+    if (isVirtual) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
-      if ((e.key === 'Escape' || e.key === 'x' || e.key === 'X') && gameState.active_module === 'LUCKY_DRAW') {
+      const {
+        gameState: latestState,
+        handleCaptureProjectorSnapshot: captureSnapshot,
+        handleZoomIn: zoomIn,
+        handleZoomOut: zoomOut,
+        handleResetZoom: resetZoom,
+        handleToggleAutoFit: toggleAutoFit
+      } = keydownLatestRef.current;
+
+      if ((e.key === 'Escape' || e.key === 'x' || e.key === 'X') && latestState.active_module === 'LUCKY_DRAW') {
         e.preventDefault();
         syncService.updateGameState({
           active_module: 'GAME',
@@ -499,7 +599,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       }
       if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        syncService.updateGameState({ show_summary: !gameState.show_summary });
+        syncService.updateGameState({ show_summary: !latestState.show_summary });
       }
       if ((e.key === 'h' || e.key === 'H') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
@@ -546,34 +646,33 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
         setShowShoutMarquee(prev => !prev);
       }
       if ((e.key === 'q' || e.key === 'Q') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        // Toggle or dismiss featured Q&A question on stage
-        if (gameState.featured_qa_question) {
+        if (latestState.featured_qa_question) {
           e.preventDefault();
           syncService.updateGameState({ featured_qa_question: null });
         }
       }
       if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleCaptureProjectorSnapshot();
+        captureSnapshot();
       }
       if ((e.key === '+' || e.key === '=') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleZoomIn();
+        zoomIn();
         return;
       }
       if ((e.key === '-' || e.key === '_') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleZoomOut();
+        zoomOut();
         return;
       }
       if (e.key === '0' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleResetZoom();
+        resetZoom();
         return;
       }
       if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        handleToggleAutoFit();
+        toggleAutoFit();
         return;
       }
       if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -585,7 +684,7 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, responses, activeCount]);
+  }, [isVirtual]);
 
   useEffect(() => {
     if (gameState.status !== 'ACTIVE') {
@@ -813,13 +912,15 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
           }}
           className="h-full w-full relative overflow-hidden"
         >
-          <ProjectorWaitingRoom
-            gameState={gameState}
-            activeCount={activeCount}
-            qrDataUrl={qrDataUrl}
-            audienceJoinUrl={audienceJoinUrl}
-            isPanic={Boolean(gameState.panic_mode)}
-          />
+          <React.Suspense fallback={null}>
+            <ProjectorWaitingRoom
+              gameState={gameState}
+              activeCount={activeCount}
+              qrDataUrl={qrDataUrl}
+              audienceJoinUrl={audienceJoinUrl}
+              isPanic={Boolean(gameState.panic_mode)}
+            />
+          </React.Suspense>
         </div>
 
       {/* Toast Notification for Scale / Stage Changes */}
@@ -1031,21 +1132,25 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
 
       {/* Grand Finale Full-Screen Stage Honors Ceremony */}
       {gameState.grand_finale?.active && !isVirtual && (
-        <GrandFinaleProjectorOverlay
-          grandFinale={gameState.grand_finale}
-          projectorEffect={gameState.projector_effect}
-          onClose={() => syncService.updateGameState({ grand_finale: null })}
-        />
+        <React.Suspense fallback={null}>
+          <GrandFinaleProjectorOverlay
+            grandFinale={gameState.grand_finale}
+            projectorEffect={gameState.projector_effect}
+            onClose={() => syncService.updateGameState({ grand_finale: null })}
+          />
+        </React.Suspense>
       )}
 
       {/* Mid-Game Match Break & Timeout Stage Intermission Overlay */}
       {gameState.match_break?.active && !isVirtual && (
-        <MatchBreakProjectorOverlay
-          gameState={gameState}
-          activeCount={activeCount}
-          qrDataUrl={qrDataUrl}
-          audienceJoinUrl={audienceJoinUrl}
-        />
+        <React.Suspense fallback={null}>
+          <MatchBreakProjectorOverlay
+            gameState={gameState}
+            activeCount={activeCount}
+            qrDataUrl={qrDataUrl}
+            audienceJoinUrl={audienceJoinUrl}
+          />
+        </React.Suspense>
       )}
 
       {/* Stage Header (Bento Style) */}
@@ -1139,47 +1244,59 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
                 <span>✕ Thoát Quay Số</span>
               </button>
             </div>
-            <LuckyDrawProjector gameState={gameState} isVirtual={isVirtual} />
+            <React.Suspense fallback={null}>
+              <LuckyDrawProjector gameState={gameState} isVirtual={isVirtual} />
+            </React.Suspense>
           </div>
         ) : gameState.emergency_poll && gameState.emergency_poll.status !== 'DISMISSED' ? (
-          <EmergencyPollProjector
-            gameState={gameState}
-            allResponses={allResponses}
-            activeCount={activeCount}
-          />
-        ) : activeProjectorMode === 'BAR_CHART' ? (
-          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
-            <ProjectorResponseBarChart
+          <React.Suspense fallback={null}>
+            <EmergencyPollProjector
               gameState={gameState}
-              responses={responses}
+              allResponses={allResponses}
               activeCount={activeCount}
             />
+          </React.Suspense>
+        ) : activeProjectorMode === 'BAR_CHART' ? (
+          <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
+            <React.Suspense fallback={null}>
+              <ProjectorResponseBarChart
+                gameState={gameState}
+                responses={responses}
+                activeCount={activeCount}
+              />
+            </React.Suspense>
           </div>
         ) : activeProjectorMode === 'WORD_CLOUD' ? (
           <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
-            <ProjectorWordCloud
-              gameState={gameState}
-              responses={responses}
-              allResponses={allResponses}
-            />
+            <React.Suspense fallback={null}>
+              <ProjectorWordCloud
+                gameState={gameState}
+                responses={responses}
+                allResponses={allResponses}
+              />
+            </React.Suspense>
           </div>
         ) : activeProjectorMode === 'RESPONSE_LIST' ? (
           <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-3 animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
-            <ProjectorResponseList
-              responses={responses}
-              gameState={gameState}
-              activeCount={activeCount}
-            />
+            <React.Suspense fallback={null}>
+              <ProjectorResponseList
+                responses={responses}
+                gameState={gameState}
+                activeCount={activeCount}
+              />
+            </React.Suspense>
           </div>
         ) : (activeProjectorMode === 'LEADERBOARD') ? (
           <div className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1550px] mx-auto animate-fadeIn flex-1 min-h-0 flex flex-col justify-center h-full">
-            <Leaderboard
-              allResponses={allResponses}
-              gameState={gameState}
-              activeCount={activeCount}
-              isAudienceView={false}
-              isStageDisplay={true}
-            />
+            <React.Suspense fallback={null}>
+              <Leaderboard
+                allResponses={allResponses}
+                gameState={gameState}
+                activeCount={activeCount}
+                isAudienceView={false}
+                isStageDisplay={true}
+              />
+            </React.Suspense>
           </div>
         ) : isVcnvRound ? (
           /* Dedicated Stage Visual for Round 2: Vượt Chướng Ngại Vật */
@@ -2147,11 +2264,13 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       )}
 
       {/* Realtime Featured Audience Q&A Overlay */}
-      {!isVirtual && (
-        <ProjectorQAOverlay 
-          question={gameState.featured_qa_question || null} 
-          theme={gameState.projectorTheme} 
-        />
+      {!isVirtual && gameState.featured_qa_question && (
+        <React.Suspense fallback={null}>
+          <ProjectorQAOverlay 
+            question={gameState.featured_qa_question} 
+            theme={gameState.projectorTheme} 
+          />
+        </React.Suspense>
       )}
 
       {/* Live Broadcast Announcer Overlay */}
@@ -2335,4 +2454,4 @@ export const ProjectorView: React.FC<ProjectorViewProps> = ({
       )}
     </div>
   );
-};
+});

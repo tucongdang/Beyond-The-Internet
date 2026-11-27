@@ -317,6 +317,7 @@ export const AdminEventScheduleModal: React.FC<AdminEventScheduleModalProps> = (
       ...(currentSchedule || {}),
       enabled: true,
       status: 'CONCLUDED',
+      scheduled_start_time: currentSchedule?.scheduled_start_time || Date.now(),
       title: title.trim() || 'Beyond The Internet 2027',
       match_stage: matchStage,
       match_name: matchName.trim() || 'Trận Đấu',

@@ -27,7 +27,7 @@ interface QuickTipsProps {
 
 const SESSION_SEEN_KEY = 'bti_audience_quick_tips_seen_v1';
 
-export const QuickTips: React.FC<QuickTipsProps> = ({
+export const QuickTips: React.FC<QuickTipsProps> = React.memo(({
   gameState,
   user,
   isHighContrast = false,
@@ -430,4 +430,4 @@ export const QuickTips: React.FC<QuickTipsProps> = ({
     </aside>
     </div>
   );
-};
+});

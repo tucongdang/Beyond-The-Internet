@@ -11,7 +11,7 @@ interface NextQuestionCountdownProps {
   compact?: boolean;
 }
 
-export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
+export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = React.memo(({
   gameState,
   className = '',
   compact = false
@@ -136,4 +136,4 @@ export const NextQuestionCountdown: React.FC<NextQuestionCountdownProps> = ({
       </div>
     </div>
   );
-};
+});

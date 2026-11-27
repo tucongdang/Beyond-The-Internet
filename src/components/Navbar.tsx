@@ -19,7 +19,7 @@ interface NavbarProps {
   currentView: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy';
   onViewChange: (view: 'landing' | 'client_landing' | 'audience' | 'admin' | 'projector' | 'policy') => void;
   gameState: GameState;
-  activeCount: number;
+  activeCount?: number;
   user: UserInfo | null;
   adminUser?: AdminUser | null;
   isAdminAuthenticated?: boolean;
@@ -35,11 +35,11 @@ interface NavbarProps {
   onOpenInstallModal?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
+export const Navbar: React.FC<NavbarProps> = React.memo(({
   currentView,
   onViewChange,
   gameState,
-  activeCount,
+  activeCount: propActiveCount,
   user,
   adminUser,
   isAdminAuthenticated = false,
@@ -223,6 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [pingInfo, setPingInfo] = useState<PingInfo>(() => syncService.getPingInfo());
   const [isMeasuringPing, setIsMeasuringPing] = useState(false);
+  const [liveActiveCount, setLiveActiveCount] = useState<number>(1);
 
   useEffect(() => {
     const unsubscribe = syncService.subscribeToPing((info) => {
@@ -233,6 +234,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (isLoginScreen || propActiveCount !== undefined) return;
+    return syncService.subscribeToPresence((count) => {
+      setLiveActiveCount(count);
+    });
+  }, [isLoginScreen, propActiveCount]);
+
+  const activeCount = propActiveCount ?? liveActiveCount;
 
   const handleManualPing = async () => {
     vibrateTap();
@@ -771,10 +781,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title={`Ban Kỹ Thuật: ${adminUser ? adminUser.fullName : 'Admin'}`}
                 >
                   <div className="w-5 h-5 rounded-[2px] bg-sky-600 text-white font-black flex items-center justify-center text-[10px]">
-                    {(adminUser?.fullName || adminUser?.name || adminUser?.username || 'A').charAt(0).toUpperCase()}
+                    {(adminUser?.fullName || adminUser?.username || 'A').charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden xl:inline font-mono font-bold text-sky-300 text-[10px] truncate max-w-[100px]">
-                    {adminUser?.fullName || adminUser?.name || adminUser?.username || 'Ban Kỹ Thuật'}
+                    {adminUser?.fullName || adminUser?.username || 'Ban Kỹ Thuật'}
                   </span>
                 </div>
 
@@ -1076,11 +1086,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="p-3 bg-sky-950/40 border border-sky-500/30 rounded-[2px] flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-[2px] bg-sky-500 text-white flex items-center justify-center text-xs font-bold font-mono">
-                        {(adminUser?.fullName || adminUser?.name || adminUser?.username || 'A').charAt(0).toUpperCase()}
+                        {(adminUser?.fullName || adminUser?.username || 'A').charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="text-xs font-bold text-sky-300 font-mono">
-                          {adminUser?.fullName || adminUser?.name || adminUser?.username || 'Ban Kỹ Thuật'}
+                          {adminUser?.fullName || adminUser?.username || 'Ban Kỹ Thuật'}
                         </div>
                         <div className="text-[9px] text-white/50 font-mono uppercase tracking-wider">
                           {adminUser && adminUser.technicalRole ? (TECHNICAL_ROLES[adminUser.technicalRole]?.label || 'Kỹ Thuật Viên') : 'Quản Trị Viên'}
@@ -1380,4 +1390,4 @@ export const Navbar: React.FC<NavbarProps> = ({
       />
     </header>
   );
-};
+});

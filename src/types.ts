@@ -23,6 +23,7 @@ export interface AudienceScoreState {
     pointsEarned: number;
     isCorrect: boolean;
     latencySec?: number;
+    confidenceMultiplier?: number;
     timestamp: number;
   }>;
 }
@@ -36,6 +37,7 @@ export interface ScoringResult {
   isRiskBox?: boolean; // For Round 2 Ô Mạo Hiểm (+120)
   isCnvKeyword?: boolean; // For Round 2 Dự đoán CNV (+80)
   isDoubleDown?: boolean; // For Round 4 Về Đích All-In (+80 or -40 / -100% penalty)
+  confidenceMultiplier?: number; // Participant confidence scaling (1.0x - 3.0x) affecting gain/loss
   subType?: 'RISK_BOX' | 'CNV_KEYWORD' | 'STANDARD' | 'SAFE_CHOICE';
 }
 
@@ -444,6 +446,7 @@ export interface UserResponse {
     teamId?: string;
   };
   isDoubleDown?: boolean; // Vòng 4 Về Đích - Cược nhân đôi All-In
+  confidenceMultiplier?: number; // Hệ số tự tin (1.0x - 3.0x) nhân điểm thưởng / trừ điểm rủi ro
   tabSwitchCount?: number; // Phát hiện rời màn hình / đổi tab
   isOfflineSync?: boolean; // Đánh dấu câu trả lời được gửi từ hàng đợi ngoại tuyến
   contestantPrediction?: ContestantPrediction;
@@ -627,6 +630,7 @@ export interface AudienceShout {
   timestamp: number;
   timestamp_iso?: string;
   likes?: number;
+  likes_count?: number;
   liked_by?: string[];
   is_pinned?: boolean;
   status?: 'ACTIVE' | 'HIDDEN' | 'FLAGGED' | 'PENDING';

@@ -1,21 +1,21 @@
 import { useLanguage } from '../hooks/useLanguage';
 import { useAdaptiveFontSize } from '../hooks/useAdaptiveFontSize';
+import { useAudienceData } from '../hooks/useAudienceData';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { GameState, UserInfo, UserResponse, QuestionTranslation } from '../types';
+import { GameState, SurvivalStats, UserInfo, UserResponse, QuestionTranslation } from '../types';
 import { translationService, SUPPORTED_TRANSLATION_LANGUAGES } from '../services/translationService';
 import { syncService } from '../services/syncService';
+import { workerComputeService, type AudienceStatsWorkerResult } from '../services/workerComputeService';
 import { soundFx } from '../services/audioEffects';
 import { normalizeVcnvAnswer } from '../utils/exportUtils';
-import { calculateLeaderboard } from '../utils/leaderboardUtils';
 import { getUserDisplayUid } from '../utils/uidUtils';
 import { interpolateTimerColor } from '../utils/colorUtils';
 
 import {
-  computeAudienceScoreFromResponses,
-  getAudienceTotalScore,
-  getAudienceScoreBreakdown,
-  normalizeRoundKey
+  normalizeRoundKey,
+  evaluateUserChoice,
+  normalizeConfidenceMultiplier
 } from '../services/audienceScoringService';
 import {
   vibrateSubmit,
@@ -31,17 +31,13 @@ import {
 } from '../utils/hapticUtils';
 import { ZoomIn } from 'lucide-react';
 import { t } from '../utils/i18n';
-import { ShareGameModal } from './ShareGameModal';
-import { Leaderboard } from './Leaderboard';
-import { AudienceRealtimeLeaderboard } from './AudienceRealtimeLeaderboard';
-import { LuckyDrawAudience } from './LuckyDrawAudience';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { MatchBreakAudienceOverlay } from './MatchBreakAudienceOverlay';
 import { NextQuestionCountdown } from './NextQuestionCountdown';
 import { CountdownTimer } from './CountdownTimer';
 import { AudienceDesktopSidebar } from './AudienceDesktopSidebar';
 import { ConfidenceStaking } from './ConfidenceStaking';
-import { ChampionVoteModal } from './ChampionVoteModal';
-import { LuckOfTheDrawOverlay } from './LuckOfTheDrawOverlay';
+import { ConfidenceMultiplierControl } from './ConfidenceMultiplierControl';
 import confetti from '../utils/confetti';
 import {
   Radio,
@@ -75,8 +71,6 @@ import {
   Volume2, VolumeX, Bot, Info, MoreHorizontal
 } from 'lucide-react';
 import { aiExplanationService } from '../services/aiExplanationService';
-import { calculateSurvivalStats } from '../utils/leaderboardUtils';
-import { PostMatchCardModal } from './PostMatchCardModal';
 import { useScreenWakeLock } from '../hooks/useScreenWakeLock';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { BatteryIndicator } from './BatteryIndicator';
@@ -84,29 +78,38 @@ import { BatteryIndicator } from './BatteryIndicator';
 import { ScoreDisplay } from './ScoreDisplay';
 import { EmergencyPollAudience } from './EmergencyPollAudience';
 import { AnnouncerOverlay } from './AnnouncerOverlay';
-import { AudienceQuestionLogModal } from './AudienceQuestionLogModal';
-import { AudienceCheerModal } from './AudienceCheerModal';
 import { AudienceLightShowOverlay } from './AudienceLightShowOverlay';
 import { AudienceCheerButton } from './AudienceCheerButton';
-import { AudienceQAModal } from './AudienceQAModal';
 import { AudienceHighlightedQuestionToast } from './AudienceHighlightedQuestionToast';
 import { QuestionLikeButton } from './QuestionLikeButton';
 import { AudienceShoutMarquee } from './AudienceShoutMarquee';
-import { AudienceShoutModal } from './AudienceShoutModal';
-import { AudienceSurveyModal } from './AudienceSurveyModal';
-import { ClientLandingPage } from './ClientLandingPage';
 import { EventWaitingRoom } from './EventWaitingRoom';
 import { EventConcludedView } from './EventConcludedView';
 import { AudienceQuestionSkeleton } from './AudienceQuestionSkeleton';
 import { shouldShowQuestionSkeleton } from '../utils/questionSkeletonUtils';
 import { QuickTips } from './QuickTips';
-import { GameRulesModal } from './GameRulesModal';
+
+const ShareGameModal = lazyWithRetry(() => import('./ShareGameModal').then(m => ({ default: m.ShareGameModal })), 'ShareGameModal');
+const Leaderboard = lazyWithRetry(() => import('./Leaderboard').then(m => ({ default: m.Leaderboard })), 'Leaderboard');
+const AudienceRealtimeLeaderboard = lazyWithRetry(() => import('./AudienceRealtimeLeaderboard').then(m => ({ default: m.AudienceRealtimeLeaderboard })), 'AudienceRealtimeLeaderboard');
+const LuckyDrawAudience = lazyWithRetry(() => import('./LuckyDrawAudience').then(m => ({ default: m.LuckyDrawAudience })), 'LuckyDrawAudience');
+const ChampionVoteModal = lazyWithRetry(() => import('./ChampionVoteModal').then(m => ({ default: m.ChampionVoteModal })), 'ChampionVoteModal');
+const LuckOfTheDrawOverlay = lazyWithRetry(() => import('./LuckOfTheDrawOverlay').then(m => ({ default: m.LuckOfTheDrawOverlay })), 'LuckOfTheDrawOverlay');
+const PostMatchCardModal = lazyWithRetry(() => import('./PostMatchCardModal').then(m => ({ default: m.PostMatchCardModal })), 'PostMatchCardModal');
+const AudienceQuestionLogModal = lazyWithRetry(() => import('./AudienceQuestionLogModal').then(m => ({ default: m.AudienceQuestionLogModal })), 'AudienceQuestionLogModal');
+const AudienceCheerModal = lazyWithRetry(() => import('./AudienceCheerModal').then(m => ({ default: m.AudienceCheerModal })), 'AudienceCheerModal');
+const AudienceQAModal = lazyWithRetry(() => import('./AudienceQAModal').then(m => ({ default: m.AudienceQAModal })), 'AudienceQAModal');
+const AudienceShoutModal = lazyWithRetry(() => import('./AudienceShoutModal').then(m => ({ default: m.AudienceShoutModal })), 'AudienceShoutModal');
+const AudienceSurveyModal = lazyWithRetry(() => import('./AudienceSurveyModal').then(m => ({ default: m.AudienceSurveyModal })), 'AudienceSurveyModal');
+const ClientLandingPage = lazyWithRetry(() => import('./ClientLandingPage').then(m => ({ default: m.ClientLandingPage })), 'ClientLandingPage');
+const GameRulesModal = lazyWithRetry(() => import('./GameRulesModal').then(m => ({ default: m.GameRulesModal })), 'GameRulesModal');
 
 interface AudienceViewProps {
   gameState: GameState;
   user: UserInfo | null;
-  responses: Record<string, UserResponse>;
+  responses?: Record<string, UserResponse>;
   allResponses?: Record<string, Record<string, UserResponse>>;
+  onUserSynced?: (updatedUser: UserInfo) => void;
   onOpenRegister: () => void;
   onOpenProfile: () => void;
   onOpenLogModal?: () => void;
@@ -122,10 +125,10 @@ interface AudienceViewProps {
   onToggleWakeLock?: () => void;
 }
 
-const AudienceViewContent: React.FC<AudienceViewProps> = ({
+const AudienceViewContent: React.FC<AudienceViewProps> = React.memo(({
   gameState,
   user,
-  responses,
+  responses = {},
   allResponses,
   onOpenRegister,
   onOpenProfile,
@@ -169,8 +172,11 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [showConcludedLeaderboard, setShowConcludedLeaderboard] = useState<boolean>(false);
   const [lastKeyPressed, setLastKeyPressed] = useState<string>('');
-  const isLongQuestion = (gameState?.question_text || '').length > 180;
+  const isLongQuestion = useMemo(() => (gameState?.question_text || '').length > 180, [gameState?.question_text]);
   const [isQuestionZoomed, setIsQuestionZoomed] = useState<boolean>(false);
+  const handleOpenLocalShareModal = useCallback(() => setIsShareModalOpen(true), []);
+  const handleCloseLocalShareModal = useCallback(() => setIsShareModalOpen(false), []);
+  const handleCloseConcludedLeaderboard = useCallback(() => setShowConcludedLeaderboard(false), []);
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const networkStatus = useNetworkStatus();
   const [shortAnswerText, setShortAnswerText] = useState<string>('');
@@ -214,6 +220,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
   // Round 4 Double Down / All-In Risk state
   const [isDoubleDownActive, setIsDoubleDownActive] = useState<boolean>(false);
+
+  // Participant Confidence Multiplier (1.0x - 3.0x)
+  const [confidenceMultiplier, setConfidenceMultiplier] = useState<number>(1.0);
+  const [isSyncingMultiplier, setIsSyncingMultiplier] = useState<boolean>(false);
+  const multiplierSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const restoredMultiplierQIdRef = useRef<string>('');
 
   // AI Voice TTS state
   const [isSpeakingQuestion, setIsSpeakingQuestion] = useState<boolean>(false);
@@ -640,6 +652,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       choice: formatted,
       timestamp: now,
       latency_sec: Number(latency.toFixed(2)),
+      confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
       isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
       tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
       user_info: {
@@ -709,6 +722,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           choice: riskAnswerText.trim().toUpperCase(),
           timestamp: syncService.getSynchronizedNow(),
           latency_sec: latency,
+          confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
           user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
         });
       }
@@ -719,6 +733,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           choice: riskCnvText.trim().toUpperCase(),
           timestamp: syncService.getSynchronizedNow(),
           latency_sec: latency,
+          confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
           user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
         });
       }
@@ -734,25 +749,52 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
   };
 
-  // Compute live user stats and score breakdown across all rounds
-  const userPerformance = useMemo(() => {
-    if (!user?.uid || !allResponses) return null;
-    const board = calculateLeaderboard(allResponses, undefined, gameState);
-    const myData = board.find(u => u.uid === user.uid || (user.mssv && u.mssv === user.mssv));
-    const audienceScoreState = computeAudienceScoreFromResponses(allResponses, user.uid, user.mssv, undefined, gameState);
+  // Compute live user stats, survival stats, and score breakdown off the main thread via Web Worker
+  const [workerAudienceStats, setWorkerAudienceStats] = useState<AudienceStatsWorkerResult | null>(null);
 
-    return {
-      totalScore: getAudienceTotalScore(audienceScoreState),
-      scoreBreakdown: getAudienceScoreBreakdown(audienceScoreState),
-      audienceScoreState,
-      rank: myData?.rank || '-',
-      accuracyRate: myData?.accuracyRate || 0,
-      correctCount: audienceScoreState.correctAnswersCount,
-      totalAnswered: audienceScoreState.totalAnswered,
-      avgLatency: myData?.avgLatency || 0,
-      totalPlayers: board.length
+  useEffect(() => {
+    if (!user?.uid || !allResponses) {
+      setWorkerAudienceStats(null);
+      return;
+    }
+
+    let cancelled = false;
+    const hasResponses = Object.keys(allResponses).length > 0;
+    workerComputeService
+      .computeAudienceStatsAsync({
+        allResponses,
+        uid: user.uid,
+        mssv: user.mssv,
+        gameState,
+        includeLeaderboard: hasResponses
+      })
+      .then(result => {
+        if (!cancelled) {
+          setWorkerAudienceStats(result);
+        }
+      })
+      .catch(err => {
+        console.warn('AudienceView worker stats error:', err);
+      });
+
+    return () => {
+      cancelled = true;
     };
   }, [allResponses, user?.uid, user?.mssv, gameState]);
+
+  const userPerformance = useMemo(() => {
+    if (!workerAudienceStats) return null;
+    return {
+      totalScore: workerAudienceStats.totalScore,
+      scoreBreakdown: workerAudienceStats.scoreBreakdown,
+      rank: workerAudienceStats.rank,
+      accuracyRate: workerAudienceStats.accuracyRate,
+      correctCount: workerAudienceStats.correctCount,
+      totalAnswered: workerAudienceStats.totalAnswered,
+      avgLatency: workerAudienceStats.avgLatency,
+      totalPlayers: workerAudienceStats.totalPlayers
+    };
+  }, [workerAudienceStats]);
 
   // Round 4 (Về đích) detection for Double Down / All-In Risk
   const isVeDichRound = useMemo(() => {
@@ -761,18 +803,23 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   }, [gameState.round_name, gameState.question_id]);
 
   // Battle Royale survival statistics (undefeated players with 100% accuracy)
-  const survivalStats = useMemo(() => {
-    return calculateSurvivalStats(allResponses, undefined, gameState, user?.uid, user?.mssv);
-  }, [allResponses, gameState, user?.uid, user?.mssv]);
+  const survivalStats: SurvivalStats = useMemo(() => {
+    return workerAudienceStats?.survivalStats || {
+      survivorsCount: 0,
+      totalContestants: 0,
+      isUserAlive: true,
+      survivalRate: 100
+    };
+  }, [workerAudienceStats]);
 
   // Streak calculations (strictly NO point multiplier, purely gamification & combo sound)
   const streakStats = useMemo(() => {
-    const history = userPerformance?.audienceScoreState?.history || [];
+    const history = workerAudienceStats?.history || [];
     let currentStreak = 0;
     let maxStreak = 0;
     let temp = 0;
     for (const item of history) {
-      if (item.is_correct) {
+      if (item.isCorrect) {
         temp++;
         if (temp > maxStreak) maxStreak = temp;
       } else {
@@ -780,14 +827,14 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       }
     }
     for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i].is_correct) {
+      if (history[i].isCorrect) {
         currentStreak++;
       } else {
         break;
       }
     }
     return { currentStreak, maxStreak };
-  }, [userPerformance?.audienceScoreState?.history]);
+  }, [workerAudienceStats?.history]);
 
   const offlineNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -993,7 +1040,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       return;
     }
 
-    const isTimerExpired = timeLeft <= 0 && (gameState.status === 'ACTIVE' || gameState.status === 'LOCKED');
+    const isTimerExpired = timeLeft <= 0 && gameState.status === 'LOCKED';
     const isRevealed = gameState.status === 'REVEAL';
 
     if ((isRevealed || isTimerExpired) && gameState.correct_key) {
@@ -1049,10 +1096,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     const limit = Number(gameState?.next_question_wait_limit) || 0;
     const start = Number(gameState?.next_question_wait_start) || 0;
     if (limit <= 0 || start <= 0) return;
-    const interval = setInterval(() => {
+    const remainingMs = (start + limit * 1000) - syncService.getSynchronizedNow();
+    if (remainingMs <= 0) return;
+    const timeoutId = setTimeout(() => {
       setWaitTimerTick(Date.now());
-    }, 250);
-    return () => clearInterval(interval);
+    }, Math.min(remainingMs + 25, 2147483647));
+    return () => clearTimeout(timeoutId);
   }, [gameState?.next_question_wait_limit, gameState?.next_question_wait_start]);
 
   const showQuestionSkeleton = useMemo(() => {
@@ -1082,6 +1131,10 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       if (responses[user.uid].isDoubleDown) {
         setIsDoubleDownActive(true);
       }
+      if (restoredMultiplierQIdRef.current !== gameState.question_id) {
+        setConfidenceMultiplier(normalizeConfidenceMultiplier(responses[user.uid].confidenceMultiplier));
+        restoredMultiplierQIdRef.current = gameState.question_id;
+      }
     } else if (prevQuestionIdRef.current !== gameState.question_id) {
       // Trigger brief skeleton transition while new question data settles from syncService
       setIsTransitioningQuestion(true);
@@ -1099,6 +1152,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       hasAutoSubmittedRef.current = false;
       setTfChoices({});
       setIsDoubleDownActive(false);
+      setConfidenceMultiplier(1.0);
+      setIsSyncingMultiplier(false);
+      restoredMultiplierQIdRef.current = '';
+      if (multiplierSyncTimerRef.current) {
+        clearTimeout(multiplierSyncTimerRef.current);
+        multiplierSyncTimerRef.current = null;
+      }
       aiExplanationService.stopSpeech();
       setIsSpeakingQuestion(false);
       setAiExplanation('');
@@ -1110,10 +1170,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
   }, [gameState.question_id, responses, user?.uid]);
 
-  // Clean up speech synthesis on component unmount
+  // Clean up speech synthesis & multiplier debounce timer on component unmount
   useEffect(() => {
     return () => {
       aiExplanationService.stopSpeech();
+      if (multiplierSyncTimerRef.current) {
+        clearTimeout(multiplierSyncTimerRef.current);
+      }
     };
   }, []);
 
@@ -1217,6 +1280,76 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     }
   }, [gameState.status, gameState.correct_key, user?.uid, responses]);
 
+  const isSingleSubmitRound = useMemo(() => {
+    return ['TRUE_FALSE', 'IMAGE_POLL', 'TRUE_FALSE_4', 'SEQUENCING', 'SHORT_ANSWER', 'FILL_IN_BLANK'].includes(
+      gameState.round_type
+    );
+  }, [gameState.round_type]);
+
+  const handleConfidenceMultiplierChange = useCallback(
+    (nextMultiplier: number) => {
+      const normalized = normalizeConfidenceMultiplier(nextMultiplier);
+      setConfidenceMultiplier(normalized);
+
+      if (
+        hasVotedThisQuestion &&
+        selectedChoice &&
+        !isSingleSubmitRound &&
+        gameState.status === 'ACTIVE' &&
+        timeLeft > 0 &&
+        user?.uid
+      ) {
+        if (multiplierSyncTimerRef.current) {
+          clearTimeout(multiplierSyncTimerRef.current);
+        }
+        setIsSyncingMultiplier(true);
+        multiplierSyncTimerRef.current = setTimeout(async () => {
+          const now = Date.now();
+          const existingLatency = responses?.[user.uid]?.latency_sec;
+          const computedLatency = gameState.server_start_time
+            ? Number(Math.max(0.1, (now - gameState.server_start_time) / 1000).toFixed(2))
+            : 1.0;
+
+          const updatedPayload: UserResponse = {
+            choice: selectedChoice,
+            timestamp: now,
+            latency_sec: existingLatency ?? computedLatency,
+            confidenceMultiplier: normalized,
+            isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
+            tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
+            user_info: {
+              name: user.name,
+              mssv: user.mssv,
+              uid: user.uid,
+              anonymizedUid: user.anonymizedUid || user.uid
+            }
+          };
+
+          try {
+            await syncService.submitResponse(gameState.question_id, user.uid, updatedPayload);
+          } catch (err) {
+            console.warn('Sync updated confidence multiplier failed:', err);
+          } finally {
+            setIsSyncingMultiplier(false);
+          }
+        }, 300);
+      }
+    },
+    [
+      hasVotedThisQuestion,
+      selectedChoice,
+      isSingleSubmitRound,
+      gameState.status,
+      gameState.question_id,
+      gameState.server_start_time,
+      timeLeft,
+      user,
+      responses,
+      isVeDichRound,
+      isDoubleDownActive
+    ]
+  );
+
   // Handle Option Tap
   const handleOptionSelect = async (optionKey: string) => {
     if (!user) {
@@ -1247,6 +1380,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       choice: optionKey,
       timestamp: now,
       latency_sec: Number(latency.toFixed(2)),
+      confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
       isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
       tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
       user_info: {
@@ -1298,6 +1432,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         choice: vcnvPrediction.trim().toUpperCase(),
         timestamp: now,
         latency_sec: Number(latency.toFixed(2)),
+        confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
         user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
       });
       setIsEditingVcnv(false);
@@ -1386,6 +1521,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         choice: candidateChoice,
         timestamp: now,
         latency_sec: Number(latency.toFixed(2)),
+        confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
         isDoubleDown: isVeDichRound ? isDoubleDownActive : undefined,
         tabSwitchCount: tabSwitchCountRef.current > 0 ? tabSwitchCountRef.current : undefined,
         user_info: {
@@ -1426,6 +1562,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           choice: vcnvPrediction.trim().toUpperCase(),
           timestamp: now,
           latency_sec: Number(latency.toFixed(2)),
+          confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
           user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
         });
       } catch (err) {
@@ -1447,6 +1584,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             choice: riskAnswerText.trim().toUpperCase(),
             timestamp: syncNow,
             latency_sec: latency,
+            confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
             user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
           });
         } catch (err) {
@@ -1459,6 +1597,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             choice: riskCnvText.trim().toUpperCase(),
             timestamp: syncNow,
             latency_sec: latency,
+            confidenceMultiplier: normalizeConfidenceMultiplier(confidenceMultiplier),
             user_info: { name: user.name, mssv: user.mssv, uid: user.uid, anonymizedUid: user.anonymizedUid || user.uid }
           });
         } catch (err) {
@@ -1487,7 +1626,8 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
     riskCnvText,
     hasSubmittedRisk,
     isDoubleDownActive,
-    isVeDichRound
+    isVeDichRound,
+    confidenceMultiplier
   ]);
 
   useEffect(() => {
@@ -1732,11 +1872,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isWakeLockLocked={isWakeLockLocked}
           onToggleWakeLock={onToggleWakeLock}
         />
-        <AudienceSurveyModal
-          gameState={gameState}
-          user={user}
-          activeCount={survivalStats?.totalContestants || 1}
-        />
+        <React.Suspense fallback={null}>
+          <AudienceSurveyModal
+            gameState={gameState}
+            user={user}
+          />
+        </React.Suspense>
       </div>
     );
   }
@@ -1778,13 +1919,15 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           </div>
 
           <div className="flex-1 w-full p-2 sm:p-4">
-            <Leaderboard
-              allResponses={allResponses || {}}
-              gameState={gameState}
-              activeCount={1}
-              isAudienceView={true}
-              onClose={() => setShowConcludedLeaderboard(false)}
-            />
+            <React.Suspense fallback={null}>
+              <Leaderboard
+                allResponses={allResponses || {}}
+                gameState={gameState}
+                activeCount={1}
+                isAudienceView={true}
+                onClose={() => setShowConcludedLeaderboard(false)}
+              />
+            </React.Suspense>
           </div>
         </div>
       );
@@ -1812,11 +1955,12 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
             }
           }}
         />
-        <AudienceSurveyModal
-          gameState={gameState}
-          user={user}
-          activeCount={survivalStats?.totalContestants || 1}
-        />
+        <React.Suspense fallback={null}>
+          <AudienceSurveyModal
+            gameState={gameState}
+            user={user}
+          />
+        </React.Suspense>
       </div>
     );
   }
@@ -1828,17 +1972,22 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           gameState={gameState}
           activeCount={survivalStats?.totalContestants || 1}
         />
-        <AudienceSurveyModal
-          gameState={gameState}
-          user={user}
-          activeCount={survivalStats?.totalContestants || 1}
-        />
+        <React.Suspense fallback={null}>
+          <AudienceSurveyModal
+            gameState={gameState}
+            user={user}
+          />
+        </React.Suspense>
       </div>
     );
   }
 
   if (gameState.panic_mode) {
-    return <ClientLandingPage gameState={gameState} isPanic={true} />;
+    return (
+      <React.Suspense fallback={null}>
+        <ClientLandingPage gameState={gameState} isPanic={true} />
+      </React.Suspense>
+    );
   }
   const isPredictorDraw = Boolean(
     gameState.lucky_draw &&
@@ -1847,18 +1996,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
   );
 
   if (!isPredictorDraw && (gameState.active_module === 'LUCKY_DRAW' || (gameState.lucky_draw && gameState.lucky_draw.status !== 'IDLE'))) {
-    return <LuckyDrawAudience gameState={gameState} currentUserInfo={user} />;
+    return (
+      <React.Suspense fallback={null}>
+        <LuckyDrawAudience gameState={gameState} currentUserInfo={user} />
+      </React.Suspense>
+    );
   }
 
   if (gameState.show_summary) {
     return (
       <div className="flex-1 w-full h-full relative z-50">
-        <Leaderboard
-          allResponses={allResponses || {}}
-          gameState={gameState}
-          activeCount={1}
-          isAudienceView={true}
-        />
+        <React.Suspense fallback={null}>
+          <Leaderboard
+            allResponses={allResponses || {}}
+            gameState={gameState}
+            activeCount={1}
+            isAudienceView={true}
+          />
+        </React.Suspense>
       </div>
     );
   }
@@ -2373,6 +2528,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                         className="w-full fluent-box-nested border border-amber-500/50 focus:border-amber-400 rounded-[2px] px-3.5 py-3 text-sm text-white font-mono uppercase outline-none placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400"
                       />
                     </div>
+                    <ConfidenceMultiplierControl
+                      value={confidenceMultiplier}
+                      onChange={setConfidenceMultiplier}
+                      roundId="round2"
+                      isHighContrast={isHighContrast}
+                      isVi={localLanguage === 'vi'}
+                    />
                     <button
                       type="button"
                       aria-label={t("view_send_risk_predict", localLanguage)}
@@ -2583,6 +2745,13 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                   className="w-full fluent-box-nested border border-white/15 focus:border-[#F7CAC9] rounded-[2px] px-4 py-3.5 text-sm sm:text-base text-white font-mono uppercase text-center transition outline-none shadow-inner placeholder:text-[#B6A6D8]/60 focus:ring-2 focus:ring-[#F7CAC9]"
                 />
               </div>
+              <ConfidenceMultiplierControl
+                value={confidenceMultiplier}
+                onChange={setConfidenceMultiplier}
+                roundId="round2"
+                isHighContrast={isHighContrast}
+                isVi={localLanguage === 'vi'}
+              />
               <div className="flex gap-2">
                 {isEditingVcnv && (
                   <button
@@ -2623,7 +2792,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={onToggleWakeLock}
-          onOpenShareModal={() => setIsShareModalOpen(true)}
+          onOpenShareModal={handleOpenLocalShareModal}
           onOpenProfile={onOpenProfile}
           onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
@@ -2776,7 +2945,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={onToggleWakeLock}
-          onOpenShareModal={() => setIsShareModalOpen(true)}
+          onOpenShareModal={handleOpenLocalShareModal}
           onOpenProfile={onOpenProfile}
           onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
@@ -2815,7 +2984,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       gameState.round_name?.includes('Tăng tốc') ||
       gameState.question_id?.startsWith('TT');
     const timerProgress = Math.max(0, (timeLeft / (gameState.time_limit || 1)) * 100);
-    const questionRevealKey = `${gameState.question_id || 'q'}-${gameState.question_start_time || 0}`;
+    const questionRevealKey = `${gameState.question_id || 'q'}-${gameState.server_start_time || 0}`;
 
 
 
@@ -3283,6 +3452,21 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               {/* RIGHT Column: Input Controls & Choice Confirmation */}
               <div className={isLongQuestion ? "col-span-1 lg:col-span-12 flex flex-col justify-between gap-4" : "lg:col-span-7 flex flex-col justify-between gap-4"}>
                 <div className="flex-1">
+                  {!showQuestionSkeleton && (
+                    <ConfidenceMultiplierControl
+                      value={confidenceMultiplier}
+                      onChange={handleConfidenceMultiplierChange}
+                      roundId={gameState.round_name || gameState.question_id || 'round1'}
+                      disabled={gameState.status !== 'ACTIVE' || timeLeft <= 0 || (hasVotedThisQuestion && isSingleSubmitRound)}
+                      isDoubleDown={isVeDichRound && isDoubleDownActive}
+                      isHighContrast={isHighContrast}
+                      isVi={localLanguage === 'vi'}
+                      canUpdateAfterVote={!isSingleSubmitRound}
+                      hasVotedThisQuestion={hasVotedThisQuestion}
+                      isSyncingMultiplier={isSyncingMultiplier}
+                      className="mb-4"
+                    />
+                  )}
                   {/* Input Controls */}
                   {showQuestionSkeleton ? (
                     <AudienceQuestionSkeleton
@@ -3915,6 +4099,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 onActivateDoubleDown={() => {
                   if (isDoubleDownActive || hasVotedThisQuestion) return;
                   setIsDoubleDownActive(true);
+                  setConfidenceMultiplier(prev => Math.max(normalizeConfidenceMultiplier(prev), 2.0));
                   soundFx.playAllInActivation();
                   vibrateLifeline();
                 }}
@@ -3934,7 +4119,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={onToggleWakeLock}
-          onOpenShareModal={() => setIsShareModalOpen(true)}
+          onOpenShareModal={handleOpenLocalShareModal}
           onOpenProfile={onOpenProfile}
           onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
@@ -3997,6 +4182,24 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
                 <div className="text-2xl font-black font-mono text-[#F7CAC9]">
                   {t("view_option", localLanguage)} [{selectedChoice}]
                 </div>
+                {(() => {
+                  const lockedMult = normalizeConfidenceMultiplier(
+                    responses[user?.uid || '']?.confidenceMultiplier ?? confidenceMultiplier
+                  );
+                  if (lockedMult <= 1.0 && !responses[user?.uid || '']?.isDoubleDown) return null;
+                  const effectiveMult =
+                    isVeDichRound && responses[user?.uid || '']?.isDoubleDown
+                      ? Math.max(lockedMult, 2.0)
+                      : lockedMult;
+                  return (
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-[#F7CAC9]/15 border border-[#F7CAC9]/40 text-[#FCEEEC] font-mono text-xs font-bold tabular-nums">
+                      <span>
+                        {localLanguage === 'vi' ? 'Hệ số tự tin:' : 'Confidence Multiplier:'} x
+                        {effectiveMult.toFixed(effectiveMult % 1 === 0 ? 1 : 2).replace(/(\.\d)0$/, '$1')}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="text-sm text-[#B6A6D8]">
@@ -4052,7 +4255,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
           isWakeLockLocked={isWakeLockLocked}
           isWakeLockSupported={isWakeLockSupported}
           onToggleWakeLock={onToggleWakeLock}
-          onOpenShareModal={() => setIsShareModalOpen(true)}
+          onOpenShareModal={handleOpenLocalShareModal}
           onOpenProfile={onOpenProfile}
           onOpenLogModal={onOpenLogModal}
           onOpenQAModal={onOpenQAModal}
@@ -4235,6 +4438,52 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
               </div>
             </div>
           )}
+
+          {/* Confidence Multiplier & Points Outcome Card */}
+          {hasAnswered && gameState.correct_key && (() => {
+            const myResp = user?.uid ? responses[user.uid] : undefined;
+            const recordedMult = normalizeConfidenceMultiplier(myResp?.confidenceMultiplier ?? confidenceMultiplier);
+            const effectiveMult =
+              isVeDichRound && myResp?.isDoubleDown ? Math.max(recordedMult, 2.0) : recordedMult;
+            const revealEval = evaluateUserChoice(
+              userChoice,
+              gameState.correct_key || '',
+              gameState.round_type,
+              gameState.question_id,
+              myResp?.latency_sec,
+              undefined,
+              gameState.time_limit,
+              recordedMult,
+              myResp?.isDoubleDown
+            );
+            const ptsText =
+              revealEval.pointsEarned > 0
+                ? `+${revealEval.pointsEarned}đ`
+                : `${revealEval.pointsEarned}đ`;
+
+            return (
+              <div className="mt-3 flex items-center justify-center">
+                <div
+                  className={`px-3.5 py-1.5 rounded-[2px] font-mono text-xs font-bold tabular-nums flex flex-wrap items-center justify-center gap-2 border ${
+                    revealEval.pointsEarned > 0
+                      ? 'bg-emerald-950/75 border-emerald-500/50 text-emerald-300'
+                      : revealEval.pointsEarned < 0
+                      ? 'bg-rose-950/80 border-rose-500/60 text-rose-300'
+                      : 'bg-white/5 border-white/15 text-slate-300'
+                  }`}
+                >
+                  <span className="text-[#F7CAC9]">
+                    {localLanguage === 'vi' ? 'Hệ số tự tin' : 'Confidence Multiplier'} x
+                    {effectiveMult.toFixed(effectiveMult % 1 === 0 ? 1 : 2).replace(/(\.\d)0$/, '$1')}
+                  </span>
+                  <span className="opacity-50">•</span>
+                  <span className="font-black">
+                    {localLanguage === 'vi' ? 'Kết quả:' : 'Net:'} {ptsText}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Upvote & Like Question Action and AI Read Answer */}
           <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-center gap-3">
@@ -4660,7 +4909,7 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
         isWakeLockLocked={isWakeLockLocked}
         isWakeLockSupported={isWakeLockSupported}
         onToggleWakeLock={onToggleWakeLock}
-        onOpenShareModal={() => setIsShareModalOpen(true)}
+        onOpenShareModal={handleOpenLocalShareModal}
         onOpenProfile={onOpenProfile}
         onOpenLogModal={onOpenLogModal}
         onOpenQAModal={onOpenQAModal}
@@ -4673,12 +4922,16 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
 
         {/* Floating Quick Share Button */}
 
-        <ShareGameModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          gameTitle="Beyond The Internet 2027"
-          roundName={gameState.round_name || gameState.category}
-        />
+        {isShareModalOpen && (
+          <React.Suspense fallback={null}>
+            <ShareGameModal
+              isOpen={isShareModalOpen}
+              onClose={() => setIsShareModalOpen(false)}
+              gameTitle="Beyond The Internet 2027"
+              roundName={gameState.round_name || gameState.category}
+            />
+          </React.Suspense>
+        )}
       </div>
     );
   }
@@ -4690,23 +4943,34 @@ const AudienceViewContent: React.FC<AudienceViewProps> = ({
       {renderContent()}
 
       {/* Post-Match Infographic Achievement Card (Nhóm 4) */}
-      <PostMatchCardModal
-        isOpen={isPostMatchModalOpen}
-        onClose={() => setIsPostMatchModalOpen(false)}
-        user={user}
-        totalScore={userPerformance?.totalScore || 0}
-        rank={typeof userPerformance?.rank === 'number' ? userPerformance.rank : 1}
-        totalContestants={survivalStats.totalContestants || userPerformance?.totalPlayers || 1}
-        accuracyRate={userPerformance?.accuracyRate || 0}
-        maxStreak={streakStats.maxStreak}
-        isSurvivor={survivalStats.isUserAlive}
-      />
+      {isPostMatchModalOpen && (
+        <React.Suspense fallback={null}>
+          <PostMatchCardModal
+            isOpen={isPostMatchModalOpen}
+            onClose={() => setIsPostMatchModalOpen(false)}
+            user={user}
+            totalScore={userPerformance?.totalScore || 0}
+            rank={typeof userPerformance?.rank === 'number' ? userPerformance.rank : 1}
+            totalContestants={survivalStats.totalContestants || userPerformance?.totalPlayers || 1}
+            accuracyRate={userPerformance?.accuracyRate || 0}
+            maxStreak={streakStats.maxStreak}
+            isSurvivor={survivalStats.isUserAlive}
+          />
+        </React.Suspense>
+      )}
     </>
   );
-};
+});
 
-export const AudienceView: React.FC<AudienceViewProps> = (props) => {
+export const AudienceView: React.FC<AudienceViewProps> = React.memo((props) => {
   const { localLanguage } = useLanguage();
+  const { responses: syncedResponses, allResponses: syncedAllResponses } = useAudienceData({
+    user: props.user,
+    enabled: props.responses === undefined && props.allResponses === undefined,
+    onUserSynced: props.onUserSynced
+  });
+  const resolvedAllResponses = props.allResponses ?? syncedAllResponses;
+  const resolvedResponses = props.responses ?? (resolvedAllResponses[props.gameState.question_id] || syncedResponses || {});
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -4745,37 +5009,87 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   );
 
   const [qaModalInitialTab, setQaModalInitialTab] = useState<'ASK' | 'MY_QUESTIONS' | 'COMMUNITY'>('ASK');
-  const handleOpenLogModal = props.onOpenLogModal || (() => setIsLogModalOpen(true));
-  const handleOpenShareModal = props.onOpenShareModal || (() => setIsShareModalOpen(true));
-  const handleOpenLeaderboard = props.onOpenLeaderboard || (() => setIsRealtimeLeaderboardOpen(true));
-  const handleOpenRulesModal = props.onOpenRulesModal || (() => setIsRulesModalOpen(true));
-  const handleOpenShoutModal = () => setIsShoutModalOpen(true);
-  const handleOpenPostMatchModal = () => setIsPostMatchModalOpen(true);
-  const handleOpenQAModal = (tab: 'ASK' | 'MY_QUESTIONS' | 'COMMUNITY' = 'ASK') => {
+  const handleOpenLogModal = useCallback(() => {
+    if (props.onOpenLogModal) {
+      props.onOpenLogModal();
+    } else {
+      setIsLogModalOpen(true);
+    }
+  }, [props.onOpenLogModal]);
+  const handleOpenShareModal = useCallback(() => {
+    if (props.onOpenShareModal) {
+      props.onOpenShareModal();
+    } else {
+      setIsShareModalOpen(true);
+    }
+  }, [props.onOpenShareModal]);
+  const handleOpenLeaderboard = useCallback(() => {
+    if (props.onOpenLeaderboard) {
+      props.onOpenLeaderboard();
+    } else {
+      setIsRealtimeLeaderboardOpen(true);
+    }
+  }, [props.onOpenLeaderboard]);
+  const handleOpenRulesModal = useCallback(() => {
+    if (props.onOpenRulesModal) {
+      props.onOpenRulesModal();
+    } else {
+      setIsRulesModalOpen(true);
+    }
+  }, [props.onOpenRulesModal]);
+  const handleOpenShoutModal = useCallback(() => setIsShoutModalOpen(true), []);
+  const handleOpenPostMatchModal = useCallback(() => setIsPostMatchModalOpen(true), []);
+  const handleOpenQAModal = useCallback((tab: 'ASK' | 'MY_QUESTIONS' | 'COMMUNITY' = 'ASK') => {
     setQaModalInitialTab(tab);
     setIsQAModalOpen(true);
-  };
+  }, []);
 
   const hasAnnouncer = Boolean(props.gameState.announcer_overlay?.active && props.gameState.announcer_overlay?.text?.trim());
   const isHighContrast = Boolean(props.isHighContrast);
   const { isSupported: isWakeLockSupported, isLocked: isWakeLockLocked, toggleLock: toggleWakeLock } = useScreenWakeLock(true);
 
-  // Compute live user score & stats for post-match card generator
-  const audienceScoreState = useMemo(() => {
-    return computeAudienceScoreFromResponses(props.allResponses || {}, props.user?.uid, props.user?.mssv, undefined, props.gameState);
-  }, [props.allResponses, props.user?.uid, props.user?.mssv, props.gameState]);
+  // Compute live user score & stats off the main thread only when the post-match card modal is open
+  const [postMatchStats, setPostMatchStats] = useState<AudienceStatsWorkerResult | null>(null);
 
-  const survivalStats = useMemo(() => {
-    return calculateSurvivalStats(props.allResponses, undefined, props.gameState, props.user?.uid, props.user?.mssv);
-  }, [props.allResponses, props.gameState, props.user?.uid, props.user?.mssv]);
+  useEffect(() => {
+    if (!isPostMatchModalOpen || !props.user?.uid) {
+      if (!isPostMatchModalOpen) setPostMatchStats(null);
+      return;
+    }
+
+    let cancelled = false;
+    workerComputeService
+      .computeAudienceStatsAsync({
+        allResponses: resolvedAllResponses,
+        uid: props.user.uid,
+        mssv: props.user.mssv,
+        gameState: props.gameState,
+        includeLeaderboard: true
+      })
+      .then(result => {
+        if (!cancelled) {
+          setPostMatchStats(result);
+        }
+      })
+      .catch(err => {
+        console.warn('AudienceView post-match worker stats error:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPostMatchModalOpen, resolvedAllResponses, props.user?.uid, props.user?.mssv, props.gameState]);
 
   const streakStats = useMemo(() => {
-    const history = audienceScoreState.history || [];
+    if (!isPostMatchModalOpen || !postMatchStats) {
+      return { currentStreak: 0, maxStreak: 0 };
+    }
+    const history = postMatchStats.history || [];
     let currentStreak = 0;
     let maxStreak = 0;
     let temp = 0;
     for (const item of history) {
-      if (item.is_correct) {
+      if (item.isCorrect) {
         temp++;
         if (temp > maxStreak) maxStreak = temp;
       } else {
@@ -4783,25 +5097,21 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       }
     }
     for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i].is_correct) {
+      if (history[i].isCorrect) {
         currentStreak++;
       } else {
         break;
       }
     }
     return { currentStreak, maxStreak };
-  }, [audienceScoreState.history]);
-
-  const leaderboard = useMemo(() => {
-    return calculateLeaderboard(props.allResponses || {}, undefined, props.gameState);
-  }, [props.allResponses, props.gameState]);
-
-  const myData = useMemo(() => {
-    return leaderboard.find(u => u.uid === props.user?.uid || (props.user?.mssv && u.mssv === props.user.mssv));
-  }, [leaderboard, props.user?.uid, props.user?.mssv]);
+  }, [isPostMatchModalOpen, postMatchStats]);
 
   if (props.gameState.panic_mode) {
-    return <ClientLandingPage gameState={props.gameState} isPanic={true} />;
+    return (
+      <React.Suspense fallback={null}>
+        <ClientLandingPage gameState={props.gameState} isPanic={true} />
+      </React.Suspense>
+    );
   }
 
   const isWaitingRoom = Boolean(
@@ -4812,41 +5122,7 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
   );
   const isEventSpecialStage = isWaitingRoom || isConcluded;
 
-  return (
-    <div className={`flex flex-col h-full relative transition-all duration-300 ${isHighContrast ? 'audience-high-contrast bg-black/50 backdrop-blur-[24px] saturate-150' : ''}`}>
-      {!isEventSpecialStage && (
-        <ScoreDisplay 
-          user={props.user} 
-          allResponses={props.allResponses || {}} 
-          gameState={props.gameState} 
-          isHighContrast={isHighContrast}
-          onToggleHighContrast={props.onToggleHighContrast}
-          isWakeLockLocked={isWakeLockLocked}
-          isWakeLockSupported={isWakeLockSupported}
-          onToggleWakeLock={toggleWakeLock}
-          onOpenLogModal={handleOpenLogModal}
-          onOpenPostMatchModal={handleOpenPostMatchModal}
-          onOpenRulesModal={handleOpenRulesModal}
-        />
-      )}
-
-      {/* Real-time Audience Shout Marquee Bar (Hidden in waiting room & conclusion) */}
-      {!isEventSpecialStage && (
-        <AudienceShoutMarquee
-          user={props.user}
-          onOpenShoutModal={handleOpenShoutModal}
-          variant="audience"
-          isHighContrast={isHighContrast}
-        />
-      )}
-
-      {!isEventSpecialStage && (
-        <QuickTips
-          gameState={props.gameState}
-          user={props.user}
-          isHighContrast={isHighContrast}
-          onOpenRulesModal={handleOpenRulesModal}
-          leftSlot={
+  const quickTipsLeftSlot = useMemo(() => (
             <div className="fluent-action-group shadow-[0_6px_24px_rgba(0,0,0,0.32)]">
               <button
                 id="btn-audience-leaderboard-floating"
@@ -4960,7 +5236,43 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
                 <span className="font-bold tracking-wide">{localLanguage !== 'vi' ? 'Rules' : 'Luật Chơi'}</span>
               </button>
             </div>
-          }
+  ), [localLanguage, handleOpenLeaderboard, handleOpenPostMatchModal, handleOpenRulesModal]);
+
+  return (
+    <div className={`flex flex-col h-full relative transition-all duration-300 ${isHighContrast ? 'audience-high-contrast bg-black/50 backdrop-blur-[24px] saturate-150' : ''}`}>
+      {!isEventSpecialStage && (
+        <ScoreDisplay 
+          user={props.user} 
+          allResponses={resolvedAllResponses} 
+          gameState={props.gameState} 
+          isHighContrast={isHighContrast}
+          onToggleHighContrast={props.onToggleHighContrast}
+          isWakeLockLocked={isWakeLockLocked}
+          isWakeLockSupported={isWakeLockSupported}
+          onToggleWakeLock={toggleWakeLock}
+          onOpenLogModal={handleOpenLogModal}
+          onOpenPostMatchModal={handleOpenPostMatchModal}
+          onOpenRulesModal={handleOpenRulesModal}
+        />
+      )}
+
+      {/* Real-time Audience Shout Marquee Bar (Hidden in waiting room & conclusion) */}
+      {!isEventSpecialStage && (
+        <AudienceShoutMarquee
+          user={props.user}
+          onOpenShoutModal={handleOpenShoutModal}
+          variant="audience"
+          isHighContrast={isHighContrast}
+        />
+      )}
+
+      {!isEventSpecialStage && (
+        <QuickTips
+          gameState={props.gameState}
+          user={props.user}
+          isHighContrast={isHighContrast}
+          onOpenRulesModal={handleOpenRulesModal}
+          leftSlot={quickTipsLeftSlot}
         />
       )}
 
@@ -4973,6 +5285,8 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       <div className={`flex-1 overflow-x-hidden ${isEventSpecialStage ? 'pb-4' : hasAnnouncer ? 'pb-44 sm:pb-28' : 'pb-[calc(76px+env(safe-area-inset-bottom,0px))] sm:pb-24'}`}>
         <AudienceViewContent 
           {...props} 
+          responses={resolvedResponses}
+          allResponses={resolvedAllResponses}
           onOpenLogModal={handleOpenLogModal}
           onOpenShareModal={handleOpenShareModal}
           onOpenQAModal={handleOpenQAModal}
@@ -5178,96 +5492,106 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         document.body
       )}
 
-      {/* Audience Shout Modal */}
-      <AudienceShoutModal
-        isOpen={isShoutModalOpen}
-        onClose={() => setIsShoutModalOpen(false)}
-        user={props.user}
-        onOpenRegister={props.onOpenRegister}
-      />
+      <React.Suspense fallback={null}>
+        {isShoutModalOpen && (
+          <AudienceShoutModal
+            isOpen={isShoutModalOpen}
+            onClose={() => setIsShoutModalOpen(false)}
+            user={props.user}
+            onOpenRegister={props.onOpenRegister}
+          />
+        )}
 
-      {/* Audience Cheer Modal (createPortal) */}
-      <AudienceCheerModal
-        isOpen={isCheerModalOpen}
-        onClose={() => setIsCheerModalOpen(false)}
-        user={props.user}
-        isHighContrast={isHighContrast}
-      />
+        {isCheerModalOpen && (
+          <AudienceCheerModal
+            isOpen={isCheerModalOpen}
+            onClose={() => setIsCheerModalOpen(false)}
+            user={props.user}
+            isHighContrast={isHighContrast}
+          />
+        )}
 
-      {/* Champion Match Vote Modal (Bình chọn Thí sinh Chiến thắng chung cuộc) */}
-      <ChampionVoteModal
-        isOpen={isChampionVoteModalOpen}
-        onClose={() => setIsChampionVoteModalOpen(false)}
-        gameState={props.gameState}
-        user={props.user}
-      />
+        {isChampionVoteModalOpen && (
+          <ChampionVoteModal
+            isOpen={isChampionVoteModalOpen}
+            onClose={() => setIsChampionVoteModalOpen(false)}
+            gameState={props.gameState}
+            user={props.user}
+          />
+        )}
 
-      {/* 'Luck of the Draw' Overlay for Predictor Draw */}
-      {isPredictorDrawActive && (
-        <LuckOfTheDrawOverlay
-          gameState={props.gameState}
-          currentUserInfo={props.user}
-          isMinimized={isPredictorOverlayMinimized}
-          onClose={() => setIsPredictorOverlayMinimized(true)}
-          onRestore={() => setIsPredictorOverlayMinimized(false)}
-        />
-      )}
+        {isPredictorDrawActive && (
+          <LuckOfTheDrawOverlay
+            gameState={props.gameState}
+            currentUserInfo={props.user}
+            isMinimized={isPredictorOverlayMinimized}
+            onClose={() => setIsPredictorOverlayMinimized(true)}
+            onRestore={() => setIsPredictorOverlayMinimized(false)}
+          />
+        )}
 
-      {/* Audience Q&A Modal (createPortal) */}
-      <AudienceQAModal
-        isOpen={isQAModalOpen}
-        onClose={() => setIsQAModalOpen(false)}
-        user={props.user}
-        isHighContrast={isHighContrast}
-        initialTab={qaModalInitialTab}
-      />
+        {isQAModalOpen && (
+          <AudienceQAModal
+            isOpen={isQAModalOpen}
+            onClose={() => setIsQAModalOpen(false)}
+            user={props.user}
+            isHighContrast={isHighContrast}
+            initialTab={qaModalInitialTab}
+          />
+        )}
 
-      {/* Question & Response Read-Only Log Modal */}
-      <AudienceQuestionLogModal
-        isOpen={isLogModalOpen}
-        onClose={() => setIsLogModalOpen(false)}
-        user={props.user}
-        allResponses={props.allResponses || {}}
-        gameState={props.gameState}
-      />
+        {isLogModalOpen && (
+          <AudienceQuestionLogModal
+            isOpen={isLogModalOpen}
+            onClose={() => setIsLogModalOpen(false)}
+            user={props.user}
+            allResponses={resolvedAllResponses}
+            gameState={props.gameState}
+          />
+        )}
 
-      {/* Real-time Audience Leaderboard Modal */}
-      <AudienceRealtimeLeaderboard
-        isOpen={isRealtimeLeaderboardOpen}
-        onClose={() => setIsRealtimeLeaderboardOpen(false)}
-        user={props.user}
-        gameState={props.gameState}
-        initialAllResponses={props.allResponses}
-        onOpenShareModal={handleOpenShareModal}
-      />
+        {isRealtimeLeaderboardOpen && (
+          <AudienceRealtimeLeaderboard
+            isOpen={isRealtimeLeaderboardOpen}
+            onClose={() => setIsRealtimeLeaderboardOpen(false)}
+            user={props.user}
+            gameState={props.gameState}
+            initialAllResponses={resolvedAllResponses}
+            onOpenShareModal={handleOpenShareModal}
+          />
+        )}
 
-      {/* Share Modal */}
-      <ShareGameModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        gameTitle="Beyond The Internet 2027"
-        roundName={props.gameState.round_name || props.gameState.category}
-      />
+        {isShareModalOpen && (
+          <ShareGameModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            gameTitle="Beyond The Internet 2027"
+            roundName={props.gameState.round_name || props.gameState.category}
+          />
+        )}
 
-      {/* Post-Match Infographic Achievement Card Modal (Nhóm 4) */}
-      <PostMatchCardModal
-        isOpen={isPostMatchModalOpen}
-        onClose={() => setIsPostMatchModalOpen(false)}
-        user={props.user}
-        totalScore={getAudienceTotalScore(audienceScoreState)}
-        rank={typeof myData?.rank === 'number' ? myData.rank : 1}
-        totalContestants={survivalStats.totalContestants || leaderboard.length || 1}
-        accuracyRate={myData?.accuracyRate || 0}
-        maxStreak={streakStats.maxStreak}
-        isSurvivor={survivalStats.isUserAlive}
-      />
+        {isPostMatchModalOpen && postMatchStats && (
+          <PostMatchCardModal
+            isOpen={isPostMatchModalOpen}
+            onClose={() => setIsPostMatchModalOpen(false)}
+            user={props.user}
+            totalScore={postMatchStats.totalScore}
+            rank={typeof postMatchStats.rank === 'number' ? postMatchStats.rank : 1}
+            totalContestants={postMatchStats.survivalStats.totalContestants || postMatchStats.totalPlayers || 1}
+            accuracyRate={postMatchStats.accuracyRate}
+            maxStreak={streakStats.maxStreak}
+            isSurvivor={postMatchStats.survivalStats.isUserAlive}
+          />
+        )}
 
-      {/* BTI 2027 Game Rules Modal */}
-      <GameRulesModal
-        isOpen={isRulesModalOpen}
-        onClose={() => setIsRulesModalOpen(false)}
-        isHighContrast={isHighContrast}
-      />
+        {isRulesModalOpen && (
+          <GameRulesModal
+            isOpen={isRulesModalOpen}
+            onClose={() => setIsRulesModalOpen(false)}
+            isHighContrast={isHighContrast}
+          />
+        )}
+      </React.Suspense>
 
       {/* Live Highlighted Question Toast Notification from Admin */}
       <AudienceHighlightedQuestionToast
@@ -5275,9 +5599,6 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
         onOpenQAModal={() => handleOpenQAModal('COMMUNITY')}
         isHighContrast={isHighContrast}
       />
-
-
-      
 
       {/* Synchronized Audience Light Show / Flash Mob Overlay */}
       <AudienceLightShowOverlay
@@ -5311,14 +5632,16 @@ export const AudienceView: React.FC<AudienceViewProps> = (props) => {
       )}
 
       {/* 10% Audience Google Form Random Survey Modal */}
-      <AudienceSurveyModal
-        gameState={props.gameState}
-        user={props.user}
-        isHighContrast={isHighContrast}
-      />
+      <React.Suspense fallback={null}>
+        <AudienceSurveyModal
+          gameState={props.gameState}
+          user={props.user}
+          isHighContrast={isHighContrast}
+        />
+      </React.Suspense>
 
       {/* Live Broadcast Announcer Overlay */}
       <AnnouncerOverlay overlay={props.gameState.announcer_overlay} mode="audience" isHighContrast={isHighContrast} />
     </div>
   );
-};
+});

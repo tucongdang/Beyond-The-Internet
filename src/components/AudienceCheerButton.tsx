@@ -32,7 +32,7 @@ const getCheerTypes = (localLanguage: string) => ([
   { type: 'HARD', label: localLanguage !== 'vi' ? 'So Hard' : 'Khó quá', icon: '🤯', color: 'from-purple-500 to-pink-600' }
 ]);
 
-export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
+export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = React.memo(({
   user,
   isHighContrast = false,
   className = ''
@@ -239,4 +239,4 @@ export const AudienceCheerButton: React.FC<AudienceCheerButtonProps> = ({
       </div>
     </div>
   );
-};
+});

@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Bot, Sparkles, MessageSquare } from 'lucide-react';
+import { Bot, Sparkles } from 'lucide-react';
 import { GameState, UserInfo } from '../types';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap } from '../utils/hapticUtils';
-import { AssistantChatModal } from './AssistantChatModal';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
+
+const AssistantChatModal = lazyWithRetry(
+  () => import('./AssistantChatModal').then(m => ({ default: m.AssistantChatModal })),
+  'AssistantChatModal'
+);
 
 export interface ChatAssistantWidgetProps {
   gameState: GameState;
@@ -15,7 +20,7 @@ export interface ChatAssistantWidgetProps {
   initialTab?: 'chat' | 'facts';
 }
 
-export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
+export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = React.memo(({
   gameState,
   user,
   currentView,
@@ -25,6 +30,7 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
   initialTab
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [hasOpenedOnce, setHasOpenedOnce] = useState<boolean>(false);
 
   // If in pure stage projector view, do not show floating bubble
   if (currentView === 'projector') {
@@ -42,6 +48,7 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
     vibrateTap();
     if (!isOpen) {
       soundFx.playTing();
+      setHasOpenedOnce(true);
     } else {
       soundFx.playClick();
     }
@@ -80,19 +87,23 @@ export const ChatAssistantWidget: React.FC<ChatAssistantWidgetProps> = ({
         </button>
       )}
 
-      {/* Assistant Chat Modal with subtle conversational sound effects */}
-      <AssistantChatModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        gameState={gameState}
-        user={user}
-        activeRoundName={activeRoundName}
-        activeStatus={activeStatus}
-        promptContext={roundPromptContext}
-        onMessageSent={onMessageSent || (() => soundFx.playMessageSent())}
-        onMessageReceived={onMessageReceived || (() => soundFx.playMessageReceived())}
-        initialTab={initialTab}
-      />
+      {/* Assistant Chat Modal mounted lazily on first open */}
+      {hasOpenedOnce && (
+        <React.Suspense fallback={null}>
+          <AssistantChatModal
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            gameState={gameState}
+            user={user}
+            activeRoundName={activeRoundName}
+            activeStatus={activeStatus}
+            promptContext={roundPromptContext}
+            onMessageSent={onMessageSent || (() => soundFx.playMessageSent())}
+            onMessageReceived={onMessageReceived || (() => soundFx.playMessageReceived())}
+            initialTab={initialTab}
+          />
+        </React.Suspense>
+      )}
     </>
   );
-};
+});

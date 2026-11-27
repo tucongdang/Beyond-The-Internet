@@ -41,7 +41,7 @@ interface ProjectorControlHubProps {
   isCompact?: boolean;
 }
 
-export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
+export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = React.memo(({
   gameState,
   activeCount,
   triggerHudToast,
@@ -550,4 +550,4 @@ export const ProjectorControlHub: React.FC<ProjectorControlHubProps> = ({
       )}
     </div>
   );
-};
+});

@@ -25,10 +25,11 @@ import {
   Share2
 } from 'lucide-react';
 import { GameState, UserInfo, UserResponse, QuestionItem } from '../types';
-import { calculateLeaderboard, UserScoreSummary, calculateRankChanges, calculateUserTrends } from '../utils/leaderboardUtils';
+import type { UserScoreSummary, RankChangeInfo, TrendInfo } from '../utils/leaderboardUtils';
 import { RankMovementIndicator } from './RankMovementIndicator';
 import { TrendIndicator } from './TrendIndicator';
 import { syncService } from '../services/syncService';
+import { workerComputeService } from '../services/workerComputeService';
 import { soundFx } from '../services/audioEffects';
 import { vibrateTap, vibrateSelection, vibrateSuccess, vibrateGrandCelebration } from '../utils/hapticUtils';
 import confetti from '../utils/confetti';
@@ -47,7 +48,7 @@ interface AudienceRealtimeLeaderboardProps {
 
 type SortMetric = 'SCORE_SPEED' | 'SPEED_ONLY' | 'ACCURACY_ONLY';
 
-export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardProps> = ({
+export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardProps> = React.memo(({
   isOpen,
   onClose,
   user,
@@ -67,9 +68,11 @@ export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardPr
   const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
   const [lastSyncTs, setLastSyncTs] = useState<number>(Date.now());
 
-  // 1. Real-time Subscription to responses via syncService
+  // 1. Real-time Subscription to all responses via syncService (upgrades Audience role sync on-demand while open)
   useEffect(() => {
     if (!isOpen && !isEmbedded) return;
+
+    const releaseFullSync = syncService.acquireFullLeaderboardSync();
 
     // Initial fetch from syncService
     const currentResponses = syncService.getAllResponses();
@@ -77,8 +80,8 @@ export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardPr
       setAllResponses(currentResponses);
     }
 
-    // Subscribe to live response stream
-    const unsubscribe = syncService.subscribeToResponses((incoming) => {
+    // Subscribe to live all-responses stream
+    const unsubscribe = syncService.subscribeToAllResponses((incoming) => {
       if (incoming) {
         setAllResponses(incoming);
         setLastSyncTs(Date.now());
@@ -87,13 +90,61 @@ export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardPr
 
     return () => {
       unsubscribe();
+      releaseFullSync();
     };
   }, [isOpen, isEmbedded]);
 
-  // 2. Compute Full Leaderboard with Speed & Accuracy Scoring
-  const rawLeaderboard = useMemo(() => {
-    return calculateLeaderboard(allResponses, customQuestionBank, gameState, roundFilter);
-  }, [allResponses, customQuestionBank, gameState, roundFilter]);
+  // 2. Compute Full Leaderboard + Rank Changes + Trends off the main thread
+  const [workerBundle, setWorkerBundle] = useState<{
+    rawLeaderboard: UserScoreSummary[];
+    rankChangesMap: Map<string, RankChangeInfo>;
+    trendsMap: Map<string, TrendInfo>;
+  }>({
+    rawLeaderboard: [],
+    rankChangesMap: new Map<string, RankChangeInfo>(),
+    trendsMap: new Map<string, TrendInfo>()
+  });
+
+  useEffect(() => {
+    if (!isOpen && !isEmbedded) return;
+    if (!allResponses || Object.keys(allResponses).length === 0) {
+      setWorkerBundle({
+        rawLeaderboard: [],
+        rankChangesMap: new Map<string, RankChangeInfo>(),
+        trendsMap: new Map<string, TrendInfo>()
+      });
+      return;
+    }
+
+    let cancelled = false;
+    workerComputeService
+      .computeLeaderboardBundleAsync({
+        allResponses,
+        customQuestionBank,
+        gameState,
+        filterRound: roundFilter,
+        includeRankChanges: true,
+        includeTrends: true
+      })
+      .then(result => {
+        if (!cancelled) {
+          setWorkerBundle({
+            rawLeaderboard: result.leaderboard,
+            rankChangesMap: result.rankChangesMap,
+            trendsMap: result.trendsMap
+          });
+        }
+      })
+      .catch(err => {
+        console.warn('AudienceRealtimeLeaderboard worker error:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, isEmbedded, allResponses, customQuestionBank, gameState, roundFilter]);
+
+  const { rawLeaderboard, rankChangesMap, trendsMap } = workerBundle;
 
   // 3. Apply Sorting Metric (Score & Speed / Fastest Speed / Accuracy)
   const sortedLeaderboard = useMemo(() => {
@@ -161,27 +212,7 @@ export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardPr
     };
   }, [myData, sortedLeaderboard]);
 
-  // Track rank delta (up/down/same) compared to previous question
-  const rankChangesMap = useMemo(() => {
-    return calculateRankChanges(
-      allResponses,
-      sortedLeaderboard,
-      gameState.question_id,
-      customQuestionBank,
-      gameState,
-      roundFilter
-    );
-  }, [allResponses, sortedLeaderboard, gameState.question_id, customQuestionBank, gameState, roundFilter]);
-
-  // Track multi-round performance trends
-  const trendsMap = useMemo(() => {
-    return calculateUserTrends(
-      allResponses,
-      sortedLeaderboard,
-      customQuestionBank,
-      gameState
-    );
-  }, [allResponses, sortedLeaderboard, customQuestionBank, gameState]);
+  // Rank changes and multi-round performance trends are computed in workerBundle above.
 
   // Top 3 Podium Contestants
   const top1 = sortedLeaderboard[0] || null;
@@ -755,4 +786,4 @@ export const AudienceRealtimeLeaderboard: React.FC<AudienceRealtimeLeaderboardPr
       </div>
     </div>
   );
-};
+});

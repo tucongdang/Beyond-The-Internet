@@ -149,14 +149,15 @@ type ShoutListener = (shouts: AudienceShout[]) => void;
 class RealtimeShoutService {
   private shouts: AudienceShout[] = [];
   private listeners: Set<ShoutListener> = new Set();
+  private settingsListeners: Set<(settings: ShoutSettings) => void> = new Set();
   private broadcastChannel: BroadcastChannel | null = null;
   private unsubscribeFirestore: (() => void) | null = null;
+  private saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private settings: ShoutSettings = DEFAULT_SHOUT_SETTINGS;
 
   constructor() {
     this.loadFromStorage();
     this.setupBroadcastChannel();
-    this.initFirestoreListener();
   }
 
   private setupBroadcastChannel() {
@@ -245,13 +246,25 @@ class RealtimeShoutService {
 
   private saveToStorage() {
     if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY_SHOUTS, JSON.stringify(this.shouts.slice(0, 50)));
-    } catch (e) {}
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
+    }
+    this.saveDebounceTimer = setTimeout(() => {
+      this.saveDebounceTimer = null;
+      try {
+        localStorage.setItem(STORAGE_KEY_SHOUTS, JSON.stringify(this.shouts.slice(0, 50)));
+      } catch (e) {}
+    }, 350);
+  }
+
+  private ensureFirestoreListener() {
+    if (!this.unsubscribeFirestore) {
+      this.initFirestoreListener();
+    }
   }
 
   private initFirestoreListener() {
-    if (!db) return;
+    if (!db || this.unsubscribeFirestore) return;
     try {
       const shoutsRef = collection(db, 'shouts');
       const q = query(shoutsRef, orderBy('timestamp', 'desc'), limit(40));
@@ -333,6 +346,7 @@ class RealtimeShoutService {
   // --- Public APIs ---
 
   public getShouts(): AudienceShout[] {
+    this.ensureFirestoreListener();
     return [...this.shouts];
   }
 
@@ -341,6 +355,7 @@ class RealtimeShoutService {
   }
 
   public subscribe(callback: ShoutListener): () => void {
+    this.ensureFirestoreListener();
     this.listeners.add(callback);
     callback([...this.shouts]);
     return () => {
@@ -593,11 +608,11 @@ class RealtimeShoutService {
   }
 
   public subscribeToSettings(callback: (settings: ShoutSettings) => void): () => void {
+    this.settingsListeners.add(callback);
     callback(this.settings);
-    const interval = setInterval(() => {
-      callback(this.settings);
-    }, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      this.settingsListeners.delete(callback);
+    };
   }
 
   public async updateSettings(newSettings: Partial<ShoutSettings>): Promise<void> {
@@ -607,6 +622,9 @@ class RealtimeShoutService {
         localStorage.setItem('BTI2026_SHOUT_SETTINGS', JSON.stringify(this.settings));
       } catch {}
     }
+    this.settingsListeners.forEach(cb => {
+      try { cb(this.settings); } catch {}
+    });
   }
 }
 
